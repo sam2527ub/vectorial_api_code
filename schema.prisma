@@ -6,6 +6,7 @@ generator client {
   interface = "asyncio"
   recursive_type_depth = 5
   binaryTargets = ["native", "rhel-openssl-1.0.x"]
+  output = "./prisma_client"
 }
 
 datasource db {

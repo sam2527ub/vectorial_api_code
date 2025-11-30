@@ -28,13 +28,18 @@ from apify_client import ApifyClient
 from openai import OpenAI
 import boto3
 
-# Prisma client - generate at runtime if needed (fallback for Vercel)
-# Note: Client should be generated during build via vercel-build.sh
-# Runtime generation is a fallback that will likely fail on Vercel's read-only filesystem
+# Prisma client - import from local directory (generated during build)
 Prisma = None
 try:
+    # Try importing from local prisma_client directory first
+    import sys
+    from pathlib import Path
+    prisma_client_path = Path(__file__).parent / "prisma_client"
+    if prisma_client_path.exists():
+        sys.path.insert(0, str(prisma_client_path))
+    
     from prisma import Prisma
-    logger.debug("Prisma client imported successfully")
+    logger.info("Prisma client imported successfully")
 except (RuntimeError, ImportError) as e:
     error_msg = str(e)
     if "hasn't been generated" in error_msg or "has not been generated" in error_msg:
