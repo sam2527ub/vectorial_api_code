@@ -2,6 +2,7 @@ import os
 import json
 import logging
 import uuid
+import asyncio
 from typing import List, Optional, Dict, Any
 from datetime import datetime
 from dateutil.parser import parse, ParserError
@@ -26,10 +27,75 @@ load_dotenv()
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
+# Initialize Clients
+pdl_client = None
+apify_client = None
+openai_client = None
+dynamodb_resource = None
+prisma = None
+
+try:
+    pdl_client = PDLPY(api_key=os.getenv("PDL_API_KEY"))
+except Exception as e:
+    logger.error(f"Failed to initialize PDL client: {e}")
+
+try:
+    apify_client = ApifyClient(os.getenv("APIFY_API_TOKEN"))
+except Exception as e:
+    logger.error(f"Failed to initialize Apify client: {e}")
+
+try:
+    # Initialize OpenAI client - handle version compatibility
+    openai_api_key = os.getenv("OPENAI_API_KEY")
+    if openai_api_key:
+        # Try without any extra parameters first
+        openai_client = OpenAI(api_key=openai_api_key)
+    else:
+        logger.warning("OPENAI_API_KEY not set")
+except Exception as e:
+    logger.error(f"Failed to initialize OpenAI client: {e}")
+    openai_client = None
+
+try:
+    # Optional: DynamoDB
+    dynamodb_resource = boto3.resource('dynamodb', region_name=os.getenv('AWS_REGION', 'us-west-2'))
+except Exception as e:
+    logger.warning(f"DynamoDB not initialized: {e}")
+
+try:
+    # Prisma client for database operations
+    prisma = Prisma()
+except Exception as e:
+    logger.error(f"Failed to initialize Prisma client: {e}")
+
+# Lifespan event handlers (replaces deprecated on_event)
+from contextlib import asynccontextmanager
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    # Startup
+    if prisma:
+        try:
+            await prisma.connect()
+            logger.info("Prisma client connected successfully")
+        except Exception as e:
+            logger.error(f"Failed to connect Prisma: {e}")
+            logger.warning("Continuing without database connection - scraping endpoints will not work")
+    yield
+    # Shutdown
+    if prisma:
+        try:
+            await prisma.disconnect()
+            logger.info("Prisma client disconnected")
+        except Exception as e:
+            logger.error(f"Error disconnecting Prisma: {e}")
+
+# Create FastAPI app with lifespan
 app = FastAPI(
     title="Profile Engine API",
     description="Backend for PDL Enrichment, Search, and LinkedIn Scraping",
-    version="1.0.0"
+    version="1.0.0",
+    lifespan=lifespan
 )
 
 # Enable CORS (Allows your React frontend to talk to this Python backend)
@@ -40,36 +106,6 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
-# Initialize Clients
-try:
-    pdl_client = PDLPY(api_key=os.getenv("PDL_API_KEY"))
-    apify_client = ApifyClient(os.getenv("APIFY_API_TOKEN"))
-    openai_client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
-    # Optional: DynamoDB
-    dynamodb_resource = boto3.resource('dynamodb', region_name=os.getenv('AWS_REGION', 'us-west-2'))
-    # Prisma client for database operations
-    prisma = Prisma()
-except Exception as e:
-    logger.error(f"Failed to initialize one or more clients: {e}")
-
-# Startup event to connect Prisma
-@app.on_event("startup")
-async def startup():
-    try:
-        await prisma.connect()
-        logger.info("Prisma client connected successfully")
-    except Exception as e:
-        logger.error(f"Failed to connect Prisma: {e}")
-
-# Shutdown event to disconnect Prisma
-@app.on_event("shutdown")
-async def shutdown():
-    try:
-        await prisma.disconnect()
-        logger.info("Prisma client disconnected")
-    except Exception as e:
-        logger.error(f"Error disconnecting Prisma: {e}")
 
 # Constants
 POST_SCRAPER_ACTOR_ID = "curious_coder/linkedin-post-search-scraper"
@@ -219,8 +255,8 @@ async def enrich_job_title(payload: EnrichRequest):
 # === STEP 2: NLP TO FILTERS ===
 @app.post("/api/v1/extract-filters")
 async def extract_filters(payload: DescriptionRequest):
-    if not os.getenv("OPENAI_API_KEY"):
-        raise HTTPException(status_code=500, detail="OpenAI API Key not found on server.")
+    if not openai_client:
+        raise HTTPException(status_code=500, detail="OpenAI client not initialized. Please check OPENAI_API_KEY.")
 
     prompt = f"""
     Extract search filters from: "{payload.description}"
@@ -450,7 +486,25 @@ async def trigger_scraping(payload: ScrapeRequest):
         "proxy": {"useApifyProxy": True}
     }
 
+    # Check if Prisma is available
+    if not prisma:
+        raise HTTPException(status_code=503, detail="Database connection not available. Please check server configuration.")
+    
     try:
+        # Ensure connection is active (with retry)
+        max_retries = 3
+        for attempt in range(max_retries):
+            try:
+                if not prisma.is_connected():
+                    await prisma.connect()
+                break
+            except Exception as conn_error:
+                if attempt < max_retries - 1:
+                    logger.warning(f"Connection attempt {attempt + 1} failed, retrying...")
+                    await asyncio.sleep(0.5)
+                else:
+                    raise HTTPException(status_code=503, detail=f"Database connection failed after {max_retries} attempts")
+        
         # Create job record in database
         job = await prisma.scrapejob.create(
             data={
@@ -559,7 +613,25 @@ async def get_scrape_status(job_id: str = Path(..., description="Job ID returned
     If job is PENDING or PROCESSING, checks Apify API for completion.
     If completed, fetches results and updates database.
     """
+    # Check if Prisma is available
+    if not prisma:
+        raise HTTPException(status_code=503, detail="Database connection not available. Please check server configuration.")
+    
     try:
+        # Ensure connection is active (with retry)
+        max_retries = 3
+        for attempt in range(max_retries):
+            try:
+                if not prisma.is_connected():
+                    await prisma.connect()
+                break
+            except Exception as conn_error:
+                if attempt < max_retries - 1:
+                    logger.warning(f"Connection attempt {attempt + 1} failed, retrying...")
+                    await asyncio.sleep(0.5)
+                else:
+                    raise HTTPException(status_code=503, detail=f"Database connection failed after {max_retries} attempts")
+        
         # Get job from database
         job = await prisma.scrapejob.find_unique(where={"id": job_id})
         
