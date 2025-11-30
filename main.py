@@ -33,8 +33,8 @@ Prisma = None
 try:
     # Try importing from local prisma_client directory first
     import sys
-    from pathlib import Path
-    prisma_client_path = Path(__file__).parent / "prisma_client"
+    from pathlib import Path as PathLib  # Use alias to avoid conflict with FastAPI's Path
+    prisma_client_path = PathLib(__file__).parent / "prisma_client"
     if prisma_client_path.exists():
         sys.path.insert(0, str(prisma_client_path))
     
