@@ -12,6 +12,9 @@ from fastapi import FastAPI, HTTPException, Body, Path
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
 
+# Third-party Clients
+from dotenv import load_dotenv
+
 # --- 1. CONFIGURATION & SETUP ---
 load_dotenv()
 
@@ -19,7 +22,7 @@ load_dotenv()
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-# Third-party Clients
+# Additional Third-party Clients
 from peopledatalabs import PDLPY
 from apify_client import ApifyClient
 from openai import OpenAI
