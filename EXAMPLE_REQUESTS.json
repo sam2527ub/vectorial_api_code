@@ -1,0 +1,76 @@
+{
+  "search_examples": {
+    "example_1_simple": {
+      "description": "Simple search by job title",
+      "request": {
+        "titles": ["backend engineer"],
+        "skills": [],
+        "locations": [],
+        "industries": [],
+        "company_names": [],
+        "company_sizes": [],
+        "education_degrees": [],
+        "seniority_levels": [],
+        "job_roles": [],
+        "role_search_type": "Current Role Only",
+        "company_search_type": "Current Company Only",
+        "limit": 10,
+        "experience_bucket": "Any"
+      }
+    },
+    "example_2_multiple_titles": {
+      "description": "Search with multiple job titles",
+      "request": {
+        "titles": ["Backend Engineer", "Software Engineer", "Senior Software Engineer"],
+        "skills": ["Python", "Node.js"],
+        "locations": ["United States"],
+        "limit": 20
+      }
+    },
+    "example_3_with_filters": {
+      "description": "Search with multiple filters",
+      "request": {
+        "titles": ["Data Scientist"],
+        "skills": ["Python", "Machine Learning", "TensorFlow"],
+        "locations": ["San Francisco", "New York"],
+        "industries": ["Technology", "Finance"],
+        "company_names": ["Google", "Meta"],
+        "company_sizes": ["10000+"],
+        "education_degrees": ["Masters", "PhD"],
+        "seniority_levels": ["Senior", "Lead"],
+        "limit": 15
+      }
+    },
+    "example_4_entire_history": {
+      "description": "Search entire work history (not just current role)",
+      "request": {
+        "titles": ["Software Engineer"],
+        "job_roles": ["Engineer"],
+        "role_search_type": "Entire History",
+        "company_search_type": "Entire History",
+        "limit": 10
+      }
+    }
+  },
+  "curl_examples": {
+    "simple_search": "curl -X POST 'http://localhost:8000/api/v1/search' -H 'Content-Type: application/json' -d '{\"titles\": [\"backend engineer\"], \"limit\": 10}'",
+    "search_with_skills": "curl -X POST 'http://localhost:8000/api/v1/search' -H 'Content-Type: application/json' -d '{\"titles\": [\"Software Engineer\"], \"skills\": [\"Python\", \"JavaScript\"], \"locations\": [\"United States\"], \"limit\": 10}'"
+  },
+  "javascript_examples": {
+    "simple_search": "const response = await fetch('http://localhost:8000/api/v1/search', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ titles: ['backend engineer'], limit: 10 }) });",
+    "search_with_filters": "const response = await fetch('http://localhost:8000/api/v1/search', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ titles: ['Backend Engineer', 'Software Engineer'], skills: ['Python', 'Node.js'], locations: ['United States'], limit: 20 }) });"
+  },
+  "common_errors": {
+    "invalid_json": {
+      "error": "JSON decode error - Expecting value",
+      "wrong": {
+        "titles": ["backend engineer"]
+      },
+      "correct": {
+        "titles": ["backend engineer"]
+      },
+      "note": "All array values must be quoted strings in JSON"
+    }
+  }
+}
+

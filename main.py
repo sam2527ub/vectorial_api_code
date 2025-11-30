@@ -256,6 +256,20 @@ async def extract_filters(payload: DescriptionRequest):
 # === STEP 3: SEARCH PROFILES ===
 @app.post("/api/v1/search")
 async def search_profiles(payload: SearchFilters):
+    """
+    Search for profiles using PDL API.
+    Returns filtered profile information with only:
+    - age: Calculated from birth_date
+    - current_company: Current job company name
+    - current_location: Current location
+    - total_years_experience: Calculated years of experience (excluding internships)
+    - industry: Industry
+    - linkedin_profile_url: LinkedIn profile URL
+    
+    Note: If searching for tech roles (engineer, developer, etc.) without specifying industry,
+    results may include engineers working in non-tech industries (retail, real estate, etc.).
+    To get more relevant results, add industry filter: ["Technology", "Computer Software", "Internet"]
+    """
     sql_query = build_pdl_sql(payload)
     logger.info(f"Executing Search SQL: {sql_query}")
 
@@ -270,12 +284,65 @@ async def search_profiles(payload: SearchFilters):
         response = pdl_client.person.search(**params).json()
         data = response.get('data', [])
         
-        # Post-processing: Calculate Experience Years
+        # Post-processing: Calculate Experience Years and filter to only required fields
         processed_profiles = []
         for person in data:
+            # Calculate experience years
             years = calculate_experience_years(person.get('experience', []))
-            person['calculated_experience_years'] = years
-            processed_profiles.append(person)
+            
+            # Calculate age - try multiple sources
+            age = None
+            
+            # Method 1: Try birth_date (most accurate)
+            if person.get('birth_date'):
+                try:
+                    birth_date = parse(person.get('birth_date'))
+                    age = (datetime.now() - birth_date).days // 365
+                except (ParserError, ValueError, TypeError):
+                    pass
+            
+            # Method 2: Try inferred_age if available (PDL sometimes provides this)
+            if age is None and person.get('inferred_age'):
+                try:
+                    age = int(person.get('inferred_age'))
+                except (ValueError, TypeError):
+                    pass
+            
+            # Method 3: Estimate from education graduation year (less accurate)
+            if age is None and person.get('education'):
+                try:
+                    # Get most recent graduation year
+                    graduation_years = []
+                    for edu in person.get('education', []):
+                        end_date = edu.get('end_date')
+                        if end_date:
+                            # Try to extract year
+                            if len(end_date) >= 4:
+                                year = int(end_date[:4])
+                                graduation_years.append(year)
+                    
+                    if graduation_years:
+                        # Assume typical graduation age: 22 for Bachelor's, 24 for Master's
+                        most_recent_graduation = max(graduation_years)
+                        years_since_graduation = datetime.now().year - most_recent_graduation
+                        # Estimate: graduated at 22-24, add years since
+                        estimated_age = 23 + years_since_graduation
+                        if 18 <= estimated_age <= 80:  # Reasonable age range
+                            age = estimated_age
+                except (ValueError, TypeError, KeyError):
+                    pass
+            
+            # Extract only required fields
+            profile = {
+                "age": age,
+                "current_company": person.get('job_company_name'),
+                "current_location": person.get('location_name'),
+                "total_years_experience": years,  # Calculated field
+                "industry": person.get('industry'),
+                "linkedin_profile_url": person.get('linkedin_url')
+            }
+            
+            processed_profiles.append(profile)
 
         # Optional: Store search query stats in DynamoDB here if needed
         
