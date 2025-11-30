@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "installCommand": "pip install -r requirements.txt && python3 -m prisma generate || python -m prisma generate",
+  "buildCommand": "pip install -r requirements.txt && python -m prisma generate",
   "builds": [
     {
       "src": "main.py",
@@ -14,7 +14,8 @@
     }
   ],
   "env": {
-    "PRISMA_GENERATE_DATAPROXY": "true"
+    "PRISMA_QUERY_ENGINE_BINARY": "rhel-openssl-1.0.x",
+    "PRISMA_CLI_BINARY_TARGETS": "rhel-openssl-1.0.x"
   }
 }
 

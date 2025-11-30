@@ -2,7 +2,11 @@
 # Vercel build script - runs before Python code is packaged
 set -e
 
-echo "🔨 Building Prisma client for Vercel..."
-python3 -m prisma generate || python -m prisma generate
+echo "🔨 Installing dependencies..."
+pip install -r requirements.txt
 
-echo "✅ Prisma client generated!"
+echo "🔨 Generating Prisma client for Vercel..."
+python -m prisma generate
+
+echo "✅ Build complete!"
+
