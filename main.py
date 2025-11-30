@@ -29,16 +29,20 @@ from openai import OpenAI
 import boto3
 
 # Prisma client - generate at runtime if needed (fallback for Vercel)
+# Note: Client should be generated during build via vercel-build.sh
+# Runtime generation is a fallback that will likely fail on Vercel's read-only filesystem
+Prisma = None
 try:
     from prisma import Prisma
+    logger.debug("Prisma client imported successfully")
 except (RuntimeError, ImportError) as e:
     error_msg = str(e)
     if "hasn't been generated" in error_msg or "has not been generated" in error_msg:
-        # Generate Prisma client at runtime if not already generated (Vercel fallback)
+        # Try runtime generation as fallback (will likely fail on serverless, but try anyway)
         import subprocess
         import sys
-        logger.warning("Prisma client not generated, attempting runtime generation...")
         try:
+            # Suppress output - this is expected to fail on Vercel
             subprocess.run(
                 [sys.executable, "-m", "prisma", "generate"], 
                 check=True, 
@@ -46,14 +50,20 @@ except (RuntimeError, ImportError) as e:
                 text=True,
                 timeout=30
             )
-            # Retry import after generation
             from prisma import Prisma
-            logger.info("Prisma client generated successfully at runtime")
-        except Exception as gen_error:
-            logger.error(f"Failed to generate Prisma client: {gen_error}")
-            # Don't raise - allow app to start without database (graceful degradation)
-            Prisma = None
+            logger.debug("Prisma client generated and imported at runtime")
+        except Exception:
+            # Runtime generation failed (expected on Vercel) - try import again
+            # Client should have been generated during build
+            try:
+                from prisma import Prisma
+                logger.debug("Prisma client imported after build (runtime generation failed as expected)")
+            except Exception as import_error:
+                # Client is truly unavailable
+                Prisma = None
+                logger.debug(f"Prisma client unavailable: {import_error}")
     else:
+        # Re-raise if it's a different error
         raise
 
 # Initialize Clients
@@ -95,9 +105,15 @@ try:
     # Prisma client for database operations
     if Prisma is not None:
         prisma = Prisma()
+        logger.info("Prisma client initialized successfully")
     else:
         prisma = None
-        logger.warning("Prisma client not available - database features will be disabled")
+        # Only warn if we're in an environment where database is expected
+        # On Vercel, if build generation worked, this shouldn't happen
+        if os.getenv("VERCEL"):
+            logger.warning("Prisma client not available on Vercel - check build logs for 'prisma generate'")
+        else:
+            logger.warning("Prisma client not available - database features will be disabled")
 except Exception as e:
     logger.error(f"Failed to initialize Prisma client: {e}")
     prisma = None
