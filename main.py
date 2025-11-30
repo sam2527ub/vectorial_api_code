@@ -264,6 +264,7 @@ async def search_profiles(payload: SearchFilters):
     - current_location: Current location
     - total_years_experience: Calculated years of experience (excluding internships)
     - industry: Industry
+    - education: Most recent/highest education (e.g., "Bachelors from Stanford University (Computer Science)")
     - linkedin_profile_url: LinkedIn profile URL
     
     Note: If searching for tech roles (engineer, developer, etc.) without specifying industry,
@@ -332,6 +333,80 @@ async def search_profiles(payload: SearchFilters):
                 except (ValueError, TypeError, KeyError):
                     pass
             
+            # Extract education information
+            education_info = None
+            if person.get('education') and len(person.get('education', [])) > 0:
+                # Get the most recent/highest level education
+                education_list = person.get('education', [])
+                # Sort by end_date (most recent first) or start_date, prioritizing higher degrees
+                def get_education_priority(edu):
+                    degrees = edu.get('degrees', [])
+                    degree_priority = {
+                        'PhD': 4, 'Doctorate': 4, 'Ph.D.': 4,
+                        'Masters': 3, 'Master': 3, 'Master of Science': 3, 'Master of Arts': 3,
+                        'Bachelors': 2, 'Bachelor': 2, 'Bachelor of Science': 2, 'Bachelor of Arts': 2,
+                        'Associates': 1, 'Associate': 1
+                    }
+                    max_priority = 0
+                    for deg in degrees:
+                        for key, priority in degree_priority.items():
+                            if key.lower() in str(deg).lower():
+                                max_priority = max(max_priority, priority)
+                                break
+                    return (max_priority, edu.get('end_date') or edu.get('start_date') or '0000')
+                
+                sorted_education = sorted(education_list, key=get_education_priority, reverse=True)
+                most_recent_edu = sorted_education[0]
+                
+                # Format education string
+                degrees = most_recent_edu.get('degrees', [])
+                school = most_recent_edu.get('school', {})
+                school_name = school.get('name', '') if isinstance(school, dict) else str(school) if school else ''
+                majors = most_recent_edu.get('majors', [])
+                
+                # Clean and normalize degrees (remove duplicates and verbose forms)
+                cleaned_degrees = []
+                degree_seen = set()
+                for deg in degrees:
+                    deg_str = str(deg).strip()
+                    # Normalize common degree names
+                    deg_lower = deg_str.lower()
+                    if 'bachelor' in deg_lower and 'bachelors' not in deg_lower:
+                        deg_str = 'Bachelors'
+                    elif 'master' in deg_lower and 'masters' not in deg_lower:
+                        deg_str = 'Masters'
+                    elif 'phd' in deg_lower or 'doctorate' in deg_lower:
+                        deg_str = 'PhD'
+                    
+                    # Avoid duplicates
+                    if deg_str.lower() not in degree_seen:
+                        cleaned_degrees.append(deg_str)
+                        degree_seen.add(deg_str.lower())
+                
+                # Build education string: "Degree from School (Major)" or "School (Major)" if no degree
+                edu_parts = []
+                
+                # Add degree if available
+                if cleaned_degrees:
+                    # Use the highest/most common degree
+                    degree = cleaned_degrees[0]
+                    edu_parts.append(degree)
+                
+                # Add school
+                if school_name:
+                    if edu_parts:
+                        edu_parts.append(f"from {school_name}")
+                    else:
+                        # If no degree, just use school name
+                        edu_parts.append(school_name)
+                
+                # Add majors
+                if majors:
+                    majors_str = ', '.join(majors)
+                    edu_parts.append(f"({majors_str})")
+                
+                education_info = ' '.join(edu_parts) if edu_parts else None
+            
             # Extract only required fields
             profile = {
                 "age": age,
@@ -339,6 +414,7 @@ async def search_profiles(payload: SearchFilters):
                 "current_location": person.get('location_name'),
                 "total_years_experience": years,  # Calculated field
                 "industry": person.get('industry'),
+                "education": education_info,
                 "linkedin_profile_url": person.get('linkedin_url')
             }
             

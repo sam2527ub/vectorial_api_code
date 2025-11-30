@@ -94,6 +94,7 @@ Content-Type: application/json
       "current_location": "San Francisco, California, United States",
       "total_years_experience": 4.5,
       "industry": "Technology",
+      "education": "Bachelors from Stanford University (Computer Science)",
       "linkedin_profile_url": "https://linkedin.com/in/johndoe"
     }
   ]

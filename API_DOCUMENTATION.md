@@ -247,6 +247,7 @@ This filters out engineers working in non-tech industries (retail, real estate, 
       "current_location": "San Francisco, California, United States",
       "total_years_experience": 4.5,
       "industry": "Technology",
+      "education": "Bachelors from Stanford University (Computer Science)",
       "linkedin_profile_url": "https://linkedin.com/in/johndoe"
     },
     {
@@ -255,7 +256,17 @@ This filters out engineers working in non-tech industries (retail, real estate, 
       "current_location": "Seattle, Washington, United States",
       "total_years_experience": 6.2,
       "industry": "Technology",
+      "education": "Masters from MIT (Software Engineering)",
       "linkedin_profile_url": "https://linkedin.com/in/janedoe"
+    },
+    {
+      "age": 30,
+      "current_company": "Amazon",
+      "current_location": "Seattle, Washington, United States",
+      "total_years_experience": 8.1,
+      "industry": "Technology",
+      "education": null,
+      "linkedin_profile_url": "https://linkedin.com/in/janedoe2"
     }
   ]
 }
@@ -280,6 +291,7 @@ Each profile contains only the following fields:
 | `current_location` | string \| null | Current location (full location string) |
 | `total_years_experience` | number | Calculated years of experience (excluding internships) |
 | `industry` | string \| null | Industry |
+| `education` | string \| null | Most recent/highest education formatted as "Degree from School (Major)" (e.g., "Bachelors from Stanford University (Computer Science)") |
 | `linkedin_profile_url` | string \| null | LinkedIn profile URL |
 
 ### Example
