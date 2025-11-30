@@ -22,9 +22,9 @@ echo "Prisma package path: $PRISMA_PKG_PATH"
 cat > /tmp/prisma-client-py << 'WRAPPER_EOF'
 #!/usr/bin/env python3
 import sys
-from prisma.generator import generator
+from prisma.generator.generator import Generator
 if __name__ == '__main__':
-    generator.main()
+    Generator().run()
 WRAPPER_EOF
 
 chmod +x /tmp/prisma-client-py
