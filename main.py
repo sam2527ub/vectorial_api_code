@@ -12,20 +12,46 @@ from fastapi import FastAPI, HTTPException, Body, Path
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
 
+# --- 1. CONFIGURATION & SETUP ---
+load_dotenv()
+
+# Logging setup (needed early for Prisma generation)
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
 # Third-party Clients
-from dotenv import load_dotenv
 from peopledatalabs import PDLPY
 from apify_client import ApifyClient
 from openai import OpenAI
 import boto3
-from prisma import Prisma
 
-# --- 1. CONFIGURATION & SETUP ---
-load_dotenv()
-
-# Logging setup
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
+# Prisma client - generate at runtime if needed (fallback for Vercel)
+try:
+    from prisma import Prisma
+except (RuntimeError, ImportError) as e:
+    error_msg = str(e)
+    if "hasn't been generated" in error_msg or "has not been generated" in error_msg:
+        # Generate Prisma client at runtime if not already generated (Vercel fallback)
+        import subprocess
+        import sys
+        logger.warning("Prisma client not generated, attempting runtime generation...")
+        try:
+            subprocess.run(
+                [sys.executable, "-m", "prisma", "generate"], 
+                check=True, 
+                capture_output=True,
+                text=True,
+                timeout=30
+            )
+            # Retry import after generation
+            from prisma import Prisma
+            logger.info("Prisma client generated successfully at runtime")
+        except Exception as gen_error:
+            logger.error(f"Failed to generate Prisma client: {gen_error}")
+            # Don't raise - allow app to start without database (graceful degradation)
+            Prisma = None
+    else:
+        raise
 
 # Initialize Clients
 pdl_client = None
@@ -64,9 +90,14 @@ except Exception as e:
 
 try:
     # Prisma client for database operations
-    prisma = Prisma()
+    if Prisma is not None:
+        prisma = Prisma()
+    else:
+        prisma = None
+        logger.warning("Prisma client not available - database features will be disabled")
 except Exception as e:
     logger.error(f"Failed to initialize Prisma client: {e}")
+    prisma = None
 
 # Lifespan event handlers (replaces deprecated on_event)
 from contextlib import asynccontextmanager
