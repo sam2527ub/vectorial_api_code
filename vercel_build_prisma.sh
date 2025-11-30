@@ -7,24 +7,36 @@ echo "========================================="
 pip install -r requirements.txt
 
 echo "========================================="
-echo "Setting up PATH for Prisma generator..."
+echo "Locating Prisma generator..."
 echo "========================================="
-# Find where prisma-client-py was installed
+# Get Python site-packages location
 PYTHON_SITE_PACKAGES=$(python3 -c "import site; print(site.getsitepackages()[0])")
-PRISMA_BIN_PATH=$(find $PYTHON_SITE_PACKAGES -name "prisma-client-py" 2>/dev/null | head -1)
+echo "Python site-packages: $PYTHON_SITE_PACKAGES"
 
-if [ -n "$PRISMA_BIN_PATH" ]; then
-    PRISMA_BIN_DIR=$(dirname "$PRISMA_BIN_PATH")
-    export PATH="$PRISMA_BIN_DIR:$PATH"
-    echo "Added to PATH: $PRISMA_BIN_DIR"
+# Get Prisma package location
+PRISMA_PKG_PATH=$(python3 -c "import prisma; import os; print(os.path.dirname(prisma.__file__))")
+echo "Prisma package path: $PRISMA_PKG_PATH"
+
+# Set generator path if it exists
+if [ -d "$PRISMA_PKG_PATH/generator" ]; then
+    export PRISMA_GENERATOR_PATH="$PRISMA_PKG_PATH/generator"
+    echo "Found generator at: $PRISMA_GENERATOR_PATH"
 fi
 
-echo "Current PATH: $PATH"
+# List what's in the prisma directory
+echo "Contents of Prisma package:"
+ls -la "$PRISMA_PKG_PATH/" || echo "Could not list Prisma directory"
+
+# Add potential binary locations to PATH
+export PATH="$PYTHON_SITE_PACKAGES/prisma/binaries:$PYTHON_SITE_PACKAGES/bin:$HOME/.local/bin:$PATH"
+echo "Updated PATH: $PATH"
 
 echo "========================================="
 echo "Generating Prisma client..."
 echo "========================================="
-python3 -m prisma generate
+
+# Try generation with explicit schema path
+python3 -m prisma generate --schema=schema.prisma
 
 echo "========================================="
 echo "Verifying Prisma client..."
