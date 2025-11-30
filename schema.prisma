@@ -25,3 +25,13 @@ model ScrapeJob {
   @@index([createdAt])
 }
 
+model SearchQuery {
+  id          String   @id @default(uuid())
+  filters     Json     // Search filters (titles, skills, locations, etc.)
+  sqlQuery    String   // Generated SQL query
+  resultCount Int      // Number of profiles found
+  createdAt   DateTime @default(now())
+
+  @@index([createdAt])
+}
+
