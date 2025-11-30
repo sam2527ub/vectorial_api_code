@@ -11,34 +11,28 @@ echo "========================================="
 pip install -r requirements.txt
 
 echo "========================================="
-echo "Setting up Prisma Generator Environment..."
+echo "Creating Prisma generator wrapper..."
 echo "========================================="
 
 # Get Prisma package location
 PRISMA_PKG_PATH=$(python3 -c "import prisma; import os; print(os.path.dirname(prisma.__file__))")
 echo "Prisma package path: $PRISMA_PKG_PATH"
 
-# Change to generator directory and set it up
-cd "$PRISMA_PKG_PATH/generator"
-echo "Current directory: $(pwd)"
-echo "Contents of generator directory:"
-ls -la
+# Create a wrapper script for the generator
+cat > /tmp/prisma-client-py << 'WRAPPER_EOF'
+#!/usr/bin/env python3
+import sys
+from prisma.generator import generator
+if __name__ == '__main__':
+    generator.main()
+WRAPPER_EOF
 
-# Check if package.json exists
-if [ -f "package.json" ]; then
-    echo "Found package.json, installing generator dependencies..."
-    # Use npm (Node.js is available on Vercel)
-    npm install --production
-    echo "Generator dependencies installed"
-    
-    # Add node_modules/.bin to PATH
-    export PATH="$(pwd)/node_modules/.bin:$PATH"
-    echo "Added generator binaries to PATH"
-fi
+chmod +x /tmp/prisma-client-py
 
-# Go back to project root
-cd "$PROJECT_ROOT"
-echo "Back to project root: $(pwd)"
+# Add /tmp to PATH so Prisma CLI can find the generator
+export PATH="/tmp:$PATH"
+echo "Created generator wrapper at /tmp/prisma-client-py"
+echo "Updated PATH: $PATH"
 
 echo "========================================="
 echo "Generating Prisma client..."

@@ -345,6 +345,7 @@ async def search_profiles(payload: SearchFilters):
     """
     Search for profiles using PDL API.
     Returns filtered profile information with only:
+    - name: Full name of the person
     - age: Calculated from birth_date
     - current_company: Current job company name
     - current_location: Current location
@@ -495,6 +496,7 @@ async def search_profiles(payload: SearchFilters):
             
             # Extract only required fields
             profile = {
+                "name": person.get('full_name') or f"{person.get('first_name', '')} {person.get('last_name', '')}".strip() or None,
                 "age": age,
                 "current_company": person.get('job_company_name'),
                 "current_location": person.get('location_name'),
