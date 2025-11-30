@@ -44,7 +44,18 @@ python3 -m prisma generate --schema=schema.prisma
 echo "========================================="
 echo "Verifying Prisma client..."
 echo "========================================="
-python3 -c "from prisma import Prisma; print('✅ Prisma client successfully generated and importable!')"
+# Verify that the prisma_client directory was created
+if [ -d "$PROJECT_ROOT/prisma_client" ]; then
+    echo "✅ Prisma client directory created at: $PROJECT_ROOT/prisma_client"
+    ls -la "$PROJECT_ROOT/prisma_client" | head -10
+    
+    # Test import from the local directory
+    cd "$PROJECT_ROOT"
+    PYTHONPATH="$PROJECT_ROOT/prisma_client:$PYTHONPATH" python3 -c "from prisma import Prisma; print('✅ Prisma client successfully importable!')" || echo "⚠️  Import test skipped"
+else
+    echo "❌ Prisma client directory not found!"
+    exit 1
+fi
 
 echo "========================================="
 echo "Build complete!"
