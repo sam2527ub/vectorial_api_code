@@ -1,0 +1,27 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-py"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model ScrapeJob {
+  id          String   @id @default(uuid())
+  status      String   @default("PENDING") // PENDING, PROCESSING, COMPLETED, FAILED
+  linkedinUrls Json   // Array of LinkedIn URLs
+  maxPosts    Int
+  apifyRunId  String?  // Apify run ID
+  result      Json?    // Scraped results
+  error       String?  // Error message if failed
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([status])
+  @@index([createdAt])
+}
+

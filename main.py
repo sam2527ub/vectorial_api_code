@@ -1,12 +1,13 @@
 import os
 import json
 import logging
+import uuid
 from typing import List, Optional, Dict, Any
 from datetime import datetime
 from dateutil.parser import parse, ParserError
 
 # FastAPI Imports
-from fastapi import FastAPI, HTTPException, Body
+from fastapi import FastAPI, HTTPException, Body, Path
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
 
@@ -16,6 +17,7 @@ from peopledatalabs import PDLPY
 from apify_client import ApifyClient
 from openai import OpenAI
 import boto3
+from prisma import Prisma
 
 # --- 1. CONFIGURATION & SETUP ---
 load_dotenv()
@@ -46,8 +48,28 @@ try:
     openai_client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
     # Optional: DynamoDB
     dynamodb_resource = boto3.resource('dynamodb', region_name=os.getenv('AWS_REGION', 'us-west-2'))
+    # Prisma client for database operations
+    prisma = Prisma()
 except Exception as e:
     logger.error(f"Failed to initialize one or more clients: {e}")
+
+# Startup event to connect Prisma
+@app.on_event("startup")
+async def startup():
+    try:
+        await prisma.connect()
+        logger.info("Prisma client connected successfully")
+    except Exception as e:
+        logger.error(f"Failed to connect Prisma: {e}")
+
+# Shutdown event to disconnect Prisma
+@app.on_event("shutdown")
+async def shutdown():
+    try:
+        await prisma.disconnect()
+        logger.info("Prisma client disconnected")
+    except Exception as e:
+        logger.error(f"Error disconnecting Prisma: {e}")
 
 # Constants
 POST_SCRAPER_ACTOR_ID = "curious_coder/linkedin-post-search-scraper"
@@ -78,11 +100,24 @@ class SearchFilters(BaseModel):
     limit: int = 10
     experience_bucket: str = "Any"  # Handled in Python after API fetch
 
+class Cookie(BaseModel):
+    domain: str
+    expirationDate: Optional[float] = None
+    hostOnly: bool = False
+    httpOnly: bool = False
+    name: str
+    path: str = "/"
+    sameSite: Optional[str] = None
+    secure: bool = True
+    session: bool = False
+    storeId: Optional[str] = None
+    value: str
+
 class ScrapeRequest(BaseModel):
-    linkedin_urls: List[str]
-    max_posts: int = 25
-    cookies: Optional[List[Dict]] = None 
-    user_agent: Optional[str] = None
+    linkedin_urls: List[str] = Field(..., min_items=1, description="List of LinkedIn profile URLs to scrape")
+    max_posts: int = Field(25, ge=1, le=100, description="Maximum number of posts to scrape per profile")
+    cookies: List[Cookie] = Field(..., min_items=1, description="List of cookie objects for authentication")
+    user_agent: str = Field(..., description="User agent string to use for scraping")
 
 # --- 3. HELPER FUNCTIONS ---
 
@@ -253,40 +288,243 @@ async def search_profiles(payload: SearchFilters):
         logger.error(f"Search error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
-# === STEP 4: TRIGGER POST SCRAPER ===
+# === STEP 4: TRIGGER POST SCRAPER (ASYNC) ===
 @app.post("/api/v1/scrape")
 async def trigger_scraping(payload: ScrapeRequest):
     """
-    Triggers Apify Actor (linkedin-post-search-scraper).
-    Requires a valid list of LinkedIn URLs and Cookies.
+    Triggers Apify Actor (linkedin-post-search-scraper) asynchronously.
+    Creates a job record and starts the Apify actor without waiting for completion.
+    Returns job_id immediately for polling status.
     """
-    if not payload.cookies or not payload.user_agent:
-        raise HTTPException(status_code=400, detail="Cookies and User Agent are required for scraping.")
+    # Convert Cookie Pydantic models to dictionaries for Apify
+    cookies_dict = [cookie.dict(exclude_none=True) for cookie in payload.cookies]
 
     run_input = {
         "urls": payload.linkedin_urls,
         "limitPerSource": payload.max_posts,
-        "cookie": payload.cookies,
+        "cookie": cookies_dict,
         "userAgent": payload.user_agent,
         "proxy": {"useApifyProxy": True}
     }
 
     try:
-        logger.info(f"Starting Apify scrape for {len(payload.linkedin_urls)} URLs")
-        # Start the actor
-        run = apify_client.actor(POST_SCRAPER_ACTOR_ID).call(run_input=run_input)
+        # Create job record in database
+        job = await prisma.scrapejob.create(
+            data={
+                "status": "PENDING",
+                "linkedinUrls": payload.linkedin_urls,
+                "maxPosts": payload.max_posts,
+            }
+        )
+        job_id = job.id
         
-        # Fetch results from dataset
-        dataset_items = list(apify_client.dataset(run['defaultDatasetId']).iterate_items())
+        logger.info(f"Created job {job_id} for {len(payload.linkedin_urls)} URLs")
         
-        return {
-            "status": "success",
-            "run_id": run['id'],
-            "posts_found": len(dataset_items),
-            "data": dataset_items
-        }
+        # Start Apify actor without waiting (async)
+        try:
+            run = apify_client.actor(POST_SCRAPER_ACTOR_ID).start(run_input=run_input)
+            apify_run_id = run['data']['id']
+            
+            # Update job with Apify run ID and set status to PROCESSING
+            await prisma.scrapejob.update(
+                where={"id": job_id},
+                data={
+                    "status": "PROCESSING",
+                    "apifyRunId": apify_run_id
+                }
+            )
+            
+            logger.info(f"Started Apify run {apify_run_id} for job {job_id}")
+            
+            return {
+                "job_id": job_id,
+                "status": "PENDING",
+                "message": "Scraping job started. Use /api/v1/scrape/status/{job_id} to check progress."
+            }
+        except Exception as apify_error:
+            # If Apify start fails, mark job as failed
+            error_message = str(apify_error)
+            await prisma.scrapejob.update(
+                where={"id": job_id},
+                data={
+                    "status": "FAILED",
+                    "error": error_message
+                }
+            )
+            raise apify_error
+            
     except Exception as e:
-        logger.error(f"Apify error: {e}")
+        error_message = str(e)
+        error_type = type(e).__name__
+        logger.error(f"Apify error [{error_type}]: {error_message}")
+        
+        # Handle specific error types - check multiple variations
+        error_lower = error_message.lower()
+        error_repr = repr(e).lower()
+        
+        # Check for usage/rate limit errors (check both message and repr)
+        if any(keyword in error_lower or keyword in error_repr 
+               for keyword in ["usage", "limit exceeded", "quota", "hard limit", "monthly usage"]):
+            status_code = 429
+            detail = {
+                "error": "Apify usage limit exceeded",
+                "message": error_message,
+                "suggestion": "Please check your Apify account usage limits or upgrade your plan. You can check your usage at https://console.apify.com/usage"
+            }
+        # Check for authentication errors
+        elif any(keyword in error_lower or keyword in error_repr 
+                 for keyword in ["unauthorized", "authentication", "token", "invalid api", "api key"]):
+            status_code = 401
+            detail = {
+                "error": "Apify authentication failed",
+                "message": error_message,
+                "suggestion": "Please check your APIFY_API_TOKEN environment variable."
+            }
+        # Check for actor not found errors
+        elif any(keyword in error_lower or keyword in error_repr 
+                 for keyword in ["not found", "actor", "404", "does not exist"]):
+            status_code = 404
+            detail = {
+                "error": "Apify actor not found or inaccessible",
+                "message": error_message,
+                "suggestion": f"Please verify the actor ID: {POST_SCRAPER_ACTOR_ID}"
+            }
+        # Check for rate limiting (429 from Apify itself)
+        elif "429" in error_message or "rate limit" in error_lower or "too many requests" in error_lower:
+            status_code = 429
+            detail = {
+                "error": "Apify rate limit exceeded",
+                "message": error_message,
+                "suggestion": "Please wait a moment and try again, or check your Apify account rate limits."
+            }
+        # Generic server error
+        else:
+            status_code = 500
+            detail = {
+                "error": "Apify service error",
+                "message": error_message,
+                "error_type": error_type
+            }
+        
+        raise HTTPException(status_code=status_code, detail=detail)
+
+# === STEP 5: CHECK SCRAPE JOB STATUS ===
+@app.get("/api/v1/scrape/status/{job_id}")
+async def get_scrape_status(job_id: str = Path(..., description="Job ID returned from /api/v1/scrape")):
+    """
+    Check the status of a scraping job.
+    If job is PENDING or PROCESSING, checks Apify API for completion.
+    If completed, fetches results and updates database.
+    """
+    try:
+        # Get job from database
+        job = await prisma.scrapejob.find_unique(where={"id": job_id})
+        
+        if not job:
+            raise HTTPException(status_code=404, detail=f"Job {job_id} not found")
+        
+        # If already completed, return cached results
+        if job.status == "COMPLETED":
+            return {
+                "job_id": job_id,
+                "status": "COMPLETED",
+                "result": job.result if job.result else {},
+                "created_at": job.createdAt.isoformat(),
+                "updated_at": job.updatedAt.isoformat()
+            }
+        
+        # If failed, return error
+        if job.status == "FAILED":
+            return {
+                "job_id": job_id,
+                "status": "FAILED",
+                "error": job.error,
+                "created_at": job.createdAt.isoformat(),
+                "updated_at": job.updatedAt.isoformat()
+            }
+        
+        # If PENDING or PROCESSING, check Apify status
+        if not job.apifyRunId:
+            return {
+                "job_id": job_id,
+                "status": job.status,
+                "message": "Waiting for Apify run to start..."
+            }
+        
+        try:
+            # Check Apify run status
+            run = apify_client.run(job.apifyRunId).get()
+            run_status = run.get('data', {}).get('status')
+            
+            if run_status == 'SUCCEEDED':
+                # Fetch results from Apify dataset
+                dataset_id = run.get('data', {}).get('defaultDatasetId')
+                if dataset_id:
+                    dataset_items = list(apify_client.dataset(dataset_id).iterate_items())
+                    
+                    # Update job with results
+                    await prisma.scrapejob.update(
+                        where={"id": job_id},
+                        data={
+                            "status": "COMPLETED",
+                            "result": {"posts_found": len(dataset_items), "data": dataset_items}
+                        }
+                    )
+        
+                    return {
+                        "job_id": job_id,
+                        "status": "COMPLETED",
+                        "posts_found": len(dataset_items),
+                        "data": dataset_items,
+                        "created_at": job.createdAt.isoformat(),
+                        "updated_at": datetime.now().isoformat()
+                    }
+                else:
+                    return {
+                        "job_id": job_id,
+                        "status": "PROCESSING",
+                        "message": "Run completed but dataset not available yet"
+                    }
+            elif run_status == 'FAILED':
+                error_msg = run.get('data', {}).get('statusMessage', 'Unknown error')
+                await prisma.scrapejob.update(
+                    where={"id": job_id},
+                    data={
+                        "status": "FAILED",
+                        "error": f"Apify run failed: {error_msg}"
+                    }
+                )
+                return {
+                    "job_id": job_id,
+                    "status": "FAILED",
+                    "error": error_msg
+                }
+            elif run_status in ['RUNNING', 'READY']:
+                return {
+                    "job_id": job_id,
+                    "status": "PROCESSING",
+                    "apify_status": run_status,
+                    "message": "Scraping in progress..."
+                }
+            else:
+                return {
+                    "job_id": job_id,
+                    "status": "PROCESSING",
+                    "apify_status": run_status,
+                    "message": f"Run status: {run_status}"
+                }
+        except Exception as apify_error:
+            logger.error(f"Error checking Apify status for job {job_id}: {apify_error}")
+            return {
+                "job_id": job_id,
+                "status": job.status,
+                "message": f"Error checking Apify status: {str(apify_error)}"
+            }
+            
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error getting job status: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
 if __name__ == "__main__":
