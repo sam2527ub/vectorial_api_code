@@ -470,7 +470,7 @@ async def get_scrape_status(job_id: str = Path(..., description="Job ID returned
                             "result": {"posts_found": len(dataset_items), "data": dataset_items}
                         }
                     )
-        
+                    
                     return {
                         "job_id": job_id,
                         "status": "COMPLETED",

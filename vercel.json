@@ -11,6 +11,9 @@
       "src": "/(.*)",
       "dest": "main.py"
     }
-  ]
+  ],
+  "env": {
+    "PRISMA_GENERATE_DATAPROXY": "true"
+  }
 }
 
