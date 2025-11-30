@@ -1,5 +1,5 @@
 {
-  "buildCommand": "pip install -r requirements.txt && export PATH=$PATH:/vercel/.local/bin && python3 -m prisma generate",
+  "buildCommand": "bash vercel_build_prisma.sh",
   "env": {
     "PRISMA_QUERY_ENGINE_BINARY": "rhel-openssl-1.0.x",
     "PRISMA_CLI_BINARY_TARGETS": "rhel-openssl-1.0.x"
