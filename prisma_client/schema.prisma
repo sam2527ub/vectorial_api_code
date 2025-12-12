@@ -39,3 +39,28 @@ model SearchQuery {
   @@index([createdAt])
 }
 
+// Audience grouping for saved LinkedIn profiles
+model AudienceRoom {
+  id               String             @id @default(uuid())
+  name             String
+  descriptionS3Url String?
+  profiles         AudienceProfile[]
+  createdAt        DateTime           @default(now())
+  updatedAt        DateTime           @updatedAt
+}
+
+// Profiles that belong to an audience room
+model AudienceProfile {
+  id                     String        @id @default(uuid())
+  audienceRoomId         String
+  audienceRoom           AudienceRoom  @relation(fields: [audienceRoomId], references: [id], onDelete: Cascade)
+  profileName            String
+  linkedinUrl            String
+  profileDescriptionS3Url String?
+  postsS3Url             String?
+  createdAt              DateTime      @default(now())
+  updatedAt              DateTime      @updatedAt
+
+  @@index([audienceRoomId])
+}
+

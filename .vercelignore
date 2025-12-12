@@ -1,2 +1,3 @@
 # Don't ignore the generated Prisma client
 !prisma_client/
+

@@ -2114,6 +2114,2062 @@ class SearchQueryActions(Generic[_PrismaModelT]):
         return resp['data']['result']  # type: ignore[no-any-return]
 
 
+class AudienceRoomActions(Generic[_PrismaModelT]):
+    __slots__ = (
+        '_client',
+        '_model',
+    )
+
+    def __init__(self, client: 'Client', model: Type[_PrismaModelT]) -> None:
+        self._client = client
+        self._model = model
+
+    async def query_raw(
+        self,
+        query: LiteralString,
+        *args: Any,
+    ) -> List[_PrismaModelT]:
+        """Execute a raw SQL query
+
+        Parameters
+        ----------
+        query
+            The raw SQL query string to be executed
+        *args
+            Parameters to be passed to the SQL query, these MUST be used over
+            string formatting to avoid an SQL injection vulnerability
+
+        Returns
+        -------
+        List[prisma.models.AudienceRoom]
+            The records returned by the SQL query
+
+        Raises
+        ------
+        prisma_errors.RawQueryError
+            This could be due to invalid syntax, mismatched number of parameters or any other error
+        prisma.errors.PrismaError
+            Catch all for every exception raised by Prisma Client Python
+
+        Example
+        -------
+        ```py
+        users = await AudienceRoom.prisma().query_raw(
+            'SELECT * FROM AudienceRoom WHERE id = $1',
+            'bigibebcib',
+        )
+        ```
+        """
+        return await self._client.query_raw(query, *args, model=self._model)
+
+    async def query_first(
+        self,
+        query: LiteralString,
+        *args: Any,
+    ) -> Optional[_PrismaModelT]:
+        """Execute a raw SQL query, returning the first result
+
+        Parameters
+        ----------
+        query
+            The raw SQL query string to be executed
+        *args
+            Parameters to be passed to the SQL query, these MUST be used over
+            string formatting to avoid an SQL injection vulnerability
+
+        Returns
+        -------
+        prisma.models.AudienceRoom
+            The first record returned by the SQL query
+        None
+            The raw SQL query did not return any records
+
+        Raises
+        ------
+        prisma_errors.RawQueryError
+            This could be due to invalid syntax, mismatched number of parameters or any other error
+        prisma.errors.PrismaError
+            Catch all for every exception raised by Prisma Client Python
+
+        Example
+        -------
+        ```py
+        user = await AudienceRoom.prisma().query_first(
+            'SELECT * FROM AudienceRoom WHERE name = $1',
+            'bigaiehgcc',
+        )
+        ```
+        """
+        return await self._client.query_first(query, *args, model=self._model)
+
+    async def create(
+        self,
+        data: types.AudienceRoomCreateInput,
+        include: Optional[types.AudienceRoomInclude] = None
+    ) -> _PrismaModelT:
+        """Create a new AudienceRoom record.
+
+        Parameters
+        ----------
+        data
+            AudienceRoom record data
+        include
+            Specifies which relations should be loaded on the returned AudienceRoom model
+
+        Returns
+        -------
+        prisma.models.AudienceRoom
+            The created AudienceRoom record
+
+        Raises
+        ------
+        prisma.errors.MissingRequiredValueError
+            Value is required but was not found
+        prisma.errors.PrismaError
+            Catch all for every exception raised by Prisma Client Python
+
+        Example
+        -------
+        ```py
+        # create a AudienceRoom record from just the required fields
+        audienceroom = await AudienceRoom.prisma().create(
+            data={
+                # data to create a AudienceRoom record
+                'name': 'beeifcbebf',
+            },
+        )
+        ```
+        """
+        resp = await self._client._execute(
+            method='create',
+            model=self._model,
+            arguments={
+                'data': data,
+                'include': include,
+            },
+        )
+        return model_parse(self._model, resp['data']['result'])
+
+    async def create_many(
+        self,
+        data: List[types.AudienceRoomCreateWithoutRelationsInput],
+        *,
+        skip_duplicates: Optional[bool] = None,
+    ) -> int:
+        """Create multiple AudienceRoom records at once.
+
+        This function is *not* available when using SQLite.
+
+        Parameters
+        ----------
+        data
+            List of AudienceRoom record data
+        skip_duplicates
+            Boolean flag for ignoring unique constraint errors
+
+        Returns
+        -------
+        int
+            The total number of records created
+
+        Raises
+        ------
+        prisma.errors.UnsupportedDatabaseError
+            Attempting to query when using SQLite
+        prisma.errors.UniqueViolationError
+            A unique constraint check has failed, these can be ignored with the `skip_duplicates` argument
+        prisma.errors.MissingRequiredValueError
+            Value is required but was not found
+        prisma.errors.PrismaError
+            Catch all for every exception raised by Prisma Client Python
+
+        Example
+        -------
+        ```py
+        total = await AudienceRoom.prisma().create_many(
+            data=[
+                {
+                    # data to create a AudienceRoom record
+                    'name': 'bgcigfahea',
+                },
+                {
+                    # data to create a AudienceRoom record
+                    'name': 'bcejgaggif',
+                },
+            ],
+            skip_duplicates=True,
+        )
+        ```
+        """
+        if self._client._active_provider == 'sqlite':
+            raise errors.UnsupportedDatabaseError('sqlite', 'create_many()')
+
+        resp = await self._client._execute(
+            method='create_many',
+            model=self._model,
+            arguments={
+                'data': data,
+                'skipDuplicates': skip_duplicates,
+            },
+            root_selection=['count'],
+        )
+        return int(resp['data']['result']['count'])
+
+    async def delete(
+        self,
+        where: types.AudienceRoomWhereUniqueInput,
+        include: Optional[types.AudienceRoomInclude] = None
+    ) -> Optional[_PrismaModelT]:
+        """Delete a single AudienceRoom record.
+
+        Parameters
+        ----------
+        where
+            AudienceRoom filter to select the record to be deleted, must be unique
+        include
+            Specifies which relations should be loaded on the returned AudienceRoom model
+
+        Returns
+        -------
+        prisma.models.AudienceRoom
+            The deleted AudienceRoom record
+        None
+            Could not find a record to delete
+
+        Raises
+        ------
+        prisma.errors.PrismaError
+            Catch all for every exception raised by Prisma Client Python
+        prisma.errors.MissingRequiredValueError
+            Value is required but was not found
+
+        Example
+        -------
+        ```py
+        audienceroom = await AudienceRoom.prisma().delete(
+            where={
+                'id': 'idfjadbcc',
+            },
+        )
+        ```
+        """
+        try:
+            resp = await self._client._execute(
+                method='delete',
+                model=self._model,
+                arguments={
+                    'where': where,
+                    'include': include,
+                },
+            )
+        except errors.RecordNotFoundError:
+            return None
+
+        return model_parse(self._model, resp['data']['result'])
+
+    async def find_unique(
+        self,
+        where: types.AudienceRoomWhereUniqueInput,
+        include: Optional[types.AudienceRoomInclude] = None
+    ) -> Optional[_PrismaModelT]:
+        """Find a unique AudienceRoom record.
+
+        Parameters
+        ----------
+        where
+            AudienceRoom filter to find the record, must be unique
+        include
+            Specifies which relations should be loaded on the returned AudienceRoom model
+
+        Returns
+        -------
+        prisma.models.AudienceRoom
+            The found AudienceRoom record
+        None
+            No record matching the given input could be found
+
+        Raises
+        ------
+        prisma.errors.PrismaError
+            Catch all for every exception raised by Prisma Client Python
+        prisma.errors.MissingRequiredValueError
+            Value is required but was not found
+
+        Example
+        -------
+        ```py
+        audienceroom = await AudienceRoom.prisma().find_unique(
+            where={
+                'id': 'hgdhbjhhj',
+            },
+        )
+        ```
+        """
+        resp = await self._client._execute(
+            method='find_unique',
+            model=self._model,
+            arguments={
+                'where': where,
+                'include': include,
+            },
+        )
+        result = resp['data']['result']
+        if result is None:
+            return None
+        return model_parse(self._model, result)
+
+    async def find_unique_or_raise(
+        self,
+        where: types.AudienceRoomWhereUniqueInput,
+        include: Optional[types.AudienceRoomInclude] = None
+    ) -> _PrismaModelT:
+        """Find a unique AudienceRoom record. Raises `RecordNotFoundError` if no record is found.
+
+        Parameters
+        ----------
+        where
+            AudienceRoom filter to find the record, must be unique
+        include
+            Specifies which relations should be loaded on the returned AudienceRoom model
+
+        Returns
+        -------
+        prisma.models.AudienceRoom
+            The found AudienceRoom record
+
+        Raises
+        ------
+        prisma.errors.RecordNotFoundError
+            No record was found
+        prisma.errors.PrismaError
+            Catch all for every exception raised by Prisma Client Python
+        prisma.errors.MissingRequiredValueError
+            Value is required but was not found
+
+        Example
+        -------
+        ```py
+        audienceroom = await AudienceRoom.prisma().find_unique_or_raise(
+            where={
+                'id': 'ecjjjfbae',
+            },
+        )
+        ```
+        """
+        resp = await self._client._execute(
+            method='find_unique_or_raise',
+            model=self._model,
+            arguments={
+                'where': where,
+                'include': include,
+            },
+        )
+        return model_parse(self._model, resp['data']['result'])
+
+    async def find_many(
+        self,
+        take: Optional[int] = None,
+        skip: Optional[int] = None,
+        where: Optional[types.AudienceRoomWhereInput] = None,
+        cursor: Optional[types.AudienceRoomWhereUniqueInput] = None,
+        include: Optional[types.AudienceRoomInclude] = None,
+        order: Optional[Union[types.AudienceRoomOrderByInput, List[types.AudienceRoomOrderByInput]]] = None,
+        distinct: Optional[List[types.AudienceRoomScalarFieldKeys]] = None,
+    ) -> List[_PrismaModelT]:
+        """Find multiple AudienceRoom records.
+
+        An empty list is returned if no records could be found.
+
+        Parameters
+        ----------
+        take
+            Limit the maximum number of AudienceRoom records returned
+        skip
+            Ignore the first N results
+        where
+            AudienceRoom filter to select records
+        cursor
+            Specifies the position in the list to start returning results from, (typically an ID field)
+        include
+            Specifies which relations should be loaded on the returned AudienceRoom model
+        order
+            Order the returned AudienceRoom records by any field
+        distinct
+            Filter AudienceRoom records by either a single distinct field or distinct combinations of fields
+
+        Returns
+        -------
+        List[prisma.models.AudienceRoom]
+            The list of all AudienceRoom records that could be found
+
+        Raises
+        ------
+        prisma.errors.PrismaError
+            Catch all for every exception raised by Prisma Client Python
+
+        Example
+        -------
+        ```py
+        # find the first 10 AudienceRoom records
+        audiencerooms = await AudienceRoom.prisma().find_many(take=10)
+
+        # find the first 5 AudienceRoom records ordered by the descriptionS3Url field
+        audiencerooms = await AudienceRoom.prisma().find_many(
+            take=5,
+            order={
+                'descriptionS3Url': 'desc',
+            },
+        )
+        ```
+        """
+        resp = await self._client._execute(
+            method='find_many',
+            model=self._model,
+            arguments={
+                'take': take,
+                'skip': skip,
+                'where': where,
+                'order_by': order,
+                'cursor': cursor,
+                'include': include,
+                'distinct': distinct,
+            },
+        )
+        return [model_parse(self._model, r) for r in resp['data']['result']]
+
+    async def find_first(
+        self,
+        skip: Optional[int] = None,
+        where: Optional[types.AudienceRoomWhereInput] = None,
+        cursor: Optional[types.AudienceRoomWhereUniqueInput] = None,
+        include: Optional[types.AudienceRoomInclude] = None,
+        order: Optional[Union[types.AudienceRoomOrderByInput, List[types.AudienceRoomOrderByInput]]] = None,
+        distinct: Optional[List[types.AudienceRoomScalarFieldKeys]] = None,
+    ) -> Optional[_PrismaModelT]:
+        """Find a single AudienceRoom record.
+
+        Parameters
+        ----------
+        skip
+            Ignore the first N records
+        where
+            AudienceRoom filter to select the record
+        cursor
+            Specifies the position in the list to start returning results from, (typically an ID field)
+        include
+            Specifies which relations should be loaded on the returned AudienceRoom model
+        order
+            Order the returned AudienceRoom records by any field
+        distinct
+            Filter AudienceRoom records by either a single distinct field or distinct combinations of fields
+
+        Returns
+        -------
+        prisma.models.AudienceRoom
+            The first AudienceRoom record found, matching the given arguments
+        None
+            No record could be found
+
+        Raises
+        ------
+        prisma.errors.PrismaError
+            Catch all for every exception raised by Prisma Client Python
+
+        Example
+        -------
+        ```py
+        # find the second AudienceRoom record ordered by the createdAt field
+        audienceroom = await AudienceRoom.prisma().find_first(
+            skip=1,
+            order={
+                'createdAt': 'desc',
+            },
+        )
+        ```
+        """
+        resp = await self._client._execute(
+            method='find_first',
+            model=self._model,
+            arguments={
+                'skip': skip,
+                'where': where,
+                'order_by': order,
+                'cursor': cursor,
+                'include': include,
+                'distinct': distinct,
+            },
+        )
+        result = resp['data']['result']
+        if result is None:
+            return None
+
+        return model_parse(self._model, result)
+
+    async def find_first_or_raise(
+        self,
+        skip: Optional[int] = None,
+        where: Optional[types.AudienceRoomWhereInput] = None,
+        cursor: Optional[types.AudienceRoomWhereUniqueInput] = None,
+        include: Optional[types.AudienceRoomInclude] = None,
+        order: Optional[Union[types.AudienceRoomOrderByInput, List[types.AudienceRoomOrderByInput]]] = None,
+        distinct: Optional[List[types.AudienceRoomScalarFieldKeys]] = None,
+    ) -> _PrismaModelT:
+        """Find a single AudienceRoom record. Raises `RecordNotFoundError` if no record was found.
+
+        Parameters
+        ----------
+        skip
+            Ignore the first N records
+        where
+            AudienceRoom filter to select the record
+        cursor
+            Specifies the position in the list to start returning results from, (typically an ID field)
+        include
+            Specifies which relations should be loaded on the returned AudienceRoom model
+        order
+            Order the returned AudienceRoom records by any field
+        distinct
+            Filter AudienceRoom records by either a single distinct field or distinct combinations of fields
+
+        Returns
+        -------
+        prisma.models.AudienceRoom
+            The first AudienceRoom record found, matching the given arguments
+
+        Raises
+        ------
+        prisma.errors.RecordNotFoundError
+            No record was found
+        prisma.errors.PrismaError
+            Catch all for every exception raised by Prisma Client Python
+
+        Example
+        -------
+        ```py
+        # find the second AudienceRoom record ordered by the updatedAt field
+        audienceroom = await AudienceRoom.prisma().find_first_or_raise(
+            skip=1,
+            order={
+                'updatedAt': 'desc',
+            },
+        )
+        ```
+        """
+        resp = await self._client._execute(
+            method='find_first_or_raise',
+            model=self._model,
+            arguments={
+                'skip': skip,
+                'where': where,
+                'order_by': order,
+                'cursor': cursor,
+                'include': include,
+                'distinct': distinct,
+            },
+        )
+        return model_parse(self._model, resp['data']['result'])
+
+    async def update(
+        self,
+        data: types.AudienceRoomUpdateInput,
+        where: types.AudienceRoomWhereUniqueInput,
+        include: Optional[types.AudienceRoomInclude] = None
+    ) -> Optional[_PrismaModelT]:
+        """Update a single AudienceRoom record.
+
+        Parameters
+        ----------
+        data
+            AudienceRoom record data specifying what to update
+        where
+            AudienceRoom filter to select the unique record to create / update
+        include
+            Specifies which relations should be loaded on the returned AudienceRoom model
+
+        Returns
+        -------
+        prisma.models.AudienceRoom
+            The updated AudienceRoom record
+        None
+            No record could be found
+
+        Raises
+        ------
+        prisma.errors.PrismaError
+            Catch all for every exception raised by Prisma Client Python
+
+        Example
+        -------
+        ```py
+        audienceroom = await AudienceRoom.prisma().update(
+            where={
+                'id': 'bhhfibbigf',
+            },
+            data={
+                # data to update the AudienceRoom record to
+            },
+        )
+        ```
+        """
+        try:
+            resp = await self._client._execute(
+                method='update',
+                model=self._model,
+                arguments={
+                    'data': data,
+                    'where': where,
+                    'include': include,
+                },
+            )
+        except errors.RecordNotFoundError:
+            return None
+
+        return model_parse(self._model, resp['data']['result'])
+
+    async def upsert(
+        self,
+        where: types.AudienceRoomWhereUniqueInput,
+        data: types.AudienceRoomUpsertInput,
+        include: Optional[types.AudienceRoomInclude] = None,
+    ) -> _PrismaModelT:
+        """Updates an existing record or create a new one
+
+        Parameters
+        ----------
+        where
+            AudienceRoom filter to select the unique record to create / update
+        data
+            Data specifying what fields to set on create and update
+        include
+            Specifies which relations should be loaded on the returned AudienceRoom model
+
+        Returns
+        -------
+        prisma.models.AudienceRoom
+            The created or updated AudienceRoom record
+
+        Raises
+        ------
+        prisma.errors.PrismaError
+            Catch all for every exception raised by Prisma Client Python
+        prisma.errors.MissingRequiredValueError
+            Value is required but was not found
+
+        Example
+        -------
+        ```py
+        audienceroom = await AudienceRoom.prisma().upsert(
+            where={
+                'id': 'ijdbeffgg',
+            },
+            data={
+                'create': {
+                    'id': 'ijdbeffgg',
+                    'name': 'bcejgaggif',
+                },
+                'update': {
+                    'name': 'bcejgaggif',
+                },
+            },
+        )
+        ```
+        """
+        resp = await self._client._execute(
+            method='upsert',
+            model=self._model,
+            arguments={
+                'where': where,
+                'include': include,
+                'create': data.get('create'),
+                'update': data.get('update'),
+            },
+        )
+        return model_parse(self._model, resp['data']['result'])
+
+    async def update_many(
+        self,
+        data: types.AudienceRoomUpdateManyMutationInput,
+        where: types.AudienceRoomWhereInput,
+    ) -> int:
+        """Update multiple AudienceRoom records
+
+        Parameters
+        ----------
+        data
+            AudienceRoom data to update the selected AudienceRoom records to
+        where
+            Filter to select the AudienceRoom records to update
+
+        Returns
+        -------
+        int
+            The total number of AudienceRoom records that were updated
+
+        Raises
+        ------
+        prisma.errors.PrismaError
+            Catch all for every exception raised by Prisma Client Python
+
+        Example
+        -------
+        ```py
+        # update all AudienceRoom records
+        total = await AudienceRoom.prisma().update_many(
+            data={
+                'id': 'jjfeafhfj'
+            },
+            where={}
+        )
+        ```
+        """
+        resp = await self._client._execute(
+            method='update_many',
+            model=self._model,
+            arguments={'data': data, 'where': where,},
+            root_selection=['count'],
+        )
+        return int(resp['data']['result']['count'])
+
+    @overload
+    async def count(
+        self,
+        select: None = None,
+        take: Optional[int] = None,
+        skip: Optional[int] = None,
+        where: Optional[types.AudienceRoomWhereInput] = None,
+        cursor: Optional[types.AudienceRoomWhereUniqueInput] = None,
+    ) -> int:
+        """Count the number of AudienceRoom records present in the database
+
+        Parameters
+        ----------
+        select
+            Select the AudienceRoom fields to be counted
+        take
+            Limit the maximum result
+        skip
+            Ignore the first N records
+        where
+            AudienceRoom filter to find records
+        cursor
+            Specifies the position in the list to start counting results from, (typically an ID field)
+        order
+            This parameter is deprecated and will be removed in a future release
+
+        Returns
+        -------
+        int
+            The total number of records found, returned if `select` is not given
+
+        prisma.types.AudienceRoomCountAggregateOutput
+            Data returned when `select` is used, the fields present in this dictionary will
+            match the fields passed in the `select` argument
+
+        Raises
+        ------
+        prisma.errors.PrismaError
+            Catch all for every exception raised by Prisma Client Python
+
+        Example
+        -------
+        ```py
+        # total: int
+        total = await AudienceRoom.prisma().count()
+
+        # results: prisma.types.AudienceRoomCountAggregateOutput
+        results = await AudienceRoom.prisma().count(
+            select={
+                '_all': True,
+                'name': True,
+            },
+        )
+        ```
+        """
+
+
+    @overload
+    async def count(
+        self,
+        select: types.AudienceRoomCountAggregateInput,
+        take: Optional[int] = None,
+        skip: Optional[int] = None,
+        where: Optional[types.AudienceRoomWhereInput] = None,
+        cursor: Optional[types.AudienceRoomWhereUniqueInput] = None,
+    ) -> types.AudienceRoomCountAggregateOutput:
+        ...
+
+    async def count(
+        self,
+        select: Optional[types.AudienceRoomCountAggregateInput] = None,
+        take: Optional[int] = None,
+        skip: Optional[int] = None,
+        where: Optional[types.AudienceRoomWhereInput] = None,
+        cursor: Optional[types.AudienceRoomWhereUniqueInput] = None,
+    ) -> Union[int, types.AudienceRoomCountAggregateOutput]:
+        """Count the number of AudienceRoom records present in the database
+
+        Parameters
+        ----------
+        select
+            Select the AudienceRoom fields to be counted
+        take
+            Limit the maximum result
+        skip
+            Ignore the first N records
+        where
+            AudienceRoom filter to find records
+        cursor
+            Specifies the position in the list to start counting results from, (typically an ID field)
+        order
+            This parameter is deprecated and will be removed in a future release
+
+        Returns
+        -------
+        int
+            The total number of records found, returned if `select` is not given
+
+        prisma.types.AudienceRoomCountAggregateOutput
+            Data returned when `select` is used, the fields present in this dictionary will
+            match the fields passed in the `select` argument
+
+        Raises
+        ------
+        prisma.errors.PrismaError
+            Catch all for every exception raised by Prisma Client Python
+
+        Example
+        -------
+        ```py
+        # total: int
+        total = await AudienceRoom.prisma().count()
+
+        # results: prisma.types.AudienceRoomCountAggregateOutput
+        results = await AudienceRoom.prisma().count(
+            select={
+                '_all': True,
+                'descriptionS3Url': True,
+            },
+        )
+        ```
+        """
+
+        # TODO: this selection building should be moved to the QueryBuilder
+        #
+        # note the distinction between checking for `not select` here and `select is None`
+        # later is to handle the case that the given select dictionary is empty, this
+        # is a limitation of our types.
+        if not select:
+            root_selection = ['_count { _all }']
+        else:
+
+            root_selection = [
+                '_count {{ {0} }}'.format(' '.join(k for k, v in select.items() if v is True))
+            ]
+
+        resp = await self._client._execute(
+            method='count',
+            model=self._model,
+            arguments={
+                'take': take,
+                'skip': skip,
+                'where': where,
+                'cursor': cursor,
+            },
+            root_selection=root_selection,
+        )
+
+        if select is None:
+            return cast(int, resp['data']['result']['_count']['_all'])
+        else:
+            return cast(types.AudienceRoomCountAggregateOutput, resp['data']['result']['_count'])
+
+    async def delete_many(
+        self,
+        where: Optional[types.AudienceRoomWhereInput] = None
+    ) -> int:
+        """Delete multiple AudienceRoom records.
+
+        Parameters
+        ----------
+        where
+            Optional AudienceRoom filter to find the records to be deleted
+
+        Returns
+        -------
+        int
+            The total number of AudienceRoom records that were deleted
+
+        Raises
+        ------
+        prisma.errors.PrismaError
+            Catch all for every exception raised by Prisma Client Python
+
+        Example
+        -------
+        ```py
+        # delete all AudienceRoom records
+        total = await AudienceRoom.prisma().delete_many()
+        ```
+        """
+        resp = await self._client._execute(
+            method='delete_many',
+            model=self._model,
+            arguments={'where': where},
+            root_selection=['count'],
+        )
+        return int(resp['data']['result']['count'])
+
+    # TODO: make this easier to work with safely, currently output fields are typed as
+    #       not required, we should refactor the return type
+    # TODO: consider returning a Dict where the keys are a Tuple of the `by` selection
+    # TODO: statically type that the order argument is required when take or skip are present
+    async def group_by(
+        self,
+        by: List['types.AudienceRoomScalarFieldKeys'],
+        *,
+        where: Optional['types.AudienceRoomWhereInput'] = None,
+        take: Optional[int] = None,
+        skip: Optional[int] = None,
+        avg: Optional['types.AudienceRoomAvgAggregateInput'] = None,
+        sum: Optional['types.AudienceRoomSumAggregateInput'] = None,
+        min: Optional['types.AudienceRoomMinAggregateInput'] = None,
+        max: Optional['types.AudienceRoomMaxAggregateInput'] = None,
+        having: Optional['types.AudienceRoomScalarWhereWithAggregatesInput'] = None,
+        count: Optional[Union[bool, 'types.AudienceRoomCountAggregateInput']] = None,
+        order: Optional[Union[Mapping['types.AudienceRoomScalarFieldKeys', 'types.SortOrder'], List[Mapping['types.AudienceRoomScalarFieldKeys', 'types.SortOrder']]]] = None,
+    ) -> List['types.AudienceRoomGroupByOutput']:
+        """Group AudienceRoom records by one or more field values and perform aggregations
+        each group such as finding the average.
+
+        Parameters
+        ----------
+        by
+            List of scalar AudienceRoom fields to group records by
+        where
+            AudienceRoom filter to select records
+        take
+            Limit the maximum number of AudienceRoom records returned
+        skip
+            Ignore the first N records
+        avg
+            Adds the average of all values of the specified fields to the `_avg` field
+            in the returned data.
+        sum
+            Adds the sum of all values of the specified fields to the `_sum` field
+            in the returned data.
+        min
+            Adds the smallest available value for the specified fields to the `_min` field
+            in the returned data.
+        max
+            Adds the largest available value for the specified fields to the `_max` field
+            in the returned data.
+        count
+            Adds a count of non-fields to the `_count` field in the returned data.
+        having
+            Allows you to filter groups by an aggregate value - for example only return
+            groups having an average age less than 50.
+        order
+            Lets you order the returned list by any property that is also present in `by`.
+            Only **one** field is allowed at a time.
+
+        Returns
+        -------
+        List[prisma.types.AudienceRoomGroupByOutput]
+            A list of dictionaries representing the AudienceRoom record,
+            this will also have additional fields present if aggregation arguments
+            are used (see the above parameters)
+
+        Raises
+        ------
+        prisma.errors.PrismaError
+            Catch all for every exception raised by Prisma Client Python
+
+        Example
+        -------
+        ```py
+        # group AudienceRoom records by createdAt values
+        # and count how many records are in each group
+        results = await AudienceRoom.prisma().group_by(
+            ['createdAt'],
+            count=True,
+        )
+        ```
+        """
+        if order is None:
+            if take is not None:
+                raise TypeError('Missing argument: \'order\' which is required when \'take\' is present')
+
+            if skip is not None:
+                raise TypeError('Missing argument: \'order\' which is required when \'skip\' is present')
+
+        root_selection: List[str] = [*by]
+        if avg is not None:
+            root_selection.append(_select_fields('_avg', avg))
+
+        if min is not None:
+            root_selection.append(_select_fields('_min', min))
+
+        if sum is not None:
+            root_selection.append(_select_fields('_sum', sum))
+
+        if max is not None:
+            root_selection.append(_select_fields('_max', max))
+
+        if count is not None:
+            if count is True:
+                root_selection.append('_count { _all }')
+            elif isinstance(count, dict):
+                root_selection.append(_select_fields('_count', count))
+
+        resp = await self._client._execute(
+            method='group_by',
+            model=self._model,
+            arguments={
+                'by': by,
+                'take': take,
+                'skip': skip,
+                'where': where,
+                'having': having,
+                'orderBy': order,
+            },
+            root_selection=root_selection,
+        )
+        return resp['data']['result']  # type: ignore[no-any-return]
+
+
+class AudienceProfileActions(Generic[_PrismaModelT]):
+    __slots__ = (
+        '_client',
+        '_model',
+    )
+
+    def __init__(self, client: 'Client', model: Type[_PrismaModelT]) -> None:
+        self._client = client
+        self._model = model
+
+    async def query_raw(
+        self,
+        query: LiteralString,
+        *args: Any,
+    ) -> List[_PrismaModelT]:
+        """Execute a raw SQL query
+
+        Parameters
+        ----------
+        query
+            The raw SQL query string to be executed
+        *args
+            Parameters to be passed to the SQL query, these MUST be used over
+            string formatting to avoid an SQL injection vulnerability
+
+        Returns
+        -------
+        List[prisma.models.AudienceProfile]
+            The records returned by the SQL query
+
+        Raises
+        ------
+        prisma_errors.RawQueryError
+            This could be due to invalid syntax, mismatched number of parameters or any other error
+        prisma.errors.PrismaError
+            Catch all for every exception raised by Prisma Client Python
+
+        Example
+        -------
+        ```py
+        users = await AudienceProfile.prisma().query_raw(
+            'SELECT * FROM AudienceProfile WHERE id = $1',
+            'cbachdgfce',
+        )
+        ```
+        """
+        return await self._client.query_raw(query, *args, model=self._model)
+
+    async def query_first(
+        self,
+        query: LiteralString,
+        *args: Any,
+    ) -> Optional[_PrismaModelT]:
+        """Execute a raw SQL query, returning the first result
+
+        Parameters
+        ----------
+        query
+            The raw SQL query string to be executed
+        *args
+            Parameters to be passed to the SQL query, these MUST be used over
+            string formatting to avoid an SQL injection vulnerability
+
+        Returns
+        -------
+        prisma.models.AudienceProfile
+            The first record returned by the SQL query
+        None
+            The raw SQL query did not return any records
+
+        Raises
+        ------
+        prisma_errors.RawQueryError
+            This could be due to invalid syntax, mismatched number of parameters or any other error
+        prisma.errors.PrismaError
+            Catch all for every exception raised by Prisma Client Python
+
+        Example
+        -------
+        ```py
+        user = await AudienceProfile.prisma().query_first(
+            'SELECT * FROM AudienceProfile WHERE audienceRoomId = $1',
+            'chbfcacbd',
+        )
+        ```
+        """
+        return await self._client.query_first(query, *args, model=self._model)
+
+    async def create(
+        self,
+        data: types.AudienceProfileCreateInput,
+        include: Optional[types.AudienceProfileInclude] = None
+    ) -> _PrismaModelT:
+        """Create a new AudienceProfile record.
+
+        Parameters
+        ----------
+        data
+            AudienceProfile record data
+        include
+            Specifies which relations should be loaded on the returned AudienceProfile model
+
+        Returns
+        -------
+        prisma.models.AudienceProfile
+            The created AudienceProfile record
+
+        Raises
+        ------
+        prisma.errors.MissingRequiredValueError
+            Value is required but was not found
+        prisma.errors.PrismaError
+            Catch all for every exception raised by Prisma Client Python
+
+        Example
+        -------
+        ```py
+        # create a AudienceProfile record from just the required fields
+        audienceprofile = await AudienceProfile.prisma().create(
+            data={
+                # data to create a AudienceProfile record
+                'audienceRoomId': 'efggddide',
+                'profileName': 'caficfigfb',
+                'linkedinUrl': 'bfidgijfjc',
+            },
+        )
+        ```
+        """
+        resp = await self._client._execute(
+            method='create',
+            model=self._model,
+            arguments={
+                'data': data,
+                'include': include,
+            },
+        )
+        return model_parse(self._model, resp['data']['result'])
+
+    async def create_many(
+        self,
+        data: List[types.AudienceProfileCreateWithoutRelationsInput],
+        *,
+        skip_duplicates: Optional[bool] = None,
+    ) -> int:
+        """Create multiple AudienceProfile records at once.
+
+        This function is *not* available when using SQLite.
+
+        Parameters
+        ----------
+        data
+            List of AudienceProfile record data
+        skip_duplicates
+            Boolean flag for ignoring unique constraint errors
+
+        Returns
+        -------
+        int
+            The total number of records created
+
+        Raises
+        ------
+        prisma.errors.UnsupportedDatabaseError
+            Attempting to query when using SQLite
+        prisma.errors.UniqueViolationError
+            A unique constraint check has failed, these can be ignored with the `skip_duplicates` argument
+        prisma.errors.MissingRequiredValueError
+            Value is required but was not found
+        prisma.errors.PrismaError
+            Catch all for every exception raised by Prisma Client Python
+
+        Example
+        -------
+        ```py
+        total = await AudienceProfile.prisma().create_many(
+            data=[
+                {
+                    # data to create a AudienceProfile record
+                    'audienceRoomId': 'ihieecagf',
+                    'profileName': 'bghfciaafe',
+                    'linkedinUrl': 'bgchfhgceh',
+                },
+                {
+                    # data to create a AudienceProfile record
+                    'audienceRoomId': 'cafeiaccbc',
+                    'profileName': 'gaddfhfh',
+                    'linkedinUrl': 'gieegcbeg',
+                },
+            ],
+            skip_duplicates=True,
+        )
+        ```
+        """
+        if self._client._active_provider == 'sqlite':
+            raise errors.UnsupportedDatabaseError('sqlite', 'create_many()')
+
+        resp = await self._client._execute(
+            method='create_many',
+            model=self._model,
+            arguments={
+                'data': data,
+                'skipDuplicates': skip_duplicates,
+            },
+            root_selection=['count'],
+        )
+        return int(resp['data']['result']['count'])
+
+    async def delete(
+        self,
+        where: types.AudienceProfileWhereUniqueInput,
+        include: Optional[types.AudienceProfileInclude] = None
+    ) -> Optional[_PrismaModelT]:
+        """Delete a single AudienceProfile record.
+
+        Parameters
+        ----------
+        where
+            AudienceProfile filter to select the record to be deleted, must be unique
+        include
+            Specifies which relations should be loaded on the returned AudienceProfile model
+
+        Returns
+        -------
+        prisma.models.AudienceProfile
+            The deleted AudienceProfile record
+        None
+            Could not find a record to delete
+
+        Raises
+        ------
+        prisma.errors.PrismaError
+            Catch all for every exception raised by Prisma Client Python
+        prisma.errors.MissingRequiredValueError
+            Value is required but was not found
+
+        Example
+        -------
+        ```py
+        audienceprofile = await AudienceProfile.prisma().delete(
+            where={
+                'id': 'bgcffadich',
+            },
+        )
+        ```
+        """
+        try:
+            resp = await self._client._execute(
+                method='delete',
+                model=self._model,
+                arguments={
+                    'where': where,
+                    'include': include,
+                },
+            )
+        except errors.RecordNotFoundError:
+            return None
+
+        return model_parse(self._model, resp['data']['result'])
+
+    async def find_unique(
+        self,
+        where: types.AudienceProfileWhereUniqueInput,
+        include: Optional[types.AudienceProfileInclude] = None
+    ) -> Optional[_PrismaModelT]:
+        """Find a unique AudienceProfile record.
+
+        Parameters
+        ----------
+        where
+            AudienceProfile filter to find the record, must be unique
+        include
+            Specifies which relations should be loaded on the returned AudienceProfile model
+
+        Returns
+        -------
+        prisma.models.AudienceProfile
+            The found AudienceProfile record
+        None
+            No record matching the given input could be found
+
+        Raises
+        ------
+        prisma.errors.PrismaError
+            Catch all for every exception raised by Prisma Client Python
+        prisma.errors.MissingRequiredValueError
+            Value is required but was not found
+
+        Example
+        -------
+        ```py
+        audienceprofile = await AudienceProfile.prisma().find_unique(
+            where={
+                'id': 'fcbichhci',
+            },
+        )
+        ```
+        """
+        resp = await self._client._execute(
+            method='find_unique',
+            model=self._model,
+            arguments={
+                'where': where,
+                'include': include,
+            },
+        )
+        result = resp['data']['result']
+        if result is None:
+            return None
+        return model_parse(self._model, result)
+
+    async def find_unique_or_raise(
+        self,
+        where: types.AudienceProfileWhereUniqueInput,
+        include: Optional[types.AudienceProfileInclude] = None
+    ) -> _PrismaModelT:
+        """Find a unique AudienceProfile record. Raises `RecordNotFoundError` if no record is found.
+
+        Parameters
+        ----------
+        where
+            AudienceProfile filter to find the record, must be unique
+        include
+            Specifies which relations should be loaded on the returned AudienceProfile model
+
+        Returns
+        -------
+        prisma.models.AudienceProfile
+            The found AudienceProfile record
+
+        Raises
+        ------
+        prisma.errors.RecordNotFoundError
+            No record was found
+        prisma.errors.PrismaError
+            Catch all for every exception raised by Prisma Client Python
+        prisma.errors.MissingRequiredValueError
+            Value is required but was not found
+
+        Example
+        -------
+        ```py
+        audienceprofile = await AudienceProfile.prisma().find_unique_or_raise(
+            where={
+                'id': 'bcggadccgf',
+            },
+        )
+        ```
+        """
+        resp = await self._client._execute(
+            method='find_unique_or_raise',
+            model=self._model,
+            arguments={
+                'where': where,
+                'include': include,
+            },
+        )
+        return model_parse(self._model, resp['data']['result'])
+
+    async def find_many(
+        self,
+        take: Optional[int] = None,
+        skip: Optional[int] = None,
+        where: Optional[types.AudienceProfileWhereInput] = None,
+        cursor: Optional[types.AudienceProfileWhereUniqueInput] = None,
+        include: Optional[types.AudienceProfileInclude] = None,
+        order: Optional[Union[types.AudienceProfileOrderByInput, List[types.AudienceProfileOrderByInput]]] = None,
+        distinct: Optional[List[types.AudienceProfileScalarFieldKeys]] = None,
+    ) -> List[_PrismaModelT]:
+        """Find multiple AudienceProfile records.
+
+        An empty list is returned if no records could be found.
+
+        Parameters
+        ----------
+        take
+            Limit the maximum number of AudienceProfile records returned
+        skip
+            Ignore the first N results
+        where
+            AudienceProfile filter to select records
+        cursor
+            Specifies the position in the list to start returning results from, (typically an ID field)
+        include
+            Specifies which relations should be loaded on the returned AudienceProfile model
+        order
+            Order the returned AudienceProfile records by any field
+        distinct
+            Filter AudienceProfile records by either a single distinct field or distinct combinations of fields
+
+        Returns
+        -------
+        List[prisma.models.AudienceProfile]
+            The list of all AudienceProfile records that could be found
+
+        Raises
+        ------
+        prisma.errors.PrismaError
+            Catch all for every exception raised by Prisma Client Python
+
+        Example
+        -------
+        ```py
+        # find the first 10 AudienceProfile records
+        audienceprofiles = await AudienceProfile.prisma().find_many(take=10)
+
+        # find the first 5 AudienceProfile records ordered by the profileName field
+        audienceprofiles = await AudienceProfile.prisma().find_many(
+            take=5,
+            order={
+                'profileName': 'desc',
+            },
+        )
+        ```
+        """
+        resp = await self._client._execute(
+            method='find_many',
+            model=self._model,
+            arguments={
+                'take': take,
+                'skip': skip,
+                'where': where,
+                'order_by': order,
+                'cursor': cursor,
+                'include': include,
+                'distinct': distinct,
+            },
+        )
+        return [model_parse(self._model, r) for r in resp['data']['result']]
+
+    async def find_first(
+        self,
+        skip: Optional[int] = None,
+        where: Optional[types.AudienceProfileWhereInput] = None,
+        cursor: Optional[types.AudienceProfileWhereUniqueInput] = None,
+        include: Optional[types.AudienceProfileInclude] = None,
+        order: Optional[Union[types.AudienceProfileOrderByInput, List[types.AudienceProfileOrderByInput]]] = None,
+        distinct: Optional[List[types.AudienceProfileScalarFieldKeys]] = None,
+    ) -> Optional[_PrismaModelT]:
+        """Find a single AudienceProfile record.
+
+        Parameters
+        ----------
+        skip
+            Ignore the first N records
+        where
+            AudienceProfile filter to select the record
+        cursor
+            Specifies the position in the list to start returning results from, (typically an ID field)
+        include
+            Specifies which relations should be loaded on the returned AudienceProfile model
+        order
+            Order the returned AudienceProfile records by any field
+        distinct
+            Filter AudienceProfile records by either a single distinct field or distinct combinations of fields
+
+        Returns
+        -------
+        prisma.models.AudienceProfile
+            The first AudienceProfile record found, matching the given arguments
+        None
+            No record could be found
+
+        Raises
+        ------
+        prisma.errors.PrismaError
+            Catch all for every exception raised by Prisma Client Python
+
+        Example
+        -------
+        ```py
+        # find the second AudienceProfile record ordered by the linkedinUrl field
+        audienceprofile = await AudienceProfile.prisma().find_first(
+            skip=1,
+            order={
+                'linkedinUrl': 'desc',
+            },
+        )
+        ```
+        """
+        resp = await self._client._execute(
+            method='find_first',
+            model=self._model,
+            arguments={
+                'skip': skip,
+                'where': where,
+                'order_by': order,
+                'cursor': cursor,
+                'include': include,
+                'distinct': distinct,
+            },
+        )
+        result = resp['data']['result']
+        if result is None:
+            return None
+
+        return model_parse(self._model, result)
+
+    async def find_first_or_raise(
+        self,
+        skip: Optional[int] = None,
+        where: Optional[types.AudienceProfileWhereInput] = None,
+        cursor: Optional[types.AudienceProfileWhereUniqueInput] = None,
+        include: Optional[types.AudienceProfileInclude] = None,
+        order: Optional[Union[types.AudienceProfileOrderByInput, List[types.AudienceProfileOrderByInput]]] = None,
+        distinct: Optional[List[types.AudienceProfileScalarFieldKeys]] = None,
+    ) -> _PrismaModelT:
+        """Find a single AudienceProfile record. Raises `RecordNotFoundError` if no record was found.
+
+        Parameters
+        ----------
+        skip
+            Ignore the first N records
+        where
+            AudienceProfile filter to select the record
+        cursor
+            Specifies the position in the list to start returning results from, (typically an ID field)
+        include
+            Specifies which relations should be loaded on the returned AudienceProfile model
+        order
+            Order the returned AudienceProfile records by any field
+        distinct
+            Filter AudienceProfile records by either a single distinct field or distinct combinations of fields
+
+        Returns
+        -------
+        prisma.models.AudienceProfile
+            The first AudienceProfile record found, matching the given arguments
+
+        Raises
+        ------
+        prisma.errors.RecordNotFoundError
+            No record was found
+        prisma.errors.PrismaError
+            Catch all for every exception raised by Prisma Client Python
+
+        Example
+        -------
+        ```py
+        # find the second AudienceProfile record ordered by the profileDescriptionS3Url field
+        audienceprofile = await AudienceProfile.prisma().find_first_or_raise(
+            skip=1,
+            order={
+                'profileDescriptionS3Url': 'desc',
+            },
+        )
+        ```
+        """
+        resp = await self._client._execute(
+            method='find_first_or_raise',
+            model=self._model,
+            arguments={
+                'skip': skip,
+                'where': where,
+                'order_by': order,
+                'cursor': cursor,
+                'include': include,
+                'distinct': distinct,
+            },
+        )
+        return model_parse(self._model, resp['data']['result'])
+
+    async def update(
+        self,
+        data: types.AudienceProfileUpdateInput,
+        where: types.AudienceProfileWhereUniqueInput,
+        include: Optional[types.AudienceProfileInclude] = None
+    ) -> Optional[_PrismaModelT]:
+        """Update a single AudienceProfile record.
+
+        Parameters
+        ----------
+        data
+            AudienceProfile record data specifying what to update
+        where
+            AudienceProfile filter to select the unique record to create / update
+        include
+            Specifies which relations should be loaded on the returned AudienceProfile model
+
+        Returns
+        -------
+        prisma.models.AudienceProfile
+            The updated AudienceProfile record
+        None
+            No record could be found
+
+        Raises
+        ------
+        prisma.errors.PrismaError
+            Catch all for every exception raised by Prisma Client Python
+
+        Example
+        -------
+        ```py
+        audienceprofile = await AudienceProfile.prisma().update(
+            where={
+                'id': 'jdcfdcgc',
+            },
+            data={
+                # data to update the AudienceProfile record to
+            },
+        )
+        ```
+        """
+        try:
+            resp = await self._client._execute(
+                method='update',
+                model=self._model,
+                arguments={
+                    'data': data,
+                    'where': where,
+                    'include': include,
+                },
+            )
+        except errors.RecordNotFoundError:
+            return None
+
+        return model_parse(self._model, resp['data']['result'])
+
+    async def upsert(
+        self,
+        where: types.AudienceProfileWhereUniqueInput,
+        data: types.AudienceProfileUpsertInput,
+        include: Optional[types.AudienceProfileInclude] = None,
+    ) -> _PrismaModelT:
+        """Updates an existing record or create a new one
+
+        Parameters
+        ----------
+        where
+            AudienceProfile filter to select the unique record to create / update
+        data
+            Data specifying what fields to set on create and update
+        include
+            Specifies which relations should be loaded on the returned AudienceProfile model
+
+        Returns
+        -------
+        prisma.models.AudienceProfile
+            The created or updated AudienceProfile record
+
+        Raises
+        ------
+        prisma.errors.PrismaError
+            Catch all for every exception raised by Prisma Client Python
+        prisma.errors.MissingRequiredValueError
+            Value is required but was not found
+
+        Example
+        -------
+        ```py
+        audienceprofile = await AudienceProfile.prisma().upsert(
+            where={
+                'id': 'cafdaehjid',
+            },
+            data={
+                'create': {
+                    'id': 'cafdaehjid',
+                    'audienceRoomId': 'cafeiaccbc',
+                    'profileName': 'gaddfhfh',
+                    'linkedinUrl': 'gieegcbeg',
+                },
+                'update': {
+                    'audienceRoomId': 'cafeiaccbc',
+                    'profileName': 'gaddfhfh',
+                    'linkedinUrl': 'gieegcbeg',
+                },
+            },
+        )
+        ```
+        """
+        resp = await self._client._execute(
+            method='upsert',
+            model=self._model,
+            arguments={
+                'where': where,
+                'include': include,
+                'create': data.get('create'),
+                'update': data.get('update'),
+            },
+        )
+        return model_parse(self._model, resp['data']['result'])
+
+    async def update_many(
+        self,
+        data: types.AudienceProfileUpdateManyMutationInput,
+        where: types.AudienceProfileWhereInput,
+    ) -> int:
+        """Update multiple AudienceProfile records
+
+        Parameters
+        ----------
+        data
+            AudienceProfile data to update the selected AudienceProfile records to
+        where
+            Filter to select the AudienceProfile records to update
+
+        Returns
+        -------
+        int
+            The total number of AudienceProfile records that were updated
+
+        Raises
+        ------
+        prisma.errors.PrismaError
+            Catch all for every exception raised by Prisma Client Python
+
+        Example
+        -------
+        ```py
+        # update all AudienceProfile records
+        total = await AudienceProfile.prisma().update_many(
+            data={
+                'postsS3Url': 'gifdddbia'
+            },
+            where={}
+        )
+        ```
+        """
+        resp = await self._client._execute(
+            method='update_many',
+            model=self._model,
+            arguments={'data': data, 'where': where,},
+            root_selection=['count'],
+        )
+        return int(resp['data']['result']['count'])
+
+    @overload
+    async def count(
+        self,
+        select: None = None,
+        take: Optional[int] = None,
+        skip: Optional[int] = None,
+        where: Optional[types.AudienceProfileWhereInput] = None,
+        cursor: Optional[types.AudienceProfileWhereUniqueInput] = None,
+    ) -> int:
+        """Count the number of AudienceProfile records present in the database
+
+        Parameters
+        ----------
+        select
+            Select the AudienceProfile fields to be counted
+        take
+            Limit the maximum result
+        skip
+            Ignore the first N records
+        where
+            AudienceProfile filter to find records
+        cursor
+            Specifies the position in the list to start counting results from, (typically an ID field)
+        order
+            This parameter is deprecated and will be removed in a future release
+
+        Returns
+        -------
+        int
+            The total number of records found, returned if `select` is not given
+
+        prisma.types.AudienceProfileCountAggregateOutput
+            Data returned when `select` is used, the fields present in this dictionary will
+            match the fields passed in the `select` argument
+
+        Raises
+        ------
+        prisma.errors.PrismaError
+            Catch all for every exception raised by Prisma Client Python
+
+        Example
+        -------
+        ```py
+        # total: int
+        total = await AudienceProfile.prisma().count()
+
+        # results: prisma.types.AudienceProfileCountAggregateOutput
+        results = await AudienceProfile.prisma().count(
+            select={
+                '_all': True,
+                'createdAt': True,
+            },
+        )
+        ```
+        """
+
+
+    @overload
+    async def count(
+        self,
+        select: types.AudienceProfileCountAggregateInput,
+        take: Optional[int] = None,
+        skip: Optional[int] = None,
+        where: Optional[types.AudienceProfileWhereInput] = None,
+        cursor: Optional[types.AudienceProfileWhereUniqueInput] = None,
+    ) -> types.AudienceProfileCountAggregateOutput:
+        ...
+
+    async def count(
+        self,
+        select: Optional[types.AudienceProfileCountAggregateInput] = None,
+        take: Optional[int] = None,
+        skip: Optional[int] = None,
+        where: Optional[types.AudienceProfileWhereInput] = None,
+        cursor: Optional[types.AudienceProfileWhereUniqueInput] = None,
+    ) -> Union[int, types.AudienceProfileCountAggregateOutput]:
+        """Count the number of AudienceProfile records present in the database
+
+        Parameters
+        ----------
+        select
+            Select the AudienceProfile fields to be counted
+        take
+            Limit the maximum result
+        skip
+            Ignore the first N records
+        where
+            AudienceProfile filter to find records
+        cursor
+            Specifies the position in the list to start counting results from, (typically an ID field)
+        order
+            This parameter is deprecated and will be removed in a future release
+
+        Returns
+        -------
+        int
+            The total number of records found, returned if `select` is not given
+
+        prisma.types.AudienceProfileCountAggregateOutput
+            Data returned when `select` is used, the fields present in this dictionary will
+            match the fields passed in the `select` argument
+
+        Raises
+        ------
+        prisma.errors.PrismaError
+            Catch all for every exception raised by Prisma Client Python
+
+        Example
+        -------
+        ```py
+        # total: int
+        total = await AudienceProfile.prisma().count()
+
+        # results: prisma.types.AudienceProfileCountAggregateOutput
+        results = await AudienceProfile.prisma().count(
+            select={
+                '_all': True,
+                'updatedAt': True,
+            },
+        )
+        ```
+        """
+
+        # TODO: this selection building should be moved to the QueryBuilder
+        #
+        # note the distinction between checking for `not select` here and `select is None`
+        # later is to handle the case that the given select dictionary is empty, this
+        # is a limitation of our types.
+        if not select:
+            root_selection = ['_count { _all }']
+        else:
+
+            root_selection = [
+                '_count {{ {0} }}'.format(' '.join(k for k, v in select.items() if v is True))
+            ]
+
+        resp = await self._client._execute(
+            method='count',
+            model=self._model,
+            arguments={
+                'take': take,
+                'skip': skip,
+                'where': where,
+                'cursor': cursor,
+            },
+            root_selection=root_selection,
+        )
+
+        if select is None:
+            return cast(int, resp['data']['result']['_count']['_all'])
+        else:
+            return cast(types.AudienceProfileCountAggregateOutput, resp['data']['result']['_count'])
+
+    async def delete_many(
+        self,
+        where: Optional[types.AudienceProfileWhereInput] = None
+    ) -> int:
+        """Delete multiple AudienceProfile records.
+
+        Parameters
+        ----------
+        where
+            Optional AudienceProfile filter to find the records to be deleted
+
+        Returns
+        -------
+        int
+            The total number of AudienceProfile records that were deleted
+
+        Raises
+        ------
+        prisma.errors.PrismaError
+            Catch all for every exception raised by Prisma Client Python
+
+        Example
+        -------
+        ```py
+        # delete all AudienceProfile records
+        total = await AudienceProfile.prisma().delete_many()
+        ```
+        """
+        resp = await self._client._execute(
+            method='delete_many',
+            model=self._model,
+            arguments={'where': where},
+            root_selection=['count'],
+        )
+        return int(resp['data']['result']['count'])
+
+    # TODO: make this easier to work with safely, currently output fields are typed as
+    #       not required, we should refactor the return type
+    # TODO: consider returning a Dict where the keys are a Tuple of the `by` selection
+    # TODO: statically type that the order argument is required when take or skip are present
+    async def group_by(
+        self,
+        by: List['types.AudienceProfileScalarFieldKeys'],
+        *,
+        where: Optional['types.AudienceProfileWhereInput'] = None,
+        take: Optional[int] = None,
+        skip: Optional[int] = None,
+        avg: Optional['types.AudienceProfileAvgAggregateInput'] = None,
+        sum: Optional['types.AudienceProfileSumAggregateInput'] = None,
+        min: Optional['types.AudienceProfileMinAggregateInput'] = None,
+        max: Optional['types.AudienceProfileMaxAggregateInput'] = None,
+        having: Optional['types.AudienceProfileScalarWhereWithAggregatesInput'] = None,
+        count: Optional[Union[bool, 'types.AudienceProfileCountAggregateInput']] = None,
+        order: Optional[Union[Mapping['types.AudienceProfileScalarFieldKeys', 'types.SortOrder'], List[Mapping['types.AudienceProfileScalarFieldKeys', 'types.SortOrder']]]] = None,
+    ) -> List['types.AudienceProfileGroupByOutput']:
+        """Group AudienceProfile records by one or more field values and perform aggregations
+        each group such as finding the average.
+
+        Parameters
+        ----------
+        by
+            List of scalar AudienceProfile fields to group records by
+        where
+            AudienceProfile filter to select records
+        take
+            Limit the maximum number of AudienceProfile records returned
+        skip
+            Ignore the first N records
+        avg
+            Adds the average of all values of the specified fields to the `_avg` field
+            in the returned data.
+        sum
+            Adds the sum of all values of the specified fields to the `_sum` field
+            in the returned data.
+        min
+            Adds the smallest available value for the specified fields to the `_min` field
+            in the returned data.
+        max
+            Adds the largest available value for the specified fields to the `_max` field
+            in the returned data.
+        count
+            Adds a count of non-fields to the `_count` field in the returned data.
+        having
+            Allows you to filter groups by an aggregate value - for example only return
+            groups having an average age less than 50.
+        order
+            Lets you order the returned list by any property that is also present in `by`.
+            Only **one** field is allowed at a time.
+
+        Returns
+        -------
+        List[prisma.types.AudienceProfileGroupByOutput]
+            A list of dictionaries representing the AudienceProfile record,
+            this will also have additional fields present if aggregation arguments
+            are used (see the above parameters)
+
+        Raises
+        ------
+        prisma.errors.PrismaError
+            Catch all for every exception raised by Prisma Client Python
+
+        Example
+        -------
+        ```py
+        # group AudienceProfile records by id values
+        # and count how many records are in each group
+        results = await AudienceProfile.prisma().group_by(
+            ['id'],
+            count=True,
+        )
+        ```
+        """
+        if order is None:
+            if take is not None:
+                raise TypeError('Missing argument: \'order\' which is required when \'take\' is present')
+
+            if skip is not None:
+                raise TypeError('Missing argument: \'order\' which is required when \'skip\' is present')
+
+        root_selection: List[str] = [*by]
+        if avg is not None:
+            root_selection.append(_select_fields('_avg', avg))
+
+        if min is not None:
+            root_selection.append(_select_fields('_min', min))
+
+        if sum is not None:
+            root_selection.append(_select_fields('_sum', sum))
+
+        if max is not None:
+            root_selection.append(_select_fields('_max', max))
+
+        if count is not None:
+            if count is True:
+                root_selection.append('_count { _all }')
+            elif isinstance(count, dict):
+                root_selection.append(_select_fields('_count', count))
+
+        resp = await self._client._execute(
+            method='group_by',
+            model=self._model,
+            arguments={
+                'by': by,
+                'take': take,
+                'skip': skip,
+                'where': where,
+                'having': having,
+                'orderBy': order,
+            },
+            root_selection=root_selection,
+        )
+        return resp['data']['result']  # type: ignore[no-any-return]
+
+
 
 def _select_fields(root: str, select: Mapping[str, Any]) -> str:
     """Helper to build a GraphQL selection string

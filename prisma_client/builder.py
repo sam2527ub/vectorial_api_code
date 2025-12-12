@@ -72,12 +72,20 @@ ITERABLES: Tuple[Type[Any], ...] = (list, tuple, set)
 PRISMA_MODELS: Set[str] = {
     'ScrapeJob',
     'SearchQuery',
+    'AudienceRoom',
+    'AudienceProfile',
 }
 
 RELATIONAL_FIELD_MAPPINGS: Dict[str, Dict[str, str]] = {
     'ScrapeJob': {
     },
     'SearchQuery': {
+    },
+    'AudienceRoom': {
+        'profiles': 'AudienceProfile',
+    },
+    'AudienceProfile': {
+        'audienceRoom': 'AudienceRoom',
     },
 }
 

@@ -25,3 +25,4 @@ python -c "from prisma import Prisma; print('✅ Prisma client import successful
 echo "========================================="
 echo "✅ Build Complete!"
 echo "========================================="
+

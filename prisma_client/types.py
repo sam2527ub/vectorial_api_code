@@ -1586,6 +1586,216 @@ class FindManySearchQueryArgsFromScrapeJobRecursive4(TypedDict, total=False):
     cursor: 'SearchQueryWhereUniqueInput'
     distinct: List['SearchQueryScalarFieldKeys']
     
+    
+
+class AudienceRoomIncludeFromScrapeJob(TypedDict, total=False):
+    """Relational arguments for ScrapeJob"""
+    profiles: Union[bool, 'FindManyAudienceProfileArgsFromScrapeJobRecursive1']
+
+
+class AudienceRoomIncludeFromScrapeJobRecursive1(TypedDict, total=False):
+    """Relational arguments for ScrapeJob"""
+    profiles: Union[bool, 'FindManyAudienceProfileArgsFromScrapeJobRecursive2']
+
+
+class AudienceRoomIncludeFromScrapeJobRecursive2(TypedDict, total=False):
+    """Relational arguments for ScrapeJob"""
+    profiles: Union[bool, 'FindManyAudienceProfileArgsFromScrapeJobRecursive3']
+
+
+class AudienceRoomIncludeFromScrapeJobRecursive3(TypedDict, total=False):
+    """Relational arguments for ScrapeJob"""
+    profiles: Union[bool, 'FindManyAudienceProfileArgsFromScrapeJobRecursive4']
+
+
+class AudienceRoomIncludeFromScrapeJobRecursive4(TypedDict, total=False):
+    """Relational arguments for ScrapeJob"""
+
+    
+
+class AudienceRoomArgsFromScrapeJob(TypedDict, total=False):
+    """Arguments for ScrapeJob"""
+    include: 'AudienceRoomIncludeFromAudienceRoomRecursive1'
+
+
+class AudienceRoomArgsFromScrapeJobRecursive1(TypedDict, total=False):
+    """Arguments for ScrapeJob"""
+    include: 'AudienceRoomIncludeFromAudienceRoomRecursive2'
+
+
+class AudienceRoomArgsFromScrapeJobRecursive2(TypedDict, total=False):
+    """Arguments for ScrapeJob"""
+    include: 'AudienceRoomIncludeFromAudienceRoomRecursive3'
+
+
+class AudienceRoomArgsFromScrapeJobRecursive3(TypedDict, total=False):
+    """Arguments for ScrapeJob"""
+    include: 'AudienceRoomIncludeFromAudienceRoomRecursive4'
+
+
+class AudienceRoomArgsFromScrapeJobRecursive4(TypedDict, total=False):
+    """Arguments for ScrapeJob"""
+    
+    
+
+class FindManyAudienceRoomArgsFromScrapeJob(TypedDict, total=False):
+    """Arguments for ScrapeJob"""
+    take: int
+    skip: int
+    order_by: Union['AudienceRoomOrderByInput', List['AudienceRoomOrderByInput']]
+    where: 'AudienceRoomWhereInput'
+    cursor: 'AudienceRoomWhereUniqueInput'
+    distinct: List['AudienceRoomScalarFieldKeys']
+    include: 'AudienceRoomIncludeFromAudienceRoomRecursive1'
+
+
+class FindManyAudienceRoomArgsFromScrapeJobRecursive1(TypedDict, total=False):
+    """Arguments for ScrapeJob"""
+    take: int
+    skip: int
+    order_by: Union['AudienceRoomOrderByInput', List['AudienceRoomOrderByInput']]
+    where: 'AudienceRoomWhereInput'
+    cursor: 'AudienceRoomWhereUniqueInput'
+    distinct: List['AudienceRoomScalarFieldKeys']
+    include: 'AudienceRoomIncludeFromAudienceRoomRecursive2'
+
+
+class FindManyAudienceRoomArgsFromScrapeJobRecursive2(TypedDict, total=False):
+    """Arguments for ScrapeJob"""
+    take: int
+    skip: int
+    order_by: Union['AudienceRoomOrderByInput', List['AudienceRoomOrderByInput']]
+    where: 'AudienceRoomWhereInput'
+    cursor: 'AudienceRoomWhereUniqueInput'
+    distinct: List['AudienceRoomScalarFieldKeys']
+    include: 'AudienceRoomIncludeFromAudienceRoomRecursive3'
+
+
+class FindManyAudienceRoomArgsFromScrapeJobRecursive3(TypedDict, total=False):
+    """Arguments for ScrapeJob"""
+    take: int
+    skip: int
+    order_by: Union['AudienceRoomOrderByInput', List['AudienceRoomOrderByInput']]
+    where: 'AudienceRoomWhereInput'
+    cursor: 'AudienceRoomWhereUniqueInput'
+    distinct: List['AudienceRoomScalarFieldKeys']
+    include: 'AudienceRoomIncludeFromAudienceRoomRecursive4'
+
+
+class FindManyAudienceRoomArgsFromScrapeJobRecursive4(TypedDict, total=False):
+    """Arguments for ScrapeJob"""
+    take: int
+    skip: int
+    order_by: Union['AudienceRoomOrderByInput', List['AudienceRoomOrderByInput']]
+    where: 'AudienceRoomWhereInput'
+    cursor: 'AudienceRoomWhereUniqueInput'
+    distinct: List['AudienceRoomScalarFieldKeys']
+    
+    
+
+class AudienceProfileIncludeFromScrapeJob(TypedDict, total=False):
+    """Relational arguments for ScrapeJob"""
+    audienceRoom: Union[bool, 'AudienceRoomArgsFromScrapeJobRecursive1']
+
+
+class AudienceProfileIncludeFromScrapeJobRecursive1(TypedDict, total=False):
+    """Relational arguments for ScrapeJob"""
+    audienceRoom: Union[bool, 'AudienceRoomArgsFromScrapeJobRecursive2']
+
+
+class AudienceProfileIncludeFromScrapeJobRecursive2(TypedDict, total=False):
+    """Relational arguments for ScrapeJob"""
+    audienceRoom: Union[bool, 'AudienceRoomArgsFromScrapeJobRecursive3']
+
+
+class AudienceProfileIncludeFromScrapeJobRecursive3(TypedDict, total=False):
+    """Relational arguments for ScrapeJob"""
+    audienceRoom: Union[bool, 'AudienceRoomArgsFromScrapeJobRecursive4']
+
+
+class AudienceProfileIncludeFromScrapeJobRecursive4(TypedDict, total=False):
+    """Relational arguments for ScrapeJob"""
+
+    
+
+class AudienceProfileArgsFromScrapeJob(TypedDict, total=False):
+    """Arguments for ScrapeJob"""
+    include: 'AudienceProfileIncludeFromAudienceProfileRecursive1'
+
+
+class AudienceProfileArgsFromScrapeJobRecursive1(TypedDict, total=False):
+    """Arguments for ScrapeJob"""
+    include: 'AudienceProfileIncludeFromAudienceProfileRecursive2'
+
+
+class AudienceProfileArgsFromScrapeJobRecursive2(TypedDict, total=False):
+    """Arguments for ScrapeJob"""
+    include: 'AudienceProfileIncludeFromAudienceProfileRecursive3'
+
+
+class AudienceProfileArgsFromScrapeJobRecursive3(TypedDict, total=False):
+    """Arguments for ScrapeJob"""
+    include: 'AudienceProfileIncludeFromAudienceProfileRecursive4'
+
+
+class AudienceProfileArgsFromScrapeJobRecursive4(TypedDict, total=False):
+    """Arguments for ScrapeJob"""
+    
+    
+
+class FindManyAudienceProfileArgsFromScrapeJob(TypedDict, total=False):
+    """Arguments for ScrapeJob"""
+    take: int
+    skip: int
+    order_by: Union['AudienceProfileOrderByInput', List['AudienceProfileOrderByInput']]
+    where: 'AudienceProfileWhereInput'
+    cursor: 'AudienceProfileWhereUniqueInput'
+    distinct: List['AudienceProfileScalarFieldKeys']
+    include: 'AudienceProfileIncludeFromAudienceProfileRecursive1'
+
+
+class FindManyAudienceProfileArgsFromScrapeJobRecursive1(TypedDict, total=False):
+    """Arguments for ScrapeJob"""
+    take: int
+    skip: int
+    order_by: Union['AudienceProfileOrderByInput', List['AudienceProfileOrderByInput']]
+    where: 'AudienceProfileWhereInput'
+    cursor: 'AudienceProfileWhereUniqueInput'
+    distinct: List['AudienceProfileScalarFieldKeys']
+    include: 'AudienceProfileIncludeFromAudienceProfileRecursive2'
+
+
+class FindManyAudienceProfileArgsFromScrapeJobRecursive2(TypedDict, total=False):
+    """Arguments for ScrapeJob"""
+    take: int
+    skip: int
+    order_by: Union['AudienceProfileOrderByInput', List['AudienceProfileOrderByInput']]
+    where: 'AudienceProfileWhereInput'
+    cursor: 'AudienceProfileWhereUniqueInput'
+    distinct: List['AudienceProfileScalarFieldKeys']
+    include: 'AudienceProfileIncludeFromAudienceProfileRecursive3'
+
+
+class FindManyAudienceProfileArgsFromScrapeJobRecursive3(TypedDict, total=False):
+    """Arguments for ScrapeJob"""
+    take: int
+    skip: int
+    order_by: Union['AudienceProfileOrderByInput', List['AudienceProfileOrderByInput']]
+    where: 'AudienceProfileWhereInput'
+    cursor: 'AudienceProfileWhereUniqueInput'
+    distinct: List['AudienceProfileScalarFieldKeys']
+    include: 'AudienceProfileIncludeFromAudienceProfileRecursive4'
+
+
+class FindManyAudienceProfileArgsFromScrapeJobRecursive4(TypedDict, total=False):
+    """Arguments for ScrapeJob"""
+    take: int
+    skip: int
+    order_by: Union['AudienceProfileOrderByInput', List['AudienceProfileOrderByInput']]
+    where: 'AudienceProfileWhereInput'
+    cursor: 'AudienceProfileWhereUniqueInput'
+    distinct: List['AudienceProfileScalarFieldKeys']
+    
 
 
 FindManyScrapeJobArgs = FindManyScrapeJobArgsFromScrapeJob
@@ -2293,6 +2503,216 @@ class FindManySearchQueryArgsFromSearchQueryRecursive4(TypedDict, total=False):
     cursor: 'SearchQueryWhereUniqueInput'
     distinct: List['SearchQueryScalarFieldKeys']
     
+    
+
+class AudienceRoomIncludeFromSearchQuery(TypedDict, total=False):
+    """Relational arguments for SearchQuery"""
+    profiles: Union[bool, 'FindManyAudienceProfileArgsFromSearchQueryRecursive1']
+
+
+class AudienceRoomIncludeFromSearchQueryRecursive1(TypedDict, total=False):
+    """Relational arguments for SearchQuery"""
+    profiles: Union[bool, 'FindManyAudienceProfileArgsFromSearchQueryRecursive2']
+
+
+class AudienceRoomIncludeFromSearchQueryRecursive2(TypedDict, total=False):
+    """Relational arguments for SearchQuery"""
+    profiles: Union[bool, 'FindManyAudienceProfileArgsFromSearchQueryRecursive3']
+
+
+class AudienceRoomIncludeFromSearchQueryRecursive3(TypedDict, total=False):
+    """Relational arguments for SearchQuery"""
+    profiles: Union[bool, 'FindManyAudienceProfileArgsFromSearchQueryRecursive4']
+
+
+class AudienceRoomIncludeFromSearchQueryRecursive4(TypedDict, total=False):
+    """Relational arguments for SearchQuery"""
+
+    
+
+class AudienceRoomArgsFromSearchQuery(TypedDict, total=False):
+    """Arguments for SearchQuery"""
+    include: 'AudienceRoomIncludeFromAudienceRoomRecursive1'
+
+
+class AudienceRoomArgsFromSearchQueryRecursive1(TypedDict, total=False):
+    """Arguments for SearchQuery"""
+    include: 'AudienceRoomIncludeFromAudienceRoomRecursive2'
+
+
+class AudienceRoomArgsFromSearchQueryRecursive2(TypedDict, total=False):
+    """Arguments for SearchQuery"""
+    include: 'AudienceRoomIncludeFromAudienceRoomRecursive3'
+
+
+class AudienceRoomArgsFromSearchQueryRecursive3(TypedDict, total=False):
+    """Arguments for SearchQuery"""
+    include: 'AudienceRoomIncludeFromAudienceRoomRecursive4'
+
+
+class AudienceRoomArgsFromSearchQueryRecursive4(TypedDict, total=False):
+    """Arguments for SearchQuery"""
+    
+    
+
+class FindManyAudienceRoomArgsFromSearchQuery(TypedDict, total=False):
+    """Arguments for SearchQuery"""
+    take: int
+    skip: int
+    order_by: Union['AudienceRoomOrderByInput', List['AudienceRoomOrderByInput']]
+    where: 'AudienceRoomWhereInput'
+    cursor: 'AudienceRoomWhereUniqueInput'
+    distinct: List['AudienceRoomScalarFieldKeys']
+    include: 'AudienceRoomIncludeFromAudienceRoomRecursive1'
+
+
+class FindManyAudienceRoomArgsFromSearchQueryRecursive1(TypedDict, total=False):
+    """Arguments for SearchQuery"""
+    take: int
+    skip: int
+    order_by: Union['AudienceRoomOrderByInput', List['AudienceRoomOrderByInput']]
+    where: 'AudienceRoomWhereInput'
+    cursor: 'AudienceRoomWhereUniqueInput'
+    distinct: List['AudienceRoomScalarFieldKeys']
+    include: 'AudienceRoomIncludeFromAudienceRoomRecursive2'
+
+
+class FindManyAudienceRoomArgsFromSearchQueryRecursive2(TypedDict, total=False):
+    """Arguments for SearchQuery"""
+    take: int
+    skip: int
+    order_by: Union['AudienceRoomOrderByInput', List['AudienceRoomOrderByInput']]
+    where: 'AudienceRoomWhereInput'
+    cursor: 'AudienceRoomWhereUniqueInput'
+    distinct: List['AudienceRoomScalarFieldKeys']
+    include: 'AudienceRoomIncludeFromAudienceRoomRecursive3'
+
+
+class FindManyAudienceRoomArgsFromSearchQueryRecursive3(TypedDict, total=False):
+    """Arguments for SearchQuery"""
+    take: int
+    skip: int
+    order_by: Union['AudienceRoomOrderByInput', List['AudienceRoomOrderByInput']]
+    where: 'AudienceRoomWhereInput'
+    cursor: 'AudienceRoomWhereUniqueInput'
+    distinct: List['AudienceRoomScalarFieldKeys']
+    include: 'AudienceRoomIncludeFromAudienceRoomRecursive4'
+
+
+class FindManyAudienceRoomArgsFromSearchQueryRecursive4(TypedDict, total=False):
+    """Arguments for SearchQuery"""
+    take: int
+    skip: int
+    order_by: Union['AudienceRoomOrderByInput', List['AudienceRoomOrderByInput']]
+    where: 'AudienceRoomWhereInput'
+    cursor: 'AudienceRoomWhereUniqueInput'
+    distinct: List['AudienceRoomScalarFieldKeys']
+    
+    
+
+class AudienceProfileIncludeFromSearchQuery(TypedDict, total=False):
+    """Relational arguments for SearchQuery"""
+    audienceRoom: Union[bool, 'AudienceRoomArgsFromSearchQueryRecursive1']
+
+
+class AudienceProfileIncludeFromSearchQueryRecursive1(TypedDict, total=False):
+    """Relational arguments for SearchQuery"""
+    audienceRoom: Union[bool, 'AudienceRoomArgsFromSearchQueryRecursive2']
+
+
+class AudienceProfileIncludeFromSearchQueryRecursive2(TypedDict, total=False):
+    """Relational arguments for SearchQuery"""
+    audienceRoom: Union[bool, 'AudienceRoomArgsFromSearchQueryRecursive3']
+
+
+class AudienceProfileIncludeFromSearchQueryRecursive3(TypedDict, total=False):
+    """Relational arguments for SearchQuery"""
+    audienceRoom: Union[bool, 'AudienceRoomArgsFromSearchQueryRecursive4']
+
+
+class AudienceProfileIncludeFromSearchQueryRecursive4(TypedDict, total=False):
+    """Relational arguments for SearchQuery"""
+
+    
+
+class AudienceProfileArgsFromSearchQuery(TypedDict, total=False):
+    """Arguments for SearchQuery"""
+    include: 'AudienceProfileIncludeFromAudienceProfileRecursive1'
+
+
+class AudienceProfileArgsFromSearchQueryRecursive1(TypedDict, total=False):
+    """Arguments for SearchQuery"""
+    include: 'AudienceProfileIncludeFromAudienceProfileRecursive2'
+
+
+class AudienceProfileArgsFromSearchQueryRecursive2(TypedDict, total=False):
+    """Arguments for SearchQuery"""
+    include: 'AudienceProfileIncludeFromAudienceProfileRecursive3'
+
+
+class AudienceProfileArgsFromSearchQueryRecursive3(TypedDict, total=False):
+    """Arguments for SearchQuery"""
+    include: 'AudienceProfileIncludeFromAudienceProfileRecursive4'
+
+
+class AudienceProfileArgsFromSearchQueryRecursive4(TypedDict, total=False):
+    """Arguments for SearchQuery"""
+    
+    
+
+class FindManyAudienceProfileArgsFromSearchQuery(TypedDict, total=False):
+    """Arguments for SearchQuery"""
+    take: int
+    skip: int
+    order_by: Union['AudienceProfileOrderByInput', List['AudienceProfileOrderByInput']]
+    where: 'AudienceProfileWhereInput'
+    cursor: 'AudienceProfileWhereUniqueInput'
+    distinct: List['AudienceProfileScalarFieldKeys']
+    include: 'AudienceProfileIncludeFromAudienceProfileRecursive1'
+
+
+class FindManyAudienceProfileArgsFromSearchQueryRecursive1(TypedDict, total=False):
+    """Arguments for SearchQuery"""
+    take: int
+    skip: int
+    order_by: Union['AudienceProfileOrderByInput', List['AudienceProfileOrderByInput']]
+    where: 'AudienceProfileWhereInput'
+    cursor: 'AudienceProfileWhereUniqueInput'
+    distinct: List['AudienceProfileScalarFieldKeys']
+    include: 'AudienceProfileIncludeFromAudienceProfileRecursive2'
+
+
+class FindManyAudienceProfileArgsFromSearchQueryRecursive2(TypedDict, total=False):
+    """Arguments for SearchQuery"""
+    take: int
+    skip: int
+    order_by: Union['AudienceProfileOrderByInput', List['AudienceProfileOrderByInput']]
+    where: 'AudienceProfileWhereInput'
+    cursor: 'AudienceProfileWhereUniqueInput'
+    distinct: List['AudienceProfileScalarFieldKeys']
+    include: 'AudienceProfileIncludeFromAudienceProfileRecursive3'
+
+
+class FindManyAudienceProfileArgsFromSearchQueryRecursive3(TypedDict, total=False):
+    """Arguments for SearchQuery"""
+    take: int
+    skip: int
+    order_by: Union['AudienceProfileOrderByInput', List['AudienceProfileOrderByInput']]
+    where: 'AudienceProfileWhereInput'
+    cursor: 'AudienceProfileWhereUniqueInput'
+    distinct: List['AudienceProfileScalarFieldKeys']
+    include: 'AudienceProfileIncludeFromAudienceProfileRecursive4'
+
+
+class FindManyAudienceProfileArgsFromSearchQueryRecursive4(TypedDict, total=False):
+    """Arguments for SearchQuery"""
+    take: int
+    skip: int
+    order_by: Union['AudienceProfileOrderByInput', List['AudienceProfileOrderByInput']]
+    where: 'AudienceProfileWhereInput'
+    cursor: 'AudienceProfileWhereUniqueInput'
+    distinct: List['AudienceProfileScalarFieldKeys']
+    
 
 
 FindManySearchQueryArgs = FindManySearchQueryArgsFromSearchQuery
@@ -2545,6 +2965,1803 @@ SearchQueryScalarFieldKeys = Literal[
 SearchQueryScalarFieldKeysT = TypeVar('SearchQueryScalarFieldKeysT', bound=SearchQueryScalarFieldKeys)
 
 SearchQueryRelationalFieldKeys = _NoneType
+
+# AudienceRoom types
+
+class AudienceRoomOptionalCreateInput(TypedDict, total=False):
+    """Optional arguments to the AudienceRoom create method"""
+    id: _str
+    descriptionS3Url: Optional[_str]
+    profiles: 'AudienceProfileCreateManyNestedWithoutRelationsInput'
+    createdAt: datetime.datetime
+    updatedAt: datetime.datetime
+
+
+class AudienceRoomCreateInput(AudienceRoomOptionalCreateInput):
+    """Required arguments to the AudienceRoom create method"""
+    name: _str
+
+
+# TODO: remove this in favour of without explicit relations
+# e.g. PostCreateWithoutAuthorInput
+
+class AudienceRoomOptionalCreateWithoutRelationsInput(TypedDict, total=False):
+    """Optional arguments to the AudienceRoom create method, without relations"""
+    id: _str
+    descriptionS3Url: Optional[_str]
+    createdAt: datetime.datetime
+    updatedAt: datetime.datetime
+
+
+class AudienceRoomCreateWithoutRelationsInput(AudienceRoomOptionalCreateWithoutRelationsInput):
+    """Required arguments to the AudienceRoom create method, without relations"""
+    name: _str
+
+
+class AudienceRoomCreateNestedWithoutRelationsInput(TypedDict, total=False):
+    create: 'AudienceRoomCreateWithoutRelationsInput'
+    connect: 'AudienceRoomWhereUniqueInput'
+
+
+class AudienceRoomCreateManyNestedWithoutRelationsInput(TypedDict, total=False):
+    create: Union['AudienceRoomCreateWithoutRelationsInput', List['AudienceRoomCreateWithoutRelationsInput']]
+    connect: Union['AudienceRoomWhereUniqueInput', List['AudienceRoomWhereUniqueInput']]
+
+
+_AudienceRoomWhereUnique_id_Input = TypedDict(
+    '_AudienceRoomWhereUnique_id_Input',
+    {
+        'id': '_str',
+    },
+    total=True
+)
+
+AudienceRoomWhereUniqueInput = _AudienceRoomWhereUnique_id_Input
+
+
+class AudienceRoomUpdateInput(TypedDict, total=False):
+    """Optional arguments for updating a record"""
+    id: _str
+    name: _str
+    descriptionS3Url: Optional[_str]
+    profiles: 'AudienceProfileUpdateManyWithoutRelationsInput'
+    createdAt: datetime.datetime
+    updatedAt: datetime.datetime
+
+
+class AudienceRoomUpdateManyMutationInput(TypedDict, total=False):
+    """Arguments for updating many records"""
+    id: _str
+    name: _str
+    descriptionS3Url: Optional[_str]
+    createdAt: datetime.datetime
+    updatedAt: datetime.datetime
+
+
+class AudienceRoomUpdateManyWithoutRelationsInput(TypedDict, total=False):
+    create: List['AudienceRoomCreateWithoutRelationsInput']
+    connect: List['AudienceRoomWhereUniqueInput']
+    set: List['AudienceRoomWhereUniqueInput']
+    disconnect: List['AudienceRoomWhereUniqueInput']
+    delete: List['AudienceRoomWhereUniqueInput']
+
+    # TODO
+    # update: List['AudienceRoomUpdateWithWhereUniqueWithoutRelationsInput']
+    # updateMany: List['AudienceRoomUpdateManyWithWhereUniqueWithoutRelationsInput']
+    # deleteMany: List['AudienceRoomScalarWhereInput']
+    # upsert: List['AudienceRoomUpserteWithWhereUniqueWithoutRelationsInput']
+    # connectOrCreate: List['AudienceRoomCreateOrConnectWithoutRelationsInput']
+
+
+class AudienceRoomUpdateOneWithoutRelationsInput(TypedDict, total=False):
+    create: 'AudienceRoomCreateWithoutRelationsInput'
+    connect: 'AudienceRoomWhereUniqueInput'
+    disconnect: bool
+    delete: bool
+
+    # TODO
+    # update: 'AudienceRoomUpdateInput'
+    # upsert: 'AudienceRoomUpsertWithoutRelationsInput'
+    # connectOrCreate: 'AudienceRoomCreateOrConnectWithoutRelationsInput'
+
+
+class AudienceRoomUpsertInput(TypedDict):
+    create: 'AudienceRoomCreateInput'
+    update: 'AudienceRoomUpdateInput'  # pyright: ignore[reportIncompatibleMethodOverride]
+
+
+_AudienceRoom_id_OrderByInput = TypedDict(
+    '_AudienceRoom_id_OrderByInput',
+    {
+        'id': 'SortOrder',
+    },
+    total=True
+)
+
+_AudienceRoom_name_OrderByInput = TypedDict(
+    '_AudienceRoom_name_OrderByInput',
+    {
+        'name': 'SortOrder',
+    },
+    total=True
+)
+
+_AudienceRoom_descriptionS3Url_OrderByInput = TypedDict(
+    '_AudienceRoom_descriptionS3Url_OrderByInput',
+    {
+        'descriptionS3Url': 'SortOrder',
+    },
+    total=True
+)
+
+_AudienceRoom_createdAt_OrderByInput = TypedDict(
+    '_AudienceRoom_createdAt_OrderByInput',
+    {
+        'createdAt': 'SortOrder',
+    },
+    total=True
+)
+
+_AudienceRoom_updatedAt_OrderByInput = TypedDict(
+    '_AudienceRoom_updatedAt_OrderByInput',
+    {
+        'updatedAt': 'SortOrder',
+    },
+    total=True
+)
+
+AudienceRoomOrderByInput = Union[
+    '_AudienceRoom_id_OrderByInput',
+    '_AudienceRoom_name_OrderByInput',
+    '_AudienceRoom_descriptionS3Url_OrderByInput',
+    '_AudienceRoom_createdAt_OrderByInput',
+    '_AudienceRoom_updatedAt_OrderByInput',
+]
+
+
+
+# recursive AudienceRoom types
+# TODO: cleanup these types
+
+
+# Dict[str, Any] is a mypy limitation
+# see https://github.com/RobertCraigie/prisma-client-py/issues/45
+# switch to pyright for improved types, see https://prisma-client-py.readthedocs.io/en/stable/reference/limitations/
+
+AudienceRoomRelationFilter = TypedDict(
+    'AudienceRoomRelationFilter',
+    {
+        'is': 'Dict[str, Any]',
+        'is_not': 'Dict[str, Any]',
+    },
+    total=False,
+)
+
+
+class AudienceRoomListRelationFilter(TypedDict, total=False):
+    some: 'Dict[str, Any]'
+    none: 'Dict[str, Any]'
+    every: 'Dict[str, Any]'
+
+
+class AudienceRoomInclude(TypedDict, total=False):
+    """AudienceRoom relational arguments"""
+    profiles: Union[bool, 'FindManyAudienceProfileArgsFromAudienceRoom']
+
+
+    
+
+class ScrapeJobIncludeFromAudienceRoom(TypedDict, total=False):
+    """Relational arguments for AudienceRoom"""
+
+
+class ScrapeJobIncludeFromAudienceRoomRecursive1(TypedDict, total=False):
+    """Relational arguments for AudienceRoom"""
+
+
+class ScrapeJobIncludeFromAudienceRoomRecursive2(TypedDict, total=False):
+    """Relational arguments for AudienceRoom"""
+
+
+class ScrapeJobIncludeFromAudienceRoomRecursive3(TypedDict, total=False):
+    """Relational arguments for AudienceRoom"""
+
+
+class ScrapeJobIncludeFromAudienceRoomRecursive4(TypedDict, total=False):
+    """Relational arguments for AudienceRoom"""
+
+    
+
+class ScrapeJobArgsFromAudienceRoom(TypedDict, total=False):
+    """Arguments for AudienceRoom"""
+    include: 'ScrapeJobIncludeFromScrapeJobRecursive1'
+
+
+class ScrapeJobArgsFromAudienceRoomRecursive1(TypedDict, total=False):
+    """Arguments for AudienceRoom"""
+    include: 'ScrapeJobIncludeFromScrapeJobRecursive2'
+
+
+class ScrapeJobArgsFromAudienceRoomRecursive2(TypedDict, total=False):
+    """Arguments for AudienceRoom"""
+    include: 'ScrapeJobIncludeFromScrapeJobRecursive3'
+
+
+class ScrapeJobArgsFromAudienceRoomRecursive3(TypedDict, total=False):
+    """Arguments for AudienceRoom"""
+    include: 'ScrapeJobIncludeFromScrapeJobRecursive4'
+
+
+class ScrapeJobArgsFromAudienceRoomRecursive4(TypedDict, total=False):
+    """Arguments for AudienceRoom"""
+    
+    
+
+class FindManyScrapeJobArgsFromAudienceRoom(TypedDict, total=False):
+    """Arguments for AudienceRoom"""
+    take: int
+    skip: int
+    order_by: Union['ScrapeJobOrderByInput', List['ScrapeJobOrderByInput']]
+    where: 'ScrapeJobWhereInput'
+    cursor: 'ScrapeJobWhereUniqueInput'
+    distinct: List['ScrapeJobScalarFieldKeys']
+    include: 'ScrapeJobIncludeFromScrapeJobRecursive1'
+
+
+class FindManyScrapeJobArgsFromAudienceRoomRecursive1(TypedDict, total=False):
+    """Arguments for AudienceRoom"""
+    take: int
+    skip: int
+    order_by: Union['ScrapeJobOrderByInput', List['ScrapeJobOrderByInput']]
+    where: 'ScrapeJobWhereInput'
+    cursor: 'ScrapeJobWhereUniqueInput'
+    distinct: List['ScrapeJobScalarFieldKeys']
+    include: 'ScrapeJobIncludeFromScrapeJobRecursive2'
+
+
+class FindManyScrapeJobArgsFromAudienceRoomRecursive2(TypedDict, total=False):
+    """Arguments for AudienceRoom"""
+    take: int
+    skip: int
+    order_by: Union['ScrapeJobOrderByInput', List['ScrapeJobOrderByInput']]
+    where: 'ScrapeJobWhereInput'
+    cursor: 'ScrapeJobWhereUniqueInput'
+    distinct: List['ScrapeJobScalarFieldKeys']
+    include: 'ScrapeJobIncludeFromScrapeJobRecursive3'
+
+
+class FindManyScrapeJobArgsFromAudienceRoomRecursive3(TypedDict, total=False):
+    """Arguments for AudienceRoom"""
+    take: int
+    skip: int
+    order_by: Union['ScrapeJobOrderByInput', List['ScrapeJobOrderByInput']]
+    where: 'ScrapeJobWhereInput'
+    cursor: 'ScrapeJobWhereUniqueInput'
+    distinct: List['ScrapeJobScalarFieldKeys']
+    include: 'ScrapeJobIncludeFromScrapeJobRecursive4'
+
+
+class FindManyScrapeJobArgsFromAudienceRoomRecursive4(TypedDict, total=False):
+    """Arguments for AudienceRoom"""
+    take: int
+    skip: int
+    order_by: Union['ScrapeJobOrderByInput', List['ScrapeJobOrderByInput']]
+    where: 'ScrapeJobWhereInput'
+    cursor: 'ScrapeJobWhereUniqueInput'
+    distinct: List['ScrapeJobScalarFieldKeys']
+    
+    
+
+class SearchQueryIncludeFromAudienceRoom(TypedDict, total=False):
+    """Relational arguments for AudienceRoom"""
+
+
+class SearchQueryIncludeFromAudienceRoomRecursive1(TypedDict, total=False):
+    """Relational arguments for AudienceRoom"""
+
+
+class SearchQueryIncludeFromAudienceRoomRecursive2(TypedDict, total=False):
+    """Relational arguments for AudienceRoom"""
+
+
+class SearchQueryIncludeFromAudienceRoomRecursive3(TypedDict, total=False):
+    """Relational arguments for AudienceRoom"""
+
+
+class SearchQueryIncludeFromAudienceRoomRecursive4(TypedDict, total=False):
+    """Relational arguments for AudienceRoom"""
+
+    
+
+class SearchQueryArgsFromAudienceRoom(TypedDict, total=False):
+    """Arguments for AudienceRoom"""
+    include: 'SearchQueryIncludeFromSearchQueryRecursive1'
+
+
+class SearchQueryArgsFromAudienceRoomRecursive1(TypedDict, total=False):
+    """Arguments for AudienceRoom"""
+    include: 'SearchQueryIncludeFromSearchQueryRecursive2'
+
+
+class SearchQueryArgsFromAudienceRoomRecursive2(TypedDict, total=False):
+    """Arguments for AudienceRoom"""
+    include: 'SearchQueryIncludeFromSearchQueryRecursive3'
+
+
+class SearchQueryArgsFromAudienceRoomRecursive3(TypedDict, total=False):
+    """Arguments for AudienceRoom"""
+    include: 'SearchQueryIncludeFromSearchQueryRecursive4'
+
+
+class SearchQueryArgsFromAudienceRoomRecursive4(TypedDict, total=False):
+    """Arguments for AudienceRoom"""
+    
+    
+
+class FindManySearchQueryArgsFromAudienceRoom(TypedDict, total=False):
+    """Arguments for AudienceRoom"""
+    take: int
+    skip: int
+    order_by: Union['SearchQueryOrderByInput', List['SearchQueryOrderByInput']]
+    where: 'SearchQueryWhereInput'
+    cursor: 'SearchQueryWhereUniqueInput'
+    distinct: List['SearchQueryScalarFieldKeys']
+    include: 'SearchQueryIncludeFromSearchQueryRecursive1'
+
+
+class FindManySearchQueryArgsFromAudienceRoomRecursive1(TypedDict, total=False):
+    """Arguments for AudienceRoom"""
+    take: int
+    skip: int
+    order_by: Union['SearchQueryOrderByInput', List['SearchQueryOrderByInput']]
+    where: 'SearchQueryWhereInput'
+    cursor: 'SearchQueryWhereUniqueInput'
+    distinct: List['SearchQueryScalarFieldKeys']
+    include: 'SearchQueryIncludeFromSearchQueryRecursive2'
+
+
+class FindManySearchQueryArgsFromAudienceRoomRecursive2(TypedDict, total=False):
+    """Arguments for AudienceRoom"""
+    take: int
+    skip: int
+    order_by: Union['SearchQueryOrderByInput', List['SearchQueryOrderByInput']]
+    where: 'SearchQueryWhereInput'
+    cursor: 'SearchQueryWhereUniqueInput'
+    distinct: List['SearchQueryScalarFieldKeys']
+    include: 'SearchQueryIncludeFromSearchQueryRecursive3'
+
+
+class FindManySearchQueryArgsFromAudienceRoomRecursive3(TypedDict, total=False):
+    """Arguments for AudienceRoom"""
+    take: int
+    skip: int
+    order_by: Union['SearchQueryOrderByInput', List['SearchQueryOrderByInput']]
+    where: 'SearchQueryWhereInput'
+    cursor: 'SearchQueryWhereUniqueInput'
+    distinct: List['SearchQueryScalarFieldKeys']
+    include: 'SearchQueryIncludeFromSearchQueryRecursive4'
+
+
+class FindManySearchQueryArgsFromAudienceRoomRecursive4(TypedDict, total=False):
+    """Arguments for AudienceRoom"""
+    take: int
+    skip: int
+    order_by: Union['SearchQueryOrderByInput', List['SearchQueryOrderByInput']]
+    where: 'SearchQueryWhereInput'
+    cursor: 'SearchQueryWhereUniqueInput'
+    distinct: List['SearchQueryScalarFieldKeys']
+    
+    
+
+class AudienceRoomIncludeFromAudienceRoom(TypedDict, total=False):
+    """Relational arguments for AudienceRoom"""
+    profiles: Union[bool, 'FindManyAudienceProfileArgsFromAudienceRoomRecursive1']
+
+
+class AudienceRoomIncludeFromAudienceRoomRecursive1(TypedDict, total=False):
+    """Relational arguments for AudienceRoom"""
+    profiles: Union[bool, 'FindManyAudienceProfileArgsFromAudienceRoomRecursive2']
+
+
+class AudienceRoomIncludeFromAudienceRoomRecursive2(TypedDict, total=False):
+    """Relational arguments for AudienceRoom"""
+    profiles: Union[bool, 'FindManyAudienceProfileArgsFromAudienceRoomRecursive3']
+
+
+class AudienceRoomIncludeFromAudienceRoomRecursive3(TypedDict, total=False):
+    """Relational arguments for AudienceRoom"""
+    profiles: Union[bool, 'FindManyAudienceProfileArgsFromAudienceRoomRecursive4']
+
+
+class AudienceRoomIncludeFromAudienceRoomRecursive4(TypedDict, total=False):
+    """Relational arguments for AudienceRoom"""
+
+    
+
+class AudienceRoomArgsFromAudienceRoom(TypedDict, total=False):
+    """Arguments for AudienceRoom"""
+    include: 'AudienceRoomIncludeFromAudienceRoomRecursive1'
+
+
+class AudienceRoomArgsFromAudienceRoomRecursive1(TypedDict, total=False):
+    """Arguments for AudienceRoom"""
+    include: 'AudienceRoomIncludeFromAudienceRoomRecursive2'
+
+
+class AudienceRoomArgsFromAudienceRoomRecursive2(TypedDict, total=False):
+    """Arguments for AudienceRoom"""
+    include: 'AudienceRoomIncludeFromAudienceRoomRecursive3'
+
+
+class AudienceRoomArgsFromAudienceRoomRecursive3(TypedDict, total=False):
+    """Arguments for AudienceRoom"""
+    include: 'AudienceRoomIncludeFromAudienceRoomRecursive4'
+
+
+class AudienceRoomArgsFromAudienceRoomRecursive4(TypedDict, total=False):
+    """Arguments for AudienceRoom"""
+    
+    
+
+class FindManyAudienceRoomArgsFromAudienceRoom(TypedDict, total=False):
+    """Arguments for AudienceRoom"""
+    take: int
+    skip: int
+    order_by: Union['AudienceRoomOrderByInput', List['AudienceRoomOrderByInput']]
+    where: 'AudienceRoomWhereInput'
+    cursor: 'AudienceRoomWhereUniqueInput'
+    distinct: List['AudienceRoomScalarFieldKeys']
+    include: 'AudienceRoomIncludeFromAudienceRoomRecursive1'
+
+
+class FindManyAudienceRoomArgsFromAudienceRoomRecursive1(TypedDict, total=False):
+    """Arguments for AudienceRoom"""
+    take: int
+    skip: int
+    order_by: Union['AudienceRoomOrderByInput', List['AudienceRoomOrderByInput']]
+    where: 'AudienceRoomWhereInput'
+    cursor: 'AudienceRoomWhereUniqueInput'
+    distinct: List['AudienceRoomScalarFieldKeys']
+    include: 'AudienceRoomIncludeFromAudienceRoomRecursive2'
+
+
+class FindManyAudienceRoomArgsFromAudienceRoomRecursive2(TypedDict, total=False):
+    """Arguments for AudienceRoom"""
+    take: int
+    skip: int
+    order_by: Union['AudienceRoomOrderByInput', List['AudienceRoomOrderByInput']]
+    where: 'AudienceRoomWhereInput'
+    cursor: 'AudienceRoomWhereUniqueInput'
+    distinct: List['AudienceRoomScalarFieldKeys']
+    include: 'AudienceRoomIncludeFromAudienceRoomRecursive3'
+
+
+class FindManyAudienceRoomArgsFromAudienceRoomRecursive3(TypedDict, total=False):
+    """Arguments for AudienceRoom"""
+    take: int
+    skip: int
+    order_by: Union['AudienceRoomOrderByInput', List['AudienceRoomOrderByInput']]
+    where: 'AudienceRoomWhereInput'
+    cursor: 'AudienceRoomWhereUniqueInput'
+    distinct: List['AudienceRoomScalarFieldKeys']
+    include: 'AudienceRoomIncludeFromAudienceRoomRecursive4'
+
+
+class FindManyAudienceRoomArgsFromAudienceRoomRecursive4(TypedDict, total=False):
+    """Arguments for AudienceRoom"""
+    take: int
+    skip: int
+    order_by: Union['AudienceRoomOrderByInput', List['AudienceRoomOrderByInput']]
+    where: 'AudienceRoomWhereInput'
+    cursor: 'AudienceRoomWhereUniqueInput'
+    distinct: List['AudienceRoomScalarFieldKeys']
+    
+    
+
+class AudienceProfileIncludeFromAudienceRoom(TypedDict, total=False):
+    """Relational arguments for AudienceRoom"""
+    audienceRoom: Union[bool, 'AudienceRoomArgsFromAudienceRoomRecursive1']
+
+
+class AudienceProfileIncludeFromAudienceRoomRecursive1(TypedDict, total=False):
+    """Relational arguments for AudienceRoom"""
+    audienceRoom: Union[bool, 'AudienceRoomArgsFromAudienceRoomRecursive2']
+
+
+class AudienceProfileIncludeFromAudienceRoomRecursive2(TypedDict, total=False):
+    """Relational arguments for AudienceRoom"""
+    audienceRoom: Union[bool, 'AudienceRoomArgsFromAudienceRoomRecursive3']
+
+
+class AudienceProfileIncludeFromAudienceRoomRecursive3(TypedDict, total=False):
+    """Relational arguments for AudienceRoom"""
+    audienceRoom: Union[bool, 'AudienceRoomArgsFromAudienceRoomRecursive4']
+
+
+class AudienceProfileIncludeFromAudienceRoomRecursive4(TypedDict, total=False):
+    """Relational arguments for AudienceRoom"""
+
+    
+
+class AudienceProfileArgsFromAudienceRoom(TypedDict, total=False):
+    """Arguments for AudienceRoom"""
+    include: 'AudienceProfileIncludeFromAudienceProfileRecursive1'
+
+
+class AudienceProfileArgsFromAudienceRoomRecursive1(TypedDict, total=False):
+    """Arguments for AudienceRoom"""
+    include: 'AudienceProfileIncludeFromAudienceProfileRecursive2'
+
+
+class AudienceProfileArgsFromAudienceRoomRecursive2(TypedDict, total=False):
+    """Arguments for AudienceRoom"""
+    include: 'AudienceProfileIncludeFromAudienceProfileRecursive3'
+
+
+class AudienceProfileArgsFromAudienceRoomRecursive3(TypedDict, total=False):
+    """Arguments for AudienceRoom"""
+    include: 'AudienceProfileIncludeFromAudienceProfileRecursive4'
+
+
+class AudienceProfileArgsFromAudienceRoomRecursive4(TypedDict, total=False):
+    """Arguments for AudienceRoom"""
+    
+    
+
+class FindManyAudienceProfileArgsFromAudienceRoom(TypedDict, total=False):
+    """Arguments for AudienceRoom"""
+    take: int
+    skip: int
+    order_by: Union['AudienceProfileOrderByInput', List['AudienceProfileOrderByInput']]
+    where: 'AudienceProfileWhereInput'
+    cursor: 'AudienceProfileWhereUniqueInput'
+    distinct: List['AudienceProfileScalarFieldKeys']
+    include: 'AudienceProfileIncludeFromAudienceProfileRecursive1'
+
+
+class FindManyAudienceProfileArgsFromAudienceRoomRecursive1(TypedDict, total=False):
+    """Arguments for AudienceRoom"""
+    take: int
+    skip: int
+    order_by: Union['AudienceProfileOrderByInput', List['AudienceProfileOrderByInput']]
+    where: 'AudienceProfileWhereInput'
+    cursor: 'AudienceProfileWhereUniqueInput'
+    distinct: List['AudienceProfileScalarFieldKeys']
+    include: 'AudienceProfileIncludeFromAudienceProfileRecursive2'
+
+
+class FindManyAudienceProfileArgsFromAudienceRoomRecursive2(TypedDict, total=False):
+    """Arguments for AudienceRoom"""
+    take: int
+    skip: int
+    order_by: Union['AudienceProfileOrderByInput', List['AudienceProfileOrderByInput']]
+    where: 'AudienceProfileWhereInput'
+    cursor: 'AudienceProfileWhereUniqueInput'
+    distinct: List['AudienceProfileScalarFieldKeys']
+    include: 'AudienceProfileIncludeFromAudienceProfileRecursive3'
+
+
+class FindManyAudienceProfileArgsFromAudienceRoomRecursive3(TypedDict, total=False):
+    """Arguments for AudienceRoom"""
+    take: int
+    skip: int
+    order_by: Union['AudienceProfileOrderByInput', List['AudienceProfileOrderByInput']]
+    where: 'AudienceProfileWhereInput'
+    cursor: 'AudienceProfileWhereUniqueInput'
+    distinct: List['AudienceProfileScalarFieldKeys']
+    include: 'AudienceProfileIncludeFromAudienceProfileRecursive4'
+
+
+class FindManyAudienceProfileArgsFromAudienceRoomRecursive4(TypedDict, total=False):
+    """Arguments for AudienceRoom"""
+    take: int
+    skip: int
+    order_by: Union['AudienceProfileOrderByInput', List['AudienceProfileOrderByInput']]
+    where: 'AudienceProfileWhereInput'
+    cursor: 'AudienceProfileWhereUniqueInput'
+    distinct: List['AudienceProfileScalarFieldKeys']
+    
+
+
+FindManyAudienceRoomArgs = FindManyAudienceRoomArgsFromAudienceRoom
+FindFirstAudienceRoomArgs = FindManyAudienceRoomArgsFromAudienceRoom
+
+
+    
+
+class AudienceRoomWhereInput(TypedDict, total=False):
+    """AudienceRoom arguments for searching"""
+    id: Union[_str, 'types.StringFilter']
+    name: Union[_str, 'types.StringFilter']
+    descriptionS3Url: Union[None, _str, 'types.StringFilter']
+    profiles: 'AudienceProfileListRelationFilter'
+    createdAt: Union[datetime.datetime, 'types.DateTimeFilter']
+    updatedAt: Union[datetime.datetime, 'types.DateTimeFilter']
+
+    # should be noted that AND and NOT should be Union['AudienceRoomWhereInputRecursive1', List['AudienceRoomWhereInputRecursive1']]
+    # but this causes mypy to hang :/
+    AND: List['AudienceRoomWhereInputRecursive1']
+    OR: List['AudienceRoomWhereInputRecursive1']
+    NOT: List['AudienceRoomWhereInputRecursive1']
+
+
+class AudienceRoomWhereInputRecursive1(TypedDict, total=False):
+    """AudienceRoom arguments for searching"""
+    id: Union[_str, 'types.StringFilter']
+    name: Union[_str, 'types.StringFilter']
+    descriptionS3Url: Union[None, _str, 'types.StringFilter']
+    profiles: 'AudienceProfileListRelationFilter'
+    createdAt: Union[datetime.datetime, 'types.DateTimeFilter']
+    updatedAt: Union[datetime.datetime, 'types.DateTimeFilter']
+
+    # should be noted that AND and NOT should be Union['AudienceRoomWhereInputRecursive2', List['AudienceRoomWhereInputRecursive2']]
+    # but this causes mypy to hang :/
+    AND: List['AudienceRoomWhereInputRecursive2']
+    OR: List['AudienceRoomWhereInputRecursive2']
+    NOT: List['AudienceRoomWhereInputRecursive2']
+
+
+class AudienceRoomWhereInputRecursive2(TypedDict, total=False):
+    """AudienceRoom arguments for searching"""
+    id: Union[_str, 'types.StringFilter']
+    name: Union[_str, 'types.StringFilter']
+    descriptionS3Url: Union[None, _str, 'types.StringFilter']
+    profiles: 'AudienceProfileListRelationFilter'
+    createdAt: Union[datetime.datetime, 'types.DateTimeFilter']
+    updatedAt: Union[datetime.datetime, 'types.DateTimeFilter']
+
+    # should be noted that AND and NOT should be Union['AudienceRoomWhereInputRecursive3', List['AudienceRoomWhereInputRecursive3']]
+    # but this causes mypy to hang :/
+    AND: List['AudienceRoomWhereInputRecursive3']
+    OR: List['AudienceRoomWhereInputRecursive3']
+    NOT: List['AudienceRoomWhereInputRecursive3']
+
+
+class AudienceRoomWhereInputRecursive3(TypedDict, total=False):
+    """AudienceRoom arguments for searching"""
+    id: Union[_str, 'types.StringFilter']
+    name: Union[_str, 'types.StringFilter']
+    descriptionS3Url: Union[None, _str, 'types.StringFilter']
+    profiles: 'AudienceProfileListRelationFilter'
+    createdAt: Union[datetime.datetime, 'types.DateTimeFilter']
+    updatedAt: Union[datetime.datetime, 'types.DateTimeFilter']
+
+    # should be noted that AND and NOT should be Union['AudienceRoomWhereInputRecursive4', List['AudienceRoomWhereInputRecursive4']]
+    # but this causes mypy to hang :/
+    AND: List['AudienceRoomWhereInputRecursive4']
+    OR: List['AudienceRoomWhereInputRecursive4']
+    NOT: List['AudienceRoomWhereInputRecursive4']
+
+
+class AudienceRoomWhereInputRecursive4(TypedDict, total=False):
+    """AudienceRoom arguments for searching"""
+    id: Union[_str, 'types.StringFilter']
+    name: Union[_str, 'types.StringFilter']
+    descriptionS3Url: Union[None, _str, 'types.StringFilter']
+    profiles: 'AudienceProfileListRelationFilter'
+    createdAt: Union[datetime.datetime, 'types.DateTimeFilter']
+    updatedAt: Union[datetime.datetime, 'types.DateTimeFilter']
+
+
+
+# aggregate AudienceRoom types
+
+
+    
+
+class AudienceRoomScalarWhereWithAggregatesInput(TypedDict, total=False):
+    """AudienceRoom arguments for searching"""
+    id: Union[_str, 'types.StringWithAggregatesFilter']
+    name: Union[_str, 'types.StringWithAggregatesFilter']
+    descriptionS3Url: Union[_str, 'types.StringWithAggregatesFilter']
+    createdAt: Union[datetime.datetime, 'types.DateTimeWithAggregatesFilter']
+    updatedAt: Union[datetime.datetime, 'types.DateTimeWithAggregatesFilter']
+
+    AND: List['AudienceRoomScalarWhereWithAggregatesInputRecursive1']
+    OR: List['AudienceRoomScalarWhereWithAggregatesInputRecursive1']
+    NOT: List['AudienceRoomScalarWhereWithAggregatesInputRecursive1']
+
+
+class AudienceRoomScalarWhereWithAggregatesInputRecursive1(TypedDict, total=False):
+    """AudienceRoom arguments for searching"""
+    id: Union[_str, 'types.StringWithAggregatesFilter']
+    name: Union[_str, 'types.StringWithAggregatesFilter']
+    descriptionS3Url: Union[_str, 'types.StringWithAggregatesFilter']
+    createdAt: Union[datetime.datetime, 'types.DateTimeWithAggregatesFilter']
+    updatedAt: Union[datetime.datetime, 'types.DateTimeWithAggregatesFilter']
+
+    AND: List['AudienceRoomScalarWhereWithAggregatesInputRecursive2']
+    OR: List['AudienceRoomScalarWhereWithAggregatesInputRecursive2']
+    NOT: List['AudienceRoomScalarWhereWithAggregatesInputRecursive2']
+
+
+class AudienceRoomScalarWhereWithAggregatesInputRecursive2(TypedDict, total=False):
+    """AudienceRoom arguments for searching"""
+    id: Union[_str, 'types.StringWithAggregatesFilter']
+    name: Union[_str, 'types.StringWithAggregatesFilter']
+    descriptionS3Url: Union[_str, 'types.StringWithAggregatesFilter']
+    createdAt: Union[datetime.datetime, 'types.DateTimeWithAggregatesFilter']
+    updatedAt: Union[datetime.datetime, 'types.DateTimeWithAggregatesFilter']
+
+    AND: List['AudienceRoomScalarWhereWithAggregatesInputRecursive3']
+    OR: List['AudienceRoomScalarWhereWithAggregatesInputRecursive3']
+    NOT: List['AudienceRoomScalarWhereWithAggregatesInputRecursive3']
+
+
+class AudienceRoomScalarWhereWithAggregatesInputRecursive3(TypedDict, total=False):
+    """AudienceRoom arguments for searching"""
+    id: Union[_str, 'types.StringWithAggregatesFilter']
+    name: Union[_str, 'types.StringWithAggregatesFilter']
+    descriptionS3Url: Union[_str, 'types.StringWithAggregatesFilter']
+    createdAt: Union[datetime.datetime, 'types.DateTimeWithAggregatesFilter']
+    updatedAt: Union[datetime.datetime, 'types.DateTimeWithAggregatesFilter']
+
+    AND: List['AudienceRoomScalarWhereWithAggregatesInputRecursive4']
+    OR: List['AudienceRoomScalarWhereWithAggregatesInputRecursive4']
+    NOT: List['AudienceRoomScalarWhereWithAggregatesInputRecursive4']
+
+
+class AudienceRoomScalarWhereWithAggregatesInputRecursive4(TypedDict, total=False):
+    """AudienceRoom arguments for searching"""
+    id: Union[_str, 'types.StringWithAggregatesFilter']
+    name: Union[_str, 'types.StringWithAggregatesFilter']
+    descriptionS3Url: Union[_str, 'types.StringWithAggregatesFilter']
+    createdAt: Union[datetime.datetime, 'types.DateTimeWithAggregatesFilter']
+    updatedAt: Union[datetime.datetime, 'types.DateTimeWithAggregatesFilter']
+
+
+
+class AudienceRoomGroupByOutput(TypedDict, total=False):
+    id: _str
+    name: _str
+    descriptionS3Url: _str
+    createdAt: datetime.datetime
+    updatedAt: datetime.datetime
+    _sum: 'AudienceRoomSumAggregateOutput'
+    _avg: 'AudienceRoomAvgAggregateOutput'
+    _min: 'AudienceRoomMinAggregateOutput'
+    _max: 'AudienceRoomMaxAggregateOutput'
+    _count: 'AudienceRoomCountAggregateOutput'
+
+
+class AudienceRoomAvgAggregateOutput(TypedDict, total=False):
+    """AudienceRoom output for aggregating averages"""
+
+
+class AudienceRoomSumAggregateOutput(TypedDict, total=False):
+    """AudienceRoom output for aggregating sums"""
+
+
+class AudienceRoomScalarAggregateOutput(TypedDict, total=False):
+    """AudienceRoom output including scalar fields"""
+    id: _str
+    name: _str
+    descriptionS3Url: _str
+    createdAt: datetime.datetime
+    updatedAt: datetime.datetime
+
+
+AudienceRoomMinAggregateOutput = AudienceRoomScalarAggregateOutput
+AudienceRoomMaxAggregateOutput = AudienceRoomScalarAggregateOutput
+
+
+class AudienceRoomMaxAggregateInput(TypedDict, total=False):
+    """AudienceRoom input for aggregating by max"""
+    id: bool
+    name: bool
+    descriptionS3Url: bool
+    createdAt: bool
+    updatedAt: bool
+
+
+class AudienceRoomMinAggregateInput(TypedDict, total=False):
+    """AudienceRoom input for aggregating by min"""
+    id: bool
+    name: bool
+    descriptionS3Url: bool
+    createdAt: bool
+    updatedAt: bool
+
+
+class AudienceRoomNumberAggregateInput(TypedDict, total=False):
+    """AudienceRoom input for aggregating numbers"""
+
+
+AudienceRoomAvgAggregateInput = AudienceRoomNumberAggregateInput
+AudienceRoomSumAggregateInput = AudienceRoomNumberAggregateInput
+
+
+AudienceRoomCountAggregateInput = TypedDict(
+    'AudienceRoomCountAggregateInput',
+    {
+        'id': bool,
+        'name': bool,
+        'descriptionS3Url': bool,
+        'createdAt': bool,
+        'updatedAt': bool,
+        '_all': bool,
+    },
+    total=False,
+)
+
+AudienceRoomCountAggregateOutput = TypedDict(
+    'AudienceRoomCountAggregateOutput',
+    {
+        'id': int,
+        'name': int,
+        'descriptionS3Url': int,
+        'createdAt': int,
+        'updatedAt': int,
+        '_all': int,
+    },
+    total=False,
+)
+
+
+AudienceRoomKeys = Literal[
+    'id',
+    'name',
+    'descriptionS3Url',
+    'profiles',
+    'createdAt',
+    'updatedAt',
+]
+AudienceRoomScalarFieldKeys = Literal[
+    'id',
+    'name',
+    'descriptionS3Url',
+    'createdAt',
+    'updatedAt',
+]
+AudienceRoomScalarFieldKeysT = TypeVar('AudienceRoomScalarFieldKeysT', bound=AudienceRoomScalarFieldKeys)
+
+AudienceRoomRelationalFieldKeys = Literal[
+        'profiles',
+    ]
+
+# AudienceProfile types
+
+class AudienceProfileOptionalCreateInput(TypedDict, total=False):
+    """Optional arguments to the AudienceProfile create method"""
+    id: _str
+    audienceRoomId: _str
+    audienceRoom: 'AudienceRoomCreateNestedWithoutRelationsInput'
+    profileDescriptionS3Url: Optional[_str]
+    postsS3Url: Optional[_str]
+    createdAt: datetime.datetime
+    updatedAt: datetime.datetime
+
+
+class AudienceProfileCreateInput(AudienceProfileOptionalCreateInput):
+    """Required arguments to the AudienceProfile create method"""
+    profileName: _str
+    linkedinUrl: _str
+
+
+# TODO: remove this in favour of without explicit relations
+# e.g. PostCreateWithoutAuthorInput
+
+class AudienceProfileOptionalCreateWithoutRelationsInput(TypedDict, total=False):
+    """Optional arguments to the AudienceProfile create method, without relations"""
+    id: _str
+    audienceRoomId: _str
+    profileDescriptionS3Url: Optional[_str]
+    postsS3Url: Optional[_str]
+    createdAt: datetime.datetime
+    updatedAt: datetime.datetime
+
+
+class AudienceProfileCreateWithoutRelationsInput(AudienceProfileOptionalCreateWithoutRelationsInput):
+    """Required arguments to the AudienceProfile create method, without relations"""
+    profileName: _str
+    linkedinUrl: _str
+
+
+class AudienceProfileCreateNestedWithoutRelationsInput(TypedDict, total=False):
+    create: 'AudienceProfileCreateWithoutRelationsInput'
+    connect: 'AudienceProfileWhereUniqueInput'
+
+
+class AudienceProfileCreateManyNestedWithoutRelationsInput(TypedDict, total=False):
+    create: Union['AudienceProfileCreateWithoutRelationsInput', List['AudienceProfileCreateWithoutRelationsInput']]
+    connect: Union['AudienceProfileWhereUniqueInput', List['AudienceProfileWhereUniqueInput']]
+
+
+_AudienceProfileWhereUnique_id_Input = TypedDict(
+    '_AudienceProfileWhereUnique_id_Input',
+    {
+        'id': '_str',
+    },
+    total=True
+)
+
+AudienceProfileWhereUniqueInput = _AudienceProfileWhereUnique_id_Input
+
+
+class AudienceProfileUpdateInput(TypedDict, total=False):
+    """Optional arguments for updating a record"""
+    id: _str
+    audienceRoom: 'AudienceRoomUpdateOneWithoutRelationsInput'
+    profileName: _str
+    linkedinUrl: _str
+    profileDescriptionS3Url: Optional[_str]
+    postsS3Url: Optional[_str]
+    createdAt: datetime.datetime
+    updatedAt: datetime.datetime
+
+
+class AudienceProfileUpdateManyMutationInput(TypedDict, total=False):
+    """Arguments for updating many records"""
+    id: _str
+    profileName: _str
+    linkedinUrl: _str
+    profileDescriptionS3Url: Optional[_str]
+    postsS3Url: Optional[_str]
+    createdAt: datetime.datetime
+    updatedAt: datetime.datetime
+
+
+class AudienceProfileUpdateManyWithoutRelationsInput(TypedDict, total=False):
+    create: List['AudienceProfileCreateWithoutRelationsInput']
+    connect: List['AudienceProfileWhereUniqueInput']
+    set: List['AudienceProfileWhereUniqueInput']
+    disconnect: List['AudienceProfileWhereUniqueInput']
+    delete: List['AudienceProfileWhereUniqueInput']
+
+    # TODO
+    # update: List['AudienceProfileUpdateWithWhereUniqueWithoutRelationsInput']
+    # updateMany: List['AudienceProfileUpdateManyWithWhereUniqueWithoutRelationsInput']
+    # deleteMany: List['AudienceProfileScalarWhereInput']
+    # upsert: List['AudienceProfileUpserteWithWhereUniqueWithoutRelationsInput']
+    # connectOrCreate: List['AudienceProfileCreateOrConnectWithoutRelationsInput']
+
+
+class AudienceProfileUpdateOneWithoutRelationsInput(TypedDict, total=False):
+    create: 'AudienceProfileCreateWithoutRelationsInput'
+    connect: 'AudienceProfileWhereUniqueInput'
+    disconnect: bool
+    delete: bool
+
+    # TODO
+    # update: 'AudienceProfileUpdateInput'
+    # upsert: 'AudienceProfileUpsertWithoutRelationsInput'
+    # connectOrCreate: 'AudienceProfileCreateOrConnectWithoutRelationsInput'
+
+
+class AudienceProfileUpsertInput(TypedDict):
+    create: 'AudienceProfileCreateInput'
+    update: 'AudienceProfileUpdateInput'  # pyright: ignore[reportIncompatibleMethodOverride]
+
+
+_AudienceProfile_id_OrderByInput = TypedDict(
+    '_AudienceProfile_id_OrderByInput',
+    {
+        'id': 'SortOrder',
+    },
+    total=True
+)
+
+_AudienceProfile_audienceRoomId_OrderByInput = TypedDict(
+    '_AudienceProfile_audienceRoomId_OrderByInput',
+    {
+        'audienceRoomId': 'SortOrder',
+    },
+    total=True
+)
+
+_AudienceProfile_profileName_OrderByInput = TypedDict(
+    '_AudienceProfile_profileName_OrderByInput',
+    {
+        'profileName': 'SortOrder',
+    },
+    total=True
+)
+
+_AudienceProfile_linkedinUrl_OrderByInput = TypedDict(
+    '_AudienceProfile_linkedinUrl_OrderByInput',
+    {
+        'linkedinUrl': 'SortOrder',
+    },
+    total=True
+)
+
+_AudienceProfile_profileDescriptionS3Url_OrderByInput = TypedDict(
+    '_AudienceProfile_profileDescriptionS3Url_OrderByInput',
+    {
+        'profileDescriptionS3Url': 'SortOrder',
+    },
+    total=True
+)
+
+_AudienceProfile_postsS3Url_OrderByInput = TypedDict(
+    '_AudienceProfile_postsS3Url_OrderByInput',
+    {
+        'postsS3Url': 'SortOrder',
+    },
+    total=True
+)
+
+_AudienceProfile_createdAt_OrderByInput = TypedDict(
+    '_AudienceProfile_createdAt_OrderByInput',
+    {
+        'createdAt': 'SortOrder',
+    },
+    total=True
+)
+
+_AudienceProfile_updatedAt_OrderByInput = TypedDict(
+    '_AudienceProfile_updatedAt_OrderByInput',
+    {
+        'updatedAt': 'SortOrder',
+    },
+    total=True
+)
+
+AudienceProfileOrderByInput = Union[
+    '_AudienceProfile_id_OrderByInput',
+    '_AudienceProfile_audienceRoomId_OrderByInput',
+    '_AudienceProfile_profileName_OrderByInput',
+    '_AudienceProfile_linkedinUrl_OrderByInput',
+    '_AudienceProfile_profileDescriptionS3Url_OrderByInput',
+    '_AudienceProfile_postsS3Url_OrderByInput',
+    '_AudienceProfile_createdAt_OrderByInput',
+    '_AudienceProfile_updatedAt_OrderByInput',
+]
+
+
+
+# recursive AudienceProfile types
+# TODO: cleanup these types
+
+
+# Dict[str, Any] is a mypy limitation
+# see https://github.com/RobertCraigie/prisma-client-py/issues/45
+# switch to pyright for improved types, see https://prisma-client-py.readthedocs.io/en/stable/reference/limitations/
+
+AudienceProfileRelationFilter = TypedDict(
+    'AudienceProfileRelationFilter',
+    {
+        'is': 'Dict[str, Any]',
+        'is_not': 'Dict[str, Any]',
+    },
+    total=False,
+)
+
+
+class AudienceProfileListRelationFilter(TypedDict, total=False):
+    some: 'Dict[str, Any]'
+    none: 'Dict[str, Any]'
+    every: 'Dict[str, Any]'
+
+
+class AudienceProfileInclude(TypedDict, total=False):
+    """AudienceProfile relational arguments"""
+    audienceRoom: Union[bool, 'AudienceRoomArgsFromAudienceProfile']
+
+
+    
+
+class ScrapeJobIncludeFromAudienceProfile(TypedDict, total=False):
+    """Relational arguments for AudienceProfile"""
+
+
+class ScrapeJobIncludeFromAudienceProfileRecursive1(TypedDict, total=False):
+    """Relational arguments for AudienceProfile"""
+
+
+class ScrapeJobIncludeFromAudienceProfileRecursive2(TypedDict, total=False):
+    """Relational arguments for AudienceProfile"""
+
+
+class ScrapeJobIncludeFromAudienceProfileRecursive3(TypedDict, total=False):
+    """Relational arguments for AudienceProfile"""
+
+
+class ScrapeJobIncludeFromAudienceProfileRecursive4(TypedDict, total=False):
+    """Relational arguments for AudienceProfile"""
+
+    
+
+class ScrapeJobArgsFromAudienceProfile(TypedDict, total=False):
+    """Arguments for AudienceProfile"""
+    include: 'ScrapeJobIncludeFromScrapeJobRecursive1'
+
+
+class ScrapeJobArgsFromAudienceProfileRecursive1(TypedDict, total=False):
+    """Arguments for AudienceProfile"""
+    include: 'ScrapeJobIncludeFromScrapeJobRecursive2'
+
+
+class ScrapeJobArgsFromAudienceProfileRecursive2(TypedDict, total=False):
+    """Arguments for AudienceProfile"""
+    include: 'ScrapeJobIncludeFromScrapeJobRecursive3'
+
+
+class ScrapeJobArgsFromAudienceProfileRecursive3(TypedDict, total=False):
+    """Arguments for AudienceProfile"""
+    include: 'ScrapeJobIncludeFromScrapeJobRecursive4'
+
+
+class ScrapeJobArgsFromAudienceProfileRecursive4(TypedDict, total=False):
+    """Arguments for AudienceProfile"""
+    
+    
+
+class FindManyScrapeJobArgsFromAudienceProfile(TypedDict, total=False):
+    """Arguments for AudienceProfile"""
+    take: int
+    skip: int
+    order_by: Union['ScrapeJobOrderByInput', List['ScrapeJobOrderByInput']]
+    where: 'ScrapeJobWhereInput'
+    cursor: 'ScrapeJobWhereUniqueInput'
+    distinct: List['ScrapeJobScalarFieldKeys']
+    include: 'ScrapeJobIncludeFromScrapeJobRecursive1'
+
+
+class FindManyScrapeJobArgsFromAudienceProfileRecursive1(TypedDict, total=False):
+    """Arguments for AudienceProfile"""
+    take: int
+    skip: int
+    order_by: Union['ScrapeJobOrderByInput', List['ScrapeJobOrderByInput']]
+    where: 'ScrapeJobWhereInput'
+    cursor: 'ScrapeJobWhereUniqueInput'
+    distinct: List['ScrapeJobScalarFieldKeys']
+    include: 'ScrapeJobIncludeFromScrapeJobRecursive2'
+
+
+class FindManyScrapeJobArgsFromAudienceProfileRecursive2(TypedDict, total=False):
+    """Arguments for AudienceProfile"""
+    take: int
+    skip: int
+    order_by: Union['ScrapeJobOrderByInput', List['ScrapeJobOrderByInput']]
+    where: 'ScrapeJobWhereInput'
+    cursor: 'ScrapeJobWhereUniqueInput'
+    distinct: List['ScrapeJobScalarFieldKeys']
+    include: 'ScrapeJobIncludeFromScrapeJobRecursive3'
+
+
+class FindManyScrapeJobArgsFromAudienceProfileRecursive3(TypedDict, total=False):
+    """Arguments for AudienceProfile"""
+    take: int
+    skip: int
+    order_by: Union['ScrapeJobOrderByInput', List['ScrapeJobOrderByInput']]
+    where: 'ScrapeJobWhereInput'
+    cursor: 'ScrapeJobWhereUniqueInput'
+    distinct: List['ScrapeJobScalarFieldKeys']
+    include: 'ScrapeJobIncludeFromScrapeJobRecursive4'
+
+
+class FindManyScrapeJobArgsFromAudienceProfileRecursive4(TypedDict, total=False):
+    """Arguments for AudienceProfile"""
+    take: int
+    skip: int
+    order_by: Union['ScrapeJobOrderByInput', List['ScrapeJobOrderByInput']]
+    where: 'ScrapeJobWhereInput'
+    cursor: 'ScrapeJobWhereUniqueInput'
+    distinct: List['ScrapeJobScalarFieldKeys']
+    
+    
+
+class SearchQueryIncludeFromAudienceProfile(TypedDict, total=False):
+    """Relational arguments for AudienceProfile"""
+
+
+class SearchQueryIncludeFromAudienceProfileRecursive1(TypedDict, total=False):
+    """Relational arguments for AudienceProfile"""
+
+
+class SearchQueryIncludeFromAudienceProfileRecursive2(TypedDict, total=False):
+    """Relational arguments for AudienceProfile"""
+
+
+class SearchQueryIncludeFromAudienceProfileRecursive3(TypedDict, total=False):
+    """Relational arguments for AudienceProfile"""
+
+
+class SearchQueryIncludeFromAudienceProfileRecursive4(TypedDict, total=False):
+    """Relational arguments for AudienceProfile"""
+
+    
+
+class SearchQueryArgsFromAudienceProfile(TypedDict, total=False):
+    """Arguments for AudienceProfile"""
+    include: 'SearchQueryIncludeFromSearchQueryRecursive1'
+
+
+class SearchQueryArgsFromAudienceProfileRecursive1(TypedDict, total=False):
+    """Arguments for AudienceProfile"""
+    include: 'SearchQueryIncludeFromSearchQueryRecursive2'
+
+
+class SearchQueryArgsFromAudienceProfileRecursive2(TypedDict, total=False):
+    """Arguments for AudienceProfile"""
+    include: 'SearchQueryIncludeFromSearchQueryRecursive3'
+
+
+class SearchQueryArgsFromAudienceProfileRecursive3(TypedDict, total=False):
+    """Arguments for AudienceProfile"""
+    include: 'SearchQueryIncludeFromSearchQueryRecursive4'
+
+
+class SearchQueryArgsFromAudienceProfileRecursive4(TypedDict, total=False):
+    """Arguments for AudienceProfile"""
+    
+    
+
+class FindManySearchQueryArgsFromAudienceProfile(TypedDict, total=False):
+    """Arguments for AudienceProfile"""
+    take: int
+    skip: int
+    order_by: Union['SearchQueryOrderByInput', List['SearchQueryOrderByInput']]
+    where: 'SearchQueryWhereInput'
+    cursor: 'SearchQueryWhereUniqueInput'
+    distinct: List['SearchQueryScalarFieldKeys']
+    include: 'SearchQueryIncludeFromSearchQueryRecursive1'
+
+
+class FindManySearchQueryArgsFromAudienceProfileRecursive1(TypedDict, total=False):
+    """Arguments for AudienceProfile"""
+    take: int
+    skip: int
+    order_by: Union['SearchQueryOrderByInput', List['SearchQueryOrderByInput']]
+    where: 'SearchQueryWhereInput'
+    cursor: 'SearchQueryWhereUniqueInput'
+    distinct: List['SearchQueryScalarFieldKeys']
+    include: 'SearchQueryIncludeFromSearchQueryRecursive2'
+
+
+class FindManySearchQueryArgsFromAudienceProfileRecursive2(TypedDict, total=False):
+    """Arguments for AudienceProfile"""
+    take: int
+    skip: int
+    order_by: Union['SearchQueryOrderByInput', List['SearchQueryOrderByInput']]
+    where: 'SearchQueryWhereInput'
+    cursor: 'SearchQueryWhereUniqueInput'
+    distinct: List['SearchQueryScalarFieldKeys']
+    include: 'SearchQueryIncludeFromSearchQueryRecursive3'
+
+
+class FindManySearchQueryArgsFromAudienceProfileRecursive3(TypedDict, total=False):
+    """Arguments for AudienceProfile"""
+    take: int
+    skip: int
+    order_by: Union['SearchQueryOrderByInput', List['SearchQueryOrderByInput']]
+    where: 'SearchQueryWhereInput'
+    cursor: 'SearchQueryWhereUniqueInput'
+    distinct: List['SearchQueryScalarFieldKeys']
+    include: 'SearchQueryIncludeFromSearchQueryRecursive4'
+
+
+class FindManySearchQueryArgsFromAudienceProfileRecursive4(TypedDict, total=False):
+    """Arguments for AudienceProfile"""
+    take: int
+    skip: int
+    order_by: Union['SearchQueryOrderByInput', List['SearchQueryOrderByInput']]
+    where: 'SearchQueryWhereInput'
+    cursor: 'SearchQueryWhereUniqueInput'
+    distinct: List['SearchQueryScalarFieldKeys']
+    
+    
+
+class AudienceRoomIncludeFromAudienceProfile(TypedDict, total=False):
+    """Relational arguments for AudienceProfile"""
+    profiles: Union[bool, 'FindManyAudienceProfileArgsFromAudienceProfileRecursive1']
+
+
+class AudienceRoomIncludeFromAudienceProfileRecursive1(TypedDict, total=False):
+    """Relational arguments for AudienceProfile"""
+    profiles: Union[bool, 'FindManyAudienceProfileArgsFromAudienceProfileRecursive2']
+
+
+class AudienceRoomIncludeFromAudienceProfileRecursive2(TypedDict, total=False):
+    """Relational arguments for AudienceProfile"""
+    profiles: Union[bool, 'FindManyAudienceProfileArgsFromAudienceProfileRecursive3']
+
+
+class AudienceRoomIncludeFromAudienceProfileRecursive3(TypedDict, total=False):
+    """Relational arguments for AudienceProfile"""
+    profiles: Union[bool, 'FindManyAudienceProfileArgsFromAudienceProfileRecursive4']
+
+
+class AudienceRoomIncludeFromAudienceProfileRecursive4(TypedDict, total=False):
+    """Relational arguments for AudienceProfile"""
+
+    
+
+class AudienceRoomArgsFromAudienceProfile(TypedDict, total=False):
+    """Arguments for AudienceProfile"""
+    include: 'AudienceRoomIncludeFromAudienceRoomRecursive1'
+
+
+class AudienceRoomArgsFromAudienceProfileRecursive1(TypedDict, total=False):
+    """Arguments for AudienceProfile"""
+    include: 'AudienceRoomIncludeFromAudienceRoomRecursive2'
+
+
+class AudienceRoomArgsFromAudienceProfileRecursive2(TypedDict, total=False):
+    """Arguments for AudienceProfile"""
+    include: 'AudienceRoomIncludeFromAudienceRoomRecursive3'
+
+
+class AudienceRoomArgsFromAudienceProfileRecursive3(TypedDict, total=False):
+    """Arguments for AudienceProfile"""
+    include: 'AudienceRoomIncludeFromAudienceRoomRecursive4'
+
+
+class AudienceRoomArgsFromAudienceProfileRecursive4(TypedDict, total=False):
+    """Arguments for AudienceProfile"""
+    
+    
+
+class FindManyAudienceRoomArgsFromAudienceProfile(TypedDict, total=False):
+    """Arguments for AudienceProfile"""
+    take: int
+    skip: int
+    order_by: Union['AudienceRoomOrderByInput', List['AudienceRoomOrderByInput']]
+    where: 'AudienceRoomWhereInput'
+    cursor: 'AudienceRoomWhereUniqueInput'
+    distinct: List['AudienceRoomScalarFieldKeys']
+    include: 'AudienceRoomIncludeFromAudienceRoomRecursive1'
+
+
+class FindManyAudienceRoomArgsFromAudienceProfileRecursive1(TypedDict, total=False):
+    """Arguments for AudienceProfile"""
+    take: int
+    skip: int
+    order_by: Union['AudienceRoomOrderByInput', List['AudienceRoomOrderByInput']]
+    where: 'AudienceRoomWhereInput'
+    cursor: 'AudienceRoomWhereUniqueInput'
+    distinct: List['AudienceRoomScalarFieldKeys']
+    include: 'AudienceRoomIncludeFromAudienceRoomRecursive2'
+
+
+class FindManyAudienceRoomArgsFromAudienceProfileRecursive2(TypedDict, total=False):
+    """Arguments for AudienceProfile"""
+    take: int
+    skip: int
+    order_by: Union['AudienceRoomOrderByInput', List['AudienceRoomOrderByInput']]
+    where: 'AudienceRoomWhereInput'
+    cursor: 'AudienceRoomWhereUniqueInput'
+    distinct: List['AudienceRoomScalarFieldKeys']
+    include: 'AudienceRoomIncludeFromAudienceRoomRecursive3'
+
+
+class FindManyAudienceRoomArgsFromAudienceProfileRecursive3(TypedDict, total=False):
+    """Arguments for AudienceProfile"""
+    take: int
+    skip: int
+    order_by: Union['AudienceRoomOrderByInput', List['AudienceRoomOrderByInput']]
+    where: 'AudienceRoomWhereInput'
+    cursor: 'AudienceRoomWhereUniqueInput'
+    distinct: List['AudienceRoomScalarFieldKeys']
+    include: 'AudienceRoomIncludeFromAudienceRoomRecursive4'
+
+
+class FindManyAudienceRoomArgsFromAudienceProfileRecursive4(TypedDict, total=False):
+    """Arguments for AudienceProfile"""
+    take: int
+    skip: int
+    order_by: Union['AudienceRoomOrderByInput', List['AudienceRoomOrderByInput']]
+    where: 'AudienceRoomWhereInput'
+    cursor: 'AudienceRoomWhereUniqueInput'
+    distinct: List['AudienceRoomScalarFieldKeys']
+    
+    
+
+class AudienceProfileIncludeFromAudienceProfile(TypedDict, total=False):
+    """Relational arguments for AudienceProfile"""
+    audienceRoom: Union[bool, 'AudienceRoomArgsFromAudienceProfileRecursive1']
+
+
+class AudienceProfileIncludeFromAudienceProfileRecursive1(TypedDict, total=False):
+    """Relational arguments for AudienceProfile"""
+    audienceRoom: Union[bool, 'AudienceRoomArgsFromAudienceProfileRecursive2']
+
+
+class AudienceProfileIncludeFromAudienceProfileRecursive2(TypedDict, total=False):
+    """Relational arguments for AudienceProfile"""
+    audienceRoom: Union[bool, 'AudienceRoomArgsFromAudienceProfileRecursive3']
+
+
+class AudienceProfileIncludeFromAudienceProfileRecursive3(TypedDict, total=False):
+    """Relational arguments for AudienceProfile"""
+    audienceRoom: Union[bool, 'AudienceRoomArgsFromAudienceProfileRecursive4']
+
+
+class AudienceProfileIncludeFromAudienceProfileRecursive4(TypedDict, total=False):
+    """Relational arguments for AudienceProfile"""
+
+    
+
+class AudienceProfileArgsFromAudienceProfile(TypedDict, total=False):
+    """Arguments for AudienceProfile"""
+    include: 'AudienceProfileIncludeFromAudienceProfileRecursive1'
+
+
+class AudienceProfileArgsFromAudienceProfileRecursive1(TypedDict, total=False):
+    """Arguments for AudienceProfile"""
+    include: 'AudienceProfileIncludeFromAudienceProfileRecursive2'
+
+
+class AudienceProfileArgsFromAudienceProfileRecursive2(TypedDict, total=False):
+    """Arguments for AudienceProfile"""
+    include: 'AudienceProfileIncludeFromAudienceProfileRecursive3'
+
+
+class AudienceProfileArgsFromAudienceProfileRecursive3(TypedDict, total=False):
+    """Arguments for AudienceProfile"""
+    include: 'AudienceProfileIncludeFromAudienceProfileRecursive4'
+
+
+class AudienceProfileArgsFromAudienceProfileRecursive4(TypedDict, total=False):
+    """Arguments for AudienceProfile"""
+    
+    
+
+class FindManyAudienceProfileArgsFromAudienceProfile(TypedDict, total=False):
+    """Arguments for AudienceProfile"""
+    take: int
+    skip: int
+    order_by: Union['AudienceProfileOrderByInput', List['AudienceProfileOrderByInput']]
+    where: 'AudienceProfileWhereInput'
+    cursor: 'AudienceProfileWhereUniqueInput'
+    distinct: List['AudienceProfileScalarFieldKeys']
+    include: 'AudienceProfileIncludeFromAudienceProfileRecursive1'
+
+
+class FindManyAudienceProfileArgsFromAudienceProfileRecursive1(TypedDict, total=False):
+    """Arguments for AudienceProfile"""
+    take: int
+    skip: int
+    order_by: Union['AudienceProfileOrderByInput', List['AudienceProfileOrderByInput']]
+    where: 'AudienceProfileWhereInput'
+    cursor: 'AudienceProfileWhereUniqueInput'
+    distinct: List['AudienceProfileScalarFieldKeys']
+    include: 'AudienceProfileIncludeFromAudienceProfileRecursive2'
+
+
+class FindManyAudienceProfileArgsFromAudienceProfileRecursive2(TypedDict, total=False):
+    """Arguments for AudienceProfile"""
+    take: int
+    skip: int
+    order_by: Union['AudienceProfileOrderByInput', List['AudienceProfileOrderByInput']]
+    where: 'AudienceProfileWhereInput'
+    cursor: 'AudienceProfileWhereUniqueInput'
+    distinct: List['AudienceProfileScalarFieldKeys']
+    include: 'AudienceProfileIncludeFromAudienceProfileRecursive3'
+
+
+class FindManyAudienceProfileArgsFromAudienceProfileRecursive3(TypedDict, total=False):
+    """Arguments for AudienceProfile"""
+    take: int
+    skip: int
+    order_by: Union['AudienceProfileOrderByInput', List['AudienceProfileOrderByInput']]
+    where: 'AudienceProfileWhereInput'
+    cursor: 'AudienceProfileWhereUniqueInput'
+    distinct: List['AudienceProfileScalarFieldKeys']
+    include: 'AudienceProfileIncludeFromAudienceProfileRecursive4'
+
+
+class FindManyAudienceProfileArgsFromAudienceProfileRecursive4(TypedDict, total=False):
+    """Arguments for AudienceProfile"""
+    take: int
+    skip: int
+    order_by: Union['AudienceProfileOrderByInput', List['AudienceProfileOrderByInput']]
+    where: 'AudienceProfileWhereInput'
+    cursor: 'AudienceProfileWhereUniqueInput'
+    distinct: List['AudienceProfileScalarFieldKeys']
+    
+
+
+FindManyAudienceProfileArgs = FindManyAudienceProfileArgsFromAudienceProfile
+FindFirstAudienceProfileArgs = FindManyAudienceProfileArgsFromAudienceProfile
+
+
+    
+
+class AudienceProfileWhereInput(TypedDict, total=False):
+    """AudienceProfile arguments for searching"""
+    id: Union[_str, 'types.StringFilter']
+    audienceRoomId: Union[_str, 'types.StringFilter']
+    audienceRoom: 'AudienceRoomRelationFilter'
+    profileName: Union[_str, 'types.StringFilter']
+    linkedinUrl: Union[_str, 'types.StringFilter']
+    profileDescriptionS3Url: Union[None, _str, 'types.StringFilter']
+    postsS3Url: Union[None, _str, 'types.StringFilter']
+    createdAt: Union[datetime.datetime, 'types.DateTimeFilter']
+    updatedAt: Union[datetime.datetime, 'types.DateTimeFilter']
+
+    # should be noted that AND and NOT should be Union['AudienceProfileWhereInputRecursive1', List['AudienceProfileWhereInputRecursive1']]
+    # but this causes mypy to hang :/
+    AND: List['AudienceProfileWhereInputRecursive1']
+    OR: List['AudienceProfileWhereInputRecursive1']
+    NOT: List['AudienceProfileWhereInputRecursive1']
+
+
+class AudienceProfileWhereInputRecursive1(TypedDict, total=False):
+    """AudienceProfile arguments for searching"""
+    id: Union[_str, 'types.StringFilter']
+    audienceRoomId: Union[_str, 'types.StringFilter']
+    audienceRoom: 'AudienceRoomRelationFilter'
+    profileName: Union[_str, 'types.StringFilter']
+    linkedinUrl: Union[_str, 'types.StringFilter']
+    profileDescriptionS3Url: Union[None, _str, 'types.StringFilter']
+    postsS3Url: Union[None, _str, 'types.StringFilter']
+    createdAt: Union[datetime.datetime, 'types.DateTimeFilter']
+    updatedAt: Union[datetime.datetime, 'types.DateTimeFilter']
+
+    # should be noted that AND and NOT should be Union['AudienceProfileWhereInputRecursive2', List['AudienceProfileWhereInputRecursive2']]
+    # but this causes mypy to hang :/
+    AND: List['AudienceProfileWhereInputRecursive2']
+    OR: List['AudienceProfileWhereInputRecursive2']
+    NOT: List['AudienceProfileWhereInputRecursive2']
+
+
+class AudienceProfileWhereInputRecursive2(TypedDict, total=False):
+    """AudienceProfile arguments for searching"""
+    id: Union[_str, 'types.StringFilter']
+    audienceRoomId: Union[_str, 'types.StringFilter']
+    audienceRoom: 'AudienceRoomRelationFilter'
+    profileName: Union[_str, 'types.StringFilter']
+    linkedinUrl: Union[_str, 'types.StringFilter']
+    profileDescriptionS3Url: Union[None, _str, 'types.StringFilter']
+    postsS3Url: Union[None, _str, 'types.StringFilter']
+    createdAt: Union[datetime.datetime, 'types.DateTimeFilter']
+    updatedAt: Union[datetime.datetime, 'types.DateTimeFilter']
+
+    # should be noted that AND and NOT should be Union['AudienceProfileWhereInputRecursive3', List['AudienceProfileWhereInputRecursive3']]
+    # but this causes mypy to hang :/
+    AND: List['AudienceProfileWhereInputRecursive3']
+    OR: List['AudienceProfileWhereInputRecursive3']
+    NOT: List['AudienceProfileWhereInputRecursive3']
+
+
+class AudienceProfileWhereInputRecursive3(TypedDict, total=False):
+    """AudienceProfile arguments for searching"""
+    id: Union[_str, 'types.StringFilter']
+    audienceRoomId: Union[_str, 'types.StringFilter']
+    audienceRoom: 'AudienceRoomRelationFilter'
+    profileName: Union[_str, 'types.StringFilter']
+    linkedinUrl: Union[_str, 'types.StringFilter']
+    profileDescriptionS3Url: Union[None, _str, 'types.StringFilter']
+    postsS3Url: Union[None, _str, 'types.StringFilter']
+    createdAt: Union[datetime.datetime, 'types.DateTimeFilter']
+    updatedAt: Union[datetime.datetime, 'types.DateTimeFilter']
+
+    # should be noted that AND and NOT should be Union['AudienceProfileWhereInputRecursive4', List['AudienceProfileWhereInputRecursive4']]
+    # but this causes mypy to hang :/
+    AND: List['AudienceProfileWhereInputRecursive4']
+    OR: List['AudienceProfileWhereInputRecursive4']
+    NOT: List['AudienceProfileWhereInputRecursive4']
+
+
+class AudienceProfileWhereInputRecursive4(TypedDict, total=False):
+    """AudienceProfile arguments for searching"""
+    id: Union[_str, 'types.StringFilter']
+    audienceRoomId: Union[_str, 'types.StringFilter']
+    audienceRoom: 'AudienceRoomRelationFilter'
+    profileName: Union[_str, 'types.StringFilter']
+    linkedinUrl: Union[_str, 'types.StringFilter']
+    profileDescriptionS3Url: Union[None, _str, 'types.StringFilter']
+    postsS3Url: Union[None, _str, 'types.StringFilter']
+    createdAt: Union[datetime.datetime, 'types.DateTimeFilter']
+    updatedAt: Union[datetime.datetime, 'types.DateTimeFilter']
+
+
+
+# aggregate AudienceProfile types
+
+
+    
+
+class AudienceProfileScalarWhereWithAggregatesInput(TypedDict, total=False):
+    """AudienceProfile arguments for searching"""
+    id: Union[_str, 'types.StringWithAggregatesFilter']
+    audienceRoomId: Union[_str, 'types.StringWithAggregatesFilter']
+    profileName: Union[_str, 'types.StringWithAggregatesFilter']
+    linkedinUrl: Union[_str, 'types.StringWithAggregatesFilter']
+    profileDescriptionS3Url: Union[_str, 'types.StringWithAggregatesFilter']
+    postsS3Url: Union[_str, 'types.StringWithAggregatesFilter']
+    createdAt: Union[datetime.datetime, 'types.DateTimeWithAggregatesFilter']
+    updatedAt: Union[datetime.datetime, 'types.DateTimeWithAggregatesFilter']
+
+    AND: List['AudienceProfileScalarWhereWithAggregatesInputRecursive1']
+    OR: List['AudienceProfileScalarWhereWithAggregatesInputRecursive1']
+    NOT: List['AudienceProfileScalarWhereWithAggregatesInputRecursive1']
+
+
+class AudienceProfileScalarWhereWithAggregatesInputRecursive1(TypedDict, total=False):
+    """AudienceProfile arguments for searching"""
+    id: Union[_str, 'types.StringWithAggregatesFilter']
+    audienceRoomId: Union[_str, 'types.StringWithAggregatesFilter']
+    profileName: Union[_str, 'types.StringWithAggregatesFilter']
+    linkedinUrl: Union[_str, 'types.StringWithAggregatesFilter']
+    profileDescriptionS3Url: Union[_str, 'types.StringWithAggregatesFilter']
+    postsS3Url: Union[_str, 'types.StringWithAggregatesFilter']
+    createdAt: Union[datetime.datetime, 'types.DateTimeWithAggregatesFilter']
+    updatedAt: Union[datetime.datetime, 'types.DateTimeWithAggregatesFilter']
+
+    AND: List['AudienceProfileScalarWhereWithAggregatesInputRecursive2']
+    OR: List['AudienceProfileScalarWhereWithAggregatesInputRecursive2']
+    NOT: List['AudienceProfileScalarWhereWithAggregatesInputRecursive2']
+
+
+class AudienceProfileScalarWhereWithAggregatesInputRecursive2(TypedDict, total=False):
+    """AudienceProfile arguments for searching"""
+    id: Union[_str, 'types.StringWithAggregatesFilter']
+    audienceRoomId: Union[_str, 'types.StringWithAggregatesFilter']
+    profileName: Union[_str, 'types.StringWithAggregatesFilter']
+    linkedinUrl: Union[_str, 'types.StringWithAggregatesFilter']
+    profileDescriptionS3Url: Union[_str, 'types.StringWithAggregatesFilter']
+    postsS3Url: Union[_str, 'types.StringWithAggregatesFilter']
+    createdAt: Union[datetime.datetime, 'types.DateTimeWithAggregatesFilter']
+    updatedAt: Union[datetime.datetime, 'types.DateTimeWithAggregatesFilter']
+
+    AND: List['AudienceProfileScalarWhereWithAggregatesInputRecursive3']
+    OR: List['AudienceProfileScalarWhereWithAggregatesInputRecursive3']
+    NOT: List['AudienceProfileScalarWhereWithAggregatesInputRecursive3']
+
+
+class AudienceProfileScalarWhereWithAggregatesInputRecursive3(TypedDict, total=False):
+    """AudienceProfile arguments for searching"""
+    id: Union[_str, 'types.StringWithAggregatesFilter']
+    audienceRoomId: Union[_str, 'types.StringWithAggregatesFilter']
+    profileName: Union[_str, 'types.StringWithAggregatesFilter']
+    linkedinUrl: Union[_str, 'types.StringWithAggregatesFilter']
+    profileDescriptionS3Url: Union[_str, 'types.StringWithAggregatesFilter']
+    postsS3Url: Union[_str, 'types.StringWithAggregatesFilter']
+    createdAt: Union[datetime.datetime, 'types.DateTimeWithAggregatesFilter']
+    updatedAt: Union[datetime.datetime, 'types.DateTimeWithAggregatesFilter']
+
+    AND: List['AudienceProfileScalarWhereWithAggregatesInputRecursive4']
+    OR: List['AudienceProfileScalarWhereWithAggregatesInputRecursive4']
+    NOT: List['AudienceProfileScalarWhereWithAggregatesInputRecursive4']
+
+
+class AudienceProfileScalarWhereWithAggregatesInputRecursive4(TypedDict, total=False):
+    """AudienceProfile arguments for searching"""
+    id: Union[_str, 'types.StringWithAggregatesFilter']
+    audienceRoomId: Union[_str, 'types.StringWithAggregatesFilter']
+    profileName: Union[_str, 'types.StringWithAggregatesFilter']
+    linkedinUrl: Union[_str, 'types.StringWithAggregatesFilter']
+    profileDescriptionS3Url: Union[_str, 'types.StringWithAggregatesFilter']
+    postsS3Url: Union[_str, 'types.StringWithAggregatesFilter']
+    createdAt: Union[datetime.datetime, 'types.DateTimeWithAggregatesFilter']
+    updatedAt: Union[datetime.datetime, 'types.DateTimeWithAggregatesFilter']
+
+
+
+class AudienceProfileGroupByOutput(TypedDict, total=False):
+    id: _str
+    audienceRoomId: _str
+    profileName: _str
+    linkedinUrl: _str
+    profileDescriptionS3Url: _str
+    postsS3Url: _str
+    createdAt: datetime.datetime
+    updatedAt: datetime.datetime
+    _sum: 'AudienceProfileSumAggregateOutput'
+    _avg: 'AudienceProfileAvgAggregateOutput'
+    _min: 'AudienceProfileMinAggregateOutput'
+    _max: 'AudienceProfileMaxAggregateOutput'
+    _count: 'AudienceProfileCountAggregateOutput'
+
+
+class AudienceProfileAvgAggregateOutput(TypedDict, total=False):
+    """AudienceProfile output for aggregating averages"""
+
+
+class AudienceProfileSumAggregateOutput(TypedDict, total=False):
+    """AudienceProfile output for aggregating sums"""
+
+
+class AudienceProfileScalarAggregateOutput(TypedDict, total=False):
+    """AudienceProfile output including scalar fields"""
+    id: _str
+    audienceRoomId: _str
+    profileName: _str
+    linkedinUrl: _str
+    profileDescriptionS3Url: _str
+    postsS3Url: _str
+    createdAt: datetime.datetime
+    updatedAt: datetime.datetime
+
+
+AudienceProfileMinAggregateOutput = AudienceProfileScalarAggregateOutput
+AudienceProfileMaxAggregateOutput = AudienceProfileScalarAggregateOutput
+
+
+class AudienceProfileMaxAggregateInput(TypedDict, total=False):
+    """AudienceProfile input for aggregating by max"""
+    id: bool
+    audienceRoomId: bool
+    profileName: bool
+    linkedinUrl: bool
+    profileDescriptionS3Url: bool
+    postsS3Url: bool
+    createdAt: bool
+    updatedAt: bool
+
+
+class AudienceProfileMinAggregateInput(TypedDict, total=False):
+    """AudienceProfile input for aggregating by min"""
+    id: bool
+    audienceRoomId: bool
+    profileName: bool
+    linkedinUrl: bool
+    profileDescriptionS3Url: bool
+    postsS3Url: bool
+    createdAt: bool
+    updatedAt: bool
+
+
+class AudienceProfileNumberAggregateInput(TypedDict, total=False):
+    """AudienceProfile input for aggregating numbers"""
+
+
+AudienceProfileAvgAggregateInput = AudienceProfileNumberAggregateInput
+AudienceProfileSumAggregateInput = AudienceProfileNumberAggregateInput
+
+
+AudienceProfileCountAggregateInput = TypedDict(
+    'AudienceProfileCountAggregateInput',
+    {
+        'id': bool,
+        'audienceRoomId': bool,
+        'profileName': bool,
+        'linkedinUrl': bool,
+        'profileDescriptionS3Url': bool,
+        'postsS3Url': bool,
+        'createdAt': bool,
+        'updatedAt': bool,
+        '_all': bool,
+    },
+    total=False,
+)
+
+AudienceProfileCountAggregateOutput = TypedDict(
+    'AudienceProfileCountAggregateOutput',
+    {
+        'id': int,
+        'audienceRoomId': int,
+        'profileName': int,
+        'linkedinUrl': int,
+        'profileDescriptionS3Url': int,
+        'postsS3Url': int,
+        'createdAt': int,
+        'updatedAt': int,
+        '_all': int,
+    },
+    total=False,
+)
+
+
+AudienceProfileKeys = Literal[
+    'id',
+    'audienceRoomId',
+    'audienceRoom',
+    'profileName',
+    'linkedinUrl',
+    'profileDescriptionS3Url',
+    'postsS3Url',
+    'createdAt',
+    'updatedAt',
+]
+AudienceProfileScalarFieldKeys = Literal[
+    'id',
+    'audienceRoomId',
+    'profileName',
+    'linkedinUrl',
+    'profileDescriptionS3Url',
+    'postsS3Url',
+    'createdAt',
+    'updatedAt',
+]
+AudienceProfileScalarFieldKeysT = TypeVar('AudienceProfileScalarFieldKeysT', bound=AudienceProfileScalarFieldKeys)
+
+AudienceProfileRelationalFieldKeys = Literal[
+        'audienceRoom',
+    ]
 
 
 

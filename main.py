@@ -10,7 +10,7 @@ from dateutil.parser import parse, ParserError
 # FastAPI Imports
 from fastapi import FastAPI, HTTPException, Body, Path
 from fastapi.middleware.cors import CORSMiddleware
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, root_validator
 
 # Third-party Clients
 from dotenv import load_dotenv
@@ -31,15 +31,27 @@ import boto3
 # Prisma client - import from local directory (generated during build)
 Prisma = None
 try:
-    # Try importing from local prisma_client directory first
+    # Try importing generated client from local prisma_client package first
     import sys
     from pathlib import Path as PathLib  # Use alias to avoid conflict with FastAPI's Path
     prisma_client_path = PathLib(__file__).parent / "prisma_client"
     if prisma_client_path.exists():
         sys.path.insert(0, str(prisma_client_path))
-    
-    from prisma import Prisma
-    logger.info("Prisma client imported successfully")
+
+    try:
+        from prisma_client import Prisma  # local generated client
+        try:
+            from prisma_client.fields import Json as PrismaJson
+        except Exception:
+            PrismaJson = None
+        logger.info("Prisma client imported successfully (local prisma_client)")
+    except ImportError:
+        from prisma import Prisma  # fallback to installed package
+        try:
+            from prisma.fields import Json as PrismaJson
+        except Exception:
+            PrismaJson = None
+        logger.info("Prisma client imported successfully (site-packages prisma)")
 except (RuntimeError, ImportError) as e:
     error_msg = str(e)
     if "hasn't been generated" in error_msg or "has not been generated" in error_msg:
@@ -77,6 +89,11 @@ apify_client = None
 openai_client = None
 dynamodb_resource = None
 prisma = None
+audience_prisma = None
+audience_db_url = os.getenv("AUDIENCE_DATABASE_URL")
+s3_client = None
+s3_bucket = os.getenv("AUDIENCE_BUCKET_NAME") or os.getenv("VECTOR_BUCKET_NAME")
+s3_region = os.getenv("AWS_REGION", "us-west-2")
 
 try:
     pdl_client = PDLPY(api_key=os.getenv("PDL_API_KEY"))
@@ -107,6 +124,17 @@ except Exception as e:
     logger.warning(f"DynamoDB not initialized: {e}")
 
 try:
+    # S3 client for audience assets
+    s3_client = boto3.client("s3", region_name=s3_region) if s3_bucket else None
+    if s3_client and s3_bucket:
+        logger.info(f"S3 client initialized for bucket {s3_bucket}")
+    else:
+        logger.warning("S3 bucket not configured; audience uploads will be disabled")
+except Exception as e:
+    logger.error(f"Failed to initialize S3 client: {e}")
+    s3_client = None
+
+try:
     # Prisma client for database operations
     if Prisma is not None:
         prisma = Prisma()
@@ -123,6 +151,17 @@ except Exception as e:
     logger.error(f"Failed to initialize Prisma client: {e}")
     prisma = None
 
+try:
+    # Separate Prisma client for the audience database (uses AUDIENCE_DATABASE_URL or PRISMA_DATABASE_URL)
+    if Prisma is not None and audience_db_url:
+        audience_prisma = Prisma(datasource={"url": audience_db_url, "name": "db"})
+        logger.info("Audience Prisma client initialized successfully")
+    elif Prisma is not None:
+        logger.warning("AUDIENCE_DATABASE_URL not set; audience endpoints will be disabled")
+except Exception as e:
+    logger.error(f"Failed to initialize Audience Prisma client: {e}")
+    audience_prisma = None
+
 # Lifespan event handlers (replaces deprecated on_event)
 from contextlib import asynccontextmanager
 
@@ -136,6 +175,13 @@ async def lifespan(app: FastAPI):
         except Exception as e:
             logger.error(f"Failed to connect Prisma: {e}")
             logger.warning("Continuing without database connection - scraping endpoints will not work")
+    if audience_prisma:
+        try:
+            await audience_prisma.connect()
+            logger.info("Audience Prisma client connected successfully")
+        except Exception as e:
+            logger.error(f"Failed to connect Audience Prisma: {e}")
+            logger.warning("Continuing without audience database connection")
     yield
     # Shutdown
     if prisma:
@@ -144,6 +190,12 @@ async def lifespan(app: FastAPI):
             logger.info("Prisma client disconnected")
         except Exception as e:
             logger.error(f"Error disconnecting Prisma: {e}")
+    if audience_prisma:
+        try:
+            await audience_prisma.disconnect()
+            logger.info("Audience Prisma client disconnected")
+        except Exception as e:
+            logger.error(f"Error disconnecting Audience Prisma: {e}")
 
 # Create FastAPI app with lifespan
 app = FastAPI(
@@ -209,6 +261,48 @@ class ScrapeRequest(BaseModel):
     max_posts: int = Field(25, ge=1, le=100, description="Maximum number of posts to scrape per profile")
     cookies: List[Cookie] = Field(..., min_items=1, description="List of cookie objects for authentication")
     user_agent: str = Field(..., description="User agent string to use for scraping")
+    audience_room_id: Optional[str] = Field(
+        None,
+        description="If provided, scraped posts will be auto-mapped to this audience room when the job completes",
+    )
+
+
+class AudienceProfilePayload(BaseModel):
+    name: str = Field(..., description="Full name of the profile")
+    age: Optional[int] = Field(None, description="Age if available")
+    current_company: Optional[str] = Field(None, description="Current company")
+    current_location: Optional[str] = Field(None, description="Current location")
+    total_years_experience: Optional[float] = Field(None, description="Total years of experience")
+    industry: Optional[str] = Field(None, description="Industry")
+    education: Optional[str] = Field(None, description="Education summary")
+    linkedin_profile_url: str = Field(..., description="LinkedIn profile URL")
+
+
+class CreateAudienceRoomRequest(BaseModel):
+    audience_room_name: str = Field(..., description="Name of the audience room")
+    audience_description: str = Field(..., description="Plain-text description for the audience room")
+    profiles: List[AudienceProfilePayload] = Field(..., min_items=1, description="Profiles to attach to this audience room")
+
+
+class UpdateProfilePostsRequest(BaseModel):
+    posts: Any = Field(..., description="Posts JSON to store for this profile")
+
+
+class BatchPostsRequest(BaseModel):
+    job_id: Optional[str] = Field(
+        None,
+        description="Scrape job ID to load posts from the ScrapeJob table (must be COMPLETED)",
+    )
+    posts: Optional[List[Any]] = Field(
+        None,
+        description="Full posts dataset (list of records with inputUrl identifying the profile)",
+    )
+
+    @root_validator
+    def ensure_source(cls, values):
+        if not values.get("posts") and not values.get("job_id"):
+            raise ValueError("Provide either posts or job_id")
+        return values
 
 # --- 3. HELPER FUNCTIONS ---
 
@@ -284,6 +378,52 @@ def build_pdl_sql(f: SearchFilters) -> str:
         return "SELECT * FROM person"
     
     return f"SELECT * FROM person WHERE {' AND '.join(parts)}"
+
+
+async def ensure_prisma_connection(client: Prisma, client_name: str, max_retries: int = 3):
+    """Ensure a Prisma client is connected with retries."""
+    for attempt in range(max_retries):
+        try:
+            if not client.is_connected():
+                await client.connect()
+            return
+        except Exception as conn_error:
+            if attempt < max_retries - 1:
+                logger.warning(f"{client_name} connection attempt {attempt + 1} failed, retrying...")
+                await asyncio.sleep(0.5)
+            else:
+                raise HTTPException(status_code=503, detail=f"{client_name} database connection failed after {max_retries} attempts: {conn_error}")
+
+
+def upload_json_to_s3(key: str, data: Dict[str, Any]) -> str:
+    """Upload JSON payload to S3 and return a public URL."""
+    if not s3_client or not s3_bucket:
+        raise HTTPException(status_code=503, detail="S3 is not configured; set AUDIENCE_BUCKET_NAME or VECTOR_BUCKET_NAME.")
+    try:
+        s3_client.put_object(
+            Bucket=s3_bucket,
+            Key=key,
+            Body=json.dumps(data),
+            ContentType="application/json",
+        )
+        return f"https://{s3_bucket}.s3.{s3_region}.amazonaws.com/{key}"
+    except Exception as e:
+        logger.error(f"S3 upload failed for {key}: {e}")
+        raise HTTPException(status_code=500, detail="Failed to upload to S3")
+
+
+def normalize_linkedin_url(url: str) -> Optional[str]:
+    """Normalize LinkedIn profile URLs for matching."""
+    if not url:
+        return None
+    url = url.strip().lower()
+    # Add protocol if missing
+    if url.startswith("linkedin.com"):
+        url = "https://" + url
+    # Remove trailing slashes
+    while url.endswith("/"):
+        url = url[:-1]
+    return url
 
 # --- 4. API ENDPOINTS ---
 
@@ -524,6 +664,252 @@ async def search_profiles(payload: SearchFilters):
         logger.error(f"Search error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
+# === STEP 3B: CREATE AUDIENCE ROOM WITH SELECTED PROFILES ===
+@app.post("/api/v1/audience-rooms")
+async def create_audience_room(payload: CreateAudienceRoomRequest):
+    """
+    Create an audience room, store its description and profile payloads in S3, and persist metadata in Postgres.
+    - Stores audience description at: audiences/{audience_room_id}/description.json
+    - Stores each profile payload (with summary=null) at: audiences/{audience_room_id}/profiles/{profile_id}/profile.json
+    """
+    if not audience_prisma:
+        raise HTTPException(status_code=503, detail="Audience database connection not available. Please set AUDIENCE_DATABASE_URL.")
+    if not s3_client or not s3_bucket:
+        raise HTTPException(status_code=503, detail="S3 is not configured; set AUDIENCE_BUCKET_NAME or VECTOR_BUCKET_NAME.")
+
+    # Ensure the audience Prisma client is connected
+    await ensure_prisma_connection(audience_prisma, "Audience")
+
+    room_id = str(uuid.uuid4())
+
+    # Upload audience description to S3
+    description_key = f"audiences/{room_id}/description.json"
+    description_url = upload_json_to_s3(
+        description_key,
+        {
+            "audience_room_id": room_id,
+            "audience_room_name": payload.audience_room_name,
+            "description": payload.audience_description,
+        },
+    )
+
+    # Build profile records and upload payloads to S3 (summary starts as null)
+    profile_creates = []
+    for profile in payload.profiles:
+        profile_id = str(uuid.uuid4())
+        profile_key = f"audiences/{room_id}/profiles/{profile_id}/profile.json"
+        profile_payload = {
+            "profile_id": profile_id,
+            "audience_room_id": room_id,
+            "name": profile.name,
+            "age": profile.age,
+            "current_company": profile.current_company,
+            "current_location": profile.current_location,
+            "total_years_experience": profile.total_years_experience,
+            "industry": profile.industry,
+            "education": profile.education,
+            "linkedin_profile_url": profile.linkedin_profile_url,
+            "summary": None,
+        }
+        profile_url = upload_json_to_s3(profile_key, profile_payload)
+
+        profile_creates.append(
+            {
+                "id": profile_id,
+                "profileName": profile.name,
+                "linkedinUrl": profile.linkedin_profile_url,
+                "profileDescriptionS3Url": profile_url,
+                "postsS3Url": None,
+            }
+        )
+
+    try:
+        room = await audience_prisma.audienceroom.create(
+            data={
+                "id": room_id,
+                "name": payload.audience_room_name,
+                "descriptionS3Url": description_url,
+                "profiles": {"create": profile_creates},
+            },
+            include={"profiles": True},
+        )
+
+        return {
+            "audience_room_id": room.id,
+            "audience_room_name": room.name,
+            "description_s3_url": room.descriptionS3Url,
+            "profiles_created": len(room.profiles),
+            "profiles": [
+                {
+                    "profile_id": p.id,
+                    "profile_name": p.profileName,
+                    "linkedin_url": p.linkedinUrl,
+                    "profile_description_s3_url": p.profileDescriptionS3Url,
+                    "posts_s3_url": p.postsS3Url,
+                }
+                for p in room.profiles
+            ],
+        }
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error creating audience room: {e}")
+        raise HTTPException(status_code=500, detail="Failed to create audience room")
+
+
+# === STEP 3C: ATTACH POSTS TO AN AUDIENCE PROFILE ===
+@app.post("/api/v1/audience-rooms/{audience_room_id}/profiles/{profile_id}/posts")
+async def upload_profile_posts(audience_room_id: str, profile_id: str, payload: UpdateProfilePostsRequest):
+    """
+    Store scraped posts JSON for a profile in S3 and update the profile record.
+    S3 path: audiences/{audience_room_id}/profiles/{profile_id}/posts.json
+    """
+    if not audience_prisma:
+        raise HTTPException(status_code=503, detail="Audience database connection not available. Please set AUDIENCE_DATABASE_URL.")
+    if not s3_client or not s3_bucket:
+        raise HTTPException(status_code=503, detail="S3 is not configured; set AUDIENCE_BUCKET_NAME or VECTOR_BUCKET_NAME.")
+
+    await ensure_prisma_connection(audience_prisma, "Audience")
+
+    # Verify profile exists and belongs to the room
+    profile = await audience_prisma.audienceprofile.find_unique(
+        where={"id": profile_id},
+        include={"audienceRoom": True},
+    )
+    if not profile or profile.audienceRoomId != audience_room_id:
+        raise HTTPException(status_code=404, detail="Profile not found for given audience room")
+
+    posts_key = f"audiences/{audience_room_id}/profiles/{profile_id}/posts.json"
+    posts_url = upload_json_to_s3(posts_key, {"profile_id": profile_id, "audience_room_id": audience_room_id, "posts": payload.posts})
+
+    try:
+        updated = await audience_prisma.audienceprofile.update(
+            where={"id": profile_id},
+            data={"postsS3Url": posts_url},
+        )
+        return {
+            "profile_id": updated.id,
+            "audience_room_id": audience_room_id,
+            "posts_s3_url": updated.postsS3Url,
+        }
+    except Exception as e:
+        logger.error(f"Error updating posts for profile {profile_id}: {e}")
+        raise HTTPException(status_code=500, detail="Failed to store posts")
+
+
+# === STEP 3D: BATCH ATTACH POSTS FOR AN AUDIENCE ROOM ===
+@app.post("/api/v1/audience-rooms/{audience_room_id}/posts")
+async def upload_posts_batch(audience_room_id: str, payload: BatchPostsRequest):
+    """
+    Map scraped posts to profiles in an audience room, upload per-profile posts to S3,
+    and update postsS3Url in the profile table.
+
+    Source of posts:
+    - payload.posts (if provided), or
+    - payload.job_id -> loads ScrapeJob.result.data when the job is COMPLETED.
+    """
+    if not audience_prisma:
+        raise HTTPException(status_code=503, detail="Audience database connection not available. Please set AUDIENCE_DATABASE_URL.")
+    if not s3_client or not s3_bucket:
+        raise HTTPException(status_code=503, detail="S3 is not configured; set AUDIENCE_BUCKET_NAME or VECTOR_BUCKET_NAME.")
+
+    await ensure_prisma_connection(audience_prisma, "Audience")
+
+    # Resolve posts source (payload or scrape job)
+    source_posts: List[Any] = []
+    if payload.posts:
+        source_posts = payload.posts
+    elif payload.job_id:
+        if not prisma:
+            raise HTTPException(status_code=503, detail="Primary database connection not available for scrape jobs.")
+        await ensure_prisma_connection(prisma, "Primary")
+
+        job = await prisma.scrapejob.find_unique(where={"id": payload.job_id})
+        if not job:
+            raise HTTPException(status_code=404, detail=f"Scrape job {payload.job_id} not found")
+        if job.status != "COMPLETED" or not job.result:
+            raise HTTPException(
+                status_code=409,
+                detail=f"Scrape job {payload.job_id} is not completed yet. Current status: {job.status}",
+            )
+
+        # Extract data from job.result; expect {"data": [...]} or a list directly
+        result_data = job.result
+        if isinstance(result_data, dict):
+            source_posts = result_data.get("data") or result_data.get("posts") or result_data.get("items") or []
+        else:
+            source_posts = result_data
+
+        if not isinstance(source_posts, list):
+            raise HTTPException(status_code=500, detail="Scrape job result format is invalid; expected a list of posts")
+
+    # Fetch profiles in the room
+    profiles = await audience_prisma.audienceprofile.find_many(
+        where={"audienceRoomId": audience_room_id},
+        select={"id": True, "profileName": True, "linkedinUrl": True},
+    )
+    if not profiles:
+        raise HTTPException(status_code=404, detail="No profiles found for this audience room")
+
+    # Group posts by normalized inputUrl
+    posts_by_url: Dict[str, List[Any]] = {}
+    for item in source_posts:
+        if not isinstance(item, dict):
+            continue
+        input_url = normalize_linkedin_url(str(item.get("inputUrl", "")))
+        if not input_url:
+            continue
+        posts_by_url.setdefault(input_url, []).append(item)
+
+    updated = []
+    missing = []
+    for p in profiles:
+        norm_profile_url = normalize_linkedin_url(p["linkedinUrl"])
+        if not norm_profile_url:
+            missing.append({"profile_id": p["id"], "profile_name": p["profileName"], "reason": "missing_linkedin_url"})
+            continue
+
+        posts_for_profile = posts_by_url.get(norm_profile_url, [])
+        if not posts_for_profile:
+            missing.append({"profile_id": p["id"], "profile_name": p["profileName"], "reason": "no_posts_found"})
+            continue
+
+        posts_key = f"audiences/{audience_room_id}/profiles/{p['id']}/posts.json"
+        posts_url = upload_json_to_s3(
+            posts_key,
+            {
+                "profile_id": p["id"],
+                "audience_room_id": audience_room_id,
+                "linkedin_profile_url": p["linkedinUrl"],
+                "posts": posts_for_profile,
+            },
+        )
+
+        try:
+            await audience_prisma.audienceprofile.update(
+                where={"id": p["id"]},
+                data={"postsS3Url": posts_url},
+            )
+            updated.append(
+                {
+                    "profile_id": p["id"],
+                    "profile_name": p["profileName"],
+                    "linkedin_url": p["linkedinUrl"],
+                    "posts_s3_url": posts_url,
+                }
+            )
+        except Exception as e:
+            logger.error(f"Error updating posts for profile {p['id']}: {e}")
+            missing.append({"profile_id": p["id"], "profile_name": p["profileName"], "reason": "db_update_failed"})
+
+    return {
+        "audience_room_id": audience_room_id,
+        "profiles_updated": len(updated),
+        "profiles_missing": len(missing),
+        "updated": updated,
+        "missing": missing,
+    }
+
 # === STEP 4: TRIGGER POST SCRAPER (ASYNC) ===
 @app.post("/api/v1/scrape")
 async def trigger_scraping(payload: ScrapeRequest):
@@ -535,8 +921,11 @@ async def trigger_scraping(payload: ScrapeRequest):
     # Convert Cookie Pydantic models to dictionaries for Apify
     cookies_dict = [cookie.dict(exclude_none=True) for cookie in payload.cookies]
 
+    # Normalize LinkedIn URLs
+    normalized_urls = [u for u in (normalize_linkedin_url(u) for u in payload.linkedin_urls) if u]
+
     run_input = {
-        "urls": payload.linkedin_urls,
+        "urls": normalized_urls,
         "limitPerSource": payload.max_posts,
         "cookie": cookies_dict,
         "userAgent": payload.user_agent,
@@ -563,11 +952,15 @@ async def trigger_scraping(payload: ScrapeRequest):
                     raise HTTPException(status_code=503, detail=f"Database connection failed after {max_retries} attempts")
         
         # Create job record in database
+        # Wrap URLs as Prisma Json if available to satisfy type checker/runtime
+        urls_value = PrismaJson(normalized_urls) if 'PrismaJson' in globals() and PrismaJson else normalized_urls
+
         job = await prisma.scrapejob.create(
             data={
                 "status": "PENDING",
-                "linkedinUrls": payload.linkedin_urls,
+                "linkedinUrls": urls_value,
                 "maxPosts": payload.max_posts,
+                "audienceRoomId": payload.audience_room_id,
             }
         )
         job_id = job.id
@@ -577,7 +970,15 @@ async def trigger_scraping(payload: ScrapeRequest):
         # Start Apify actor without waiting (async)
         try:
             run = apify_client.actor(POST_SCRAPER_ACTOR_ID).start(run_input=run_input)
-            apify_run_id = run['data']['id']
+            run_data = None
+            # Apify client may return {"data": {...}} or the payload directly; handle both
+            if isinstance(run, dict):
+                run_data = run.get("data", run)
+            if not run_data or not isinstance(run_data, dict):
+                raise HTTPException(status_code=502, detail="Apify start returned unexpected response structure")
+            apify_run_id = run_data.get('id')
+            if not apify_run_id:
+                raise HTTPException(status_code=502, detail="Apify start did not return a run id")
             
             # Update job with Apify run ID and set status to PROCESSING
             await prisma.scrapejob.update(
@@ -726,37 +1127,137 @@ async def get_scrape_status(job_id: str = Path(..., description="Job ID returned
         try:
             # Check Apify run status
             run = apify_client.run(job.apifyRunId).get()
-            run_status = run.get('data', {}).get('status')
+            run_data = run.get("data", run) if isinstance(run, dict) else {}
+            run_status = run_data.get("status") if isinstance(run_data, dict) else None
+            dataset_id = run_data.get("defaultDatasetId") if isinstance(run_data, dict) else None
             
-            if run_status == 'SUCCEEDED':
-                # Fetch results from Apify dataset
-                dataset_id = run.get('data', {}).get('defaultDatasetId')
-                if dataset_id:
-                    dataset_items = list(apify_client.dataset(dataset_id).iterate_items())
-                    
-                    # Update job with results
-                    await prisma.scrapejob.update(
-                        where={"id": job_id},
-                        data={
-                            "status": "COMPLETED",
-                            "result": {"posts_found": len(dataset_items), "data": dataset_items}
-                        }
-                    )
-                    
-                    return {
-                        "job_id": job_id,
-                        "status": "COMPLETED",
-                        "posts_found": len(dataset_items),
-                        "data": dataset_items,
-                        "created_at": job.createdAt.isoformat(),
-                        "updated_at": datetime.now().isoformat()
-                    }
-                else:
+            # If Apify didn't return a status but we already have a dataset, treat it as success
+            if run_status == 'SUCCEEDED' or (not run_status and dataset_id):
+                if not dataset_id:
                     return {
                         "job_id": job_id,
                         "status": "PROCESSING",
                         "message": "Run completed but dataset not available yet"
                     }
+
+                dataset_client = apify_client.dataset(dataset_id)
+
+                # If the job is tied to an audience room, stream directly from Apify -> S3 per profile
+                if job.audienceRoomId:
+                    if not audience_prisma:
+                        raise HTTPException(status_code=503, detail="Audience database connection not available. Please set AUDIENCE_DATABASE_URL.")
+                    await ensure_prisma_connection(audience_prisma, "Audience")
+
+                    profiles = await audience_prisma.audienceprofile.find_many(
+                        where={"audienceRoomId": job.audienceRoomId},
+                        select={"id": True, "profileName": True, "linkedinUrl": True},
+                    )
+
+                    profile_by_url: Dict[str, Dict[str, str]] = {}
+                    for p in profiles:
+                        norm_url = normalize_linkedin_url(p["linkedinUrl"])
+                        if norm_url:
+                            profile_by_url[norm_url] = p
+
+                    posts_acc: Dict[str, List[Any]] = {p["id"]: [] for p in profiles}
+                    total_items = 0
+                    for item in dataset_client.iterate_items():
+                        total_items += 1
+                        if not isinstance(item, dict):
+                            continue
+                        input_url = normalize_linkedin_url(str(item.get("inputUrl", "")))
+                        if not input_url:
+                            continue
+                        target = profile_by_url.get(input_url)
+                        if target:
+                            posts_acc[target["id"]].append(item)
+
+                    updated = []
+                    missing = []
+                    for p in profiles:
+                        pid = p["id"]
+                        posts_for_profile = posts_acc.get(pid, [])
+                        if not posts_for_profile:
+                            missing.append({"profile_id": pid, "profile_name": p["profileName"], "reason": "no_posts_found"})
+                            continue
+
+                        posts_key = f"audiences/{job.audienceRoomId}/profiles/{pid}/posts.json"
+                        posts_url = upload_json_to_s3(
+                            posts_key,
+                            {
+                                "profile_id": pid,
+                                "audience_room_id": job.audienceRoomId,
+                                "linkedin_profile_url": p["linkedinUrl"],
+                                "posts": posts_for_profile,
+                            },
+                        )
+                        try:
+                            await audience_prisma.audienceprofile.update(
+                                where={"id": pid},
+                                data={"postsS3Url": posts_url},
+                            )
+                            updated.append(
+                                {
+                                    "profile_id": pid,
+                                    "profile_name": p["profileName"],
+                                    "linkedin_url": p["linkedinUrl"],
+                                    "posts_s3_url": posts_url,
+                                }
+                            )
+                        except Exception as e:
+                            logger.error(f"Error updating posts for profile {pid}: {e}")
+                            missing.append({"profile_id": pid, "profile_name": p["profileName"], "reason": "db_update_failed"})
+
+                    await prisma.scrapejob.update(
+                        where={"id": job_id},
+                        data={
+                            "status": "COMPLETED",
+                            "result": {
+                                "posts_found": total_items,
+                                "profiles_updated": len(updated),
+                                "profiles_missing": len(missing),
+                                "dataset_id": dataset_id,
+                            },
+                        },
+                    )
+
+                    return {
+                        "job_id": job_id,
+                        "status": "COMPLETED",
+                        "posts_found": total_items,
+                        "audience_room_id": job.audienceRoomId,
+                        "profiles_updated": len(updated),
+                        "profiles_missing": len(missing),
+                        "updated": updated,
+                        "missing": missing,
+                        "created_at": job.createdAt.isoformat(),
+                        "updated_at": datetime.now().isoformat(),
+                    }
+
+                # If no audience room, just count items and mark complete without storing the blob
+                total_items = 0
+                for _ in dataset_client.iterate_items():
+                    total_items += 1
+
+                await prisma.scrapejob.update(
+                    where={"id": job_id},
+                    data={
+                        "status": "COMPLETED",
+                        "result": {
+                            "posts_found": total_items,
+                            "dataset_id": dataset_id,
+                        },
+                    },
+                )
+
+                return {
+                    "job_id": job_id,
+                    "status": "COMPLETED",
+                    "posts_found": total_items,
+                    "dataset_id": dataset_id,
+                    "created_at": job.createdAt.isoformat(),
+                    "updated_at": datetime.now().isoformat(),
+                }
             elif run_status == 'FAILED':
                 error_msg = run.get('data', {}).get('statusMessage', 'Unknown error')
                 await prisma.scrapejob.update(

@@ -162,10 +162,14 @@ def get_client() -> 'Prisma':
 class Prisma:
     scrapejob: 'actions.ScrapeJobActions[models.ScrapeJob]'
     searchquery: 'actions.SearchQueryActions[models.SearchQuery]'
+    audienceroom: 'actions.AudienceRoomActions[models.AudienceRoom]'
+    audienceprofile: 'actions.AudienceProfileActions[models.AudienceProfile]'
 
     __slots__ = (
         'scrapejob',
         'searchquery',
+        'audienceroom',
+        'audienceprofile',
         '__engine',
         '__copied',
         '_tx_id',
@@ -188,6 +192,8 @@ class Prisma:
     ) -> None:
         self.scrapejob = actions.ScrapeJobActions[models.ScrapeJob](self, models.ScrapeJob)
         self.searchquery = actions.SearchQueryActions[models.SearchQuery](self, models.SearchQuery)
+        self.audienceroom = actions.AudienceRoomActions[models.AudienceRoom](self, models.AudienceRoom)
+        self.audienceprofile = actions.AudienceProfileActions[models.AudienceProfile](self, models.AudienceProfile)
 
         # NOTE: if you add any more properties here then you may also need to forward
         # them in the `_copy()` method.
@@ -654,6 +660,8 @@ class TransactionManager:
 class Batch:
     scrapejob: 'ScrapeJobBatchActions'
     searchquery: 'SearchQueryBatchActions'
+    audienceroom: 'AudienceRoomBatchActions'
+    audienceprofile: 'AudienceProfileBatchActions'
 
     def __init__(self, client: Prisma) -> None:
         self.__client = client
@@ -661,6 +669,8 @@ class Batch:
         self._active_provider = client._active_provider
         self.scrapejob = ScrapeJobBatchActions(self)
         self.searchquery = SearchQueryBatchActions(self)
+        self.audienceroom = AudienceRoomBatchActions(self)
+        self.audienceprofile = AudienceProfileBatchActions(self)
 
     def _add(self, **kwargs: Any) -> None:
         builder = QueryBuilder(**kwargs)
@@ -925,6 +935,228 @@ class SearchQueryBatchActions:
         self._batcher._add(
             method='delete_many',
             model=models.SearchQuery,
+            arguments={'where': where},
+            root_selection=['count'],
+        )
+
+
+
+# NOTE: some arguments are meaningless in this context but are included
+# for completeness sake
+class AudienceRoomBatchActions:
+    def __init__(self, batcher: Batch) -> None:
+        self._batcher = batcher
+
+    def create(
+        self,
+        data: types.AudienceRoomCreateInput,
+        include: Optional[types.AudienceRoomInclude] = None
+    ) -> None:
+        self._batcher._add(
+            method='create',
+            model=models.AudienceRoom,
+            arguments={
+                'data': data,
+                'include': include,
+            },
+        )
+
+    def create_many(
+        self,
+        data: List[types.AudienceRoomCreateWithoutRelationsInput],
+        *,
+        skip_duplicates: Optional[bool] = None,
+    ) -> None:
+        if self._batcher._active_provider == 'sqlite':
+            raise errors.UnsupportedDatabaseError('sqlite', 'create_many()')
+
+        self._batcher._add(
+            method='create_many',
+            model=models.AudienceRoom,
+            arguments={
+                'data': data,
+                'skipDuplicates': skip_duplicates,
+            },
+            root_selection=['count'],
+        )
+
+    def delete(
+        self,
+        where: types.AudienceRoomWhereUniqueInput,
+        include: Optional[types.AudienceRoomInclude] = None,
+    ) -> None:
+        self._batcher._add(
+            method='delete',
+            model=models.AudienceRoom,
+            arguments={
+                'where': where,
+                'include': include,
+            },
+        )
+
+    def update(
+        self,
+        data: types.AudienceRoomUpdateInput,
+        where: types.AudienceRoomWhereUniqueInput,
+        include: Optional[types.AudienceRoomInclude] = None
+    ) -> None:
+        self._batcher._add(
+            method='update',
+            model=models.AudienceRoom,
+            arguments={
+                'data': data,
+                'where': where,
+                'include': include,
+            },
+        )
+
+    def upsert(
+        self,
+        where: types.AudienceRoomWhereUniqueInput,
+        data: types.AudienceRoomUpsertInput,
+        include: Optional[types.AudienceRoomInclude] = None,
+    ) -> None:
+        self._batcher._add(
+            method='upsert',
+            model=models.AudienceRoom,
+            arguments={
+                'where': where,
+                'include': include,
+                'create': data.get('create'),
+                'update': data.get('update'),
+            },
+        )
+
+    def update_many(
+        self,
+        data: types.AudienceRoomUpdateManyMutationInput,
+        where: types.AudienceRoomWhereInput,
+    ) -> None:
+        self._batcher._add(
+            method='update_many',
+            model=models.AudienceRoom,
+            arguments={'data': data, 'where': where,},
+            root_selection=['count'],
+        )
+
+    def delete_many(
+        self,
+        where: Optional[types.AudienceRoomWhereInput] = None,
+    ) -> None:
+        self._batcher._add(
+            method='delete_many',
+            model=models.AudienceRoom,
+            arguments={'where': where},
+            root_selection=['count'],
+        )
+
+
+
+# NOTE: some arguments are meaningless in this context but are included
+# for completeness sake
+class AudienceProfileBatchActions:
+    def __init__(self, batcher: Batch) -> None:
+        self._batcher = batcher
+
+    def create(
+        self,
+        data: types.AudienceProfileCreateInput,
+        include: Optional[types.AudienceProfileInclude] = None
+    ) -> None:
+        self._batcher._add(
+            method='create',
+            model=models.AudienceProfile,
+            arguments={
+                'data': data,
+                'include': include,
+            },
+        )
+
+    def create_many(
+        self,
+        data: List[types.AudienceProfileCreateWithoutRelationsInput],
+        *,
+        skip_duplicates: Optional[bool] = None,
+    ) -> None:
+        if self._batcher._active_provider == 'sqlite':
+            raise errors.UnsupportedDatabaseError('sqlite', 'create_many()')
+
+        self._batcher._add(
+            method='create_many',
+            model=models.AudienceProfile,
+            arguments={
+                'data': data,
+                'skipDuplicates': skip_duplicates,
+            },
+            root_selection=['count'],
+        )
+
+    def delete(
+        self,
+        where: types.AudienceProfileWhereUniqueInput,
+        include: Optional[types.AudienceProfileInclude] = None,
+    ) -> None:
+        self._batcher._add(
+            method='delete',
+            model=models.AudienceProfile,
+            arguments={
+                'where': where,
+                'include': include,
+            },
+        )
+
+    def update(
+        self,
+        data: types.AudienceProfileUpdateInput,
+        where: types.AudienceProfileWhereUniqueInput,
+        include: Optional[types.AudienceProfileInclude] = None
+    ) -> None:
+        self._batcher._add(
+            method='update',
+            model=models.AudienceProfile,
+            arguments={
+                'data': data,
+                'where': where,
+                'include': include,
+            },
+        )
+
+    def upsert(
+        self,
+        where: types.AudienceProfileWhereUniqueInput,
+        data: types.AudienceProfileUpsertInput,
+        include: Optional[types.AudienceProfileInclude] = None,
+    ) -> None:
+        self._batcher._add(
+            method='upsert',
+            model=models.AudienceProfile,
+            arguments={
+                'where': where,
+                'include': include,
+                'create': data.get('create'),
+                'update': data.get('update'),
+            },
+        )
+
+    def update_many(
+        self,
+        data: types.AudienceProfileUpdateManyMutationInput,
+        where: types.AudienceProfileWhereInput,
+    ) -> None:
+        self._batcher._add(
+            method='update_many',
+            model=models.AudienceProfile,
+            arguments={'data': data, 'where': where,},
+            root_selection=['count'],
+        )
+
+    def delete_many(
+        self,
+        where: Optional[types.AudienceProfileWhereInput] = None,
+    ) -> None:
+        self._batcher._add(
+            method='delete_many',
+            model=models.AudienceProfile,
             arguments={'where': where},
             root_selection=['count'],
         )

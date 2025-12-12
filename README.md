@@ -46,6 +46,8 @@ Create a `.env` file with:
 ```env
 # Database (Required)
 DATABASE_URL=postgresql://user:password@localhost:5432/dbname
+# Audience DB (Optional - used for saved audiences; falls back to PRISMA_DATABASE_URL)
+AUDIENCE_DATABASE_URL=postgresql://user:password@localhost:5432/audience_db
 
 # API Keys (Required)
 PDL_API_KEY=your_pdl_api_key_here

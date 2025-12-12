@@ -94,3 +94,23 @@ class BaseSearchQuery(_PrismaModel):
         return actions.SearchQueryActions[_PrismaModelT](client or get_client(), cls)
 
 
+class BaseAudienceRoom(_PrismaModel):
+    __prisma_model__: ClassVar[Literal['AudienceRoom']] = 'AudienceRoom'
+
+    @classmethod
+    def prisma(cls: Type[_PrismaModelT], client: Optional['Prisma'] = None) -> 'actions.AudienceRoomActions[_PrismaModelT]':
+        from .client import get_client
+
+        return actions.AudienceRoomActions[_PrismaModelT](client or get_client(), cls)
+
+
+class BaseAudienceProfile(_PrismaModel):
+    __prisma_model__: ClassVar[Literal['AudienceProfile']] = 'AudienceProfile'
+
+    @classmethod
+    def prisma(cls: Type[_PrismaModelT], client: Optional['Prisma'] = None) -> 'actions.AudienceProfileActions[_PrismaModelT]':
+        from .client import get_client
+
+        return actions.AudienceProfileActions[_PrismaModelT](client or get_client(), cls)
+
+

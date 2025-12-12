@@ -12,6 +12,9 @@
 | `POST` | `/api/v1/enrich` | Enrich job title | 1-2s |
 | `POST` | `/api/v1/extract-filters` | Extract filters from text | 2-5s |
 | `POST` | `/api/v1/search` | Search profiles | 2-5s |
+| `POST` | `/api/v1/audience-rooms` | Create audience room + profiles (stores to S3) | 1-2s |
+| `POST` | `/api/v1/audience-rooms/{audience_room_id}/posts` | Batch attach scraped posts JSON to profiles (by inputUrl) | 1-2s |
+| `POST` | `/api/v1/audience-rooms/{audience_room_id}/profiles/{profile_id}/posts` | Attach scraped posts JSON to a profile (stores to S3) | 1-2s |
 | `POST` | `/api/v1/scrape` | Start scraping job | < 1s (async) |
 | `GET` | `/api/v1/scrape/status/{job_id}` | Check job status | < 1s |
 
@@ -114,7 +117,102 @@ Content-Type: application/json
 
 ---
 
-### 5. Start Scraping (Async)
+### 5. Create Audience Room with Profiles (and upload to S3)
+```http
+POST /api/v1/audience-rooms
+Content-Type: application/json
+
+{
+  "audience_room_name": "AI PMs in SF",
+  "audience_description": "Audience of AI PMs across SF Bay Area",
+  "profiles": [
+    {
+      "name": "Jane Doe",
+      "age": 29,
+      "current_company": "ExampleCo",
+      "current_location": "San Francisco, CA",
+      "total_years_experience": 7.5,
+      "industry": "Technology",
+      "education": "Bachelors from Stanford University (Computer Science)",
+      "linkedin_profile_url": "https://www.linkedin.com/in/janedoe"
+    }
+  ]
+}
+```
+```json
+{
+  "audience_room_id": "27e4d81e-20c4-4de0-8d6e-9d109b3b5df0",
+  "audience_room_name": "AI PMs in SF",
+  "description_s3_url": "https://alpha-bucket.s3.us-west-2.amazonaws.com/audiences/27e4d81e-20c4-4de0-8d6e-9d109b3b5df0/description.json",
+  "profiles_created": 1,
+  "profiles": [
+    {
+      "profile_id": "86ca9a2f-5c3a-4e5f-9d87-5d4f55cc0b7c",
+      "profile_name": "Jane Doe",
+      "linkedin_url": "https://www.linkedin.com/in/janedoe",
+      "profile_description_s3_url": "https://alpha-bucket.s3.us-west-2.amazonaws.com/audiences/27e4d81e-20c4-4de0-8d6e-9d109b3b5df0/profiles/86ca9a2f-5c3a-4e5f-9d87-5d4f55cc0b7c/profile.json",
+      "posts_s3_url": null
+    }
+  ]
+}
+```
+
+---
+
+### 6. Attach Posts to a Profile (after scraping)
+```http
+POST /api/v1/audience-rooms/{audience_room_id}/profiles/{profile_id}/posts
+Content-Type: application/json
+
+{
+  "posts": { "items": [/* scraped posts JSON */] }
+}
+```
+```json
+{
+  "profile_id": "86ca9a2f-5c3a-4e5f-9d87-5d4f55cc0b7c",
+  "audience_room_id": "27e4d81e-20c4-4de0-8d6e-9d109b3b5df0",
+  "posts_s3_url": "https://alpha-bucket.s3.us-west-2.amazonaws.com/audiences/27e4d81e-20c4-4de0-8d6e-9d109b3b5df0/profiles/86ca9a2f-5c3a-4e5f-9d87-5d4f55cc0b7c/posts.json"
+}
+```
+
+---
+
+### 7. Batch Attach Posts for a Room (send full dataset)
+```http
+POST /api/v1/audience-rooms/{audience_room_id}/posts
+Content-Type: application/json
+
+{
+  "posts": [
+    {
+      "inputUrl": "https://www.linkedin.com/in/deepigoyal/",
+      "type": "article",
+      "...": "post data"
+    }
+  ]
+}
+```
+```json
+{
+  "audience_room_id": "27e4d81e-20c4-4de0-8d6e-9d109b3b5df0",
+  "profiles_updated": 1,
+  "profiles_missing": 0,
+  "updated": [
+    {
+      "profile_id": "86ca9a2f-5c3a-4e5f-9d87-5d4f55cc0b7c",
+      "profile_name": "Jane Doe",
+      "linkedin_url": "https://www.linkedin.com/in/deepigoyal/",
+      "posts_s3_url": "https://audience-room-uploads.s3.us-west-2.amazonaws.com/audiences/27e4d81e-20c4-4de0-8d6e-9d109b3b5df0/profiles/86ca9a2f-5c3a-4e5f-9d87-5d4f55cc0b7c/posts.json"
+    }
+  ],
+  "missing": []
+}
+```
+
+---
+
+### 8. Start Scraping (Async)
 ```http
 POST /api/v1/scrape
 Content-Type: application/json
@@ -142,7 +240,7 @@ Content-Type: application/json
 
 ---
 
-### 6. Check Scraping Status
+### 8. Check Scraping Status
 ```http
 GET /api/v1/scrape/status/{job_id}
 ```
