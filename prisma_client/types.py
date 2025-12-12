@@ -1161,6 +1161,7 @@ class ScrapeJobOptionalCreateInput(TypedDict, total=False):
     apifyRunId: Optional[_str]
     result: Optional['fields.Json']
     error: Optional[_str]
+    audienceRoomId: Optional[_str]
     createdAt: datetime.datetime
     updatedAt: datetime.datetime
 
@@ -1181,6 +1182,7 @@ class ScrapeJobOptionalCreateWithoutRelationsInput(TypedDict, total=False):
     apifyRunId: Optional[_str]
     result: Optional['fields.Json']
     error: Optional[_str]
+    audienceRoomId: Optional[_str]
     createdAt: datetime.datetime
     updatedAt: datetime.datetime
 
@@ -1221,6 +1223,7 @@ class ScrapeJobUpdateInput(TypedDict, total=False):
     apifyRunId: Optional[_str]
     result: Optional['fields.Json']
     error: Optional[_str]
+    audienceRoomId: Optional[_str]
     createdAt: datetime.datetime
     updatedAt: datetime.datetime
 
@@ -1234,6 +1237,7 @@ class ScrapeJobUpdateManyMutationInput(TypedDict, total=False):
     apifyRunId: Optional[_str]
     result: Optional['fields.Json']
     error: Optional[_str]
+    audienceRoomId: Optional[_str]
     createdAt: datetime.datetime
     updatedAt: datetime.datetime
 
@@ -1326,6 +1330,14 @@ _ScrapeJob_error_OrderByInput = TypedDict(
     total=True
 )
 
+_ScrapeJob_audienceRoomId_OrderByInput = TypedDict(
+    '_ScrapeJob_audienceRoomId_OrderByInput',
+    {
+        'audienceRoomId': 'SortOrder',
+    },
+    total=True
+)
+
 _ScrapeJob_createdAt_OrderByInput = TypedDict(
     '_ScrapeJob_createdAt_OrderByInput',
     {
@@ -1350,6 +1362,7 @@ ScrapeJobOrderByInput = Union[
     '_ScrapeJob_apifyRunId_OrderByInput',
     '_ScrapeJob_result_OrderByInput',
     '_ScrapeJob_error_OrderByInput',
+    '_ScrapeJob_audienceRoomId_OrderByInput',
     '_ScrapeJob_createdAt_OrderByInput',
     '_ScrapeJob_updatedAt_OrderByInput',
 ]
@@ -1813,6 +1826,7 @@ class ScrapeJobWhereInput(TypedDict, total=False):
     apifyRunId: Union[None, _str, 'types.StringFilter']
     result: Union[None, 'fields.Json', 'types.JsonFilter']
     error: Union[None, _str, 'types.StringFilter']
+    audienceRoomId: Union[None, _str, 'types.StringFilter']
     createdAt: Union[datetime.datetime, 'types.DateTimeFilter']
     updatedAt: Union[datetime.datetime, 'types.DateTimeFilter']
 
@@ -1832,6 +1846,7 @@ class ScrapeJobWhereInputRecursive1(TypedDict, total=False):
     apifyRunId: Union[None, _str, 'types.StringFilter']
     result: Union[None, 'fields.Json', 'types.JsonFilter']
     error: Union[None, _str, 'types.StringFilter']
+    audienceRoomId: Union[None, _str, 'types.StringFilter']
     createdAt: Union[datetime.datetime, 'types.DateTimeFilter']
     updatedAt: Union[datetime.datetime, 'types.DateTimeFilter']
 
@@ -1851,6 +1866,7 @@ class ScrapeJobWhereInputRecursive2(TypedDict, total=False):
     apifyRunId: Union[None, _str, 'types.StringFilter']
     result: Union[None, 'fields.Json', 'types.JsonFilter']
     error: Union[None, _str, 'types.StringFilter']
+    audienceRoomId: Union[None, _str, 'types.StringFilter']
     createdAt: Union[datetime.datetime, 'types.DateTimeFilter']
     updatedAt: Union[datetime.datetime, 'types.DateTimeFilter']
 
@@ -1870,6 +1886,7 @@ class ScrapeJobWhereInputRecursive3(TypedDict, total=False):
     apifyRunId: Union[None, _str, 'types.StringFilter']
     result: Union[None, 'fields.Json', 'types.JsonFilter']
     error: Union[None, _str, 'types.StringFilter']
+    audienceRoomId: Union[None, _str, 'types.StringFilter']
     createdAt: Union[datetime.datetime, 'types.DateTimeFilter']
     updatedAt: Union[datetime.datetime, 'types.DateTimeFilter']
 
@@ -1889,6 +1906,7 @@ class ScrapeJobWhereInputRecursive4(TypedDict, total=False):
     apifyRunId: Union[None, _str, 'types.StringFilter']
     result: Union[None, 'fields.Json', 'types.JsonFilter']
     error: Union[None, _str, 'types.StringFilter']
+    audienceRoomId: Union[None, _str, 'types.StringFilter']
     createdAt: Union[datetime.datetime, 'types.DateTimeFilter']
     updatedAt: Union[datetime.datetime, 'types.DateTimeFilter']
 
@@ -1908,6 +1926,7 @@ class ScrapeJobScalarWhereWithAggregatesInput(TypedDict, total=False):
     apifyRunId: Union[_str, 'types.StringWithAggregatesFilter']
     result: Union['fields.Json', 'types.JsonWithAggregatesFilter']
     error: Union[_str, 'types.StringWithAggregatesFilter']
+    audienceRoomId: Union[_str, 'types.StringWithAggregatesFilter']
     createdAt: Union[datetime.datetime, 'types.DateTimeWithAggregatesFilter']
     updatedAt: Union[datetime.datetime, 'types.DateTimeWithAggregatesFilter']
 
@@ -1925,6 +1944,7 @@ class ScrapeJobScalarWhereWithAggregatesInputRecursive1(TypedDict, total=False):
     apifyRunId: Union[_str, 'types.StringWithAggregatesFilter']
     result: Union['fields.Json', 'types.JsonWithAggregatesFilter']
     error: Union[_str, 'types.StringWithAggregatesFilter']
+    audienceRoomId: Union[_str, 'types.StringWithAggregatesFilter']
     createdAt: Union[datetime.datetime, 'types.DateTimeWithAggregatesFilter']
     updatedAt: Union[datetime.datetime, 'types.DateTimeWithAggregatesFilter']
 
@@ -1942,6 +1962,7 @@ class ScrapeJobScalarWhereWithAggregatesInputRecursive2(TypedDict, total=False):
     apifyRunId: Union[_str, 'types.StringWithAggregatesFilter']
     result: Union['fields.Json', 'types.JsonWithAggregatesFilter']
     error: Union[_str, 'types.StringWithAggregatesFilter']
+    audienceRoomId: Union[_str, 'types.StringWithAggregatesFilter']
     createdAt: Union[datetime.datetime, 'types.DateTimeWithAggregatesFilter']
     updatedAt: Union[datetime.datetime, 'types.DateTimeWithAggregatesFilter']
 
@@ -1959,6 +1980,7 @@ class ScrapeJobScalarWhereWithAggregatesInputRecursive3(TypedDict, total=False):
     apifyRunId: Union[_str, 'types.StringWithAggregatesFilter']
     result: Union['fields.Json', 'types.JsonWithAggregatesFilter']
     error: Union[_str, 'types.StringWithAggregatesFilter']
+    audienceRoomId: Union[_str, 'types.StringWithAggregatesFilter']
     createdAt: Union[datetime.datetime, 'types.DateTimeWithAggregatesFilter']
     updatedAt: Union[datetime.datetime, 'types.DateTimeWithAggregatesFilter']
 
@@ -1976,6 +1998,7 @@ class ScrapeJobScalarWhereWithAggregatesInputRecursive4(TypedDict, total=False):
     apifyRunId: Union[_str, 'types.StringWithAggregatesFilter']
     result: Union['fields.Json', 'types.JsonWithAggregatesFilter']
     error: Union[_str, 'types.StringWithAggregatesFilter']
+    audienceRoomId: Union[_str, 'types.StringWithAggregatesFilter']
     createdAt: Union[datetime.datetime, 'types.DateTimeWithAggregatesFilter']
     updatedAt: Union[datetime.datetime, 'types.DateTimeWithAggregatesFilter']
 
@@ -1989,6 +2012,7 @@ class ScrapeJobGroupByOutput(TypedDict, total=False):
     apifyRunId: _str
     result: 'fields.Json'
     error: _str
+    audienceRoomId: _str
     createdAt: datetime.datetime
     updatedAt: datetime.datetime
     _sum: 'ScrapeJobSumAggregateOutput'
@@ -2017,6 +2041,7 @@ class ScrapeJobScalarAggregateOutput(TypedDict, total=False):
     apifyRunId: _str
     result: 'fields.Json'
     error: _str
+    audienceRoomId: _str
     createdAt: datetime.datetime
     updatedAt: datetime.datetime
 
@@ -2034,6 +2059,7 @@ class ScrapeJobMaxAggregateInput(TypedDict, total=False):
     apifyRunId: bool
     result: bool
     error: bool
+    audienceRoomId: bool
     createdAt: bool
     updatedAt: bool
 
@@ -2047,6 +2073,7 @@ class ScrapeJobMinAggregateInput(TypedDict, total=False):
     apifyRunId: bool
     result: bool
     error: bool
+    audienceRoomId: bool
     createdAt: bool
     updatedAt: bool
 
@@ -2070,6 +2097,7 @@ ScrapeJobCountAggregateInput = TypedDict(
         'apifyRunId': bool,
         'result': bool,
         'error': bool,
+        'audienceRoomId': bool,
         'createdAt': bool,
         'updatedAt': bool,
         '_all': bool,
@@ -2087,6 +2115,7 @@ ScrapeJobCountAggregateOutput = TypedDict(
         'apifyRunId': int,
         'result': int,
         'error': int,
+        'audienceRoomId': int,
         'createdAt': int,
         'updatedAt': int,
         '_all': int,
@@ -2103,6 +2132,7 @@ ScrapeJobKeys = Literal[
     'apifyRunId',
     'result',
     'error',
+    'audienceRoomId',
     'createdAt',
     'updatedAt',
 ]
@@ -2114,6 +2144,7 @@ ScrapeJobScalarFieldKeys = Literal[
     'apifyRunId',
     'result',
     'error',
+    'audienceRoomId',
     'createdAt',
     'updatedAt',
 ]

@@ -22,11 +22,13 @@ model ScrapeJob {
   apifyRunId  String?  // Apify run ID
   result      Json?    // Scraped results
   error       String?  // Error message if failed
+  audienceRoomId String? // Optional audience room to auto-map posts on completion
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
   @@index([status])
   @@index([createdAt])
+  @@index([audienceRoomId])
 }
 
 model SearchQuery {
@@ -51,16 +53,15 @@ model AudienceRoom {
 
 // Profiles that belong to an audience room
 model AudienceProfile {
-  id                     String        @id @default(uuid())
-  audienceRoomId         String
-  audienceRoom           AudienceRoom  @relation(fields: [audienceRoomId], references: [id], onDelete: Cascade)
-  profileName            String
-  linkedinUrl            String
+  id                      String        @id @default(uuid())
+  audienceRoomId          String
+  audienceRoom            AudienceRoom  @relation(fields: [audienceRoomId], references: [id], onDelete: Cascade)
+  profileName             String
+  linkedinUrl             String
   profileDescriptionS3Url String?
-  postsS3Url             String?
-  createdAt              DateTime      @default(now())
-  updatedAt              DateTime      @updatedAt
+  postsS3Url              String?
+  createdAt               DateTime      @default(now())
+  updatedAt               DateTime      @updatedAt
 
   @@index([audienceRoomId])
 }
-

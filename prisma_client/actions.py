@@ -891,7 +891,7 @@ class ScrapeJobActions(Generic[_PrismaModelT]):
         results = await ScrapeJob.prisma().count(
             select={
                 '_all': True,
-                'createdAt': True,
+                'audienceRoomId': True,
             },
         )
         ```
@@ -1031,10 +1031,10 @@ class ScrapeJobActions(Generic[_PrismaModelT]):
         Example
         -------
         ```py
-        # group ScrapeJob records by updatedAt values
+        # group ScrapeJob records by createdAt values
         # and count how many records are in each group
         results = await ScrapeJob.prisma().group_by(
-            ['updatedAt'],
+            ['createdAt'],
             count=True,
         )
         ```

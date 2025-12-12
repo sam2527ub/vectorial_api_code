@@ -66,6 +66,7 @@ class ScrapeJob(bases.BaseScrapeJob):
     apifyRunId: Optional[_str] = None
     result: Optional['fields.Json'] = None
     error: Optional[_str] = None
+    audienceRoomId: Optional[_str] = None
     createdAt: datetime.datetime
     updatedAt: datetime.datetime
 
@@ -599,6 +600,14 @@ _ScrapeJob_fields: Dict['types.ScrapeJobKeys', PartialModelField] = OrderedDict(
         }),
         ('error', {
             'name': 'error',
+            'is_list': False,
+            'optional': True,
+            'type': '_str',
+            'is_relational': False,
+            'documentation': None,
+        }),
+        ('audienceRoomId', {
+            'name': 'audienceRoomId',
             'is_list': False,
             'optional': True,
             'type': '_str',

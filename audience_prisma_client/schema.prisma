@@ -1,0 +1,38 @@
+generator audience_client {
+  provider = "prisma-client-py"
+  interface = "asyncio"
+  recursive_type_depth = 5
+  binaryTargets = ["native", "rhel-openssl-1.0.x"]
+  output = "./audience_prisma_client"
+}
+
+datasource audience_db {
+  provider = "postgresql"
+  url      = env("AUDIENCE_DATABASE_URL")
+}
+
+// Audience grouping for saved LinkedIn profiles
+model AudienceRoom {
+  id               String             @id @default(uuid())
+  name             String
+  descriptionS3Url String?
+  profiles         AudienceProfile[]
+  createdAt        DateTime           @default(now())
+  updatedAt        DateTime           @updatedAt
+}
+
+// Profiles that belong to an audience room
+model AudienceProfile {
+  id                      String        @id @default(uuid())
+  audienceRoomId          String
+  audienceRoom            AudienceRoom  @relation(fields: [audienceRoomId], references: [id], onDelete: Cascade)
+  profileName             String
+  linkedinUrl             String
+  profileDescriptionS3Url String?
+  postsS3Url              String?
+  createdAt               DateTime      @default(now())
+  updatedAt               DateTime      @updatedAt
+
+  @@index([audienceRoomId])
+}
+

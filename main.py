@@ -8,7 +8,7 @@ from datetime import datetime
 from dateutil.parser import parse, ParserError
 
 # FastAPI Imports
-from fastapi import FastAPI, HTTPException, Body, Path
+from fastapi import FastAPI, HTTPException, Body, Path, Query
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field, root_validator
 
@@ -135,14 +135,12 @@ except Exception as e:
     s3_client = None
 
 try:
-    # Prisma client for database operations
+    # Prisma client for main database (ScrapeJob only)
     if Prisma is not None:
         prisma = Prisma()
         logger.info("Prisma client initialized successfully")
     else:
         prisma = None
-        # Only warn if we're in an environment where database is expected
-        # On Vercel, if build generation worked, this shouldn't happen
         if os.getenv("VERCEL"):
             logger.warning("Prisma client not available on Vercel - check build logs for 'prisma generate'")
         else:
@@ -206,9 +204,11 @@ app = FastAPI(
 )
 
 # Enable CORS (Allows your React frontend to talk to this Python backend)
+# SECURITY NOTE: In production, replace "*" with your specific frontend domain(s)
+# Example: allow_origins=["https://yourdomain.com", "https://www.yourdomain.com"]
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # In production, specify your frontend domain (e.g., ["http://localhost:3000"])
+    allow_origins=["*"],  # TODO: In production, specify your frontend domain (e.g., ["https://yourdomain.com"])
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -411,9 +411,26 @@ def upload_json_to_s3(key: str, data: Dict[str, Any]) -> str:
         logger.error(f"S3 upload failed for {key}: {e}")
         raise HTTPException(status_code=500, detail="Failed to upload to S3")
 
+def to_prisma_json(data: Any) -> Any:
+    """Wrap data for Prisma Json fields if PrismaJson is available."""
+    try:
+        return PrismaJson(data) if "PrismaJson" in globals() and PrismaJson else data
+    except Exception:
+        return data
 
-def generate_presigned_get_url(key: str, expires_in: int = 86400) -> Optional[str]:
-    """Generate a presigned GET URL for an S3 object."""
+
+def generate_presigned_get_url(key: str, expires_in: int = 3600) -> Optional[str]:
+    """
+    Generate a presigned GET URL for an S3 object.
+    
+    Default expiration: 1 hour (3600 seconds) for production security.
+    Presigned URLs are time-limited and provide secure access to private S3 objects.
+    
+    Security considerations:
+    - URLs expire after the specified time, preventing long-term unauthorized access
+    - URLs are cryptographically signed, making them tamper-proof
+    - Access is controlled through the API layer (add authentication/authorization as needed)
+    """
     if not s3_client or not s3_bucket:
         return None
     try:
@@ -427,18 +444,228 @@ def generate_presigned_get_url(key: str, expires_in: int = 86400) -> Optional[st
         return None
 
 
+def extract_s3_key_from_url(s3_url: Optional[str]) -> Optional[str]:
+    """Extract S3 key from a full S3 URL.
+    
+    Examples:
+    - https://bucket.s3.region.amazonaws.com/path/to/file.json -> path/to/file.json
+    - https://bucket.s3.amazonaws.com/path/to/file.json -> path/to/file.json
+    """
+    if not s3_url:
+        return None
+    try:
+        from urllib.parse import urlparse
+        parsed = urlparse(s3_url)
+        # Remove leading slash from path
+        key = parsed.path.lstrip('/')
+        return key if key else None
+    except Exception as e:
+        logger.error(f"Failed to extract S3 key from URL {s3_url}: {e}")
+        return None
+
+
+def generate_presigned_url_from_s3_url(s3_url: Optional[str], expires_in: int = 3600) -> Optional[str]:
+    """
+    Generate a presigned URL from a stored S3 URL by extracting the key.
+    
+    Default expiration: 1 hour (3600 seconds) for production security.
+    """
+    if not s3_url:
+        return None
+    key = extract_s3_key_from_url(s3_url)
+    if not key:
+        return None
+    return generate_presigned_get_url(key, expires_in)
+
+
+def fetch_json_from_s3(key: str) -> Dict[str, Any]:
+    """Fetch JSON data from S3 by key."""
+    if not s3_client or not s3_bucket:
+        raise HTTPException(status_code=503, detail="S3 is not configured; set AUDIENCE_BUCKET_NAME or VECTOR_BUCKET_NAME.")
+    try:
+        response = s3_client.get_object(Bucket=s3_bucket, Key=key)
+        content = response['Body'].read().decode('utf-8')
+        return json.loads(content)
+    except s3_client.exceptions.NoSuchKey as e:
+        raise HTTPException(status_code=404, detail=f"S3 object not found: {key}")
+    except Exception as e:
+        logger.error(f"Failed to fetch JSON from S3 for key {key}: {e}")
+        raise HTTPException(status_code=500, detail=f"Failed to fetch data from S3: {str(e)}")
+
+
 def normalize_linkedin_url(url: str) -> Optional[str]:
-    """Normalize LinkedIn profile URLs for matching."""
+    """Normalize LinkedIn profile URLs for matching (strip scheme, www, query, trailing slash)."""
     if not url:
         return None
     url = url.strip().lower()
-    # Add protocol if missing
-    if url.startswith("linkedin.com"):
+    if not url:
+        return None
+    # Ensure scheme for parsing
+    if not url.startswith("http://") and not url.startswith("https://"):
         url = "https://" + url
-    # Remove trailing slashes
-    while url.endswith("/"):
-        url = url[:-1]
-    return url
+    from urllib.parse import urlparse
+
+    parsed = urlparse(url)
+    if not parsed.netloc.endswith("linkedin.com"):
+        return None
+
+    # Keep only path without query/fragment
+    path = parsed.path or ""
+    # Remove multiple trailing slashes
+    while path.endswith("/") and path != "/":
+        path = path[:-1]
+    # If path is empty, return None
+    if not path:
+        return None
+
+    # Reconstruct canonical form without scheme/www/query
+    return f"linkedin.com{path}"
+
+
+async def process_posts_and_update_profiles(
+    dataset_client,
+    job_id: str,
+    audience_room_id: Optional[str] = None,
+    linkedin_urls: Optional[List[str]] = None,
+) -> Dict[str, Any]:
+    """
+    Process posts from Apify dataset, split by profile, upload to S3, and update AudienceProfile table.
+    
+    Args:
+        dataset_client: Apify dataset client to iterate items from
+        job_id: Scrape job ID
+        audience_room_id: Optional audience room ID to filter profiles
+        linkedin_urls: Optional list of LinkedIn URLs that were scraped (for matching)
+    
+    Returns:
+        Dictionary with processing results (posts_found, profiles_updated, profiles_missing, etc.)
+    """
+    if not audience_prisma:
+        logger.warning("Audience database not available, skipping profile updates")
+        return {"posts_found": 0, "profiles_updated": 0, "profiles_missing": 0}
+    
+    if not s3_client or not s3_bucket:
+        logger.warning("S3 not configured, skipping profile updates")
+        return {"posts_found": 0, "profiles_updated": 0, "profiles_missing": 0}
+    
+    await ensure_prisma_connection(audience_prisma, "Audience")
+    
+    # Fetch profiles - either from specific room or all profiles if URLs provided
+    if audience_room_id:
+        # Get profiles from specific audience room
+        profiles = await audience_prisma.audienceprofile.find_many(
+            where={"audienceRoomId": audience_room_id},
+        )
+    elif linkedin_urls:
+        # Get all profiles that match any of the scraped URLs
+        # We'll filter by matching normalized URLs
+        all_profiles = await audience_prisma.audienceprofile.find_many()
+        # Normalize scraped URLs for matching
+        normalized_scraped_urls = set()
+        for url in linkedin_urls:
+            norm_url = normalize_linkedin_url(url)
+            if norm_url:
+                normalized_scraped_urls.add(norm_url)
+        
+        # Filter profiles that match scraped URLs
+        profiles = []
+        for p in all_profiles:
+            norm_profile_url = normalize_linkedin_url(p.linkedinUrl)
+            if norm_profile_url and norm_profile_url in normalized_scraped_urls:
+                profiles.append(p)
+    else:
+        # No room ID and no URLs - can't match profiles
+        logger.warning("No audience room ID or LinkedIn URLs provided, cannot match profiles")
+        return {"posts_found": 0, "profiles_updated": 0, "profiles_missing": 0}
+    
+    if not profiles:
+        logger.warning(f"No profiles found to match posts against")
+        return {"posts_found": 0, "profiles_updated": 0, "profiles_missing": 0}
+    
+    # Build profile lookup by normalized URL
+    profile_by_url: Dict[str, Dict[str, Any]] = {}
+    for p in profiles:
+        norm_url = normalize_linkedin_url(p.linkedinUrl)
+        if norm_url:
+            profile_by_url[norm_url] = {
+                "id": p.id,
+                "profileName": p.profileName,
+                "linkedinUrl": p.linkedinUrl,
+                "audienceRoomId": p.audienceRoomId,
+            }
+    
+    # Group posts by profile
+    posts_acc: Dict[str, List[Any]] = {p["id"]: [] for p in profile_by_url.values()}
+    total_items = 0
+    
+    for item in dataset_client.iterate_items():
+        total_items += 1
+        if not isinstance(item, dict):
+            continue
+        input_url = normalize_linkedin_url(str(item.get("inputUrl", "")))
+        if not input_url:
+            continue
+        target = profile_by_url.get(input_url)
+        if target:
+            posts_acc[target["id"]].append(item)
+    
+    # Upload posts to S3 and update database
+    updated = []
+    missing = []
+    
+    for p in profile_by_url.values():
+        pid = p["id"]
+        posts_for_profile = posts_acc.get(pid, [])
+        if not posts_for_profile:
+            missing.append({
+                "profile_id": pid,
+                "profile_name": p["profileName"],
+                "linkedin_url": p["linkedinUrl"],
+                "reason": "no_posts_found"
+            })
+            continue
+        
+        # Use the profile's audience room ID for S3 path
+        room_id = p["audienceRoomId"]
+        posts_key = f"audiences/{room_id}/profiles/{pid}/posts.json"
+        posts_url = upload_json_to_s3(
+            posts_key,
+            {
+                "profile_id": pid,
+                "audience_room_id": room_id,
+                "linkedin_profile_url": p["linkedinUrl"],
+                "posts": posts_for_profile,
+            },
+        )
+        
+        try:
+            await audience_prisma.audienceprofile.update(
+                where={"id": pid},
+                data={"postsS3Url": posts_url},
+            )
+            updated.append({
+                "profile_id": pid,
+                "profile_name": p["profileName"],
+                "linkedin_url": p["linkedinUrl"],
+                "audience_room_id": room_id,
+                "posts_s3_url": posts_url,
+            })
+        except Exception as e:
+            logger.error(f"Error updating posts for profile {pid}: {e}")
+            missing.append({
+                "profile_id": pid,
+                "profile_name": p["profileName"],
+                "linkedin_url": p["linkedinUrl"],
+                "reason": "db_update_failed"
+            })
+    
+    return {
+        "posts_found": total_items,
+        "profiles_updated": len(updated),
+        "profiles_missing": len(missing),
+        "updated": updated,
+        "missing": missing,
+    }
 
 # --- 4. API ENDPOINTS ---
 
@@ -707,7 +934,6 @@ async def create_audience_room(payload: CreateAudienceRoomRequest):
             "description": payload.audience_description,
         },
     )
-    description_presigned = generate_presigned_get_url(description_key)
 
     # Build profile records and upload payloads to S3 (summary starts as null)
     profile_creates = []
@@ -728,7 +954,6 @@ async def create_audience_room(payload: CreateAudienceRoomRequest):
             "summary": None,
         }
         profile_url = upload_json_to_s3(profile_key, profile_payload)
-        profile_presigned = generate_presigned_get_url(profile_key)
 
         profile_creates.append(
             {
@@ -755,7 +980,6 @@ async def create_audience_room(payload: CreateAudienceRoomRequest):
             "audience_room_id": room.id,
             "audience_room_name": room.name,
             "description_s3_url": room.descriptionS3Url,
-            "description_presigned_url": description_presigned,
             "profiles_created": len(room.profiles),
             "profiles": [
                 {
@@ -763,13 +987,7 @@ async def create_audience_room(payload: CreateAudienceRoomRequest):
                     "profile_name": p.profileName,
                     "linkedin_url": p.linkedinUrl,
                     "profile_description_s3_url": p.profileDescriptionS3Url,
-                    "profile_description_presigned_url": generate_presigned_get_url(
-                        f"audiences/{room.id}/profiles/{p.id}/profile.json"
-                    ),
                     "posts_s3_url": p.postsS3Url,
-                    "posts_presigned_url": generate_presigned_get_url(
-                        f"audiences/{room.id}/profiles/{p.id}/posts.json"
-                    )
                 }
                 for p in room.profiles
             ],
@@ -805,7 +1023,6 @@ async def upload_profile_posts(audience_room_id: str, profile_id: str, payload: 
 
     posts_key = f"audiences/{audience_room_id}/profiles/{profile_id}/posts.json"
     posts_url = upload_json_to_s3(posts_key, {"profile_id": profile_id, "audience_room_id": audience_room_id, "posts": payload.posts})
-    posts_presigned = generate_presigned_get_url(posts_key)
 
     try:
         updated = await audience_prisma.audienceprofile.update(
@@ -816,7 +1033,6 @@ async def upload_profile_posts(audience_room_id: str, profile_id: str, payload: 
             "profile_id": updated.id,
             "audience_room_id": audience_room_id,
             "posts_s3_url": updated.postsS3Url,
-            "posts_presigned_url": posts_presigned,
         }
     except Exception as e:
         logger.error(f"Error updating posts for profile {profile_id}: {e}")
@@ -872,7 +1088,6 @@ async def upload_posts_batch(audience_room_id: str, payload: BatchPostsRequest):
     # Fetch profiles in the room
     profiles = await audience_prisma.audienceprofile.find_many(
         where={"audienceRoomId": audience_room_id},
-        select={"id": True, "profileName": True, "linkedinUrl": True},
     )
     if not profiles:
         raise HTTPException(status_code=404, detail="No profiles found for this audience room")
@@ -890,27 +1105,26 @@ async def upload_posts_batch(audience_room_id: str, payload: BatchPostsRequest):
     updated = []
     missing = []
     for p in profiles:
-        norm_profile_url = normalize_linkedin_url(p["linkedinUrl"])
+        norm_profile_url = normalize_linkedin_url(p.linkedinUrl)
         if not norm_profile_url:
-            missing.append({"profile_id": p["id"], "profile_name": p["profileName"], "reason": "missing_linkedin_url"})
+            missing.append({"profile_id": p.id, "profile_name": p.profileName, "reason": "missing_linkedin_url"})
             continue
 
         posts_for_profile = posts_by_url.get(norm_profile_url, [])
         if not posts_for_profile:
-            missing.append({"profile_id": p["id"], "profile_name": p["profileName"], "reason": "no_posts_found"})
+            missing.append({"profile_id": p.id, "profile_name": p.profileName, "reason": "no_posts_found"})
             continue
 
-        posts_key = f"audiences/{audience_room_id}/profiles/{p['id']}/posts.json"
+        posts_key = f"audiences/{audience_room_id}/profiles/{p.id}/posts.json"
         posts_url = upload_json_to_s3(
             posts_key,
             {
-                "profile_id": p["id"],
+                "profile_id": p.id,
                 "audience_room_id": audience_room_id,
-                "linkedin_profile_url": p["linkedinUrl"],
+                "linkedin_profile_url": p.linkedinUrl,
                 "posts": posts_for_profile,
             },
         )
-        posts_presigned = generate_presigned_get_url(posts_key)
 
         try:
             await audience_prisma.audienceprofile.update(
@@ -923,7 +1137,6 @@ async def upload_posts_batch(audience_room_id: str, payload: BatchPostsRequest):
                     "profile_name": p["profileName"],
                     "linkedin_url": p["linkedinUrl"],
                     "posts_s3_url": posts_url,
-                    "posts_presigned_url": posts_presigned,
                 }
             )
         except Exception as e:
@@ -938,6 +1151,132 @@ async def upload_posts_batch(audience_room_id: str, payload: BatchPostsRequest):
         "missing": missing,
     }
 
+# === GET ENDPOINTS: FETCH JSON DATA DIRECTLY FROM S3 ===
+@app.get("/api/v1/audience-rooms/{audience_room_id}/description")
+async def get_audience_room_description(audience_room_id: str):
+    """
+    Fetch and return the audience room description JSON from S3.
+    
+    Frontend sends audience room ID, backend fetches description.json from S3 and returns it.
+    """
+    if not audience_prisma:
+        raise HTTPException(status_code=503, detail="Audience database connection not available. Please set AUDIENCE_DATABASE_URL.")
+    if not s3_client or not s3_bucket:
+        raise HTTPException(status_code=503, detail="S3 is not configured; set AUDIENCE_BUCKET_NAME or VECTOR_BUCKET_NAME.")
+    
+    await ensure_prisma_connection(audience_prisma, "Audience")
+    
+    try:
+        # Verify room exists
+        room = await audience_prisma.audienceroom.find_unique(where={"id": audience_room_id})
+        if not room:
+            raise HTTPException(status_code=404, detail=f"Audience room {audience_room_id} not found")
+        
+        if not room.descriptionS3Url:
+            raise HTTPException(status_code=404, detail="Description not found for this audience room")
+        
+        # Extract S3 key from URL
+        description_key = extract_s3_key_from_url(room.descriptionS3Url)
+        if not description_key:
+            raise HTTPException(status_code=500, detail="Invalid S3 URL format")
+        
+        # Fetch JSON from S3
+        description_data = fetch_json_from_s3(description_key)
+        return description_data
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error fetching description for audience room {audience_room_id}: {e}")
+        raise HTTPException(status_code=500, detail="Failed to fetch description")
+
+
+@app.get("/api/v1/audience-rooms/{audience_room_id}/profiles/{profile_id}/description")
+async def get_profile_description(audience_room_id: str, profile_id: str):
+    """
+    Fetch and return the profile description JSON from S3.
+    
+    Frontend sends room ID and profile ID, backend fetches profile.json from S3 and returns it.
+    """
+    if not audience_prisma:
+        raise HTTPException(status_code=503, detail="Audience database connection not available. Please set AUDIENCE_DATABASE_URL.")
+    if not s3_client or not s3_bucket:
+        raise HTTPException(status_code=503, detail="S3 is not configured; set AUDIENCE_BUCKET_NAME or VECTOR_BUCKET_NAME.")
+    
+    await ensure_prisma_connection(audience_prisma, "Audience")
+    
+    try:
+        # Verify profile exists and belongs to the room
+        profile = await audience_prisma.audienceprofile.find_unique(
+            where={"id": profile_id},
+            include={"audienceRoom": True},
+        )
+        if not profile:
+            raise HTTPException(status_code=404, detail=f"Profile {profile_id} not found")
+        
+        if profile.audienceRoomId != audience_room_id:
+            raise HTTPException(status_code=404, detail=f"Profile {profile_id} does not belong to audience room {audience_room_id}")
+        
+        if not profile.profileDescriptionS3Url:
+            raise HTTPException(status_code=404, detail="Profile description not found")
+        
+        # Extract S3 key from URL
+        profile_key = extract_s3_key_from_url(profile.profileDescriptionS3Url)
+        if not profile_key:
+            raise HTTPException(status_code=500, detail="Invalid S3 URL format")
+        
+        # Fetch JSON from S3
+        profile_data = fetch_json_from_s3(profile_key)
+        return profile_data
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error fetching profile description for {profile_id}: {e}")
+        raise HTTPException(status_code=500, detail="Failed to fetch profile description")
+
+
+@app.get("/api/v1/audience-rooms/{audience_room_id}/profiles/{profile_id}/posts")
+async def get_profile_posts(audience_room_id: str, profile_id: str):
+    """
+    Fetch and return the profile posts JSON from S3.
+    
+    Frontend sends room ID and profile ID, backend fetches posts.json from S3 and returns it.
+    """
+    if not audience_prisma:
+        raise HTTPException(status_code=503, detail="Audience database connection not available. Please set AUDIENCE_DATABASE_URL.")
+    if not s3_client or not s3_bucket:
+        raise HTTPException(status_code=503, detail="S3 is not configured; set AUDIENCE_BUCKET_NAME or VECTOR_BUCKET_NAME.")
+    
+    await ensure_prisma_connection(audience_prisma, "Audience")
+    
+    try:
+        # Verify profile exists and belongs to the room
+        profile = await audience_prisma.audienceprofile.find_unique(
+            where={"id": profile_id},
+            include={"audienceRoom": True},
+        )
+        if not profile:
+            raise HTTPException(status_code=404, detail=f"Profile {profile_id} not found")
+        
+        if profile.audienceRoomId != audience_room_id:
+            raise HTTPException(status_code=404, detail=f"Profile {profile_id} does not belong to audience room {audience_room_id}")
+        
+        if not profile.postsS3Url:
+            raise HTTPException(status_code=404, detail="Posts not found for this profile")
+        
+        # Extract S3 key from URL
+        posts_key = extract_s3_key_from_url(profile.postsS3Url)
+        if not posts_key:
+            raise HTTPException(status_code=500, detail="Invalid S3 URL format")
+        
+        # Fetch JSON from S3
+        posts_data = fetch_json_from_s3(posts_key)
+        return posts_data
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error fetching posts for profile {profile_id}: {e}")
+        raise HTTPException(status_code=500, detail="Failed to fetch posts")
+
 # === STEP 4: TRIGGER POST SCRAPER (ASYNC) ===
 @app.post("/api/v1/scrape")
 async def trigger_scraping(payload: ScrapeRequest):
@@ -949,11 +1288,25 @@ async def trigger_scraping(payload: ScrapeRequest):
     # Convert Cookie Pydantic models to dictionaries for Apify
     cookies_dict = [cookie.dict(exclude_none=True) for cookie in payload.cookies]
 
-    # Normalize LinkedIn URLs
+    # Normalize LinkedIn URLs for database storage (for matching later)
     normalized_urls = [u for u in (normalize_linkedin_url(u) for u in payload.linkedin_urls) if u]
+    
+    # Prepare URLs for Apify - ensure they have full https://www.linkedin.com format
+    apify_urls = []
+    for url in payload.linkedin_urls:
+        url = url.strip()
+        # Ensure it has https://
+        if not url.startswith("http://") and not url.startswith("https://"):
+            url = "https://" + url
+        # Ensure it has www. if it's just linkedin.com
+        if url.startswith("https://linkedin.com") and not url.startswith("https://www.linkedin.com"):
+            url = url.replace("https://linkedin.com", "https://www.linkedin.com")
+        elif url.startswith("http://linkedin.com") and not url.startswith("http://www.linkedin.com"):
+            url = url.replace("http://linkedin.com", "https://www.linkedin.com")
+        apify_urls.append(url)
 
     run_input = {
-        "urls": normalized_urls,
+        "urls": apify_urls,
         "limitPerSource": payload.max_posts,
         "cookie": cookies_dict,
         "userAgent": payload.user_agent,
@@ -1124,8 +1477,78 @@ async def get_scrape_status(job_id: str = Path(..., description="Job ID returned
         if not job:
             raise HTTPException(status_code=404, detail=f"Job {job_id} not found")
         
-        # If already completed, return cached results
+        # If already completed, attempt audience post backfill if dataset is available; otherwise return cached results
         if job.status == "COMPLETED":
+            result_data = job.result if isinstance(job.result, dict) else {}
+            dataset_id = None
+            if result_data:
+                dataset_id = (
+                    result_data.get("dataset_id")
+                    or result_data.get("defaultDatasetId")
+                    or result_data.get("datasetId")
+                )
+            
+            # If dataset_id not in result, try to fetch it from Apify using the stored run ID
+            if not dataset_id and job.apifyRunId:
+                try:
+                    run = apify_client.run(job.apifyRunId).get()
+                    run_data = run.get("data", run) if isinstance(run, dict) else {}
+                    dataset_id = run_data.get("defaultDatasetId") if isinstance(run_data, dict) else None
+                    logger.info(f"Fetched dataset_id {dataset_id} from Apify for completed job {job_id}")
+                except Exception as apify_fetch_error:
+                    logger.warning(f"Could not fetch dataset_id from Apify for job {job_id}: {apify_fetch_error}")
+
+            # Try to process posts and update profiles if dataset is available
+            if dataset_id and audience_prisma:
+                try:
+                    # Get LinkedIn URLs from job (handle different storage formats)
+                    linkedin_urls_list = []
+                    if job.linkedinUrls:
+                        # Prisma JSON fields are typically returned as Python objects
+                        if isinstance(job.linkedinUrls, list):
+                            linkedin_urls_list = job.linkedinUrls
+                        else:
+                            # Try to convert to list if it's not already
+                            try:
+                                linkedin_urls_list = list(job.linkedinUrls) if hasattr(job.linkedinUrls, '__iter__') and not isinstance(job.linkedinUrls, str) else []
+                            except (TypeError, ValueError):
+                                linkedin_urls_list = []
+                    
+                    dataset_client = apify_client.dataset(dataset_id)
+                    processing_result = await process_posts_and_update_profiles(
+                        dataset_client=dataset_client,
+                        job_id=job_id,
+                        audience_room_id=job.audienceRoomId,
+                        linkedin_urls=linkedin_urls_list if linkedin_urls_list else None,
+                    )
+                    
+                    # Update job result with processing info
+                    new_result = {
+                        "dataset_id": dataset_id,
+                        **processing_result,
+                    }
+                    await prisma.scrapejob.update(
+                        where={"id": job_id},
+                        data={
+                            "result": to_prisma_json(new_result),
+                        },
+                    )
+                    
+                    return {
+                        "job_id": job_id,
+                        "status": "COMPLETED",
+                        "audience_room_id": job.audienceRoomId,
+                        "posts_found": processing_result.get("posts_found", 0),
+                        "profiles_updated": processing_result.get("profiles_updated", 0),
+                        "profiles_missing": processing_result.get("profiles_missing", 0),
+                        "updated": processing_result.get("updated", []),
+                        "missing": processing_result.get("missing", []),
+                        "created_at": job.createdAt.isoformat(),
+                        "updated_at": datetime.now().isoformat(),
+                    }
+                except Exception as backfill_error:
+                    logger.error(f"Audience backfill on completed job failed: {backfill_error}")
+
             return {
                 "job_id": job_id,
                 "status": "COMPLETED",
@@ -1170,119 +1593,47 @@ async def get_scrape_status(job_id: str = Path(..., description="Job ID returned
 
                 dataset_client = apify_client.dataset(dataset_id)
 
-                # If the job is tied to an audience room, stream directly from Apify -> S3 per profile
-                if job.audienceRoomId:
-                    if not audience_prisma:
-                        raise HTTPException(status_code=503, detail="Audience database connection not available. Please set AUDIENCE_DATABASE_URL.")
-                    await ensure_prisma_connection(audience_prisma, "Audience")
-
-                    profiles = await audience_prisma.audienceprofile.find_many(
-                        where={"audienceRoomId": job.audienceRoomId},
-                        select={"id": True, "profileName": True, "linkedinUrl": True},
-                    )
-
-                    profile_by_url: Dict[str, Dict[str, str]] = {}
-                    for p in profiles:
-                        norm_url = normalize_linkedin_url(p["linkedinUrl"])
-                        if norm_url:
-                            profile_by_url[norm_url] = p
-
-                    posts_acc: Dict[str, List[Any]] = {p["id"]: [] for p in profiles}
-                    total_items = 0
-                    for item in dataset_client.iterate_items():
-                        total_items += 1
-                        if not isinstance(item, dict):
-                            continue
-                        input_url = normalize_linkedin_url(str(item.get("inputUrl", "")))
-                        if not input_url:
-                            continue
-                        target = profile_by_url.get(input_url)
-                        if target:
-                            posts_acc[target["id"]].append(item)
-
-                    updated = []
-                    missing = []
-                    for p in profiles:
-                        pid = p["id"]
-                        posts_for_profile = posts_acc.get(pid, [])
-                        if not posts_for_profile:
-                            missing.append({"profile_id": pid, "profile_name": p["profileName"], "reason": "no_posts_found"})
-                            continue
-
-                        posts_key = f"audiences/{job.audienceRoomId}/profiles/{pid}/posts.json"
-                        posts_url = upload_json_to_s3(
-                            posts_key,
-                            {
-                                "profile_id": pid,
-                                "audience_room_id": job.audienceRoomId,
-                                "linkedin_profile_url": p["linkedinUrl"],
-                                "posts": posts_for_profile,
-                            },
-                        )
+                # Get LinkedIn URLs from job for matching profiles (handle different storage formats)
+                linkedin_urls_list = []
+                if job.linkedinUrls:
+                    # Prisma JSON fields are typically returned as Python objects
+                    if isinstance(job.linkedinUrls, list):
+                        linkedin_urls_list = job.linkedinUrls
+                    else:
+                        # Try to convert to list if it's not already
                         try:
-                            await audience_prisma.audienceprofile.update(
-                                where={"id": pid},
-                                data={"postsS3Url": posts_url},
-                            )
-                            updated.append(
-                                {
-                                    "profile_id": pid,
-                                    "profile_name": p["profileName"],
-                                    "linkedin_url": p["linkedinUrl"],
-                                    "posts_s3_url": posts_url,
-                                }
-                            )
-                        except Exception as e:
-                            logger.error(f"Error updating posts for profile {pid}: {e}")
-                            missing.append({"profile_id": pid, "profile_name": p["profileName"], "reason": "db_update_failed"})
+                            linkedin_urls_list = list(job.linkedinUrls) if hasattr(job.linkedinUrls, '__iter__') and not isinstance(job.linkedinUrls, str) else []
+                        except (TypeError, ValueError):
+                            linkedin_urls_list = []
 
-                    await prisma.scrapejob.update(
-                        where={"id": job_id},
-                        data={
-                            "status": "COMPLETED",
-                            "result": {
-                                "posts_found": total_items,
-                                "profiles_updated": len(updated),
-                                "profiles_missing": len(missing),
-                                "dataset_id": dataset_id,
-                            },
-                        },
-                    )
-
-                    return {
-                        "job_id": job_id,
-                        "status": "COMPLETED",
-                        "posts_found": total_items,
-                        "audience_room_id": job.audienceRoomId,
-                        "profiles_updated": len(updated),
-                        "profiles_missing": len(missing),
-                        "updated": updated,
-                        "missing": missing,
-                        "created_at": job.createdAt.isoformat(),
-                        "updated_at": datetime.now().isoformat(),
-                    }
-
-                # If no audience room, just count items and mark complete without storing the blob
-                total_items = 0
-                for _ in dataset_client.iterate_items():
-                    total_items += 1
+                # Process posts and update profiles (works with or without audienceRoomId)
+                processing_result = await process_posts_and_update_profiles(
+                    dataset_client=dataset_client,
+                    job_id=job_id,
+                    audience_room_id=job.audienceRoomId,
+                    linkedin_urls=linkedin_urls_list if linkedin_urls_list else None,
+                )
 
                 await prisma.scrapejob.update(
                     where={"id": job_id},
                     data={
                         "status": "COMPLETED",
-                        "result": {
-                            "posts_found": total_items,
+                        "result": to_prisma_json({
                             "dataset_id": dataset_id,
-                        },
+                            **processing_result,
+                        }),
                     },
                 )
 
                 return {
                     "job_id": job_id,
                     "status": "COMPLETED",
-                    "posts_found": total_items,
-                    "dataset_id": dataset_id,
+                    "posts_found": processing_result.get("posts_found", 0),
+                    "audience_room_id": job.audienceRoomId,
+                    "profiles_updated": processing_result.get("profiles_updated", 0),
+                    "profiles_missing": processing_result.get("profiles_missing", 0),
+                    "updated": processing_result.get("updated", []),
+                    "missing": processing_result.get("missing", []),
                     "created_at": job.createdAt.isoformat(),
                     "updated_at": datetime.now().isoformat(),
                 }
