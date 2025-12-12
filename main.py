@@ -412,6 +412,21 @@ def upload_json_to_s3(key: str, data: Dict[str, Any]) -> str:
         raise HTTPException(status_code=500, detail="Failed to upload to S3")
 
 
+def generate_presigned_get_url(key: str, expires_in: int = 86400) -> Optional[str]:
+    """Generate a presigned GET URL for an S3 object."""
+    if not s3_client or not s3_bucket:
+        return None
+    try:
+        return s3_client.generate_presigned_url(
+            ClientMethod="get_object",
+            Params={"Bucket": s3_bucket, "Key": key},
+            ExpiresIn=expires_in,
+        )
+    except Exception as e:
+        logger.error(f"Failed to generate presigned URL for {key}: {e}")
+        return None
+
+
 def normalize_linkedin_url(url: str) -> Optional[str]:
     """Normalize LinkedIn profile URLs for matching."""
     if not url:
@@ -692,6 +707,7 @@ async def create_audience_room(payload: CreateAudienceRoomRequest):
             "description": payload.audience_description,
         },
     )
+    description_presigned = generate_presigned_get_url(description_key)
 
     # Build profile records and upload payloads to S3 (summary starts as null)
     profile_creates = []
@@ -712,6 +728,7 @@ async def create_audience_room(payload: CreateAudienceRoomRequest):
             "summary": None,
         }
         profile_url = upload_json_to_s3(profile_key, profile_payload)
+        profile_presigned = generate_presigned_get_url(profile_key)
 
         profile_creates.append(
             {
@@ -738,6 +755,7 @@ async def create_audience_room(payload: CreateAudienceRoomRequest):
             "audience_room_id": room.id,
             "audience_room_name": room.name,
             "description_s3_url": room.descriptionS3Url,
+            "description_presigned_url": description_presigned,
             "profiles_created": len(room.profiles),
             "profiles": [
                 {
@@ -745,7 +763,13 @@ async def create_audience_room(payload: CreateAudienceRoomRequest):
                     "profile_name": p.profileName,
                     "linkedin_url": p.linkedinUrl,
                     "profile_description_s3_url": p.profileDescriptionS3Url,
+                    "profile_description_presigned_url": generate_presigned_get_url(
+                        f"audiences/{room.id}/profiles/{p.id}/profile.json"
+                    ),
                     "posts_s3_url": p.postsS3Url,
+                    "posts_presigned_url": generate_presigned_get_url(
+                        f"audiences/{room.id}/profiles/{p.id}/posts.json"
+                    )
                 }
                 for p in room.profiles
             ],
@@ -781,6 +805,7 @@ async def upload_profile_posts(audience_room_id: str, profile_id: str, payload: 
 
     posts_key = f"audiences/{audience_room_id}/profiles/{profile_id}/posts.json"
     posts_url = upload_json_to_s3(posts_key, {"profile_id": profile_id, "audience_room_id": audience_room_id, "posts": payload.posts})
+    posts_presigned = generate_presigned_get_url(posts_key)
 
     try:
         updated = await audience_prisma.audienceprofile.update(
@@ -791,6 +816,7 @@ async def upload_profile_posts(audience_room_id: str, profile_id: str, payload: 
             "profile_id": updated.id,
             "audience_room_id": audience_room_id,
             "posts_s3_url": updated.postsS3Url,
+            "posts_presigned_url": posts_presigned,
         }
     except Exception as e:
         logger.error(f"Error updating posts for profile {profile_id}: {e}")
@@ -884,6 +910,7 @@ async def upload_posts_batch(audience_room_id: str, payload: BatchPostsRequest):
                 "posts": posts_for_profile,
             },
         )
+        posts_presigned = generate_presigned_get_url(posts_key)
 
         try:
             await audience_prisma.audienceprofile.update(
@@ -896,6 +923,7 @@ async def upload_posts_batch(audience_room_id: str, payload: BatchPostsRequest):
                     "profile_name": p["profileName"],
                     "linkedin_url": p["linkedinUrl"],
                     "posts_s3_url": posts_url,
+                    "posts_presigned_url": posts_presigned,
                 }
             )
         except Exception as e:
