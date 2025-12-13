@@ -1047,6 +1047,121 @@ async def create_audience_room(payload: CreateAudienceRoomRequest):
         raise HTTPException(status_code=500, detail="Failed to create audience room")
 
 
+# === DELETE AUDIENCE ROOM ===
+@app.delete("/api/v1/audience-rooms/{audience_room_id}")
+async def delete_audience_room(audience_room_id: str):
+    """
+    Delete an audience room and all associated data.
+    
+    This endpoint:
+    1. Deletes all S3 files associated with the audience room:
+       - Audience room description: audiences/{audience_room_id}/description.json
+       - All profile descriptions: audiences/{audience_room_id}/profiles/{profile_id}/profile.json
+       - All profile posts: audiences/{audience_room_id}/profiles/{profile_id}/posts.json
+    2. Deletes all profiles from the AudienceProfile table (cascade delete)
+    3. Deletes the audience room from the AudienceRoom table
+    
+    Args:
+        audience_room_id: The UUID of the audience room to delete
+    
+    Returns:
+        Success message with details of deleted items
+    """
+    if not audience_prisma:
+        raise HTTPException(status_code=503, detail="Audience database connection not available. Please set AUDIENCE_DATABASE_URL.")
+    if not s3_client or not s3_bucket:
+        raise HTTPException(status_code=503, detail="S3 is not configured; set AUDIENCE_BUCKET_NAME or VECTOR_BUCKET_NAME.")
+
+    await ensure_prisma_connection(audience_prisma, "Audience")
+
+    try:
+        # Fetch audience room with all profiles
+        audience_room = await audience_prisma.audienceroom.find_unique(
+            where={"id": audience_room_id},
+            include={"profiles": True}
+        )
+        
+        if not audience_room:
+            raise HTTPException(status_code=404, detail=f"Audience room {audience_room_id} not found")
+        
+        profiles = audience_room.profiles
+        profile_count = len(profiles)
+        
+        # Delete all S3 files associated with this audience room
+        s3_prefix = f"audiences/{audience_room_id}/"
+        deleted_s3_files = []
+        
+        try:
+            # List all objects with the prefix
+            paginator = s3_client.get_paginator('list_objects_v2')
+            pages = paginator.paginate(Bucket=s3_bucket, Prefix=s3_prefix)
+            
+            # Collect all object keys to delete
+            objects_to_delete = []
+            for page in pages:
+                if 'Contents' in page:
+                    for obj in page['Contents']:
+                        objects_to_delete.append({'Key': obj['Key']})
+                        deleted_s3_files.append(obj['Key'])
+            
+            # Delete all objects in batch (max 1000 objects per request)
+            if objects_to_delete:
+                for i in range(0, len(objects_to_delete), 1000):
+                    batch = objects_to_delete[i:i+1000]
+                    s3_client.delete_objects(
+                        Bucket=s3_bucket,
+                        Delete={
+                            'Objects': batch,
+                            'Quiet': True
+                        }
+                    )
+                logger.info(f"Deleted {len(objects_to_delete)} S3 objects for audience room {audience_room_id}")
+            else:
+                logger.warning(f"No S3 objects found for audience room {audience_room_id}")
+                
+        except Exception as e:
+            logger.error(f"Error deleting S3 files for audience room {audience_room_id}: {e}")
+            # Continue with database deletion even if S3 deletion fails
+        
+        # Delete all profiles from database first (explicit deletion for logging and clarity)
+        # Note: Cascade delete is configured, so deleting the room would also delete profiles,
+        # but we delete explicitly first to ensure proper cleanup order and logging
+        if profiles:
+            try:
+                await audience_prisma.audienceprofile.delete_many(
+                    where={"audienceRoomId": audience_room_id}
+                )
+                logger.info(f"Deleted {profile_count} profiles for audience room {audience_room_id}")
+            except Exception as e:
+                logger.error(f"Error deleting profiles for audience room {audience_room_id}: {e}")
+                raise HTTPException(status_code=500, detail=f"Failed to delete profiles: {str(e)}")
+        
+        # Delete the audience room from database
+        try:
+            await audience_prisma.audienceroom.delete(
+                where={"id": audience_room_id}
+            )
+            logger.info(f"Deleted audience room {audience_room_id}")
+        except Exception as e:
+            logger.error(f"Error deleting audience room {audience_room_id}: {e}")
+            raise HTTPException(status_code=500, detail=f"Failed to delete audience room: {str(e)}")
+        
+        return {
+            "message": f"Successfully deleted audience room {audience_room_id}",
+            "audience_room_id": audience_room_id,
+            "audience_room_name": audience_room.name,
+            "profiles_deleted": profile_count,
+            "s3_files_deleted": len(deleted_s3_files),
+            "s3_files": deleted_s3_files
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error deleting audience room {audience_room_id}: {e}")
+        raise HTTPException(status_code=500, detail=f"Failed to delete audience room: {str(e)}")
+
+
 # === STEP 3C: ATTACH POSTS TO AN AUDIENCE PROFILE ===
 @app.post("/api/v1/audience-rooms/{audience_room_id}/profiles/{profile_id}/posts")
 async def upload_profile_posts(audience_room_id: str, profile_id: str, payload: UpdateProfilePostsRequest):
@@ -1762,14 +1877,14 @@ Respond ONLY with valid JSON. No markdown, no code blocks, no explanation, just 
     try:
         # Call Groq API - try with json_object format first
         try:
-            response = groq_client.chat.completions.create(
+                response = groq_client.chat.completions.create(
                 model=model_name,
                 messages=[
                     {"role": "system", "content": system_prompt},
                     {"role": "user", "content": user_prompt}
                 ],
-                temperature=0.3,  # Lower temperature for more consistent classification
-                response_format={"type": "json_object"}  # Force JSON response
+            temperature=0.3,  # Lower temperature for more consistent classification
+            response_format={"type": "json_object"}  # Force JSON response
             )
         except Exception as groq_error:
             error_str = str(groq_error)
@@ -1812,7 +1927,7 @@ Respond ONLY with valid JSON. No markdown, no code blocks, no explanation, just 
                         {"role": "user", "content": user_prompt}
                     ],
                     temperature=0.3
-                )
+        )
         
         # Parse response
         content = response.choices[0].message.content
@@ -3030,6 +3145,365 @@ async def generate_profile_summaries(audience_room_id: str):
     except Exception as e:
         logger.error(f"Error generating profile summaries: {e}")
         raise HTTPException(status_code=500, detail=f"Failed to generate summaries: {str(e)}")
+
+
+# === GENERATE GROUP SUMMARY ENDPOINT ===
+@app.post("/api/v1/audience-rooms/{audience_room_id}/generate-group-summary")
+async def generate_group_summary(audience_room_id: str):
+    """
+    Generate a group summary for an audience room based on all profile summaries.
+    
+    Flow:
+    1. Fetch all profiles in the audience room
+    2. For each profile, fetch description JSON from S3 and extract the summary
+    3. Combine all profile summaries
+    4. Generate a group summary using OpenAI based on the combined summaries
+    5. Update the audience room description JSON in S3 with the new summary field
+    
+    Returns:
+        The generated group summary and processing results
+    """
+    if not audience_prisma:
+        raise HTTPException(status_code=503, detail="Audience database connection not available. Please set AUDIENCE_DATABASE_URL.")
+    if not openai_client:
+        raise HTTPException(status_code=503, detail="OpenAI client not initialized. Please set OPENAI_API_KEY.")
+    if not s3_client or not s3_bucket:
+        raise HTTPException(status_code=503, detail="S3 is not configured; set AUDIENCE_BUCKET_NAME or VECTOR_BUCKET_NAME.")
+    
+    await ensure_prisma_connection(audience_prisma, "Audience")
+    
+    try:
+        # Fetch audience room and profiles
+        audience_room = await audience_prisma.audienceroom.find_unique(
+            where={"id": audience_room_id},
+            include={"profiles": True}
+        )
+        if not audience_room:
+            raise HTTPException(status_code=404, detail=f"Audience room {audience_room_id} not found")
+        
+        profiles = audience_room.profiles
+        if not profiles:
+            raise HTTPException(status_code=404, detail=f"No profiles found in audience room {audience_room_id}")
+        
+        # Fetch audience room description JSON from S3
+        if not audience_room.descriptionS3Url:
+            raise HTTPException(status_code=404, detail="Description not found for this audience room")
+        
+        description_key = extract_s3_key_from_url(audience_room.descriptionS3Url)
+        if not description_key:
+            raise HTTPException(status_code=500, detail="Invalid S3 URL format for audience room description")
+        
+        room_description_data = fetch_json_from_s3(description_key)
+        
+        logger.info(f"Generating group summary for {len(profiles)} profiles in audience room {audience_room_id}")
+        
+        # Fetch profile summaries from S3
+        profile_summaries = []
+        companies = set()
+        profiles_processed = 0
+        profiles_skipped = 0
+        
+        for profile in profiles:
+            try:
+                if not profile.profileDescriptionS3Url:
+                    logger.warning(f"Profile {profile.id} has no description URL, skipping")
+                    profiles_skipped += 1
+                    continue
+                
+                profile_key = extract_s3_key_from_url(profile.profileDescriptionS3Url)
+                if not profile_key:
+                    logger.warning(f"Profile {profile.id} has invalid description URL, skipping")
+                    profiles_skipped += 1
+                    continue
+                
+                profile_data = fetch_json_from_s3(profile_key)
+                profile_summary = profile_data.get("summary")
+                
+                if not profile_summary:
+                    logger.warning(f"Profile {profile.id} has no summary, skipping")
+                    profiles_skipped += 1
+                    continue
+                
+                profile_summaries.append({
+                    "name": profile.profileName,
+                    "summary": profile_summary,
+                    "company": profile_data.get("current_company")
+                })
+                
+                # Collect company information
+                if profile_data.get("current_company"):
+                    companies.add(profile_data.get("current_company"))
+                
+                profiles_processed += 1
+                
+            except Exception as e:
+                logger.error(f"Error fetching profile {profile.id} description: {e}")
+                profiles_skipped += 1
+                continue
+        
+        if not profile_summaries:
+            raise HTTPException(
+                status_code=400, 
+                detail="No profile summaries found. Please generate profile summaries first using /api/v1/audience-rooms/{audience_room_id}/generate-summaries"
+            )
+        
+        # Combine all profile summaries
+        combined_summaries = "\n\n".join([
+            f"{idx + 1}. {p['name']} ({p.get('company', 'N/A')}):\n{p['summary']}"
+            for idx, p in enumerate(profile_summaries)
+        ])
+        
+        # Determine company type/context
+        company_list = ", ".join(sorted(companies)) if companies else "various companies"
+        company_type = company_list if len(companies) <= 3 else f"{len(companies)} companies"
+        
+        # Build the prompt according to the template
+        user_prompt = f"""Analyze the following group of {len(profile_summaries)} profiles who work at {company_type}.
+
+Companies represented: {company_list}
+
+Individual Profile Summaries:
+{combined_summaries}
+
+Generate a comprehensive high-level summary (6-10 sentences) that covers:
+1. Overall themes and patterns across all profiles in this group
+2. Common topics, technologies, or expertise areas shared among them
+3. Company culture and stage characteristics evident from their posts
+4. Professional focus areas (e.g., technical depth, thought leadership, product development)
+5. Industry trends or insights that emerge from the collective content
+6. Unique characteristics or differentiators of this group
+7. Common posting styles or engagement patterns
+8. Key value propositions or strengths evident across the group
+
+Write in a natural, engaging way that provides insights into this collective group of professionals from {company_type}.
+
+Respond with ONLY the summary text, no JSON or formatting."""
+        
+        system_message = "You are an expert at analyzing groups of LinkedIn profiles and generating comprehensive, insightful high-level summaries. Write detailed, informative summaries that capture collective patterns and insights."
+        
+        # Generate group summary using OpenAI
+        try:
+            completion = openai_client.chat.completions.create(
+                model="gpt-4o-mini",
+                messages=[
+                    {"role": "system", "content": system_message},
+                    {"role": "user", "content": user_prompt}
+                ],
+                max_tokens=1200,
+                temperature=0.3,
+            )
+            
+            group_summary = completion.choices[0].message.content.strip()
+            
+            # Update audience room description JSON with the summary
+            room_description_data["summary"] = group_summary
+            
+            # Upload updated description back to S3
+            updated_description_url = upload_json_to_s3(description_key, room_description_data)
+            
+            # Update the audience room record with the new URL (same key, but updated content)
+            await audience_prisma.audienceroom.update(
+                where={"id": audience_room_id},
+                data={"descriptionS3Url": updated_description_url}
+            )
+            
+            return {
+                "audience_room_id": audience_room_id,
+                "audience_room_name": audience_room.name,
+                "summary": group_summary,
+                "total_profiles": len(profiles),
+                "profiles_processed": profiles_processed,
+                "profiles_skipped": profiles_skipped,
+                "companies_represented": list(companies),
+                "description_s3_url": updated_description_url
+            }
+            
+        except Exception as e:
+            logger.error(f"Error generating group summary: {e}")
+            raise HTTPException(status_code=500, detail=f"Failed to generate group summary: {str(e)}")
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error generating group summary: {e}")
+        raise HTTPException(status_code=500, detail=f"Failed to generate group summary: {str(e)}")
+
+
+# === REMOVE LABELS FROM POSTS ENDPOINT ===
+@app.post("/api/v1/audience-rooms/{audience_room_id}/remove-labels")
+async def remove_labels_from_posts(audience_room_id: str):
+    """
+    Remove the 'labels' field from all posts JSON for all profiles in an audience room.
+    
+    Flow:
+    1. Fetch all profiles in the audience room
+    2. For each profile with postsS3Url:
+       - Fetch posts JSON from S3
+       - Remove 'labels' field from each post
+       - Upload updated JSON back to S3
+       - Update the profile record in the database
+    
+    Returns:
+        Summary of profiles processed and posts updated
+    """
+    if not audience_prisma:
+        raise HTTPException(status_code=503, detail="Audience database connection not available. Please set AUDIENCE_DATABASE_URL.")
+    if not s3_client or not s3_bucket:
+        raise HTTPException(status_code=503, detail="S3 is not configured; set AUDIENCE_BUCKET_NAME or VECTOR_BUCKET_NAME.")
+    
+    await ensure_prisma_connection(audience_prisma, "Audience")
+    
+    try:
+        # Fetch audience room and profiles
+        audience_room = await audience_prisma.audienceroom.find_unique(
+            where={"id": audience_room_id},
+            include={"profiles": True}
+        )
+        if not audience_room:
+            raise HTTPException(status_code=404, detail=f"Audience room {audience_room_id} not found")
+        
+        profiles = audience_room.profiles
+        if not profiles:
+            raise HTTPException(status_code=404, detail=f"No profiles found in audience room {audience_room_id}")
+        
+        logger.info(f"Removing labels from posts for {len(profiles)} profiles in audience room {audience_room_id}")
+        
+        processed_profiles = []
+        total_posts_updated = 0
+        profiles_skipped = 0
+        profiles_with_errors = 0
+        
+        for profile in profiles:
+            profile_id = profile.id
+            profile_name = profile.profileName
+            
+            # Skip if no posts URL
+            if not profile.postsS3Url:
+                logger.warning(f"Profile {profile_id} ({profile_name}) has no posts URL, skipping")
+                profiles_skipped += 1
+                processed_profiles.append({
+                    "profile_id": profile_id,
+                    "profile_name": profile_name,
+                    "status": "skipped",
+                    "reason": "no_posts_url",
+                    "posts_updated": 0
+                })
+                continue
+            
+            try:
+                # Extract S3 key and fetch posts
+                posts_key = extract_s3_key_from_url(profile.postsS3Url)
+                if not posts_key:
+                    logger.error(f"Invalid S3 URL format for profile {profile_id}: {profile.postsS3Url}")
+                    profiles_with_errors += 1
+                    processed_profiles.append({
+                        "profile_id": profile_id,
+                        "profile_name": profile_name,
+                        "status": "error",
+                        "reason": "invalid_s3_url",
+                        "posts_updated": 0
+                    })
+                    continue
+                
+                # Fetch posts JSON from S3
+                posts_data = fetch_json_from_s3(posts_key)
+                
+                # Extract posts array (could be in different formats)
+                posts = []
+                original_structure = None
+                if isinstance(posts_data, dict):
+                    posts = posts_data.get("posts", [])
+                    if not posts and isinstance(posts_data.get("data"), list):
+                        posts = posts_data["data"]
+                    original_structure = posts_data
+                elif isinstance(posts_data, list):
+                    posts = posts_data
+                    original_structure = posts
+                
+                if not posts:
+                    logger.warning(f"No posts found for profile {profile_id}")
+                    profiles_skipped += 1
+                    processed_profiles.append({
+                        "profile_id": profile_id,
+                        "profile_name": profile_name,
+                        "status": "skipped",
+                        "reason": "no_posts",
+                        "posts_updated": 0
+                    })
+                    continue
+                
+                # Remove 'labels' field from each post
+                posts_updated_count = 0
+                for post in posts:
+                    if isinstance(post, dict) and "labels" in post:
+                        del post["labels"]
+                        posts_updated_count += 1
+                
+                if posts_updated_count == 0:
+                    logger.info(f"No labels found in posts for profile {profile_id}")
+                    processed_profiles.append({
+                        "profile_id": profile_id,
+                        "profile_name": profile_name,
+                        "status": "skipped",
+                        "reason": "no_labels_found",
+                        "posts_updated": 0
+                    })
+                    continue
+                
+                # Update the posts data structure
+                if isinstance(original_structure, dict):
+                    original_structure["posts"] = posts
+                    updated_posts_data = original_structure
+                else:
+                    updated_posts_data = posts
+                
+                # Upload updated posts back to S3
+                updated_posts_url = upload_json_to_s3(posts_key, updated_posts_data)
+                
+                # Update profile record with new posts URL (same key, but updated content)
+                await audience_prisma.audienceprofile.update(
+                    where={"id": profile_id},
+                    data={"postsS3Url": updated_posts_url}
+                )
+                
+                total_posts_updated += posts_updated_count
+                processed_profiles.append({
+                    "profile_id": profile_id,
+                    "profile_name": profile_name,
+                    "status": "success",
+                    "posts_updated": posts_updated_count,
+                    "updated_posts_url": updated_posts_url
+                })
+                
+                logger.info(f"Removed labels from {posts_updated_count} posts for profile {profile_id}")
+                
+            except Exception as e:
+                logger.error(f"Error processing profile {profile_id}: {e}")
+                profiles_with_errors += 1
+                processed_profiles.append({
+                    "profile_id": profile_id,
+                    "profile_name": profile_name,
+                    "status": "error",
+                    "reason": str(e),
+                    "posts_updated": 0
+                })
+        
+        return {
+            "audience_room_id": audience_room_id,
+            "audience_room_name": audience_room.name,
+            "total_profiles": len(profiles),
+            "total_posts_updated": total_posts_updated,
+            "profiles_processed": len([p for p in processed_profiles if p["status"] == "success"]),
+            "profiles_skipped": profiles_skipped,
+            "profiles_with_errors": profiles_with_errors,
+            "profiles": processed_profiles
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error removing labels from posts: {e}")
+        raise HTTPException(status_code=500, detail=f"Failed to remove labels from posts: {str(e)}")
 
 
 # === STEP 4: TRIGGER POST SCRAPER (ASYNC) ===
