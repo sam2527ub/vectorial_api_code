@@ -27,9 +27,11 @@ from peopledatalabs import PDLPY
 from apify_client import ApifyClient
 from openai import OpenAI
 import boto3
+from groq import Groq
 
 # Prisma client - import from local directory (generated during build)
 Prisma = None
+AudiencePrisma = None
 try:
     # Try importing generated client from local prisma_client package first
     import sys
@@ -83,10 +85,33 @@ except (RuntimeError, ImportError) as e:
         # Re-raise if it's a different error
         raise
 
+# Import audience Prisma client separately
+try:
+    import sys
+    from pathlib import Path as PathLib
+    audience_prisma_client_path = PathLib(__file__).parent / "audience_prisma_client"
+    if audience_prisma_client_path.exists():
+        # Add parent directory to path so we can import the package
+        parent_path = str(PathLib(__file__).parent)
+        if parent_path not in sys.path:
+            sys.path.insert(0, parent_path)
+    
+    try:
+        import audience_prisma_client
+        AudiencePrisma = audience_prisma_client.Prisma
+        logger.info("Audience Prisma client imported successfully")
+    except (ImportError, AttributeError) as e:
+        logger.warning(f"Failed to import Audience Prisma client: {e}")
+        AudiencePrisma = None
+except Exception as e:
+    logger.warning(f"Failed to set up Audience Prisma client path: {e}")
+    AudiencePrisma = None
+
 # Initialize Clients
 pdl_client = None
 apify_client = None
 openai_client = None
+groq_client = None
 dynamodb_resource = None
 prisma = None
 audience_prisma = None
@@ -116,6 +141,18 @@ try:
 except Exception as e:
     logger.error(f"Failed to initialize OpenAI client: {e}")
     openai_client = None
+
+try:
+    # Initialize Groq client for fast LLM inference
+    groq_api_key = os.getenv("GROQ_API_KEY")
+    if groq_api_key:
+        groq_client = Groq(api_key=groq_api_key)
+        logger.info("Groq client initialized successfully")
+    else:
+        logger.warning("GROQ_API_KEY not set")
+except Exception as e:
+    logger.error(f"Failed to initialize Groq client: {e}")
+    groq_client = None
 
 try:
     # Optional: DynamoDB
@@ -150,12 +187,16 @@ except Exception as e:
     prisma = None
 
 try:
-    # Separate Prisma client for the audience database (uses AUDIENCE_DATABASE_URL or PRISMA_DATABASE_URL)
-    if Prisma is not None and audience_db_url:
-        audience_prisma = Prisma(datasource={"url": audience_db_url, "name": "db"})
+    # Separate Prisma client for the audience database (uses AUDIENCE_DATABASE_URL)
+    if AudiencePrisma is not None and audience_db_url:
+        audience_prisma = AudiencePrisma(datasource={"url": audience_db_url, "name": "audience_db"})
         logger.info("Audience Prisma client initialized successfully")
-    elif Prisma is not None:
+    elif AudiencePrisma is not None:
         logger.warning("AUDIENCE_DATABASE_URL not set; audience endpoints will be disabled")
+        audience_prisma = None
+    else:
+        logger.warning("Audience Prisma client not available; audience endpoints will be disabled")
+        audience_prisma = None
 except Exception as e:
     logger.error(f"Failed to initialize Audience Prisma client: {e}")
     audience_prisma = None
@@ -303,6 +344,11 @@ class BatchPostsRequest(BaseModel):
         if not values.get("posts") and not values.get("job_id"):
             raise ValueError("Provide either posts or job_id")
         return values
+
+
+class RunClassifierRequest(BaseModel):
+    audienceRoomId: str = Field(..., description="ID of the audience room containing profiles to classify")
+    classifierId: str = Field(..., description="ID of the classifier to use for classification")
 
 # --- 3. HELPER FUNCTIONS ---
 
@@ -1276,6 +1322,539 @@ async def get_profile_posts(audience_room_id: str, profile_id: str):
     except Exception as e:
         logger.error(f"Error fetching posts for profile {profile_id}: {e}")
         raise HTTPException(status_code=500, detail="Failed to fetch posts")
+
+
+async def classify_post_with_groq(
+    post: Dict[str, Any],
+    classifier_name: str,
+    classifier_prompt: str,
+    classifier_description: str,
+    classifier_labels: List[str],
+    classifier_examples: Optional[Dict[str, Any]] = None,
+) -> Dict[str, Any]:
+    """
+    Classify a single post using Groq LLM.
+    
+    Returns:
+        Dictionary with 'label' and 'score' keys
+    """
+    if not groq_client:
+        raise HTTPException(status_code=503, detail="Groq client not initialized. Please set GROQ_API_KEY.")
+    
+    # Extract post content (text field from the post object)
+    post_text = post.get("text", "")
+    if not post_text:
+        # Try alternative fields
+        post_text = post.get("content", "") or post.get("description", "") or ""
+    
+    # Build few-shot examples string
+    examples_text = ""
+    if classifier_examples:
+        if isinstance(classifier_examples, list):
+            for example in classifier_examples[:3]:  # Limit to 3 examples
+                if isinstance(example, dict):
+                    example_post = example.get("post", example.get("text", ""))
+                    example_label = example.get("label", "")
+                    example_score = example.get("score", "")
+                    if example_post and example_label:
+                        examples_text += f"\nExample Post: {example_post}\nLabel: {example_label}"
+                        if example_score:
+                            examples_text += f" (Score: {example_score})"
+        elif isinstance(classifier_examples, dict):
+            # Handle dict format
+            for key, value in list(classifier_examples.items())[:3]:
+                if isinstance(value, dict):
+                    example_post = value.get("post", value.get("text", ""))
+                    example_label = value.get("label", key)
+                    if example_post and example_label:
+                        examples_text += f"\nExample Post: {example_post}\nLabel: {example_label}"
+    
+    # Construct the prompt
+    labels_str = ", ".join(classifier_labels)
+    prompt = f"""You are a classification assistant. Your task is to classify LinkedIn posts based on the following rules and labels.
+
+Classifier: {classifier_name}
+
+Rules/Description:
+{classifier_description}
+
+Available Labels: {labels_str}
+
+{f"Few-Shot Examples:{examples_text}" if examples_text else ""}
+
+Now classify the following post:
+
+Post Content:
+{post_text}
+
+You must respond with a valid JSON object containing:
+- "label": The primary/winning label (one of: {labels_str})
+- "score": The confidence score for the primary label (between 0.0 and 1.0)
+- "scores": An object where each key is a label name and each value is a confidence score (0.0 to 1.0) for that label. Include scores for ALL available labels: {labels_str}
+
+Example response format:
+{{
+  "label": "useful",
+  "score": 0.85,
+  "scores": {{
+    "useful": 0.85,
+    "not-useful": 0.15,
+    "promotional": 0.05
+  }}
+}}
+
+Respond ONLY with valid JSON, no other text."""
+    
+    try:
+        # Call Groq API
+        response = groq_client.chat.completions.create(
+            model="llama-3.1-70b-versatile",  # Fast and capable model
+            messages=[
+                {"role": "system", "content": classifier_prompt or "You are a helpful classification assistant."},
+                {"role": "user", "content": prompt}
+            ],
+            temperature=0.3,  # Lower temperature for more consistent classification
+            response_format={"type": "json_object"}  # Force JSON response
+        )
+        
+        # Parse response
+        content = response.choices[0].message.content
+        result = json.loads(content)
+        
+        # Validate and normalize response
+        label = result.get("label", "")
+        score = result.get("score", 0.0)
+        all_scores = result.get("scores", {})
+        
+        # Ensure label is one of the available labels
+        if label not in classifier_labels:
+            # Try to find closest match (case-insensitive)
+            label_lower = label.lower()
+            matched_label = None
+            for available_label in classifier_labels:
+                if available_label.lower() == label_lower:
+                    matched_label = available_label
+                    break
+            
+            if matched_label:
+                label = matched_label
+            else:
+                # Default to first label if no match
+                logger.warning(f"Label '{label}' not in available labels, defaulting to '{classifier_labels[0]}'")
+                label = classifier_labels[0]
+        
+        # Ensure score is between 0 and 1
+        try:
+            score = float(score)
+            if score > 1.0:
+                score = score / 100.0  # Convert percentage to decimal
+            score = max(0.0, min(1.0, score))
+        except (ValueError, TypeError):
+            score = 0.5  # Default score
+        
+        # Normalize all scores - ensure we have scores for all labels
+        normalized_scores = {}
+        if isinstance(all_scores, dict):
+            for available_label in classifier_labels:
+                if available_label in all_scores:
+                    try:
+                        label_score = float(all_scores[available_label])
+                        if label_score > 1.0:
+                            label_score = label_score / 100.0
+                        normalized_scores[available_label] = round(max(0.0, min(1.0, label_score)), 2)
+                    except (ValueError, TypeError):
+                        # If score is invalid, use 0.0
+                        normalized_scores[available_label] = 0.0
+                else:
+                    # If label not in scores, default to 0.0
+                    normalized_scores[available_label] = 0.0
+        else:
+            # If scores not provided or invalid, create default scores
+            for available_label in classifier_labels:
+                normalized_scores[available_label] = 0.0
+            # Set the primary label's score
+            normalized_scores[label] = round(score, 2)
+        
+        return {
+            "label": label,
+            "score": round(score, 2),
+            "allScores": normalized_scores
+        }
+    except json.JSONDecodeError as e:
+        logger.error(f"Failed to parse Groq JSON response: {e}, content: {content if 'content' in locals() else 'N/A'}")
+        # Return default classification with all scores set to 0 except the first
+        default_label = classifier_labels[0] if classifier_labels else "Unknown"
+        default_scores = {label: 0.0 for label in classifier_labels}
+        if default_label in default_scores:
+            default_scores[default_label] = 0.5
+        return {
+            "label": default_label,
+            "score": 0.5,
+            "allScores": default_scores
+        }
+    except Exception as e:
+        logger.error(f"Error classifying post with Groq: {e}")
+        raise HTTPException(status_code=500, detail=f"Failed to classify post: {str(e)}")
+
+
+async def classify_posts_batch(
+    posts: List[Dict[str, Any]],
+    classifier_name: str,
+    classifier_prompt: str,
+    classifier_description: str,
+    classifier_labels: List[str],
+    classifier_examples: Optional[Dict[str, Any]] = None,
+    batch_size: int = 10,
+) -> List[Dict[str, Any]]:
+    """
+    Classify multiple posts in parallel batches using Groq.
+    
+    Args:
+        posts: List of post objects to classify
+        classifier_name: Name of the classifier
+        classifier_prompt: System prompt for the classifier
+        classifier_description: Rules/description for classification
+        classifier_labels: Available labels
+        classifier_examples: Few-shot examples
+        batch_size: Number of posts to process in parallel
+    
+    Returns:
+        List of classification results (dicts with 'label' and 'score')
+    """
+    results = []
+    
+    # Process in batches to avoid overwhelming the API
+    for i in range(0, len(posts), batch_size):
+        batch = posts[i:i + batch_size]
+        
+        # Create tasks for parallel processing
+        tasks = [
+            classify_post_with_groq(
+                post=post,
+                classifier_name=classifier_name,
+                classifier_prompt=classifier_prompt,
+                classifier_description=classifier_description,
+                classifier_labels=classifier_labels,
+                classifier_examples=classifier_examples,
+            )
+            for post in batch
+        ]
+        
+        # Execute batch in parallel
+        batch_results = await asyncio.gather(*tasks, return_exceptions=True)
+        
+        # Handle any exceptions in batch results
+        for idx, result in enumerate(batch_results):
+            if isinstance(result, Exception):
+                logger.error(f"Error classifying post {i + idx}: {result}")
+                # Use default classification on error with all scores
+                default_label = classifier_labels[0] if classifier_labels else "Unknown"
+                default_scores = {label: 0.0 for label in classifier_labels}
+                if default_label in default_scores:
+                    default_scores[default_label] = 0.5
+                results.append({
+                    "label": default_label,
+                    "score": 0.5,
+                    "allScores": default_scores
+                })
+            else:
+                results.append(result)
+    
+    return results
+
+
+# === CLASSIFIER ENDPOINT ===
+@app.post("/api/classifier/run")
+async def run_classifier(payload: RunClassifierRequest):
+    """
+    Run a classifier on all posts in an audience room.
+    
+    Flow:
+    1. Fetch Classifier details from audience database
+    2. Fetch AudienceRoom and all associated Profiles
+    3. For each Profile, download posts from S3
+    4. Classify each post using Groq LLM
+    5. Add labels to posts and optionally upload back to S3
+    """
+    if not audience_prisma:
+        raise HTTPException(status_code=503, detail="Audience database connection not available. Please set AUDIENCE_DATABASE_URL.")
+    if not groq_client:
+        raise HTTPException(status_code=503, detail="Groq client not initialized. Please set GROQ_API_KEY.")
+    if not s3_client or not s3_bucket:
+        raise HTTPException(status_code=503, detail="S3 is not configured; set AUDIENCE_BUCKET_NAME or VECTOR_BUCKET_NAME.")
+    
+    await ensure_prisma_connection(audience_prisma, "Audience")
+    
+    try:
+        # 1. Fetch Classifier details using raw query to avoid Prisma Json field conversion issues
+        # Prisma sometimes has trouble with JSON fields, so we'll use a raw query
+        try:
+            raw_result = await audience_prisma.query_first(
+                'SELECT id, name, prompt, description, labels, examples, "createdAt", "updatedAt" FROM "PostClassifier" WHERE id = $1',
+                payload.classifierId
+            )
+        except Exception as query_error:
+            # If raw query fails, try with Prisma find_unique and handle the error
+            logger.warning(f"Raw query failed, trying Prisma find_unique: {query_error}")
+            try:
+                classifier = await audience_prisma.postclassifier.find_unique(
+                    where={"id": payload.classifierId}
+                )
+                if not classifier:
+                    raise HTTPException(status_code=404, detail=f"Classifier {payload.classifierId} not found")
+                # Access labels carefully
+                try:
+                    _ = classifier.labels  # Try to access to trigger any conversion error
+                except Exception as label_error:
+                    logger.warning(f"Error accessing labels field: {label_error}")
+                    # If we can't access labels, we can't proceed
+                    raise HTTPException(status_code=500, detail=f"Error reading classifier labels: {str(label_error)}")
+            except HTTPException:
+                raise
+            except Exception as prisma_error:
+                raise HTTPException(status_code=500, detail=f"Failed to fetch classifier: {str(prisma_error)}")
+        else:
+            if not raw_result:
+                raise HTTPException(status_code=404, detail=f"Classifier {payload.classifierId} not found")
+            
+            # Create a simple object-like structure from raw query result
+            class ClassifierData:
+                def __init__(self, data):
+                    self.id = data.get('id')
+                    self.name = data.get('name', '')
+                    self.prompt = data.get('prompt')
+                    self.description = data.get('description')
+                    # Parse labels - could be dict, list, or string
+                    labels_raw = data.get('labels')
+                    if isinstance(labels_raw, str):
+                        try:
+                            self.labels = json.loads(labels_raw)
+                        except json.JSONDecodeError:
+                            self.labels = [labels_raw]  # Single label as string
+                    elif isinstance(labels_raw, (list, dict)):
+                        self.labels = labels_raw
+                    else:
+                        self.labels = []
+                    # Parse examples
+                    examples_raw = data.get('examples')
+                    if isinstance(examples_raw, str):
+                        try:
+                            self.examples = json.loads(examples_raw) if examples_raw else None
+                        except json.JSONDecodeError:
+                            self.examples = None
+                    elif examples_raw:
+                        self.examples = examples_raw
+                    else:
+                        self.examples = None
+            
+            classifier = ClassifierData(raw_result)
+        
+        # Extract classifier fields
+        classifier_name = classifier.name
+        classifier_prompt = classifier.prompt or ""
+        classifier_description = classifier.description or ""
+        
+        # Handle labels (Prisma Json field - could be list, dict, or string representation)
+        classifier_labels = []
+        try:
+            labels_raw = classifier.labels
+            # If it's already a list, use it directly
+            if isinstance(labels_raw, list):
+                classifier_labels = labels_raw
+            # If it's a string, try to parse it
+            elif isinstance(labels_raw, str):
+                try:
+                    parsed = json.loads(labels_raw)
+                    if isinstance(parsed, list):
+                        classifier_labels = parsed
+                    else:
+                        classifier_labels = [labels_raw]
+                except (json.JSONDecodeError, TypeError):
+                    # If parsing fails, treat as single label
+                    classifier_labels = [labels_raw]
+            # If it's a dict (unlikely but handle it)
+            elif isinstance(labels_raw, dict):
+                # Try to extract list from dict, or convert dict keys/values
+                if "labels" in labels_raw and isinstance(labels_raw["labels"], list):
+                    classifier_labels = labels_raw["labels"]
+                else:
+                    classifier_labels = list(labels_raw.keys()) if labels_raw else []
+            else:
+                # Try to convert to list if it's iterable
+                try:
+                    classifier_labels = list(labels_raw) if labels_raw else []
+                except (TypeError, ValueError):
+                    classifier_labels = []
+        except Exception as e:
+            logger.warning(f"Error parsing classifier labels: {e}")
+            classifier_labels = []
+        
+        # Ensure all labels are strings
+        classifier_labels = [str(label) for label in classifier_labels if label]
+        
+        if not classifier_labels:
+            raise HTTPException(status_code=400, detail="Classifier has no labels defined")
+        
+        # Handle examples (JSON field)
+        classifier_examples = None
+        if classifier.examples:
+            try:
+                examples_raw = classifier.examples
+                if isinstance(examples_raw, dict):
+                    classifier_examples = examples_raw
+                elif isinstance(examples_raw, str):
+                    try:
+                        classifier_examples = json.loads(examples_raw)
+                    except json.JSONDecodeError:
+                        classifier_examples = None
+                elif isinstance(examples_raw, list):
+                    classifier_examples = examples_raw
+                else:
+                    classifier_examples = None
+            except Exception as e:
+                logger.warning(f"Error parsing classifier examples: {e}")
+                classifier_examples = None
+        
+        # 2. Fetch AudienceRoom and Profiles
+        audience_room = await audience_prisma.audienceroom.find_unique(
+            where={"id": payload.audienceRoomId},
+            include={"profiles": True}
+        )
+        if not audience_room:
+            raise HTTPException(status_code=404, detail=f"Audience room {payload.audienceRoomId} not found")
+        
+        profiles = audience_room.profiles
+        if not profiles:
+            raise HTTPException(status_code=404, detail=f"No profiles found in audience room {payload.audienceRoomId}")
+        
+        # 3. Process each profile's posts
+        processed_profiles = []
+        total_posts_classified = 0
+        
+        for profile in profiles:
+            profile_id = profile.id
+            profile_name = profile.profileName
+            
+            # Skip if no posts URL
+            if not profile.postsS3Url:
+                logger.warning(f"Profile {profile_id} ({profile_name}) has no posts URL, skipping")
+                processed_profiles.append({
+                    "profile_id": profile_id,
+                    "profile_name": profile_name,
+                    "status": "skipped",
+                    "reason": "no_posts_url",
+                    "posts_classified": 0
+                })
+                continue
+            
+            try:
+                # Extract S3 key and fetch posts
+                posts_key = extract_s3_key_from_url(profile.postsS3Url)
+                if not posts_key:
+                    logger.error(f"Invalid S3 URL format for profile {profile_id}: {profile.postsS3Url}")
+                    processed_profiles.append({
+                        "profile_id": profile_id,
+                        "profile_name": profile_name,
+                        "status": "error",
+                        "reason": "invalid_s3_url",
+                        "posts_classified": 0
+                    })
+                    continue
+                
+                # Fetch posts JSON from S3
+                posts_data = fetch_json_from_s3(posts_key)
+                
+                # Extract posts array (could be in different formats)
+                posts = []
+                if isinstance(posts_data, dict):
+                    posts = posts_data.get("posts", [])
+                    if not posts and isinstance(posts_data.get("data"), list):
+                        posts = posts_data["data"]
+                elif isinstance(posts_data, list):
+                    posts = posts_data
+                
+                if not posts:
+                    logger.warning(f"No posts found for profile {profile_id}")
+                    processed_profiles.append({
+                        "profile_id": profile_id,
+                        "profile_name": profile_name,
+                        "status": "skipped",
+                        "reason": "no_posts",
+                        "posts_classified": 0
+                    })
+                    continue
+                
+                # 4. Classify all posts
+                logger.info(f"Classifying {len(posts)} posts for profile {profile_id}")
+                classification_results = await classify_posts_batch(
+                    posts=posts,
+                    classifier_name=classifier_name,
+                    classifier_prompt=classifier_prompt,
+                    classifier_description=classifier_description,
+                    classifier_labels=classifier_labels,
+                    classifier_examples=classifier_examples,
+                    batch_size=10,  # Process 10 posts in parallel
+                )
+                
+                # 5. Add labels to each post
+                for idx, post in enumerate(posts):
+                    if idx < len(classification_results):
+                        classification = classification_results[idx]
+                        # Create labels object with all scores
+                        labels_obj = classification.get("allScores", {})
+                        # Add classifierId to the labels object
+                        labels_obj["classifierId"] = payload.classifierId
+                        post["labels"] = labels_obj
+                
+                # Update the posts data structure
+                if isinstance(posts_data, dict):
+                    posts_data["posts"] = posts
+                else:
+                    posts_data = posts
+                
+                # 6. Upload updated posts back to S3
+                updated_posts_url = upload_json_to_s3(posts_key, posts_data)
+                
+                # Update profile record with new posts URL (same key, but updated content)
+                await audience_prisma.audienceprofile.update(
+                    where={"id": profile_id},
+                    data={"postsS3Url": updated_posts_url}
+                )
+                
+                total_posts_classified += len(posts)
+                processed_profiles.append({
+                    "profile_id": profile_id,
+                    "profile_name": profile_name,
+                    "status": "success",
+                    "posts_classified": len(posts),
+                    "updated_posts_url": updated_posts_url
+                })
+                
+            except Exception as e:
+                logger.error(f"Error processing profile {profile_id}: {e}")
+                processed_profiles.append({
+                    "profile_id": profile_id,
+                    "profile_name": profile_name,
+                    "status": "error",
+                    "reason": str(e),
+                    "posts_classified": 0
+                })
+        
+        return {
+            "classifier_id": payload.classifierId,
+            "classifier_name": classifier_name,
+            "audience_room_id": payload.audienceRoomId,
+            "total_profiles_processed": len(profiles),
+            "total_posts_classified": total_posts_classified,
+            "profiles": processed_profiles
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error running classifier: {e}")
+        raise HTTPException(status_code=500, detail=f"Failed to run classifier: {str(e)}")
+
 
 # === STEP 4: TRIGGER POST SCRAPER (ASYNC) ===
 @app.post("/api/v1/scrape")

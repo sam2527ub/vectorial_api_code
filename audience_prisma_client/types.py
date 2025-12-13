@@ -1545,6 +1545,107 @@ class FindManyAudienceProfileArgsFromAudienceRoomRecursive4(TypedDict, total=Fal
     cursor: 'AudienceProfileWhereUniqueInput'
     distinct: List['AudienceProfileScalarFieldKeys']
     
+    
+
+class PostClassifierIncludeFromAudienceRoom(TypedDict, total=False):
+    """Relational arguments for AudienceRoom"""
+
+
+class PostClassifierIncludeFromAudienceRoomRecursive1(TypedDict, total=False):
+    """Relational arguments for AudienceRoom"""
+
+
+class PostClassifierIncludeFromAudienceRoomRecursive2(TypedDict, total=False):
+    """Relational arguments for AudienceRoom"""
+
+
+class PostClassifierIncludeFromAudienceRoomRecursive3(TypedDict, total=False):
+    """Relational arguments for AudienceRoom"""
+
+
+class PostClassifierIncludeFromAudienceRoomRecursive4(TypedDict, total=False):
+    """Relational arguments for AudienceRoom"""
+
+    
+
+class PostClassifierArgsFromAudienceRoom(TypedDict, total=False):
+    """Arguments for AudienceRoom"""
+    include: 'PostClassifierIncludeFromPostClassifierRecursive1'
+
+
+class PostClassifierArgsFromAudienceRoomRecursive1(TypedDict, total=False):
+    """Arguments for AudienceRoom"""
+    include: 'PostClassifierIncludeFromPostClassifierRecursive2'
+
+
+class PostClassifierArgsFromAudienceRoomRecursive2(TypedDict, total=False):
+    """Arguments for AudienceRoom"""
+    include: 'PostClassifierIncludeFromPostClassifierRecursive3'
+
+
+class PostClassifierArgsFromAudienceRoomRecursive3(TypedDict, total=False):
+    """Arguments for AudienceRoom"""
+    include: 'PostClassifierIncludeFromPostClassifierRecursive4'
+
+
+class PostClassifierArgsFromAudienceRoomRecursive4(TypedDict, total=False):
+    """Arguments for AudienceRoom"""
+    
+    
+
+class FindManyPostClassifierArgsFromAudienceRoom(TypedDict, total=False):
+    """Arguments for AudienceRoom"""
+    take: int
+    skip: int
+    order_by: Union['PostClassifierOrderByInput', List['PostClassifierOrderByInput']]
+    where: 'PostClassifierWhereInput'
+    cursor: 'PostClassifierWhereUniqueInput'
+    distinct: List['PostClassifierScalarFieldKeys']
+    include: 'PostClassifierIncludeFromPostClassifierRecursive1'
+
+
+class FindManyPostClassifierArgsFromAudienceRoomRecursive1(TypedDict, total=False):
+    """Arguments for AudienceRoom"""
+    take: int
+    skip: int
+    order_by: Union['PostClassifierOrderByInput', List['PostClassifierOrderByInput']]
+    where: 'PostClassifierWhereInput'
+    cursor: 'PostClassifierWhereUniqueInput'
+    distinct: List['PostClassifierScalarFieldKeys']
+    include: 'PostClassifierIncludeFromPostClassifierRecursive2'
+
+
+class FindManyPostClassifierArgsFromAudienceRoomRecursive2(TypedDict, total=False):
+    """Arguments for AudienceRoom"""
+    take: int
+    skip: int
+    order_by: Union['PostClassifierOrderByInput', List['PostClassifierOrderByInput']]
+    where: 'PostClassifierWhereInput'
+    cursor: 'PostClassifierWhereUniqueInput'
+    distinct: List['PostClassifierScalarFieldKeys']
+    include: 'PostClassifierIncludeFromPostClassifierRecursive3'
+
+
+class FindManyPostClassifierArgsFromAudienceRoomRecursive3(TypedDict, total=False):
+    """Arguments for AudienceRoom"""
+    take: int
+    skip: int
+    order_by: Union['PostClassifierOrderByInput', List['PostClassifierOrderByInput']]
+    where: 'PostClassifierWhereInput'
+    cursor: 'PostClassifierWhereUniqueInput'
+    distinct: List['PostClassifierScalarFieldKeys']
+    include: 'PostClassifierIncludeFromPostClassifierRecursive4'
+
+
+class FindManyPostClassifierArgsFromAudienceRoomRecursive4(TypedDict, total=False):
+    """Arguments for AudienceRoom"""
+    take: int
+    skip: int
+    order_by: Union['PostClassifierOrderByInput', List['PostClassifierOrderByInput']]
+    where: 'PostClassifierWhereInput'
+    cursor: 'PostClassifierWhereUniqueInput'
+    distinct: List['PostClassifierScalarFieldKeys']
+    
 
 
 FindManyAudienceRoomArgs = FindManyAudienceRoomArgsFromAudienceRoom
@@ -2233,6 +2334,107 @@ class FindManyAudienceProfileArgsFromAudienceProfileRecursive4(TypedDict, total=
     cursor: 'AudienceProfileWhereUniqueInput'
     distinct: List['AudienceProfileScalarFieldKeys']
     
+    
+
+class PostClassifierIncludeFromAudienceProfile(TypedDict, total=False):
+    """Relational arguments for AudienceProfile"""
+
+
+class PostClassifierIncludeFromAudienceProfileRecursive1(TypedDict, total=False):
+    """Relational arguments for AudienceProfile"""
+
+
+class PostClassifierIncludeFromAudienceProfileRecursive2(TypedDict, total=False):
+    """Relational arguments for AudienceProfile"""
+
+
+class PostClassifierIncludeFromAudienceProfileRecursive3(TypedDict, total=False):
+    """Relational arguments for AudienceProfile"""
+
+
+class PostClassifierIncludeFromAudienceProfileRecursive4(TypedDict, total=False):
+    """Relational arguments for AudienceProfile"""
+
+    
+
+class PostClassifierArgsFromAudienceProfile(TypedDict, total=False):
+    """Arguments for AudienceProfile"""
+    include: 'PostClassifierIncludeFromPostClassifierRecursive1'
+
+
+class PostClassifierArgsFromAudienceProfileRecursive1(TypedDict, total=False):
+    """Arguments for AudienceProfile"""
+    include: 'PostClassifierIncludeFromPostClassifierRecursive2'
+
+
+class PostClassifierArgsFromAudienceProfileRecursive2(TypedDict, total=False):
+    """Arguments for AudienceProfile"""
+    include: 'PostClassifierIncludeFromPostClassifierRecursive3'
+
+
+class PostClassifierArgsFromAudienceProfileRecursive3(TypedDict, total=False):
+    """Arguments for AudienceProfile"""
+    include: 'PostClassifierIncludeFromPostClassifierRecursive4'
+
+
+class PostClassifierArgsFromAudienceProfileRecursive4(TypedDict, total=False):
+    """Arguments for AudienceProfile"""
+    
+    
+
+class FindManyPostClassifierArgsFromAudienceProfile(TypedDict, total=False):
+    """Arguments for AudienceProfile"""
+    take: int
+    skip: int
+    order_by: Union['PostClassifierOrderByInput', List['PostClassifierOrderByInput']]
+    where: 'PostClassifierWhereInput'
+    cursor: 'PostClassifierWhereUniqueInput'
+    distinct: List['PostClassifierScalarFieldKeys']
+    include: 'PostClassifierIncludeFromPostClassifierRecursive1'
+
+
+class FindManyPostClassifierArgsFromAudienceProfileRecursive1(TypedDict, total=False):
+    """Arguments for AudienceProfile"""
+    take: int
+    skip: int
+    order_by: Union['PostClassifierOrderByInput', List['PostClassifierOrderByInput']]
+    where: 'PostClassifierWhereInput'
+    cursor: 'PostClassifierWhereUniqueInput'
+    distinct: List['PostClassifierScalarFieldKeys']
+    include: 'PostClassifierIncludeFromPostClassifierRecursive2'
+
+
+class FindManyPostClassifierArgsFromAudienceProfileRecursive2(TypedDict, total=False):
+    """Arguments for AudienceProfile"""
+    take: int
+    skip: int
+    order_by: Union['PostClassifierOrderByInput', List['PostClassifierOrderByInput']]
+    where: 'PostClassifierWhereInput'
+    cursor: 'PostClassifierWhereUniqueInput'
+    distinct: List['PostClassifierScalarFieldKeys']
+    include: 'PostClassifierIncludeFromPostClassifierRecursive3'
+
+
+class FindManyPostClassifierArgsFromAudienceProfileRecursive3(TypedDict, total=False):
+    """Arguments for AudienceProfile"""
+    take: int
+    skip: int
+    order_by: Union['PostClassifierOrderByInput', List['PostClassifierOrderByInput']]
+    where: 'PostClassifierWhereInput'
+    cursor: 'PostClassifierWhereUniqueInput'
+    distinct: List['PostClassifierScalarFieldKeys']
+    include: 'PostClassifierIncludeFromPostClassifierRecursive4'
+
+
+class FindManyPostClassifierArgsFromAudienceProfileRecursive4(TypedDict, total=False):
+    """Arguments for AudienceProfile"""
+    take: int
+    skip: int
+    order_by: Union['PostClassifierOrderByInput', List['PostClassifierOrderByInput']]
+    where: 'PostClassifierWhereInput'
+    cursor: 'PostClassifierWhereUniqueInput'
+    distinct: List['PostClassifierScalarFieldKeys']
+    
 
 
 FindManyAudienceProfileArgs = FindManyAudienceProfileArgsFromAudienceProfile
@@ -2544,6 +2746,840 @@ AudienceProfileScalarFieldKeysT = TypeVar('AudienceProfileScalarFieldKeysT', bou
 AudienceProfileRelationalFieldKeys = Literal[
         'audienceRoom',
     ]
+
+# PostClassifier types
+
+class PostClassifierOptionalCreateInput(TypedDict, total=False):
+    """Optional arguments to the PostClassifier create method"""
+    id: _str
+    prompt: Optional[_str]
+    description: Optional[_str]
+    examples: Optional['fields.Json']
+    createdAt: datetime.datetime
+    updatedAt: datetime.datetime
+
+
+class PostClassifierCreateInput(PostClassifierOptionalCreateInput):
+    """Required arguments to the PostClassifier create method"""
+    name: _str
+    labels: 'fields.Json'
+
+
+# TODO: remove this in favour of without explicit relations
+# e.g. PostCreateWithoutAuthorInput
+
+class PostClassifierOptionalCreateWithoutRelationsInput(TypedDict, total=False):
+    """Optional arguments to the PostClassifier create method, without relations"""
+    id: _str
+    prompt: Optional[_str]
+    description: Optional[_str]
+    examples: Optional['fields.Json']
+    createdAt: datetime.datetime
+    updatedAt: datetime.datetime
+
+
+class PostClassifierCreateWithoutRelationsInput(PostClassifierOptionalCreateWithoutRelationsInput):
+    """Required arguments to the PostClassifier create method, without relations"""
+    name: _str
+    labels: 'fields.Json'
+
+
+class PostClassifierCreateNestedWithoutRelationsInput(TypedDict, total=False):
+    create: 'PostClassifierCreateWithoutRelationsInput'
+    connect: 'PostClassifierWhereUniqueInput'
+
+
+class PostClassifierCreateManyNestedWithoutRelationsInput(TypedDict, total=False):
+    create: Union['PostClassifierCreateWithoutRelationsInput', List['PostClassifierCreateWithoutRelationsInput']]
+    connect: Union['PostClassifierWhereUniqueInput', List['PostClassifierWhereUniqueInput']]
+
+
+_PostClassifierWhereUnique_id_Input = TypedDict(
+    '_PostClassifierWhereUnique_id_Input',
+    {
+        'id': '_str',
+    },
+    total=True
+)
+
+PostClassifierWhereUniqueInput = _PostClassifierWhereUnique_id_Input
+
+
+class PostClassifierUpdateInput(TypedDict, total=False):
+    """Optional arguments for updating a record"""
+    id: _str
+    name: _str
+    prompt: Optional[_str]
+    description: Optional[_str]
+    labels: 'fields.Json'
+    examples: Optional['fields.Json']
+    createdAt: datetime.datetime
+    updatedAt: datetime.datetime
+
+
+class PostClassifierUpdateManyMutationInput(TypedDict, total=False):
+    """Arguments for updating many records"""
+    id: _str
+    name: _str
+    prompt: Optional[_str]
+    description: Optional[_str]
+    labels: 'fields.Json'
+    examples: Optional['fields.Json']
+    createdAt: datetime.datetime
+    updatedAt: datetime.datetime
+
+
+class PostClassifierUpdateManyWithoutRelationsInput(TypedDict, total=False):
+    create: List['PostClassifierCreateWithoutRelationsInput']
+    connect: List['PostClassifierWhereUniqueInput']
+    set: List['PostClassifierWhereUniqueInput']
+    disconnect: List['PostClassifierWhereUniqueInput']
+    delete: List['PostClassifierWhereUniqueInput']
+
+    # TODO
+    # update: List['PostClassifierUpdateWithWhereUniqueWithoutRelationsInput']
+    # updateMany: List['PostClassifierUpdateManyWithWhereUniqueWithoutRelationsInput']
+    # deleteMany: List['PostClassifierScalarWhereInput']
+    # upsert: List['PostClassifierUpserteWithWhereUniqueWithoutRelationsInput']
+    # connectOrCreate: List['PostClassifierCreateOrConnectWithoutRelationsInput']
+
+
+class PostClassifierUpdateOneWithoutRelationsInput(TypedDict, total=False):
+    create: 'PostClassifierCreateWithoutRelationsInput'
+    connect: 'PostClassifierWhereUniqueInput'
+    disconnect: bool
+    delete: bool
+
+    # TODO
+    # update: 'PostClassifierUpdateInput'
+    # upsert: 'PostClassifierUpsertWithoutRelationsInput'
+    # connectOrCreate: 'PostClassifierCreateOrConnectWithoutRelationsInput'
+
+
+class PostClassifierUpsertInput(TypedDict):
+    create: 'PostClassifierCreateInput'
+    update: 'PostClassifierUpdateInput'  # pyright: ignore[reportIncompatibleMethodOverride]
+
+
+_PostClassifier_id_OrderByInput = TypedDict(
+    '_PostClassifier_id_OrderByInput',
+    {
+        'id': 'SortOrder',
+    },
+    total=True
+)
+
+_PostClassifier_name_OrderByInput = TypedDict(
+    '_PostClassifier_name_OrderByInput',
+    {
+        'name': 'SortOrder',
+    },
+    total=True
+)
+
+_PostClassifier_prompt_OrderByInput = TypedDict(
+    '_PostClassifier_prompt_OrderByInput',
+    {
+        'prompt': 'SortOrder',
+    },
+    total=True
+)
+
+_PostClassifier_description_OrderByInput = TypedDict(
+    '_PostClassifier_description_OrderByInput',
+    {
+        'description': 'SortOrder',
+    },
+    total=True
+)
+
+_PostClassifier_labels_OrderByInput = TypedDict(
+    '_PostClassifier_labels_OrderByInput',
+    {
+        'labels': 'SortOrder',
+    },
+    total=True
+)
+
+_PostClassifier_examples_OrderByInput = TypedDict(
+    '_PostClassifier_examples_OrderByInput',
+    {
+        'examples': 'SortOrder',
+    },
+    total=True
+)
+
+_PostClassifier_createdAt_OrderByInput = TypedDict(
+    '_PostClassifier_createdAt_OrderByInput',
+    {
+        'createdAt': 'SortOrder',
+    },
+    total=True
+)
+
+_PostClassifier_updatedAt_OrderByInput = TypedDict(
+    '_PostClassifier_updatedAt_OrderByInput',
+    {
+        'updatedAt': 'SortOrder',
+    },
+    total=True
+)
+
+PostClassifierOrderByInput = Union[
+    '_PostClassifier_id_OrderByInput',
+    '_PostClassifier_name_OrderByInput',
+    '_PostClassifier_prompt_OrderByInput',
+    '_PostClassifier_description_OrderByInput',
+    '_PostClassifier_labels_OrderByInput',
+    '_PostClassifier_examples_OrderByInput',
+    '_PostClassifier_createdAt_OrderByInput',
+    '_PostClassifier_updatedAt_OrderByInput',
+]
+
+
+
+# recursive PostClassifier types
+# TODO: cleanup these types
+
+
+# Dict[str, Any] is a mypy limitation
+# see https://github.com/RobertCraigie/prisma-client-py/issues/45
+# switch to pyright for improved types, see https://prisma-client-py.readthedocs.io/en/stable/reference/limitations/
+
+PostClassifierRelationFilter = TypedDict(
+    'PostClassifierRelationFilter',
+    {
+        'is': 'Dict[str, Any]',
+        'is_not': 'Dict[str, Any]',
+    },
+    total=False,
+)
+
+
+class PostClassifierListRelationFilter(TypedDict, total=False):
+    some: 'Dict[str, Any]'
+    none: 'Dict[str, Any]'
+    every: 'Dict[str, Any]'
+
+
+class PostClassifierInclude(TypedDict, total=False):
+    """PostClassifier relational arguments"""
+
+
+    
+
+class AudienceRoomIncludeFromPostClassifier(TypedDict, total=False):
+    """Relational arguments for PostClassifier"""
+    profiles: Union[bool, 'FindManyAudienceProfileArgsFromPostClassifierRecursive1']
+
+
+class AudienceRoomIncludeFromPostClassifierRecursive1(TypedDict, total=False):
+    """Relational arguments for PostClassifier"""
+    profiles: Union[bool, 'FindManyAudienceProfileArgsFromPostClassifierRecursive2']
+
+
+class AudienceRoomIncludeFromPostClassifierRecursive2(TypedDict, total=False):
+    """Relational arguments for PostClassifier"""
+    profiles: Union[bool, 'FindManyAudienceProfileArgsFromPostClassifierRecursive3']
+
+
+class AudienceRoomIncludeFromPostClassifierRecursive3(TypedDict, total=False):
+    """Relational arguments for PostClassifier"""
+    profiles: Union[bool, 'FindManyAudienceProfileArgsFromPostClassifierRecursive4']
+
+
+class AudienceRoomIncludeFromPostClassifierRecursive4(TypedDict, total=False):
+    """Relational arguments for PostClassifier"""
+
+    
+
+class AudienceRoomArgsFromPostClassifier(TypedDict, total=False):
+    """Arguments for PostClassifier"""
+    include: 'AudienceRoomIncludeFromAudienceRoomRecursive1'
+
+
+class AudienceRoomArgsFromPostClassifierRecursive1(TypedDict, total=False):
+    """Arguments for PostClassifier"""
+    include: 'AudienceRoomIncludeFromAudienceRoomRecursive2'
+
+
+class AudienceRoomArgsFromPostClassifierRecursive2(TypedDict, total=False):
+    """Arguments for PostClassifier"""
+    include: 'AudienceRoomIncludeFromAudienceRoomRecursive3'
+
+
+class AudienceRoomArgsFromPostClassifierRecursive3(TypedDict, total=False):
+    """Arguments for PostClassifier"""
+    include: 'AudienceRoomIncludeFromAudienceRoomRecursive4'
+
+
+class AudienceRoomArgsFromPostClassifierRecursive4(TypedDict, total=False):
+    """Arguments for PostClassifier"""
+    
+    
+
+class FindManyAudienceRoomArgsFromPostClassifier(TypedDict, total=False):
+    """Arguments for PostClassifier"""
+    take: int
+    skip: int
+    order_by: Union['AudienceRoomOrderByInput', List['AudienceRoomOrderByInput']]
+    where: 'AudienceRoomWhereInput'
+    cursor: 'AudienceRoomWhereUniqueInput'
+    distinct: List['AudienceRoomScalarFieldKeys']
+    include: 'AudienceRoomIncludeFromAudienceRoomRecursive1'
+
+
+class FindManyAudienceRoomArgsFromPostClassifierRecursive1(TypedDict, total=False):
+    """Arguments for PostClassifier"""
+    take: int
+    skip: int
+    order_by: Union['AudienceRoomOrderByInput', List['AudienceRoomOrderByInput']]
+    where: 'AudienceRoomWhereInput'
+    cursor: 'AudienceRoomWhereUniqueInput'
+    distinct: List['AudienceRoomScalarFieldKeys']
+    include: 'AudienceRoomIncludeFromAudienceRoomRecursive2'
+
+
+class FindManyAudienceRoomArgsFromPostClassifierRecursive2(TypedDict, total=False):
+    """Arguments for PostClassifier"""
+    take: int
+    skip: int
+    order_by: Union['AudienceRoomOrderByInput', List['AudienceRoomOrderByInput']]
+    where: 'AudienceRoomWhereInput'
+    cursor: 'AudienceRoomWhereUniqueInput'
+    distinct: List['AudienceRoomScalarFieldKeys']
+    include: 'AudienceRoomIncludeFromAudienceRoomRecursive3'
+
+
+class FindManyAudienceRoomArgsFromPostClassifierRecursive3(TypedDict, total=False):
+    """Arguments for PostClassifier"""
+    take: int
+    skip: int
+    order_by: Union['AudienceRoomOrderByInput', List['AudienceRoomOrderByInput']]
+    where: 'AudienceRoomWhereInput'
+    cursor: 'AudienceRoomWhereUniqueInput'
+    distinct: List['AudienceRoomScalarFieldKeys']
+    include: 'AudienceRoomIncludeFromAudienceRoomRecursive4'
+
+
+class FindManyAudienceRoomArgsFromPostClassifierRecursive4(TypedDict, total=False):
+    """Arguments for PostClassifier"""
+    take: int
+    skip: int
+    order_by: Union['AudienceRoomOrderByInput', List['AudienceRoomOrderByInput']]
+    where: 'AudienceRoomWhereInput'
+    cursor: 'AudienceRoomWhereUniqueInput'
+    distinct: List['AudienceRoomScalarFieldKeys']
+    
+    
+
+class AudienceProfileIncludeFromPostClassifier(TypedDict, total=False):
+    """Relational arguments for PostClassifier"""
+    audienceRoom: Union[bool, 'AudienceRoomArgsFromPostClassifierRecursive1']
+
+
+class AudienceProfileIncludeFromPostClassifierRecursive1(TypedDict, total=False):
+    """Relational arguments for PostClassifier"""
+    audienceRoom: Union[bool, 'AudienceRoomArgsFromPostClassifierRecursive2']
+
+
+class AudienceProfileIncludeFromPostClassifierRecursive2(TypedDict, total=False):
+    """Relational arguments for PostClassifier"""
+    audienceRoom: Union[bool, 'AudienceRoomArgsFromPostClassifierRecursive3']
+
+
+class AudienceProfileIncludeFromPostClassifierRecursive3(TypedDict, total=False):
+    """Relational arguments for PostClassifier"""
+    audienceRoom: Union[bool, 'AudienceRoomArgsFromPostClassifierRecursive4']
+
+
+class AudienceProfileIncludeFromPostClassifierRecursive4(TypedDict, total=False):
+    """Relational arguments for PostClassifier"""
+
+    
+
+class AudienceProfileArgsFromPostClassifier(TypedDict, total=False):
+    """Arguments for PostClassifier"""
+    include: 'AudienceProfileIncludeFromAudienceProfileRecursive1'
+
+
+class AudienceProfileArgsFromPostClassifierRecursive1(TypedDict, total=False):
+    """Arguments for PostClassifier"""
+    include: 'AudienceProfileIncludeFromAudienceProfileRecursive2'
+
+
+class AudienceProfileArgsFromPostClassifierRecursive2(TypedDict, total=False):
+    """Arguments for PostClassifier"""
+    include: 'AudienceProfileIncludeFromAudienceProfileRecursive3'
+
+
+class AudienceProfileArgsFromPostClassifierRecursive3(TypedDict, total=False):
+    """Arguments for PostClassifier"""
+    include: 'AudienceProfileIncludeFromAudienceProfileRecursive4'
+
+
+class AudienceProfileArgsFromPostClassifierRecursive4(TypedDict, total=False):
+    """Arguments for PostClassifier"""
+    
+    
+
+class FindManyAudienceProfileArgsFromPostClassifier(TypedDict, total=False):
+    """Arguments for PostClassifier"""
+    take: int
+    skip: int
+    order_by: Union['AudienceProfileOrderByInput', List['AudienceProfileOrderByInput']]
+    where: 'AudienceProfileWhereInput'
+    cursor: 'AudienceProfileWhereUniqueInput'
+    distinct: List['AudienceProfileScalarFieldKeys']
+    include: 'AudienceProfileIncludeFromAudienceProfileRecursive1'
+
+
+class FindManyAudienceProfileArgsFromPostClassifierRecursive1(TypedDict, total=False):
+    """Arguments for PostClassifier"""
+    take: int
+    skip: int
+    order_by: Union['AudienceProfileOrderByInput', List['AudienceProfileOrderByInput']]
+    where: 'AudienceProfileWhereInput'
+    cursor: 'AudienceProfileWhereUniqueInput'
+    distinct: List['AudienceProfileScalarFieldKeys']
+    include: 'AudienceProfileIncludeFromAudienceProfileRecursive2'
+
+
+class FindManyAudienceProfileArgsFromPostClassifierRecursive2(TypedDict, total=False):
+    """Arguments for PostClassifier"""
+    take: int
+    skip: int
+    order_by: Union['AudienceProfileOrderByInput', List['AudienceProfileOrderByInput']]
+    where: 'AudienceProfileWhereInput'
+    cursor: 'AudienceProfileWhereUniqueInput'
+    distinct: List['AudienceProfileScalarFieldKeys']
+    include: 'AudienceProfileIncludeFromAudienceProfileRecursive3'
+
+
+class FindManyAudienceProfileArgsFromPostClassifierRecursive3(TypedDict, total=False):
+    """Arguments for PostClassifier"""
+    take: int
+    skip: int
+    order_by: Union['AudienceProfileOrderByInput', List['AudienceProfileOrderByInput']]
+    where: 'AudienceProfileWhereInput'
+    cursor: 'AudienceProfileWhereUniqueInput'
+    distinct: List['AudienceProfileScalarFieldKeys']
+    include: 'AudienceProfileIncludeFromAudienceProfileRecursive4'
+
+
+class FindManyAudienceProfileArgsFromPostClassifierRecursive4(TypedDict, total=False):
+    """Arguments for PostClassifier"""
+    take: int
+    skip: int
+    order_by: Union['AudienceProfileOrderByInput', List['AudienceProfileOrderByInput']]
+    where: 'AudienceProfileWhereInput'
+    cursor: 'AudienceProfileWhereUniqueInput'
+    distinct: List['AudienceProfileScalarFieldKeys']
+    
+    
+
+class PostClassifierIncludeFromPostClassifier(TypedDict, total=False):
+    """Relational arguments for PostClassifier"""
+
+
+class PostClassifierIncludeFromPostClassifierRecursive1(TypedDict, total=False):
+    """Relational arguments for PostClassifier"""
+
+
+class PostClassifierIncludeFromPostClassifierRecursive2(TypedDict, total=False):
+    """Relational arguments for PostClassifier"""
+
+
+class PostClassifierIncludeFromPostClassifierRecursive3(TypedDict, total=False):
+    """Relational arguments for PostClassifier"""
+
+
+class PostClassifierIncludeFromPostClassifierRecursive4(TypedDict, total=False):
+    """Relational arguments for PostClassifier"""
+
+    
+
+class PostClassifierArgsFromPostClassifier(TypedDict, total=False):
+    """Arguments for PostClassifier"""
+    include: 'PostClassifierIncludeFromPostClassifierRecursive1'
+
+
+class PostClassifierArgsFromPostClassifierRecursive1(TypedDict, total=False):
+    """Arguments for PostClassifier"""
+    include: 'PostClassifierIncludeFromPostClassifierRecursive2'
+
+
+class PostClassifierArgsFromPostClassifierRecursive2(TypedDict, total=False):
+    """Arguments for PostClassifier"""
+    include: 'PostClassifierIncludeFromPostClassifierRecursive3'
+
+
+class PostClassifierArgsFromPostClassifierRecursive3(TypedDict, total=False):
+    """Arguments for PostClassifier"""
+    include: 'PostClassifierIncludeFromPostClassifierRecursive4'
+
+
+class PostClassifierArgsFromPostClassifierRecursive4(TypedDict, total=False):
+    """Arguments for PostClassifier"""
+    
+    
+
+class FindManyPostClassifierArgsFromPostClassifier(TypedDict, total=False):
+    """Arguments for PostClassifier"""
+    take: int
+    skip: int
+    order_by: Union['PostClassifierOrderByInput', List['PostClassifierOrderByInput']]
+    where: 'PostClassifierWhereInput'
+    cursor: 'PostClassifierWhereUniqueInput'
+    distinct: List['PostClassifierScalarFieldKeys']
+    include: 'PostClassifierIncludeFromPostClassifierRecursive1'
+
+
+class FindManyPostClassifierArgsFromPostClassifierRecursive1(TypedDict, total=False):
+    """Arguments for PostClassifier"""
+    take: int
+    skip: int
+    order_by: Union['PostClassifierOrderByInput', List['PostClassifierOrderByInput']]
+    where: 'PostClassifierWhereInput'
+    cursor: 'PostClassifierWhereUniqueInput'
+    distinct: List['PostClassifierScalarFieldKeys']
+    include: 'PostClassifierIncludeFromPostClassifierRecursive2'
+
+
+class FindManyPostClassifierArgsFromPostClassifierRecursive2(TypedDict, total=False):
+    """Arguments for PostClassifier"""
+    take: int
+    skip: int
+    order_by: Union['PostClassifierOrderByInput', List['PostClassifierOrderByInput']]
+    where: 'PostClassifierWhereInput'
+    cursor: 'PostClassifierWhereUniqueInput'
+    distinct: List['PostClassifierScalarFieldKeys']
+    include: 'PostClassifierIncludeFromPostClassifierRecursive3'
+
+
+class FindManyPostClassifierArgsFromPostClassifierRecursive3(TypedDict, total=False):
+    """Arguments for PostClassifier"""
+    take: int
+    skip: int
+    order_by: Union['PostClassifierOrderByInput', List['PostClassifierOrderByInput']]
+    where: 'PostClassifierWhereInput'
+    cursor: 'PostClassifierWhereUniqueInput'
+    distinct: List['PostClassifierScalarFieldKeys']
+    include: 'PostClassifierIncludeFromPostClassifierRecursive4'
+
+
+class FindManyPostClassifierArgsFromPostClassifierRecursive4(TypedDict, total=False):
+    """Arguments for PostClassifier"""
+    take: int
+    skip: int
+    order_by: Union['PostClassifierOrderByInput', List['PostClassifierOrderByInput']]
+    where: 'PostClassifierWhereInput'
+    cursor: 'PostClassifierWhereUniqueInput'
+    distinct: List['PostClassifierScalarFieldKeys']
+    
+
+
+FindManyPostClassifierArgs = FindManyPostClassifierArgsFromPostClassifier
+FindFirstPostClassifierArgs = FindManyPostClassifierArgsFromPostClassifier
+
+
+    
+
+class PostClassifierWhereInput(TypedDict, total=False):
+    """PostClassifier arguments for searching"""
+    id: Union[_str, 'types.StringFilter']
+    name: Union[_str, 'types.StringFilter']
+    prompt: Union[None, _str, 'types.StringFilter']
+    description: Union[None, _str, 'types.StringFilter']
+    labels: Union['fields.Json', 'types.JsonFilter']
+    examples: Union[None, 'fields.Json', 'types.JsonFilter']
+    createdAt: Union[datetime.datetime, 'types.DateTimeFilter']
+    updatedAt: Union[datetime.datetime, 'types.DateTimeFilter']
+
+    # should be noted that AND and NOT should be Union['PostClassifierWhereInputRecursive1', List['PostClassifierWhereInputRecursive1']]
+    # but this causes mypy to hang :/
+    AND: List['PostClassifierWhereInputRecursive1']
+    OR: List['PostClassifierWhereInputRecursive1']
+    NOT: List['PostClassifierWhereInputRecursive1']
+
+
+class PostClassifierWhereInputRecursive1(TypedDict, total=False):
+    """PostClassifier arguments for searching"""
+    id: Union[_str, 'types.StringFilter']
+    name: Union[_str, 'types.StringFilter']
+    prompt: Union[None, _str, 'types.StringFilter']
+    description: Union[None, _str, 'types.StringFilter']
+    labels: Union['fields.Json', 'types.JsonFilter']
+    examples: Union[None, 'fields.Json', 'types.JsonFilter']
+    createdAt: Union[datetime.datetime, 'types.DateTimeFilter']
+    updatedAt: Union[datetime.datetime, 'types.DateTimeFilter']
+
+    # should be noted that AND and NOT should be Union['PostClassifierWhereInputRecursive2', List['PostClassifierWhereInputRecursive2']]
+    # but this causes mypy to hang :/
+    AND: List['PostClassifierWhereInputRecursive2']
+    OR: List['PostClassifierWhereInputRecursive2']
+    NOT: List['PostClassifierWhereInputRecursive2']
+
+
+class PostClassifierWhereInputRecursive2(TypedDict, total=False):
+    """PostClassifier arguments for searching"""
+    id: Union[_str, 'types.StringFilter']
+    name: Union[_str, 'types.StringFilter']
+    prompt: Union[None, _str, 'types.StringFilter']
+    description: Union[None, _str, 'types.StringFilter']
+    labels: Union['fields.Json', 'types.JsonFilter']
+    examples: Union[None, 'fields.Json', 'types.JsonFilter']
+    createdAt: Union[datetime.datetime, 'types.DateTimeFilter']
+    updatedAt: Union[datetime.datetime, 'types.DateTimeFilter']
+
+    # should be noted that AND and NOT should be Union['PostClassifierWhereInputRecursive3', List['PostClassifierWhereInputRecursive3']]
+    # but this causes mypy to hang :/
+    AND: List['PostClassifierWhereInputRecursive3']
+    OR: List['PostClassifierWhereInputRecursive3']
+    NOT: List['PostClassifierWhereInputRecursive3']
+
+
+class PostClassifierWhereInputRecursive3(TypedDict, total=False):
+    """PostClassifier arguments for searching"""
+    id: Union[_str, 'types.StringFilter']
+    name: Union[_str, 'types.StringFilter']
+    prompt: Union[None, _str, 'types.StringFilter']
+    description: Union[None, _str, 'types.StringFilter']
+    labels: Union['fields.Json', 'types.JsonFilter']
+    examples: Union[None, 'fields.Json', 'types.JsonFilter']
+    createdAt: Union[datetime.datetime, 'types.DateTimeFilter']
+    updatedAt: Union[datetime.datetime, 'types.DateTimeFilter']
+
+    # should be noted that AND and NOT should be Union['PostClassifierWhereInputRecursive4', List['PostClassifierWhereInputRecursive4']]
+    # but this causes mypy to hang :/
+    AND: List['PostClassifierWhereInputRecursive4']
+    OR: List['PostClassifierWhereInputRecursive4']
+    NOT: List['PostClassifierWhereInputRecursive4']
+
+
+class PostClassifierWhereInputRecursive4(TypedDict, total=False):
+    """PostClassifier arguments for searching"""
+    id: Union[_str, 'types.StringFilter']
+    name: Union[_str, 'types.StringFilter']
+    prompt: Union[None, _str, 'types.StringFilter']
+    description: Union[None, _str, 'types.StringFilter']
+    labels: Union['fields.Json', 'types.JsonFilter']
+    examples: Union[None, 'fields.Json', 'types.JsonFilter']
+    createdAt: Union[datetime.datetime, 'types.DateTimeFilter']
+    updatedAt: Union[datetime.datetime, 'types.DateTimeFilter']
+
+
+
+# aggregate PostClassifier types
+
+
+    
+
+class PostClassifierScalarWhereWithAggregatesInput(TypedDict, total=False):
+    """PostClassifier arguments for searching"""
+    id: Union[_str, 'types.StringWithAggregatesFilter']
+    name: Union[_str, 'types.StringWithAggregatesFilter']
+    prompt: Union[_str, 'types.StringWithAggregatesFilter']
+    description: Union[_str, 'types.StringWithAggregatesFilter']
+    labels: Union['fields.Json', 'types.JsonWithAggregatesFilter']
+    examples: Union['fields.Json', 'types.JsonWithAggregatesFilter']
+    createdAt: Union[datetime.datetime, 'types.DateTimeWithAggregatesFilter']
+    updatedAt: Union[datetime.datetime, 'types.DateTimeWithAggregatesFilter']
+
+    AND: List['PostClassifierScalarWhereWithAggregatesInputRecursive1']
+    OR: List['PostClassifierScalarWhereWithAggregatesInputRecursive1']
+    NOT: List['PostClassifierScalarWhereWithAggregatesInputRecursive1']
+
+
+class PostClassifierScalarWhereWithAggregatesInputRecursive1(TypedDict, total=False):
+    """PostClassifier arguments for searching"""
+    id: Union[_str, 'types.StringWithAggregatesFilter']
+    name: Union[_str, 'types.StringWithAggregatesFilter']
+    prompt: Union[_str, 'types.StringWithAggregatesFilter']
+    description: Union[_str, 'types.StringWithAggregatesFilter']
+    labels: Union['fields.Json', 'types.JsonWithAggregatesFilter']
+    examples: Union['fields.Json', 'types.JsonWithAggregatesFilter']
+    createdAt: Union[datetime.datetime, 'types.DateTimeWithAggregatesFilter']
+    updatedAt: Union[datetime.datetime, 'types.DateTimeWithAggregatesFilter']
+
+    AND: List['PostClassifierScalarWhereWithAggregatesInputRecursive2']
+    OR: List['PostClassifierScalarWhereWithAggregatesInputRecursive2']
+    NOT: List['PostClassifierScalarWhereWithAggregatesInputRecursive2']
+
+
+class PostClassifierScalarWhereWithAggregatesInputRecursive2(TypedDict, total=False):
+    """PostClassifier arguments for searching"""
+    id: Union[_str, 'types.StringWithAggregatesFilter']
+    name: Union[_str, 'types.StringWithAggregatesFilter']
+    prompt: Union[_str, 'types.StringWithAggregatesFilter']
+    description: Union[_str, 'types.StringWithAggregatesFilter']
+    labels: Union['fields.Json', 'types.JsonWithAggregatesFilter']
+    examples: Union['fields.Json', 'types.JsonWithAggregatesFilter']
+    createdAt: Union[datetime.datetime, 'types.DateTimeWithAggregatesFilter']
+    updatedAt: Union[datetime.datetime, 'types.DateTimeWithAggregatesFilter']
+
+    AND: List['PostClassifierScalarWhereWithAggregatesInputRecursive3']
+    OR: List['PostClassifierScalarWhereWithAggregatesInputRecursive3']
+    NOT: List['PostClassifierScalarWhereWithAggregatesInputRecursive3']
+
+
+class PostClassifierScalarWhereWithAggregatesInputRecursive3(TypedDict, total=False):
+    """PostClassifier arguments for searching"""
+    id: Union[_str, 'types.StringWithAggregatesFilter']
+    name: Union[_str, 'types.StringWithAggregatesFilter']
+    prompt: Union[_str, 'types.StringWithAggregatesFilter']
+    description: Union[_str, 'types.StringWithAggregatesFilter']
+    labels: Union['fields.Json', 'types.JsonWithAggregatesFilter']
+    examples: Union['fields.Json', 'types.JsonWithAggregatesFilter']
+    createdAt: Union[datetime.datetime, 'types.DateTimeWithAggregatesFilter']
+    updatedAt: Union[datetime.datetime, 'types.DateTimeWithAggregatesFilter']
+
+    AND: List['PostClassifierScalarWhereWithAggregatesInputRecursive4']
+    OR: List['PostClassifierScalarWhereWithAggregatesInputRecursive4']
+    NOT: List['PostClassifierScalarWhereWithAggregatesInputRecursive4']
+
+
+class PostClassifierScalarWhereWithAggregatesInputRecursive4(TypedDict, total=False):
+    """PostClassifier arguments for searching"""
+    id: Union[_str, 'types.StringWithAggregatesFilter']
+    name: Union[_str, 'types.StringWithAggregatesFilter']
+    prompt: Union[_str, 'types.StringWithAggregatesFilter']
+    description: Union[_str, 'types.StringWithAggregatesFilter']
+    labels: Union['fields.Json', 'types.JsonWithAggregatesFilter']
+    examples: Union['fields.Json', 'types.JsonWithAggregatesFilter']
+    createdAt: Union[datetime.datetime, 'types.DateTimeWithAggregatesFilter']
+    updatedAt: Union[datetime.datetime, 'types.DateTimeWithAggregatesFilter']
+
+
+
+class PostClassifierGroupByOutput(TypedDict, total=False):
+    id: _str
+    name: _str
+    prompt: _str
+    description: _str
+    labels: 'fields.Json'
+    examples: 'fields.Json'
+    createdAt: datetime.datetime
+    updatedAt: datetime.datetime
+    _sum: 'PostClassifierSumAggregateOutput'
+    _avg: 'PostClassifierAvgAggregateOutput'
+    _min: 'PostClassifierMinAggregateOutput'
+    _max: 'PostClassifierMaxAggregateOutput'
+    _count: 'PostClassifierCountAggregateOutput'
+
+
+class PostClassifierAvgAggregateOutput(TypedDict, total=False):
+    """PostClassifier output for aggregating averages"""
+
+
+class PostClassifierSumAggregateOutput(TypedDict, total=False):
+    """PostClassifier output for aggregating sums"""
+
+
+class PostClassifierScalarAggregateOutput(TypedDict, total=False):
+    """PostClassifier output including scalar fields"""
+    id: _str
+    name: _str
+    prompt: _str
+    description: _str
+    labels: 'fields.Json'
+    examples: 'fields.Json'
+    createdAt: datetime.datetime
+    updatedAt: datetime.datetime
+
+
+PostClassifierMinAggregateOutput = PostClassifierScalarAggregateOutput
+PostClassifierMaxAggregateOutput = PostClassifierScalarAggregateOutput
+
+
+class PostClassifierMaxAggregateInput(TypedDict, total=False):
+    """PostClassifier input for aggregating by max"""
+    id: bool
+    name: bool
+    prompt: bool
+    description: bool
+    labels: bool
+    examples: bool
+    createdAt: bool
+    updatedAt: bool
+
+
+class PostClassifierMinAggregateInput(TypedDict, total=False):
+    """PostClassifier input for aggregating by min"""
+    id: bool
+    name: bool
+    prompt: bool
+    description: bool
+    labels: bool
+    examples: bool
+    createdAt: bool
+    updatedAt: bool
+
+
+class PostClassifierNumberAggregateInput(TypedDict, total=False):
+    """PostClassifier input for aggregating numbers"""
+
+
+PostClassifierAvgAggregateInput = PostClassifierNumberAggregateInput
+PostClassifierSumAggregateInput = PostClassifierNumberAggregateInput
+
+
+PostClassifierCountAggregateInput = TypedDict(
+    'PostClassifierCountAggregateInput',
+    {
+        'id': bool,
+        'name': bool,
+        'prompt': bool,
+        'description': bool,
+        'labels': bool,
+        'examples': bool,
+        'createdAt': bool,
+        'updatedAt': bool,
+        '_all': bool,
+    },
+    total=False,
+)
+
+PostClassifierCountAggregateOutput = TypedDict(
+    'PostClassifierCountAggregateOutput',
+    {
+        'id': int,
+        'name': int,
+        'prompt': int,
+        'description': int,
+        'labels': int,
+        'examples': int,
+        'createdAt': int,
+        'updatedAt': int,
+        '_all': int,
+    },
+    total=False,
+)
+
+
+PostClassifierKeys = Literal[
+    'id',
+    'name',
+    'prompt',
+    'description',
+    'labels',
+    'examples',
+    'createdAt',
+    'updatedAt',
+]
+PostClassifierScalarFieldKeys = Literal[
+    'id',
+    'name',
+    'prompt',
+    'description',
+    'labels',
+    'examples',
+    'createdAt',
+    'updatedAt',
+]
+PostClassifierScalarFieldKeysT = TypeVar('PostClassifierScalarFieldKeysT', bound=PostClassifierScalarFieldKeys)
+
+PostClassifierRelationalFieldKeys = _NoneType
 
 
 

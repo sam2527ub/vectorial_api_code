@@ -162,10 +162,12 @@ def get_client() -> 'Prisma':
 class Prisma:
     audienceroom: 'actions.AudienceRoomActions[models.AudienceRoom]'
     audienceprofile: 'actions.AudienceProfileActions[models.AudienceProfile]'
+    postclassifier: 'actions.PostClassifierActions[models.PostClassifier]'
 
     __slots__ = (
         'audienceroom',
         'audienceprofile',
+        'postclassifier',
         '__engine',
         '__copied',
         '_tx_id',
@@ -188,6 +190,7 @@ class Prisma:
     ) -> None:
         self.audienceroom = actions.AudienceRoomActions[models.AudienceRoom](self, models.AudienceRoom)
         self.audienceprofile = actions.AudienceProfileActions[models.AudienceProfile](self, models.AudienceProfile)
+        self.postclassifier = actions.PostClassifierActions[models.PostClassifier](self, models.PostClassifier)
 
         # NOTE: if you add any more properties here then you may also need to forward
         # them in the `_copy()` method.
@@ -654,6 +657,7 @@ class TransactionManager:
 class Batch:
     audienceroom: 'AudienceRoomBatchActions'
     audienceprofile: 'AudienceProfileBatchActions'
+    postclassifier: 'PostClassifierBatchActions'
 
     def __init__(self, client: Prisma) -> None:
         self.__client = client
@@ -661,6 +665,7 @@ class Batch:
         self._active_provider = client._active_provider
         self.audienceroom = AudienceRoomBatchActions(self)
         self.audienceprofile = AudienceProfileBatchActions(self)
+        self.postclassifier = PostClassifierBatchActions(self)
 
     def _add(self, **kwargs: Any) -> None:
         builder = QueryBuilder(**kwargs)
@@ -925,6 +930,117 @@ class AudienceProfileBatchActions:
         self._batcher._add(
             method='delete_many',
             model=models.AudienceProfile,
+            arguments={'where': where},
+            root_selection=['count'],
+        )
+
+
+
+# NOTE: some arguments are meaningless in this context but are included
+# for completeness sake
+class PostClassifierBatchActions:
+    def __init__(self, batcher: Batch) -> None:
+        self._batcher = batcher
+
+    def create(
+        self,
+        data: types.PostClassifierCreateInput,
+        include: Optional[types.PostClassifierInclude] = None
+    ) -> None:
+        self._batcher._add(
+            method='create',
+            model=models.PostClassifier,
+            arguments={
+                'data': data,
+                'include': include,
+            },
+        )
+
+    def create_many(
+        self,
+        data: List[types.PostClassifierCreateWithoutRelationsInput],
+        *,
+        skip_duplicates: Optional[bool] = None,
+    ) -> None:
+        if self._batcher._active_provider == 'sqlite':
+            raise errors.UnsupportedDatabaseError('sqlite', 'create_many()')
+
+        self._batcher._add(
+            method='create_many',
+            model=models.PostClassifier,
+            arguments={
+                'data': data,
+                'skipDuplicates': skip_duplicates,
+            },
+            root_selection=['count'],
+        )
+
+    def delete(
+        self,
+        where: types.PostClassifierWhereUniqueInput,
+        include: Optional[types.PostClassifierInclude] = None,
+    ) -> None:
+        self._batcher._add(
+            method='delete',
+            model=models.PostClassifier,
+            arguments={
+                'where': where,
+                'include': include,
+            },
+        )
+
+    def update(
+        self,
+        data: types.PostClassifierUpdateInput,
+        where: types.PostClassifierWhereUniqueInput,
+        include: Optional[types.PostClassifierInclude] = None
+    ) -> None:
+        self._batcher._add(
+            method='update',
+            model=models.PostClassifier,
+            arguments={
+                'data': data,
+                'where': where,
+                'include': include,
+            },
+        )
+
+    def upsert(
+        self,
+        where: types.PostClassifierWhereUniqueInput,
+        data: types.PostClassifierUpsertInput,
+        include: Optional[types.PostClassifierInclude] = None,
+    ) -> None:
+        self._batcher._add(
+            method='upsert',
+            model=models.PostClassifier,
+            arguments={
+                'where': where,
+                'include': include,
+                'create': data.get('create'),
+                'update': data.get('update'),
+            },
+        )
+
+    def update_many(
+        self,
+        data: types.PostClassifierUpdateManyMutationInput,
+        where: types.PostClassifierWhereInput,
+    ) -> None:
+        self._batcher._add(
+            method='update_many',
+            model=models.PostClassifier,
+            arguments={'data': data, 'where': where,},
+            root_selection=['count'],
+        )
+
+    def delete_many(
+        self,
+        where: Optional[types.PostClassifierWhereInput] = None,
+    ) -> None:
+        self._batcher._add(
+            method='delete_many',
+            model=models.PostClassifier,
             arguments={'where': where},
             root_selection=['count'],
         )

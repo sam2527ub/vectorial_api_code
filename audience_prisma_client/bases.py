@@ -94,3 +94,13 @@ class BaseAudienceProfile(_PrismaModel):
         return actions.AudienceProfileActions[_PrismaModelT](client or get_client(), cls)
 
 
+class BasePostClassifier(_PrismaModel):
+    __prisma_model__: ClassVar[Literal['PostClassifier']] = 'PostClassifier'
+
+    @classmethod
+    def prisma(cls: Type[_PrismaModelT], client: Optional['Prisma'] = None) -> 'actions.PostClassifierActions[_PrismaModelT]':
+        from .client import get_client
+
+        return actions.PostClassifierActions[_PrismaModelT](client or get_client(), cls)
+
+

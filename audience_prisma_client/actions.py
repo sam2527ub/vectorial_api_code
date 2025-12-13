@@ -2109,6 +2109,1034 @@ class AudienceProfileActions(Generic[_PrismaModelT]):
         return resp['data']['result']  # type: ignore[no-any-return]
 
 
+class PostClassifierActions(Generic[_PrismaModelT]):
+    __slots__ = (
+        '_client',
+        '_model',
+    )
+
+    def __init__(self, client: 'Client', model: Type[_PrismaModelT]) -> None:
+        self._client = client
+        self._model = model
+
+    async def query_raw(
+        self,
+        query: LiteralString,
+        *args: Any,
+    ) -> List[_PrismaModelT]:
+        """Execute a raw SQL query
+
+        Parameters
+        ----------
+        query
+            The raw SQL query string to be executed
+        *args
+            Parameters to be passed to the SQL query, these MUST be used over
+            string formatting to avoid an SQL injection vulnerability
+
+        Returns
+        -------
+        List[prisma.models.PostClassifier]
+            The records returned by the SQL query
+
+        Raises
+        ------
+        prisma_errors.RawQueryError
+            This could be due to invalid syntax, mismatched number of parameters or any other error
+        prisma.errors.PrismaError
+            Catch all for every exception raised by Prisma Client Python
+
+        Example
+        -------
+        ```py
+        users = await PostClassifier.prisma().query_raw(
+            'SELECT * FROM PostClassifier WHERE id = $1',
+            'bdadaadhag',
+        )
+        ```
+        """
+        return await self._client.query_raw(query, *args, model=self._model)
+
+    async def query_first(
+        self,
+        query: LiteralString,
+        *args: Any,
+    ) -> Optional[_PrismaModelT]:
+        """Execute a raw SQL query, returning the first result
+
+        Parameters
+        ----------
+        query
+            The raw SQL query string to be executed
+        *args
+            Parameters to be passed to the SQL query, these MUST be used over
+            string formatting to avoid an SQL injection vulnerability
+
+        Returns
+        -------
+        prisma.models.PostClassifier
+            The first record returned by the SQL query
+        None
+            The raw SQL query did not return any records
+
+        Raises
+        ------
+        prisma_errors.RawQueryError
+            This could be due to invalid syntax, mismatched number of parameters or any other error
+        prisma.errors.PrismaError
+            Catch all for every exception raised by Prisma Client Python
+
+        Example
+        -------
+        ```py
+        user = await PostClassifier.prisma().query_first(
+            'SELECT * FROM PostClassifier WHERE name = $1',
+            'bgiggdidbf',
+        )
+        ```
+        """
+        return await self._client.query_first(query, *args, model=self._model)
+
+    async def create(
+        self,
+        data: types.PostClassifierCreateInput,
+        include: Optional[types.PostClassifierInclude] = None
+    ) -> _PrismaModelT:
+        """Create a new PostClassifier record.
+
+        Parameters
+        ----------
+        data
+            PostClassifier record data
+        include
+            Specifies which relations should be loaded on the returned PostClassifier model
+
+        Returns
+        -------
+        prisma.models.PostClassifier
+            The created PostClassifier record
+
+        Raises
+        ------
+        prisma.errors.MissingRequiredValueError
+            Value is required but was not found
+        prisma.errors.PrismaError
+            Catch all for every exception raised by Prisma Client Python
+
+        Example
+        -------
+        ```py
+        # create a PostClassifier record from just the required fields
+        postclassifier = await PostClassifier.prisma().create(
+            data={
+                # data to create a PostClassifier record
+                'name': 'caaaedabfc',
+                'labels': Json({'bigibebcib': True}),
+            },
+        )
+        ```
+        """
+        resp = await self._client._execute(
+            method='create',
+            model=self._model,
+            arguments={
+                'data': data,
+                'include': include,
+            },
+        )
+        return model_parse(self._model, resp['data']['result'])
+
+    async def create_many(
+        self,
+        data: List[types.PostClassifierCreateWithoutRelationsInput],
+        *,
+        skip_duplicates: Optional[bool] = None,
+    ) -> int:
+        """Create multiple PostClassifier records at once.
+
+        This function is *not* available when using SQLite.
+
+        Parameters
+        ----------
+        data
+            List of PostClassifier record data
+        skip_duplicates
+            Boolean flag for ignoring unique constraint errors
+
+        Returns
+        -------
+        int
+            The total number of records created
+
+        Raises
+        ------
+        prisma.errors.UnsupportedDatabaseError
+            Attempting to query when using SQLite
+        prisma.errors.UniqueViolationError
+            A unique constraint check has failed, these can be ignored with the `skip_duplicates` argument
+        prisma.errors.MissingRequiredValueError
+            Value is required but was not found
+        prisma.errors.PrismaError
+            Catch all for every exception raised by Prisma Client Python
+
+        Example
+        -------
+        ```py
+        total = await PostClassifier.prisma().create_many(
+            data=[
+                {
+                    # data to create a PostClassifier record
+                    'name': 'bigaiehgcc',
+                    'labels': Json({'beeifcbebf': True}),
+                },
+                {
+                    # data to create a PostClassifier record
+                    'name': 'bgcigfahea',
+                    'labels': Json({'bcejgaggif': True}),
+                },
+            ],
+            skip_duplicates=True,
+        )
+        ```
+        """
+        if self._client._active_provider == 'sqlite':
+            raise errors.UnsupportedDatabaseError('sqlite', 'create_many()')
+
+        resp = await self._client._execute(
+            method='create_many',
+            model=self._model,
+            arguments={
+                'data': data,
+                'skipDuplicates': skip_duplicates,
+            },
+            root_selection=['count'],
+        )
+        return int(resp['data']['result']['count'])
+
+    async def delete(
+        self,
+        where: types.PostClassifierWhereUniqueInput,
+        include: Optional[types.PostClassifierInclude] = None
+    ) -> Optional[_PrismaModelT]:
+        """Delete a single PostClassifier record.
+
+        Parameters
+        ----------
+        where
+            PostClassifier filter to select the record to be deleted, must be unique
+        include
+            Specifies which relations should be loaded on the returned PostClassifier model
+
+        Returns
+        -------
+        prisma.models.PostClassifier
+            The deleted PostClassifier record
+        None
+            Could not find a record to delete
+
+        Raises
+        ------
+        prisma.errors.PrismaError
+            Catch all for every exception raised by Prisma Client Python
+        prisma.errors.MissingRequiredValueError
+            Value is required but was not found
+
+        Example
+        -------
+        ```py
+        postclassifier = await PostClassifier.prisma().delete(
+            where={
+                'id': 'idfjadbcc',
+            },
+        )
+        ```
+        """
+        try:
+            resp = await self._client._execute(
+                method='delete',
+                model=self._model,
+                arguments={
+                    'where': where,
+                    'include': include,
+                },
+            )
+        except errors.RecordNotFoundError:
+            return None
+
+        return model_parse(self._model, resp['data']['result'])
+
+    async def find_unique(
+        self,
+        where: types.PostClassifierWhereUniqueInput,
+        include: Optional[types.PostClassifierInclude] = None
+    ) -> Optional[_PrismaModelT]:
+        """Find a unique PostClassifier record.
+
+        Parameters
+        ----------
+        where
+            PostClassifier filter to find the record, must be unique
+        include
+            Specifies which relations should be loaded on the returned PostClassifier model
+
+        Returns
+        -------
+        prisma.models.PostClassifier
+            The found PostClassifier record
+        None
+            No record matching the given input could be found
+
+        Raises
+        ------
+        prisma.errors.PrismaError
+            Catch all for every exception raised by Prisma Client Python
+        prisma.errors.MissingRequiredValueError
+            Value is required but was not found
+
+        Example
+        -------
+        ```py
+        postclassifier = await PostClassifier.prisma().find_unique(
+            where={
+                'id': 'hgdhbjhhj',
+            },
+        )
+        ```
+        """
+        resp = await self._client._execute(
+            method='find_unique',
+            model=self._model,
+            arguments={
+                'where': where,
+                'include': include,
+            },
+        )
+        result = resp['data']['result']
+        if result is None:
+            return None
+        return model_parse(self._model, result)
+
+    async def find_unique_or_raise(
+        self,
+        where: types.PostClassifierWhereUniqueInput,
+        include: Optional[types.PostClassifierInclude] = None
+    ) -> _PrismaModelT:
+        """Find a unique PostClassifier record. Raises `RecordNotFoundError` if no record is found.
+
+        Parameters
+        ----------
+        where
+            PostClassifier filter to find the record, must be unique
+        include
+            Specifies which relations should be loaded on the returned PostClassifier model
+
+        Returns
+        -------
+        prisma.models.PostClassifier
+            The found PostClassifier record
+
+        Raises
+        ------
+        prisma.errors.RecordNotFoundError
+            No record was found
+        prisma.errors.PrismaError
+            Catch all for every exception raised by Prisma Client Python
+        prisma.errors.MissingRequiredValueError
+            Value is required but was not found
+
+        Example
+        -------
+        ```py
+        postclassifier = await PostClassifier.prisma().find_unique_or_raise(
+            where={
+                'id': 'ecjjjfbae',
+            },
+        )
+        ```
+        """
+        resp = await self._client._execute(
+            method='find_unique_or_raise',
+            model=self._model,
+            arguments={
+                'where': where,
+                'include': include,
+            },
+        )
+        return model_parse(self._model, resp['data']['result'])
+
+    async def find_many(
+        self,
+        take: Optional[int] = None,
+        skip: Optional[int] = None,
+        where: Optional[types.PostClassifierWhereInput] = None,
+        cursor: Optional[types.PostClassifierWhereUniqueInput] = None,
+        include: Optional[types.PostClassifierInclude] = None,
+        order: Optional[Union[types.PostClassifierOrderByInput, List[types.PostClassifierOrderByInput]]] = None,
+        distinct: Optional[List[types.PostClassifierScalarFieldKeys]] = None,
+    ) -> List[_PrismaModelT]:
+        """Find multiple PostClassifier records.
+
+        An empty list is returned if no records could be found.
+
+        Parameters
+        ----------
+        take
+            Limit the maximum number of PostClassifier records returned
+        skip
+            Ignore the first N results
+        where
+            PostClassifier filter to select records
+        cursor
+            Specifies the position in the list to start returning results from, (typically an ID field)
+        include
+            Specifies which relations should be loaded on the returned PostClassifier model
+        order
+            Order the returned PostClassifier records by any field
+        distinct
+            Filter PostClassifier records by either a single distinct field or distinct combinations of fields
+
+        Returns
+        -------
+        List[prisma.models.PostClassifier]
+            The list of all PostClassifier records that could be found
+
+        Raises
+        ------
+        prisma.errors.PrismaError
+            Catch all for every exception raised by Prisma Client Python
+
+        Example
+        -------
+        ```py
+        # find the first 10 PostClassifier records
+        postclassifiers = await PostClassifier.prisma().find_many(take=10)
+
+        # find the first 5 PostClassifier records ordered by the prompt field
+        postclassifiers = await PostClassifier.prisma().find_many(
+            take=5,
+            order={
+                'prompt': 'desc',
+            },
+        )
+        ```
+        """
+        resp = await self._client._execute(
+            method='find_many',
+            model=self._model,
+            arguments={
+                'take': take,
+                'skip': skip,
+                'where': where,
+                'order_by': order,
+                'cursor': cursor,
+                'include': include,
+                'distinct': distinct,
+            },
+        )
+        return [model_parse(self._model, r) for r in resp['data']['result']]
+
+    async def find_first(
+        self,
+        skip: Optional[int] = None,
+        where: Optional[types.PostClassifierWhereInput] = None,
+        cursor: Optional[types.PostClassifierWhereUniqueInput] = None,
+        include: Optional[types.PostClassifierInclude] = None,
+        order: Optional[Union[types.PostClassifierOrderByInput, List[types.PostClassifierOrderByInput]]] = None,
+        distinct: Optional[List[types.PostClassifierScalarFieldKeys]] = None,
+    ) -> Optional[_PrismaModelT]:
+        """Find a single PostClassifier record.
+
+        Parameters
+        ----------
+        skip
+            Ignore the first N records
+        where
+            PostClassifier filter to select the record
+        cursor
+            Specifies the position in the list to start returning results from, (typically an ID field)
+        include
+            Specifies which relations should be loaded on the returned PostClassifier model
+        order
+            Order the returned PostClassifier records by any field
+        distinct
+            Filter PostClassifier records by either a single distinct field or distinct combinations of fields
+
+        Returns
+        -------
+        prisma.models.PostClassifier
+            The first PostClassifier record found, matching the given arguments
+        None
+            No record could be found
+
+        Raises
+        ------
+        prisma.errors.PrismaError
+            Catch all for every exception raised by Prisma Client Python
+
+        Example
+        -------
+        ```py
+        # find the second PostClassifier record ordered by the description field
+        postclassifier = await PostClassifier.prisma().find_first(
+            skip=1,
+            order={
+                'description': 'desc',
+            },
+        )
+        ```
+        """
+        resp = await self._client._execute(
+            method='find_first',
+            model=self._model,
+            arguments={
+                'skip': skip,
+                'where': where,
+                'order_by': order,
+                'cursor': cursor,
+                'include': include,
+                'distinct': distinct,
+            },
+        )
+        result = resp['data']['result']
+        if result is None:
+            return None
+
+        return model_parse(self._model, result)
+
+    async def find_first_or_raise(
+        self,
+        skip: Optional[int] = None,
+        where: Optional[types.PostClassifierWhereInput] = None,
+        cursor: Optional[types.PostClassifierWhereUniqueInput] = None,
+        include: Optional[types.PostClassifierInclude] = None,
+        order: Optional[Union[types.PostClassifierOrderByInput, List[types.PostClassifierOrderByInput]]] = None,
+        distinct: Optional[List[types.PostClassifierScalarFieldKeys]] = None,
+    ) -> _PrismaModelT:
+        """Find a single PostClassifier record. Raises `RecordNotFoundError` if no record was found.
+
+        Parameters
+        ----------
+        skip
+            Ignore the first N records
+        where
+            PostClassifier filter to select the record
+        cursor
+            Specifies the position in the list to start returning results from, (typically an ID field)
+        include
+            Specifies which relations should be loaded on the returned PostClassifier model
+        order
+            Order the returned PostClassifier records by any field
+        distinct
+            Filter PostClassifier records by either a single distinct field or distinct combinations of fields
+
+        Returns
+        -------
+        prisma.models.PostClassifier
+            The first PostClassifier record found, matching the given arguments
+
+        Raises
+        ------
+        prisma.errors.RecordNotFoundError
+            No record was found
+        prisma.errors.PrismaError
+            Catch all for every exception raised by Prisma Client Python
+
+        Example
+        -------
+        ```py
+        # find the second PostClassifier record ordered by the labels field
+        postclassifier = await PostClassifier.prisma().find_first_or_raise(
+            skip=1,
+            order={
+                'labels': 'desc',
+            },
+        )
+        ```
+        """
+        resp = await self._client._execute(
+            method='find_first_or_raise',
+            model=self._model,
+            arguments={
+                'skip': skip,
+                'where': where,
+                'order_by': order,
+                'cursor': cursor,
+                'include': include,
+                'distinct': distinct,
+            },
+        )
+        return model_parse(self._model, resp['data']['result'])
+
+    async def update(
+        self,
+        data: types.PostClassifierUpdateInput,
+        where: types.PostClassifierWhereUniqueInput,
+        include: Optional[types.PostClassifierInclude] = None
+    ) -> Optional[_PrismaModelT]:
+        """Update a single PostClassifier record.
+
+        Parameters
+        ----------
+        data
+            PostClassifier record data specifying what to update
+        where
+            PostClassifier filter to select the unique record to create / update
+        include
+            Specifies which relations should be loaded on the returned PostClassifier model
+
+        Returns
+        -------
+        prisma.models.PostClassifier
+            The updated PostClassifier record
+        None
+            No record could be found
+
+        Raises
+        ------
+        prisma.errors.PrismaError
+            Catch all for every exception raised by Prisma Client Python
+
+        Example
+        -------
+        ```py
+        postclassifier = await PostClassifier.prisma().update(
+            where={
+                'id': 'bhhfibbigf',
+            },
+            data={
+                # data to update the PostClassifier record to
+            },
+        )
+        ```
+        """
+        try:
+            resp = await self._client._execute(
+                method='update',
+                model=self._model,
+                arguments={
+                    'data': data,
+                    'where': where,
+                    'include': include,
+                },
+            )
+        except errors.RecordNotFoundError:
+            return None
+
+        return model_parse(self._model, resp['data']['result'])
+
+    async def upsert(
+        self,
+        where: types.PostClassifierWhereUniqueInput,
+        data: types.PostClassifierUpsertInput,
+        include: Optional[types.PostClassifierInclude] = None,
+    ) -> _PrismaModelT:
+        """Updates an existing record or create a new one
+
+        Parameters
+        ----------
+        where
+            PostClassifier filter to select the unique record to create / update
+        data
+            Data specifying what fields to set on create and update
+        include
+            Specifies which relations should be loaded on the returned PostClassifier model
+
+        Returns
+        -------
+        prisma.models.PostClassifier
+            The created or updated PostClassifier record
+
+        Raises
+        ------
+        prisma.errors.PrismaError
+            Catch all for every exception raised by Prisma Client Python
+        prisma.errors.MissingRequiredValueError
+            Value is required but was not found
+
+        Example
+        -------
+        ```py
+        postclassifier = await PostClassifier.prisma().upsert(
+            where={
+                'id': 'ijdbeffgg',
+            },
+            data={
+                'create': {
+                    'id': 'ijdbeffgg',
+                    'name': 'bgcigfahea',
+                    'labels': Json({'bcejgaggif': True}),
+                },
+                'update': {
+                    'name': 'bgcigfahea',
+                    'labels': Json({'bcejgaggif': True}),
+                },
+            },
+        )
+        ```
+        """
+        resp = await self._client._execute(
+            method='upsert',
+            model=self._model,
+            arguments={
+                'where': where,
+                'include': include,
+                'create': data.get('create'),
+                'update': data.get('update'),
+            },
+        )
+        return model_parse(self._model, resp['data']['result'])
+
+    async def update_many(
+        self,
+        data: types.PostClassifierUpdateManyMutationInput,
+        where: types.PostClassifierWhereInput,
+    ) -> int:
+        """Update multiple PostClassifier records
+
+        Parameters
+        ----------
+        data
+            PostClassifier data to update the selected PostClassifier records to
+        where
+            Filter to select the PostClassifier records to update
+
+        Returns
+        -------
+        int
+            The total number of PostClassifier records that were updated
+
+        Raises
+        ------
+        prisma.errors.PrismaError
+            Catch all for every exception raised by Prisma Client Python
+
+        Example
+        -------
+        ```py
+        # update all PostClassifier records
+        total = await PostClassifier.prisma().update_many(
+            data={
+                'examples': Json({'jjfeafhfj': True})
+            },
+            where={}
+        )
+        ```
+        """
+        resp = await self._client._execute(
+            method='update_many',
+            model=self._model,
+            arguments={'data': data, 'where': where,},
+            root_selection=['count'],
+        )
+        return int(resp['data']['result']['count'])
+
+    @overload
+    async def count(
+        self,
+        select: None = None,
+        take: Optional[int] = None,
+        skip: Optional[int] = None,
+        where: Optional[types.PostClassifierWhereInput] = None,
+        cursor: Optional[types.PostClassifierWhereUniqueInput] = None,
+    ) -> int:
+        """Count the number of PostClassifier records present in the database
+
+        Parameters
+        ----------
+        select
+            Select the PostClassifier fields to be counted
+        take
+            Limit the maximum result
+        skip
+            Ignore the first N records
+        where
+            PostClassifier filter to find records
+        cursor
+            Specifies the position in the list to start counting results from, (typically an ID field)
+        order
+            This parameter is deprecated and will be removed in a future release
+
+        Returns
+        -------
+        int
+            The total number of records found, returned if `select` is not given
+
+        prisma.types.PostClassifierCountAggregateOutput
+            Data returned when `select` is used, the fields present in this dictionary will
+            match the fields passed in the `select` argument
+
+        Raises
+        ------
+        prisma.errors.PrismaError
+            Catch all for every exception raised by Prisma Client Python
+
+        Example
+        -------
+        ```py
+        # total: int
+        total = await PostClassifier.prisma().count()
+
+        # results: prisma.types.PostClassifierCountAggregateOutput
+        results = await PostClassifier.prisma().count(
+            select={
+                '_all': True,
+                'createdAt': True,
+            },
+        )
+        ```
+        """
+
+
+    @overload
+    async def count(
+        self,
+        select: types.PostClassifierCountAggregateInput,
+        take: Optional[int] = None,
+        skip: Optional[int] = None,
+        where: Optional[types.PostClassifierWhereInput] = None,
+        cursor: Optional[types.PostClassifierWhereUniqueInput] = None,
+    ) -> types.PostClassifierCountAggregateOutput:
+        ...
+
+    async def count(
+        self,
+        select: Optional[types.PostClassifierCountAggregateInput] = None,
+        take: Optional[int] = None,
+        skip: Optional[int] = None,
+        where: Optional[types.PostClassifierWhereInput] = None,
+        cursor: Optional[types.PostClassifierWhereUniqueInput] = None,
+    ) -> Union[int, types.PostClassifierCountAggregateOutput]:
+        """Count the number of PostClassifier records present in the database
+
+        Parameters
+        ----------
+        select
+            Select the PostClassifier fields to be counted
+        take
+            Limit the maximum result
+        skip
+            Ignore the first N records
+        where
+            PostClassifier filter to find records
+        cursor
+            Specifies the position in the list to start counting results from, (typically an ID field)
+        order
+            This parameter is deprecated and will be removed in a future release
+
+        Returns
+        -------
+        int
+            The total number of records found, returned if `select` is not given
+
+        prisma.types.PostClassifierCountAggregateOutput
+            Data returned when `select` is used, the fields present in this dictionary will
+            match the fields passed in the `select` argument
+
+        Raises
+        ------
+        prisma.errors.PrismaError
+            Catch all for every exception raised by Prisma Client Python
+
+        Example
+        -------
+        ```py
+        # total: int
+        total = await PostClassifier.prisma().count()
+
+        # results: prisma.types.PostClassifierCountAggregateOutput
+        results = await PostClassifier.prisma().count(
+            select={
+                '_all': True,
+                'updatedAt': True,
+            },
+        )
+        ```
+        """
+
+        # TODO: this selection building should be moved to the QueryBuilder
+        #
+        # note the distinction between checking for `not select` here and `select is None`
+        # later is to handle the case that the given select dictionary is empty, this
+        # is a limitation of our types.
+        if not select:
+            root_selection = ['_count { _all }']
+        else:
+
+            root_selection = [
+                '_count {{ {0} }}'.format(' '.join(k for k, v in select.items() if v is True))
+            ]
+
+        resp = await self._client._execute(
+            method='count',
+            model=self._model,
+            arguments={
+                'take': take,
+                'skip': skip,
+                'where': where,
+                'cursor': cursor,
+            },
+            root_selection=root_selection,
+        )
+
+        if select is None:
+            return cast(int, resp['data']['result']['_count']['_all'])
+        else:
+            return cast(types.PostClassifierCountAggregateOutput, resp['data']['result']['_count'])
+
+    async def delete_many(
+        self,
+        where: Optional[types.PostClassifierWhereInput] = None
+    ) -> int:
+        """Delete multiple PostClassifier records.
+
+        Parameters
+        ----------
+        where
+            Optional PostClassifier filter to find the records to be deleted
+
+        Returns
+        -------
+        int
+            The total number of PostClassifier records that were deleted
+
+        Raises
+        ------
+        prisma.errors.PrismaError
+            Catch all for every exception raised by Prisma Client Python
+
+        Example
+        -------
+        ```py
+        # delete all PostClassifier records
+        total = await PostClassifier.prisma().delete_many()
+        ```
+        """
+        resp = await self._client._execute(
+            method='delete_many',
+            model=self._model,
+            arguments={'where': where},
+            root_selection=['count'],
+        )
+        return int(resp['data']['result']['count'])
+
+    # TODO: make this easier to work with safely, currently output fields are typed as
+    #       not required, we should refactor the return type
+    # TODO: consider returning a Dict where the keys are a Tuple of the `by` selection
+    # TODO: statically type that the order argument is required when take or skip are present
+    async def group_by(
+        self,
+        by: List['types.PostClassifierScalarFieldKeys'],
+        *,
+        where: Optional['types.PostClassifierWhereInput'] = None,
+        take: Optional[int] = None,
+        skip: Optional[int] = None,
+        avg: Optional['types.PostClassifierAvgAggregateInput'] = None,
+        sum: Optional['types.PostClassifierSumAggregateInput'] = None,
+        min: Optional['types.PostClassifierMinAggregateInput'] = None,
+        max: Optional['types.PostClassifierMaxAggregateInput'] = None,
+        having: Optional['types.PostClassifierScalarWhereWithAggregatesInput'] = None,
+        count: Optional[Union[bool, 'types.PostClassifierCountAggregateInput']] = None,
+        order: Optional[Union[Mapping['types.PostClassifierScalarFieldKeys', 'types.SortOrder'], List[Mapping['types.PostClassifierScalarFieldKeys', 'types.SortOrder']]]] = None,
+    ) -> List['types.PostClassifierGroupByOutput']:
+        """Group PostClassifier records by one or more field values and perform aggregations
+        each group such as finding the average.
+
+        Parameters
+        ----------
+        by
+            List of scalar PostClassifier fields to group records by
+        where
+            PostClassifier filter to select records
+        take
+            Limit the maximum number of PostClassifier records returned
+        skip
+            Ignore the first N records
+        avg
+            Adds the average of all values of the specified fields to the `_avg` field
+            in the returned data.
+        sum
+            Adds the sum of all values of the specified fields to the `_sum` field
+            in the returned data.
+        min
+            Adds the smallest available value for the specified fields to the `_min` field
+            in the returned data.
+        max
+            Adds the largest available value for the specified fields to the `_max` field
+            in the returned data.
+        count
+            Adds a count of non-fields to the `_count` field in the returned data.
+        having
+            Allows you to filter groups by an aggregate value - for example only return
+            groups having an average age less than 50.
+        order
+            Lets you order the returned list by any property that is also present in `by`.
+            Only **one** field is allowed at a time.
+
+        Returns
+        -------
+        List[prisma.types.PostClassifierGroupByOutput]
+            A list of dictionaries representing the PostClassifier record,
+            this will also have additional fields present if aggregation arguments
+            are used (see the above parameters)
+
+        Raises
+        ------
+        prisma.errors.PrismaError
+            Catch all for every exception raised by Prisma Client Python
+
+        Example
+        -------
+        ```py
+        # group PostClassifier records by id values
+        # and count how many records are in each group
+        results = await PostClassifier.prisma().group_by(
+            ['id'],
+            count=True,
+        )
+        ```
+        """
+        if order is None:
+            if take is not None:
+                raise TypeError('Missing argument: \'order\' which is required when \'take\' is present')
+
+            if skip is not None:
+                raise TypeError('Missing argument: \'order\' which is required when \'skip\' is present')
+
+        root_selection: List[str] = [*by]
+        if avg is not None:
+            root_selection.append(_select_fields('_avg', avg))
+
+        if min is not None:
+            root_selection.append(_select_fields('_min', min))
+
+        if sum is not None:
+            root_selection.append(_select_fields('_sum', sum))
+
+        if max is not None:
+            root_selection.append(_select_fields('_max', max))
+
+        if count is not None:
+            if count is True:
+                root_selection.append('_count { _all }')
+            elif isinstance(count, dict):
+                root_selection.append(_select_fields('_count', count))
+
+        resp = await self._client._execute(
+            method='group_by',
+            model=self._model,
+            arguments={
+                'by': by,
+                'take': take,
+                'skip': skip,
+                'where': where,
+                'having': having,
+                'orderBy': order,
+            },
+            root_selection=root_selection,
+        )
+        return resp['data']['result']  # type: ignore[no-any-return]
+
+
 
 def _select_fields(root: str, select: Mapping[str, Any]) -> str:
     """Helper to build a GraphQL selection string
