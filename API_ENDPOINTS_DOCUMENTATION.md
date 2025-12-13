@@ -17,7 +17,8 @@ This document provides comprehensive documentation for all API endpoints that th
 5. [GET /api/v1/audience-rooms/{audience_room_id}/profiles/{profile_id}/description - Get Profile Description](#5-get-apiv1audience-roomsaudience_room_idprofilesprofile_iddescription---get-profile-description)
 6. [POST /api/v1/scrape - Trigger Scraping](#6-post-apiv1scrape---trigger-scraping)
 7. [GET /api/v1/scrape/status/{job_id} - Get Scrape Status](#7-get-apiv1scrapestatusjob_id---get-scrape-status)
-8. [POST /api/classifier/run - Run Classifier](#8-post-apiclassifierrun---run-classifier)
+8. [POST /api/v1/audience-rooms/{audience_room_id}/generate-summaries - Generate Profile Summaries](#8-post-apiv1audience-roomsaudience_room_idgenerate-summaries---generate-profile-summaries)
+9. [POST /api/classifier/run - Run Classifier](#9-post-apiclassifierrun---run-classifier)
 
 **Note**: For detailed Classifier API documentation, see [CLASSIFIER_API_DOCUMENTATION.md](./CLASSIFIER_API_DOCUMENTATION.md)
 
@@ -1066,6 +1067,235 @@ try {
 
 ---
 
+## 8. POST /api/v1/audience-rooms/{audience_room_id}/generate-summaries - Generate Profile Summaries
+
+Generate AI-powered summaries, keywords, and highlights for all profiles in an audience room based on their LinkedIn posts. This endpoint processes profiles in parallel and uses OpenAI to analyze post content.
+
+### Endpoint
+```
+POST /api/v1/audience-rooms/{audience_room_id}/generate-summaries
+```
+
+### Path Parameters
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `audience_room_id` | `string` | Yes | UUID of the audience room |
+
+### Request Headers
+```
+Content-Type: application/json
+```
+
+### Request Body
+
+This endpoint does not require a request body. All necessary data is retrieved from the database and S3.
+
+### Response (200 OK)
+
+```json
+{
+  "audience_room_id": "550e8400-e29b-41d4-a716-446655440000",
+  "total_profiles": 5,
+  "success_count": 3,
+  "skipped_count": 1,
+  "error_count": 1,
+  "profiles": [
+    {
+      "profile_id": "660e8400-e29b-41d4-a716-446655440001",
+      "profile_name": "John Doe",
+      "status": "success",
+      "summary": "John Doe is currently a Senior Software Engineer at Google, where he focuses on...",
+      "highlights_count": 5,
+      "keywords_count": 12,
+      "error": null
+    },
+    {
+      "profile_id": "660e8400-e29b-41d4-a716-446655440002",
+      "profile_name": "Jane Smith",
+      "status": "skipped",
+      "reason": "no_posts",
+      "error": null
+    },
+    {
+      "profile_id": "660e8400-e29b-41d4-a716-446655440003",
+      "profile_name": "Bob Johnson",
+      "status": "error",
+      "reason": "invalid_posts_url",
+      "error": "Invalid S3 URL format for posts"
+    }
+  ]
+}
+```
+
+### Response Schema
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `audience_room_id` | `string` | UUID of the audience room |
+| `total_profiles` | `integer` | Total number of profiles in the audience room |
+| `success_count` | `integer` | Number of profiles successfully processed |
+| `skipped_count` | `integer` | Number of profiles skipped (no posts, no description URL, etc.) |
+| `error_count` | `integer` | Number of profiles that encountered errors |
+| `profiles` | `array` | Array of profile processing results |
+
+#### Profile Result Object Schema
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `profile_id` | `string` | UUID of the profile |
+| `profile_name` | `string` | Name of the profile |
+| `status` | `string` | Processing status: `"success"`, `"skipped"`, or `"error"` |
+| `summary` | `string \| null` | Truncated summary (first 100 characters) - only present if status is "success" |
+| `highlights_count` | `integer \| null` | Number of highlights generated - only present if status is "success" |
+| `keywords_count` | `integer \| null` | Number of keywords generated - only present if status is "success" |
+| `reason` | `string \| null` | Reason for skip or error (only present if status is "skipped" or "error") |
+| `error` | `string \| null` | Error message (only present if status is "error") |
+
+#### Status Values
+
+- **`success`**: Profile was successfully processed. Summary, highlights, and keywords were generated and saved to S3.
+- **`skipped`**: Profile was skipped due to missing data. Common reasons:
+  - `no_posts`: No posts found in S3
+  - `no_posts_url`: Profile doesn't have a posts S3 URL
+  - `no_description_url`: Profile doesn't have a description S3 URL
+- **`error`**: An error occurred during processing. Common reasons:
+  - `invalid_posts_url`: Invalid S3 URL format for posts
+  - `invalid_description_url`: Invalid S3 URL format for description
+  - `exception`: An exception occurred during processing (see `error` field for details)
+
+### What Gets Generated
+
+For each successfully processed profile, the following data is generated using OpenAI (GPT-4o-mini) and saved to the profile's description JSON in S3:
+
+1. **Summary**: A comprehensive 5-8 sentence summary covering:
+   - Current role and company context (including company stage if evident)
+   - Main topics, themes, and subjects they frequently post about
+   - Posting style and tone (technical, thought leadership, personal reflections, etc.)
+   - Key insights, opinions, expertise areas, or perspectives
+   - Notable patterns in content
+   - Engagement patterns or community involvement
+   - Unique value propositions or differentiators
+
+2. **Highlights**: 4-6 key highlights/badges (e.g., "Early + Growth", "Fullstack", "Thought Leader", "Technical Expert", "Series B", "Problem Solver", "Startup Experience") based on:
+   - Company stage mentioned
+   - Technical skills and expertise demonstrated
+   - Content themes and posting style
+   - Career patterns or notable experiences
+   - Industry recognition or patterns
+
+3. **Keywords**: 10-15 important keywords/phrases for highlighting, including:
+   - Technical skills, tools, frameworks, or technologies
+   - Programming languages, platforms, or methodologies
+   - Key themes, topics, or subject areas
+   - Company names, industries, or domains
+   - Concepts, practices, or philosophies
+
+### Error Responses
+
+- **404 Not Found**: Audience room not found or no profiles found
+  ```json
+  {
+    "detail": "Audience room 550e8400-e29b-41d4-a716-446655440000 not found"
+  }
+  ```
+  or
+  ```json
+  {
+    "detail": "No profiles found in audience room 550e8400-e29b-41d4-a716-446655440000"
+  }
+  ```
+
+- **503 Service Unavailable**: Required services not configured
+  ```json
+  {
+    "detail": "Audience database connection not available. Please set AUDIENCE_DATABASE_URL."
+  }
+  ```
+  or
+  ```json
+  {
+    "detail": "OpenAI client not initialized. Please set OPENAI_API_KEY."
+  }
+  ```
+  or
+  ```json
+  {
+    "detail": "S3 is not configured; set AUDIENCE_BUCKET_NAME or VECTOR_BUCKET_NAME."
+  }
+  ```
+
+- **500 Internal Server Error**: Failed to generate summaries
+  ```json
+  {
+    "detail": "Failed to generate summaries"
+  }
+  ```
+
+### Example Request (cURL)
+
+```bash
+curl -X POST "https://your-api.vercel.app/api/v1/audience-rooms/550e8400-e29b-41d4-a716-446655440000/generate-summaries" \
+  -H "Content-Type: application/json"
+```
+
+### Example Request (JavaScript/Fetch)
+
+```javascript
+const audienceRoomId = '550e8400-e29b-41d4-a716-446655440000';
+
+const response = await fetch(
+  `https://your-api.vercel.app/api/v1/audience-rooms/${audienceRoomId}/generate-summaries`,
+  {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    }
+  }
+);
+
+const data = await response.json();
+console.log(`Successfully processed: ${data.success_count} profiles`);
+console.log(`Skipped: ${data.skipped_count} profiles`);
+console.log(`Errors: ${data.error_count} profiles`);
+
+// Process results
+data.profiles.forEach(profile => {
+  if (profile.status === 'success') {
+    console.log(`${profile.profile_name}: Generated summary with ${profile.highlights_count} highlights`);
+  } else if (profile.status === 'skipped') {
+    console.log(`${profile.profile_name}: Skipped - ${profile.reason}`);
+  } else {
+    console.error(`${profile.profile_name}: Error - ${profile.error}`);
+  }
+});
+```
+
+### Notes
+
+- **Processing**: Profiles are processed in parallel to avoid timeouts. The endpoint will wait for all profiles to complete before returning results.
+- **Prerequisites**: 
+  - Profiles must have posts already scraped and stored in S3 (use `/api/v1/scrape` endpoint first)
+  - Profiles must have a description JSON stored in S3 (created when the audience room is created)
+- **Updates**: The generated summary, highlights, and keywords are automatically saved to the profile's description JSON in S3 and can be retrieved using `GET /api/v1/audience-rooms/{audience_room_id}/profiles/{profile_id}/description`
+- **AI Model**: Uses OpenAI's GPT-4o-mini model with a temperature of 0.3 for consistent, focused summaries
+- **Timeout Considerations**: For large audience rooms (50+ profiles), processing may take several minutes. The endpoint processes all profiles in parallel, but OpenAI API rate limits may affect total processing time
+- **Idempotency**: Running this endpoint multiple times will regenerate summaries. The latest summary will overwrite previous ones
+- **Cost**: Each profile requires one OpenAI API call. Monitor your OpenAI usage for large audience rooms
+
+### Workflow Integration
+
+This endpoint is typically used after:
+1. Creating an audience room: `POST /api/v1/audience-rooms`
+2. Scraping posts: `POST /api/v1/scrape` (with `audience_room_id`)
+3. Waiting for scraping to complete: `GET /api/v1/scrape/status/{job_id}`
+
+Then:
+4. Generate summaries: `POST /api/v1/audience-rooms/{audience_room_id}/generate-summaries`
+5. Fetch updated profile descriptions: `GET /api/v1/audience-rooms/{audience_room_id}/profiles/{profile_id}/description`
+
+---
+
 ## General Notes
 
 ### Error Handling
@@ -1090,6 +1320,7 @@ The API has CORS enabled for all origins. In production, you should restrict thi
 Be aware of rate limits on:
 - People Data Labs (PDL) API
 - Apify API
+- OpenAI API (for summary generation)
 - Your backend server
 
 ### Data Storage
@@ -1112,10 +1343,11 @@ Here's a typical workflow for integrating these endpoints:
 2. **Create audience room**: `POST /api/v1/audience-rooms` (with selected profiles)
 3. **Trigger scraping**: `POST /api/v1/scrape` (with `audience_room_id`)
 4. **Poll for status**: `GET /api/v1/scrape/status/{job_id}` (until COMPLETED)
-5. **Fetch audience description**: `GET /api/v1/audience-rooms/{audience_room_id}/description`
-6. **Fetch profile descriptions**: `GET /api/v1/audience-rooms/{audience_room_id}/profiles/{profile_id}/description`
-7. **Fetch profile posts**: `GET /api/v1/audience-rooms/{audience_room_id}/profiles/{profile_id}/posts`
-8. **Classify posts** (optional): `POST /api/classifier/run` - See [CLASSIFIER_API_DOCUMENTATION.md](./CLASSIFIER_API_DOCUMENTATION.md) for details
+5. **Generate profile summaries** (optional): `POST /api/v1/audience-rooms/{audience_room_id}/generate-summaries` - Generates AI summaries, highlights, and keywords from posts
+6. **Fetch audience description**: `GET /api/v1/audience-rooms/{audience_room_id}/description`
+7. **Fetch profile descriptions**: `GET /api/v1/audience-rooms/{audience_room_id}/profiles/{profile_id}/description` (includes generated summary, highlights, and keywords)
+8. **Fetch profile posts**: `GET /api/v1/audience-rooms/{audience_room_id}/profiles/{profile_id}/posts`
+9. **Classify posts** (optional): `POST /api/classifier/run` - See [CLASSIFIER_API_DOCUMENTATION.md](./CLASSIFIER_API_DOCUMENTATION.md) for details
 
 ---
 

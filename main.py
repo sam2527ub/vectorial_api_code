@@ -3,6 +3,7 @@ import json
 import logging
 import uuid
 import asyncio
+import re
 from typing import List, Optional, Dict, Any
 from datetime import datetime
 from dateutil.parser import parse, ParserError
@@ -145,9 +146,10 @@ except Exception as e:
 try:
     # Initialize Groq client for fast LLM inference
     groq_api_key = os.getenv("GROQ_API_KEY")
+    groq_model = os.getenv("GROQ_MODEL", "llama-3.3-70b-versatile")  # Default model, can be overridden
     if groq_api_key:
         groq_client = Groq(api_key=groq_api_key)
-        logger.info("Groq client initialized successfully")
+        logger.info(f"Groq client initialized successfully with model: {groq_model}")
     else:
         logger.warning("GROQ_API_KEY not set")
 except Exception as e:
@@ -1631,62 +1633,287 @@ async def classify_post_with_groq(
                     if example_post and example_label:
                         examples_text += f"\nExample Post: {example_post}\nLabel: {example_label}"
     
-    # Construct the prompt
+    # Construct the SYSTEM prompt (hardcoded rules for Post Usefulness Classifier)
+    system_prompt = f"""You are a Post Usefulness Classifier.
+Your job is to evaluate posts and decide whether they are USEFUL for shaping a persona's professional identity.
+If the post is NOT USEFUL, you must assign one reason label from the provided available labels.
+
+## What "USEFUL" Means
+A post is USEFUL if it provides meaningful signal about the persona's professional identity, including:
+- Technical interests, tools, frameworks, workflows
+- Engineering or design opinions
+- Industry commentary
+- Project learnings or case studies
+- Leadership or communication style
+- Problem-solving approach
+- Mentorship or team-building philosophy
+- Concrete expertise or domain-specific knowledge
+
+If a post helps understand what this persona cares about professionally, it is USEFUL.
+
+## What "NOT USEFUL" Means
+A post is NOT USEFUL if it does not contribute to understanding the persona's professional identity, or if it is irrelevant, generic, noisy, or superficial.
+
+Common NOT USEFUL categories include:
+- GEN-QUOTE: Generic motivational or inspirational quotes with no professional or domain-specific insight
+- PERSONAL: Personal life updates unrelated to professional identity (vacations, birthdays, family events, festival wishes)
+- PROMO: Company-level promotions or marketing content (product launches, event announcements, hiring ads, awards)
+- TREND: Viral trends, memes, low-signal engagement bait, or generic polls
+- REPOST: Reposted content from others with little or no original commentary
+- GENERIC-ADVICE: Broad career advice or leadership platitudes not tied to the persona's domain
+- OFF-DOMAIN: Topics far outside the persona's expected professional domain
+- LOW-CONTENT: Vague, superficial, or filler content lacking meaningful information
+
+## Classifier Rules
+1. Choose USEFUL if the post provides professional signal — even if mildly.
+2. Choose NOT USEFUL only when the post clearly adds no relevant professional insight.
+3. When NOT USEFUL, assign one and only one reason label from the available labels.
+4. Labels must be mutually exclusive; choose the best matching category.
+5. Do not infer facts beyond what is directly stated in the post.
+6. Err on the side of marking ambiguous professional posts as USEFUL, not NOT USEFUL.
+
+## Scoring Rules
+For each label you assign, you MUST provide a confidence score between 0.0 and 1.0.
+CRITICAL: The sum of all scores for a single post MUST be exactly 1.0 (probability distribution).
+You must provide scores for ALL available labels, and they must sum to 1.0.
+
+Available Labels: {", ".join(classifier_labels)}
+
+{f"Few-Shot Examples:{examples_text}" if examples_text else ""}"""
+    
+    # Construct the USER prompt (from PostClassifier.prompt field + post content)
     labels_str = ", ".join(classifier_labels)
-    prompt = f"""You are a classification assistant. Your task is to classify LinkedIn posts based on the following rules and labels.
+    labels_list_str = ", ".join([f'"{label}"' for label in classifier_labels])
+    
+    # User prompt includes: custom rules from PostClassifier.prompt + post content + output format
+    user_prompt_parts = []
+    
+    # Add custom classification rules from PostClassifier.prompt if provided
+    if classifier_prompt:
+        user_prompt_parts.append(f"## User's Custom Classification Rules\n{classifier_prompt}")
+    
+    # Add classifier description if provided
+    if classifier_description:
+        user_prompt_parts.append(f"## Additional Context\n{classifier_description}")
+    
+    # Add the post to classify
+    user_prompt_parts.append(f"## Post to Classify\n\nPost Content:\n{post_text}")
+    
+    # Add output format requirements
+    example_scores_dict = {}
+    if len(classifier_labels) > 0:
+        # Distribute scores: primary gets 0.85, rest share 0.15
+        remaining = 0.15 / max(1, len(classifier_labels) - 1) if len(classifier_labels) > 1 else 0.0
+        for i, label in enumerate(classifier_labels):
+            example_scores_dict[label] = 0.85 if i == 0 else remaining
+    
+    example_scores_str = ",\n    ".join([f'"{k}": {v}' for k, v in example_scores_dict.items()])
+    
+    user_prompt_parts.append(f"""## Required Output Format
 
-Classifier: {classifier_name}
-
-Rules/Description:
-{classifier_description}
-
-Available Labels: {labels_str}
-
-{f"Few-Shot Examples:{examples_text}" if examples_text else ""}
-
-Now classify the following post:
-
-Post Content:
-{post_text}
-
-You must respond with a valid JSON object containing:
-- "label": The primary/winning label (one of: {labels_str})
-- "score": The confidence score for the primary label (between 0.0 and 1.0)
-- "scores": An object where each key is a label name and each value is a confidence score (0.0 to 1.0) for that label. Include scores for ALL available labels: {labels_str}
-
-Example response format:
+You MUST respond with a valid JSON object with EXACTLY this structure:
 {{
-  "label": "useful",
-  "score": 0.85,
+  "label": "<one of the available labels>",
+  "score": <number between 0.0 and 1.0>,
   "scores": {{
-    "useful": 0.85,
-    "not-useful": 0.15,
-    "promotional": 0.05
+    <scores for ALL labels>
   }}
 }}
 
-Respond ONLY with valid JSON, no other text."""
+REQUIREMENTS:
+1. "label" must be one of these exact labels: {labels_list_str}
+2. "score" must be a number between 0.0 and 1.0 representing confidence in the primary label
+3. "scores" MUST be an object with ALL {len(classifier_labels)} labels as keys: {labels_list_str}
+4. Each score in "scores" must be a number between 0.0 and 1.0
+5. The scores MUST sum to exactly 1.0 (probability distribution)
+6. The score for the primary "label" should be the highest
+
+Example response format:
+{{
+  "label": "{classifier_labels[0] if classifier_labels else 'label'}",
+  "score": 0.85,
+  "scores": {{
+    {example_scores_str}
+  }}
+}}
+
+Respond ONLY with valid JSON. No markdown, no code blocks, no explanation, just the JSON object.""")
+    
+    user_prompt = "\n\n".join(user_prompt_parts)
+    
+    # Log the full prompts for debugging
+    logger.info("=" * 80)
+    logger.info("CLASSIFICATION PROMPTS BEING SENT TO GROQ:")
+    logger.info("=" * 80)
+    logger.info(f"System Prompt (first 500 chars): {system_prompt[:500]}...")
+    logger.info(f"User Prompt (first 1000 chars): {user_prompt[:1000]}...")
+    logger.info(f"Full System Prompt Length: {len(system_prompt)} characters")
+    logger.info(f"Full User Prompt Length: {len(user_prompt)} characters")
+    logger.info(f"Classifier Name: {classifier_name}")
+    logger.info(f"Labels: {classifier_labels}")
+    logger.info(f"Examples Used: {bool(classifier_examples)}")
+    if classifier_examples:
+        logger.info(f"Examples Content: {str(classifier_examples)[:500]}")
+    logger.info("=" * 80)
+    
+    # Get model name from environment or use default
+    model_name = os.getenv("GROQ_MODEL", "llama-3.3-70b-versatile")
     
     try:
-        # Call Groq API
-        response = groq_client.chat.completions.create(
-            model="llama-3.1-70b-versatile",  # Fast and capable model
-            messages=[
-                {"role": "system", "content": classifier_prompt or "You are a helpful classification assistant."},
-                {"role": "user", "content": prompt}
-            ],
-            temperature=0.3,  # Lower temperature for more consistent classification
-            response_format={"type": "json_object"}  # Force JSON response
-        )
+        # Call Groq API - try with json_object format first
+        try:
+            response = groq_client.chat.completions.create(
+                model=model_name,
+                messages=[
+                    {"role": "system", "content": system_prompt},
+                    {"role": "user", "content": user_prompt}
+                ],
+                temperature=0.3,  # Lower temperature for more consistent classification
+                response_format={"type": "json_object"}  # Force JSON response
+            )
+        except Exception as groq_error:
+            error_str = str(groq_error)
+            logger.error(f"Groq API call failed with json_object format: {groq_error}")
+            
+            # Check if it's a model decommissioned error
+            if "decommissioned" in error_str.lower() or "model_decommissioned" in error_str:
+                logger.error("⚠️ Model has been decommissioned! Trying alternative model...")
+                # Try with a different model
+                try:
+                    response = groq_client.chat.completions.create(
+                        model="llama-3.1-8b-instant",  # Fallback to faster model
+                        messages=[
+                            {"role": "system", "content": system_prompt},
+                            {"role": "user", "content": user_prompt}
+                        ],
+                        temperature=0.3,
+                        response_format={"type": "json_object"}
+                    )
+                    logger.info("✅ Successfully used fallback model: llama-3.1-8b-instant")
+                except Exception as fallback_error:
+                    logger.error(f"Fallback model also failed: {fallback_error}")
+                    # Retry without json_object constraint
+                    logger.info("Retrying without json_object constraint...")
+                    response = groq_client.chat.completions.create(
+                        model="llama-3.1-8b-instant",
+                        messages=[
+                            {"role": "system", "content": system_prompt},
+                            {"role": "user", "content": user_prompt}
+                        ],
+                        temperature=0.3
+                    )
+            else:
+                # Retry without json_object constraint
+                logger.info("Retrying without json_object constraint...")
+                response = groq_client.chat.completions.create(
+                    model=model_name,
+                    messages=[
+                        {"role": "system", "content": system_prompt},
+                        {"role": "user", "content": user_prompt}
+                    ],
+                    temperature=0.3
+                )
         
         # Parse response
         content = response.choices[0].message.content
-        result = json.loads(content)
+        logger.info("=" * 80)
+        logger.info("📥 GROQ RESPONSE RECEIVED")
+        logger.info("=" * 80)
+        logger.info(f"Response type: {type(content)}")
+        logger.info(f"Response length: {len(content)} characters")
+        logger.info(f"Raw Groq response (FULL):\n{content}")
+        logger.info("=" * 80)
+        
+        # Try to extract JSON from content (in case there's extra text)
+        result = None
+        json_parse_attempts = []
+        
+        # Attempt 1: Direct JSON parse
+        try:
+            result = json.loads(content)
+            logger.info("✅ Successfully parsed JSON response (direct parse)")
+            json_parse_attempts.append("direct_parse_success")
+        except json.JSONDecodeError as parse_error:
+            json_parse_attempts.append(f"direct_parse_failed: {str(parse_error)}")
+            logger.warning(f"Initial JSON parse failed: {parse_error}")
+            
+            # Attempt 2: Extract JSON from markdown code blocks
+            if "```json" in content:
+                json_start = content.find("```json") + 7
+                json_end = content.find("```", json_start)
+                if json_end != -1:
+                    json_str = content[json_start:json_end].strip()
+                    try:
+                        result = json.loads(json_str)
+                        logger.info("✅ Successfully parsed JSON from markdown code block")
+                        json_parse_attempts.append("markdown_extract_success")
+                    except json.JSONDecodeError:
+                        json_parse_attempts.append("markdown_extract_failed")
+            
+            # Attempt 3: Extract JSON from any code blocks
+            if result is None and "```" in content:
+                json_start = content.find("```") + 3
+                json_end = content.find("```", json_start)
+                if json_end != -1:
+                    json_str = content[json_start:json_end].strip()
+                    try:
+                        result = json.loads(json_str)
+                        logger.info("✅ Successfully parsed JSON from code block")
+                        json_parse_attempts.append("code_block_extract_success")
+                    except json.JSONDecodeError:
+                        json_parse_attempts.append("code_block_extract_failed")
+            
+            # Attempt 4: Extract JSON by finding balanced braces
+            if result is None:
+                start_idx = content.find('{')
+                if start_idx != -1:
+                    brace_count = 0
+                    end_idx = start_idx
+                    for i in range(start_idx, len(content)):
+                        if content[i] == '{':
+                            brace_count += 1
+                        elif content[i] == '}':
+                            brace_count -= 1
+                            if brace_count == 0:
+                                end_idx = i + 1
+                                break
+                    
+                    if brace_count == 0:
+                        json_str = content[start_idx:end_idx]
+                        try:
+                            result = json.loads(json_str)
+                            logger.info("✅ Successfully extracted JSON from balanced braces")
+                            json_parse_attempts.append("brace_extract_success")
+                        except json.JSONDecodeError as extract_error:
+                            logger.error(f"Failed to parse extracted JSON: {extract_error}")
+                            json_parse_attempts.append(f"brace_extract_failed: {str(extract_error)}")
+        
+        if result is None:
+            logger.error(f"❌ Could not parse JSON from response after all attempts")
+            logger.error(f"Parse attempts: {json_parse_attempts}")
+            logger.error(f"Full content: {content}")
+            # Try to extract any useful information from the response
+            # Maybe Groq returned text instead of JSON
+            if "label" in content.lower() or "useful" in content.lower():
+                logger.warning("Response contains classification keywords but isn't valid JSON")
+            raise json.JSONDecodeError("Could not parse JSON from response", content, 0)
+        
+        logger.info(f"✅ Parsed result: {json.dumps(result, indent=2)}")
         
         # Validate and normalize response
         label = result.get("label", "")
         score = result.get("score", 0.0)
         all_scores = result.get("scores", {})
+        
+        # Log what we got in detail
+        logger.info(f"Extracted - label: '{label}' (type: {type(label)})")
+        logger.info(f"Extracted - score: {score} (type: {type(score)})")
+        logger.info(f"Extracted - scores: {all_scores} (type: {type(all_scores)})")
+        if isinstance(all_scores, dict):
+            logger.info(f"Extracted - scores keys: {list(all_scores.keys())}")
+            logger.info(f"Extracted - scores values: {list(all_scores.values())}")
+        else:
+            logger.warning(f"⚠️ scores is not a dict! It's: {type(all_scores)}")
         
         # Ensure label is one of the available labels
         if label not in classifier_labels:
@@ -1700,9 +1927,10 @@ Respond ONLY with valid JSON, no other text."""
             
             if matched_label:
                 label = matched_label
+                logger.info(f"Matched label '{label}' (case-insensitive)")
             else:
                 # Default to first label if no match
-                logger.warning(f"Label '{label}' not in available labels, defaulting to '{classifier_labels[0]}'")
+                logger.warning(f"Label '{label}' not in available labels {classifier_labels}, defaulting to '{classifier_labels[0]}'")
                 label = classifier_labels[0]
         
         # Ensure score is between 0 and 1
@@ -1712,30 +1940,109 @@ Respond ONLY with valid JSON, no other text."""
                 score = score / 100.0  # Convert percentage to decimal
             score = max(0.0, min(1.0, score))
         except (ValueError, TypeError):
+            logger.warning(f"Invalid score value: {score}, using 0.5")
             score = 0.5  # Default score
         
         # Normalize all scores - ensure we have scores for all labels
         normalized_scores = {}
-        if isinstance(all_scores, dict):
+        
+        # Check if we have scores dict
+        if isinstance(all_scores, dict) and len(all_scores) > 0:
+            logger.info(f"✅ Found scores dict with {len(all_scores)} entries")
+            # We have scores, use them
+            total_score = 0.0
+            valid_scores_count = 0
+            
+            # First pass: extract and normalize all provided scores
             for available_label in classifier_labels:
                 if available_label in all_scores:
                     try:
-                        label_score = float(all_scores[available_label])
+                        label_score = all_scores[available_label]
+                        logger.debug(f"Processing score for '{available_label}': {label_score} (type: {type(label_score)})")
+                        
+                        # Convert to float
+                        if isinstance(label_score, str):
+                            # Try to parse string
+                            label_score = float(label_score.replace('%', '').strip())
+                        else:
+                            label_score = float(label_score)
+                        
+                        # Handle percentage format (e.g., 85 instead of 0.85)
                         if label_score > 1.0:
                             label_score = label_score / 100.0
+                            logger.debug(f"Converted percentage {label_score * 100}% to {label_score}")
+                        
                         normalized_scores[available_label] = round(max(0.0, min(1.0, label_score)), 2)
-                    except (ValueError, TypeError):
+                        total_score += normalized_scores[available_label]
+                        if normalized_scores[available_label] > 0:
+                            valid_scores_count += 1
+                            logger.debug(f"✅ Valid score for '{available_label}': {normalized_scores[available_label]}")
+                    except (ValueError, TypeError) as e:
                         # If score is invalid, use 0.0
+                        logger.warning(f"⚠️ Invalid score for '{available_label}': {all_scores[available_label]} (error: {e})")
                         normalized_scores[available_label] = 0.0
                 else:
                     # If label not in scores, default to 0.0
+                    logger.debug(f"Label '{available_label}' not found in scores dict")
                     normalized_scores[available_label] = 0.0
+            
+            logger.info(f"Score extraction summary - total: {total_score}, valid: {valid_scores_count}, normalized: {normalized_scores}")
+            
+            # If all scores are 0 or total is 0, something went wrong - create distribution from primary label
+            if total_score == 0.0 or valid_scores_count == 0:
+                logger.warning(f"⚠️ All scores are 0 or invalid (total={total_score}, valid={valid_scores_count})")
+                logger.warning(f"⚠️ Creating distribution from primary label score {score}")
+                # Distribute: primary label gets the score, rest share (1 - score) equally
+                remaining = max(0.0, 1.0 - score)
+                remaining_per_label = remaining / max(1, len(classifier_labels) - 1) if len(classifier_labels) > 1 else 0.0
+                
+                for available_label in classifier_labels:
+                    if available_label == label:
+                        normalized_scores[available_label] = round(score, 2)
+                    else:
+                        normalized_scores[available_label] = round(remaining_per_label, 2)
+                logger.info(f"Created distribution: {normalized_scores}")
+            elif total_score > 1.0:
+                # Normalize if sum > 1.0
+                logger.info(f"Normalizing scores (sum={total_score})")
+                for available_label in classifier_labels:
+                    normalized_scores[available_label] = round(normalized_scores[available_label] / total_score, 2)
+            elif total_score < 1.0 and total_score > 0:
+                # Distribute remaining probability to missing/zero labels
+                remaining = 1.0 - total_score
+                missing_labels = [l for l in classifier_labels if normalized_scores[l] == 0.0]
+                if missing_labels:
+                    per_missing = remaining / len(missing_labels)
+                    for missing_label in missing_labels:
+                        normalized_scores[missing_label] = round(per_missing, 2)
+                else:
+                    # All labels have scores, normalize to sum to 1.0
+                    for available_label in classifier_labels:
+                        normalized_scores[available_label] = round(normalized_scores[available_label] / total_score, 2)
         else:
-            # If scores not provided or invalid, create default scores
+            # If scores not provided or invalid, create distribution from primary label
+            logger.warning(f"⚠️ No scores dict provided or empty (all_scores type: {type(all_scores)}, value: {all_scores})")
+            logger.warning(f"⚠️ Creating distribution from primary label '{label}' with score {score}")
+            
+            # Try to use the score from result if available, otherwise use 0.8 as default confidence
+            if score <= 0 or score == 0.5:
+                # If score is default or invalid, use a reasonable default
+                score = 0.8
+                logger.info(f"Using default confidence score of 0.8 for primary label")
+            
+            # Distribute: primary label gets the score, rest share (1 - score) equally
+            remaining = max(0.0, 1.0 - score)
+            remaining_per_label = remaining / max(1, len(classifier_labels) - 1) if len(classifier_labels) > 1 else 0.0
+            
             for available_label in classifier_labels:
-                normalized_scores[available_label] = 0.0
-            # Set the primary label's score
-            normalized_scores[label] = round(score, 2)
+                if available_label == label:
+                    normalized_scores[available_label] = round(score, 2)
+                else:
+                    normalized_scores[available_label] = round(remaining_per_label, 2)
+            
+            logger.info(f"Created distribution from label: {normalized_scores}")
+        
+        logger.info(f"Final normalized scores: {normalized_scores}")
         
         return {
             "label": label,
@@ -1743,20 +2050,50 @@ Respond ONLY with valid JSON, no other text."""
             "allScores": normalized_scores
         }
     except json.JSONDecodeError as e:
-        logger.error(f"Failed to parse Groq JSON response: {e}, content: {content if 'content' in locals() else 'N/A'}")
+        logger.error("=" * 80)
+        logger.error("❌ JSON DECODE ERROR - RETURNING DEFAULTS")
+        logger.error("=" * 80)
+        logger.error(f"Error: {e}")
+        logger.error(f"Response content (FULL): {content if 'content' in locals() else 'N/A'}")
+        logger.error(f"Response length: {len(content) if 'content' in locals() else 0}")
+        logger.error(f"Response type: {type(content) if 'content' in locals() else 'N/A'}")
+        if 'content' in locals() and content:
+            logger.error(f"First 1000 chars: {content[:1000]}")
+            logger.error(f"Last 500 chars: {content[-500:]}")
+        logger.error("=" * 80)
         # Return default classification with all scores set to 0 except the first
         default_label = classifier_labels[0] if classifier_labels else "Unknown"
         default_scores = {label: 0.0 for label in classifier_labels}
         if default_label in default_scores:
             default_scores[default_label] = 0.5
+        logger.error(f"⚠️ Returning default scores: {default_scores}")
         return {
             "label": default_label,
             "score": 0.5,
             "allScores": default_scores
         }
     except Exception as e:
-        logger.error(f"Error classifying post with Groq: {e}")
-        raise HTTPException(status_code=500, detail=f"Failed to classify post: {str(e)}")
+        logger.error("=" * 80)
+        logger.error("❌ EXCEPTION IN CLASSIFICATION - RETURNING DEFAULTS")
+        logger.error("=" * 80)
+        logger.error(f"Error type: {type(e).__name__}")
+        logger.error(f"Error message: {str(e)}")
+        if 'content' in locals():
+            logger.error(f"Response content was: {content}")
+        import traceback
+        logger.error(f"Traceback:\n{traceback.format_exc()}")
+        logger.error("=" * 80)
+        # Return defaults instead of raising
+        default_label = classifier_labels[0] if classifier_labels else "Unknown"
+        default_scores = {label: 0.0 for label in classifier_labels}
+        if default_label in default_scores:
+            default_scores[default_label] = 0.5
+        logger.error(f"⚠️ Returning default scores due to exception: {default_scores}")
+        return {
+            "label": default_label,
+            "score": 0.5,
+            "allScores": default_scores
+        }
 
 
 async def classify_posts_batch(
@@ -2116,6 +2453,492 @@ async def run_classifier(payload: RunClassifierRequest):
     except Exception as e:
         logger.error(f"Error running classifier: {e}")
         raise HTTPException(status_code=500, detail=f"Failed to run classifier: {str(e)}")
+
+
+# === TEST ENDPOINT: Classify Single Post (for debugging) ===
+@app.post("/api/classifier/test-single")
+async def test_classify_single_post(
+    classifier_id: str = Body(..., description="ID of the classifier"),
+    post_text: str = Body(..., description="Post text to classify")
+):
+    """
+    Test endpoint to classify a single post and return full debug information.
+    This helps debug why classification is returning defaults.
+    """
+    if not audience_prisma:
+        raise HTTPException(status_code=503, detail="Audience database connection not available.")
+    if not groq_client:
+        raise HTTPException(status_code=503, detail="Groq client not initialized.")
+    
+    await ensure_prisma_connection(audience_prisma, "Audience")
+    
+    try:
+        # Fetch classifier
+        try:
+            raw_result = await audience_prisma.query_first(
+                'SELECT id, name, prompt, description, labels, examples, "createdAt", "updatedAt" FROM "PostClassifier" WHERE id = $1',
+                classifier_id
+            )
+        except Exception:
+            classifier = await audience_prisma.postclassifier.find_unique(
+                where={"id": classifier_id}
+            )
+            if not classifier:
+                raise HTTPException(status_code=404, detail=f"Classifier {classifier_id} not found")
+            raw_result = {
+                'id': classifier.id,
+                'name': classifier.name,
+                'prompt': classifier.prompt,
+                'description': classifier.description,
+                'labels': classifier.labels,
+                'examples': classifier.examples
+            }
+        
+        if not raw_result:
+            raise HTTPException(status_code=404, detail=f"Classifier {classifier_id} not found")
+        
+        # Parse classifier data (same as run_classifier)
+        classifier_name = raw_result.get('name', '')
+        classifier_prompt = raw_result.get('prompt') or ""
+        classifier_description = raw_result.get('description') or ""
+        
+        # Parse labels
+        labels_raw = raw_result.get('labels', [])
+        if isinstance(labels_raw, str):
+            try:
+                classifier_labels = json.loads(labels_raw)
+            except:
+                classifier_labels = [labels_raw]
+        elif isinstance(labels_raw, list):
+            classifier_labels = labels_raw
+        elif isinstance(labels_raw, dict):
+            classifier_labels = list(labels_raw.keys()) if labels_raw else []
+        else:
+            classifier_labels = []
+        classifier_labels = [str(l) for l in classifier_labels if l]
+        
+        # Parse examples
+        examples_raw = raw_result.get('examples')
+        classifier_examples = None
+        if examples_raw:
+            if isinstance(examples_raw, dict):
+                classifier_examples = examples_raw
+            elif isinstance(examples_raw, str):
+                try:
+                    classifier_examples = json.loads(examples_raw)
+                except:
+                    classifier_examples = None
+            elif isinstance(examples_raw, list):
+                classifier_examples = examples_raw
+        
+        # Build the prompts (same as classify_post_with_groq)
+        # Build examples text
+        examples_text = ""
+        if classifier_examples:
+            if isinstance(classifier_examples, list):
+                for example in classifier_examples[:3]:
+                    if isinstance(example, dict):
+                        example_post = example.get("post", example.get("text", ""))
+                        example_label = example.get("label", "")
+                        example_score = example.get("score", "")
+                        if example_post and example_label:
+                            examples_text += f"\nExample Post: {example_post}\nLabel: {example_label}"
+                            if example_score:
+                                examples_text += f" (Score: {example_score})"
+            elif isinstance(classifier_examples, dict):
+                for key, value in list(classifier_examples.items())[:3]:
+                    if isinstance(value, dict):
+                        example_post = value.get("post", value.get("text", ""))
+                        example_label = value.get("label", key)
+                        if example_post and example_label:
+                            examples_text += f"\nExample Post: {example_post}\nLabel: {example_label}"
+        
+        # Build system prompt
+        system_prompt = f"""You are a Post Usefulness Classifier.
+Your job is to evaluate posts and decide whether they are USEFUL for shaping a persona's professional identity.
+If the post is NOT USEFUL, you must assign one reason label from the provided available labels.
+
+## What "USEFUL" Means
+A post is USEFUL if it provides meaningful signal about the persona's professional identity, including:
+- Technical interests, tools, frameworks, workflows
+- Engineering or design opinions
+- Industry commentary
+- Project learnings or case studies
+- Leadership or communication style
+- Problem-solving approach
+- Mentorship or team-building philosophy
+- Concrete expertise or domain-specific knowledge
+
+If a post helps understand what this persona cares about professionally, it is USEFUL.
+
+## What "NOT USEFUL" Means
+A post is NOT USEFUL if it does not contribute to understanding the persona's professional identity, or if it is irrelevant, generic, noisy, or superficial.
+
+Common NOT USEFUL categories include:
+- GEN-QUOTE: Generic motivational or inspirational quotes with no professional or domain-specific insight
+- PERSONAL: Personal life updates unrelated to professional identity (vacations, birthdays, family events, festival wishes)
+- PROMO: Company-level promotions or marketing content (product launches, event announcements, hiring ads, awards)
+- TREND: Viral trends, memes, low-signal engagement bait, or generic polls
+- REPOST: Reposted content from others with little or no original commentary
+- GENERIC-ADVICE: Broad career advice or leadership platitudes not tied to the persona's domain
+- OFF-DOMAIN: Topics far outside the persona's expected professional domain
+- LOW-CONTENT: Vague, superficial, or filler content lacking meaningful information
+
+## Classifier Rules
+1. Choose USEFUL if the post provides professional signal — even if mildly.
+2. Choose NOT USEFUL only when the post clearly adds no relevant professional insight.
+3. When NOT USEFUL, assign one and only one reason label from the available labels.
+4. Labels must be mutually exclusive; choose the best matching category.
+5. Do not infer facts beyond what is directly stated in the post.
+6. Err on the side of marking ambiguous professional posts as USEFUL, not NOT USEFUL.
+
+## Scoring Rules
+For each label you assign, you MUST provide a confidence score between 0.0 and 1.0.
+CRITICAL: The sum of all scores for a single post MUST be exactly 1.0 (probability distribution).
+You must provide scores for ALL available labels, and they must sum to 1.0.
+
+Available Labels: {", ".join(classifier_labels)}
+
+{f"Few-Shot Examples:{examples_text}" if examples_text else ""}"""
+        
+        # Build user prompt
+        labels_str = ", ".join(classifier_labels)
+        labels_list_str = ", ".join([f'"{label}"' for label in classifier_labels])
+        user_prompt_parts = []
+        if classifier_prompt:
+            user_prompt_parts.append(f"## User's Custom Classification Rules\n{classifier_prompt}")
+        if classifier_description:
+            user_prompt_parts.append(f"## Additional Context\n{classifier_description}")
+        user_prompt_parts.append(f"## Post to Classify\n\nPost Content:\n{post_text}")
+        
+        example_scores_dict = {}
+        if len(classifier_labels) > 0:
+            remaining = 0.15 / max(1, len(classifier_labels) - 1) if len(classifier_labels) > 1 else 0.0
+            for i, label in enumerate(classifier_labels):
+                example_scores_dict[label] = 0.85 if i == 0 else remaining
+        example_scores_str = ",\n    ".join([f'"{k}": {v}' for k, v in example_scores_dict.items()])
+        
+        user_prompt_parts.append(f"""## Required Output Format
+
+You MUST respond with a valid JSON object with EXACTLY this structure:
+{{
+  "label": "<one of the available labels>",
+  "score": <number between 0.0 and 1.0>,
+  "scores": {{
+    <scores for ALL labels>
+  }}
+}}
+
+REQUIREMENTS:
+1. "label" must be one of these exact labels: {labels_list_str}
+2. "score" must be a number between 0.0 and 1.0 representing confidence in the primary label
+3. "scores" MUST be an object with ALL {len(classifier_labels)} labels as keys: {labels_list_str}
+4. Each score in "scores" must be a number between 0.0 and 1.0
+5. The scores MUST sum to exactly 1.0 (probability distribution)
+6. The score for the primary "label" should be the highest
+
+Example response format:
+{{
+  "label": "{classifier_labels[0] if classifier_labels else 'label'}",
+  "score": 0.85,
+  "scores": {{
+    {example_scores_str}
+  }}
+}}
+
+Respond ONLY with valid JSON. No markdown, no code blocks, no explanation, just the JSON object.""")
+        user_prompt = "\n\n".join(user_prompt_parts)
+        
+        # Get model name
+        model_name = os.getenv("GROQ_MODEL", "llama-3.3-70b-versatile")
+        
+        # Call Groq directly and capture everything
+        debug_info = {
+            "classifier_id": classifier_id,
+            "classifier_name": classifier_name,
+            "post_text": post_text,
+            "labels": classifier_labels,
+            "system_prompt": system_prompt,
+            "user_prompt": user_prompt,
+            "groq_response": None,
+            "parsed_result": None,
+            "classification_result": None,
+            "error": None,
+            "model_used": model_name
+        }
+        
+        try:
+            # Call Groq
+            response = groq_client.chat.completions.create(
+                model=model_name,
+                messages=[
+                    {"role": "system", "content": system_prompt},
+                    {"role": "user", "content": user_prompt}
+                ],
+                temperature=0.3,
+                response_format={"type": "json_object"}
+            )
+            
+            content = response.choices[0].message.content
+            debug_info["groq_response"] = content
+            debug_info["groq_response_length"] = len(content)
+            
+            # Try to parse
+            try:
+                result = json.loads(content)
+                debug_info["parsed_result"] = result
+                debug_info["parsed_success"] = True
+                
+                # Try to classify
+                classification = await classify_post_with_groq(
+                    post={"text": post_text},
+                    classifier_name=classifier_name,
+                    classifier_prompt=classifier_prompt,
+                    classifier_description=classifier_description,
+                    classifier_labels=classifier_labels,
+                    classifier_examples=classifier_examples
+                )
+                debug_info["classification_result"] = classification
+                debug_info["success"] = True
+            except json.JSONDecodeError as e:
+                debug_info["parse_error"] = str(e)
+                debug_info["parsed_success"] = False
+        except Exception as e:
+            debug_info["error"] = str(e)
+            debug_info["error_type"] = type(e).__name__
+            debug_info["success"] = False
+            import traceback
+            debug_info["traceback"] = traceback.format_exc()
+        
+        return debug_info
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error in test endpoint: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=f"Failed to test classification: {str(e)}")
+
+
+# === DEBUG ENDPOINT: Preview Classification Prompt ===
+@app.get("/api/classifier/preview-prompt")
+async def preview_classifier_prompt(
+    classifier_id: str = Query(..., description="ID of the classifier"),
+    sample_post_text: str = Query("This is a sample LinkedIn post about AI and machine learning.", description="Sample post text to preview the prompt")
+):
+    """
+    Preview what prompt would be sent to Groq for classification.
+    Useful for debugging without actually calling Groq API.
+    """
+    if not audience_prisma:
+        raise HTTPException(status_code=503, detail="Audience database connection not available.")
+    
+    await ensure_prisma_connection(audience_prisma, "Audience")
+    
+    try:
+        # Fetch classifier (same logic as run_classifier)
+        try:
+            raw_result = await audience_prisma.query_first(
+                'SELECT id, name, prompt, description, labels, examples, "createdAt", "updatedAt" FROM "PostClassifier" WHERE id = $1',
+                classifier_id
+            )
+        except Exception:
+            classifier = await audience_prisma.postclassifier.find_unique(
+                where={"id": classifier_id}
+            )
+            if not classifier:
+                raise HTTPException(status_code=404, detail=f"Classifier {classifier_id} not found")
+            raw_result = {
+                'id': classifier.id,
+                'name': classifier.name,
+                'prompt': classifier.prompt,
+                'description': classifier.description,
+                'labels': classifier.labels,
+                'examples': classifier.examples
+            }
+        
+        if not raw_result:
+            raise HTTPException(status_code=404, detail=f"Classifier {classifier_id} not found")
+        
+        # Parse classifier data
+        classifier_name = raw_result.get('name', '')
+        classifier_prompt = raw_result.get('prompt') or ""
+        classifier_description = raw_result.get('description') or ""
+        
+        # Parse labels
+        labels_raw = raw_result.get('labels', [])
+        if isinstance(labels_raw, str):
+            try:
+                classifier_labels = json.loads(labels_raw)
+            except:
+                classifier_labels = [labels_raw]
+        elif isinstance(labels_raw, list):
+            classifier_labels = labels_raw
+        elif isinstance(labels_raw, dict):
+            classifier_labels = list(labels_raw.keys()) if labels_raw else []
+        else:
+            classifier_labels = []
+        
+        classifier_labels = [str(l) for l in classifier_labels if l]
+        
+        # Parse examples
+        examples_raw = raw_result.get('examples')
+        classifier_examples = None
+        if examples_raw:
+            if isinstance(examples_raw, dict):
+                classifier_examples = examples_raw
+            elif isinstance(examples_raw, str):
+                try:
+                    classifier_examples = json.loads(examples_raw)
+                except:
+                    classifier_examples = None
+            elif isinstance(examples_raw, list):
+                classifier_examples = examples_raw
+        
+        # Build examples text (same as classify_post_with_groq)
+        examples_text = ""
+        if classifier_examples:
+            if isinstance(classifier_examples, list):
+                for example in classifier_examples[:3]:
+                    if isinstance(example, dict):
+                        example_post = example.get("post", example.get("text", ""))
+                        example_label = example.get("label", "")
+                        example_score = example.get("score", "")
+                        if example_post and example_label:
+                            examples_text += f"\nExample Post: {example_post}\nLabel: {example_label}"
+                            if example_score:
+                                examples_text += f" (Score: {example_score})"
+            elif isinstance(classifier_examples, dict):
+                for key, value in list(classifier_examples.items())[:3]:
+                    if isinstance(value, dict):
+                        example_post = value.get("post", value.get("text", ""))
+                        example_label = value.get("label", key)
+                        if example_post and example_label:
+                            examples_text += f"\nExample Post: {example_post}\nLabel: {example_label}"
+        
+        # Build system prompt (same as classify_post_with_groq)
+        system_prompt = f"""You are a Post Usefulness Classifier.
+Your job is to evaluate posts and decide whether they are USEFUL for shaping a persona's professional identity.
+If the post is NOT USEFUL, you must assign one reason label from the provided available labels.
+
+## What "USEFUL" Means
+A post is USEFUL if it provides meaningful signal about the persona's professional identity, including:
+- Technical interests, tools, frameworks, workflows
+- Engineering or design opinions
+- Industry commentary
+- Project learnings or case studies
+- Leadership or communication style
+- Problem-solving approach
+- Mentorship or team-building philosophy
+- Concrete expertise or domain-specific knowledge
+
+If a post helps understand what this persona cares about professionally, it is USEFUL.
+
+## What "NOT USEFUL" Means
+A post is NOT USEFUL if it does not contribute to understanding the persona's professional identity, or if it is irrelevant, generic, noisy, or superficial.
+
+Common NOT USEFUL categories include:
+- GEN-QUOTE: Generic motivational or inspirational quotes with no professional or domain-specific insight
+- PERSONAL: Personal life updates unrelated to professional identity (vacations, birthdays, family events, festival wishes)
+- PROMO: Company-level promotions or marketing content (product launches, event announcements, hiring ads, awards)
+- TREND: Viral trends, memes, low-signal engagement bait, or generic polls
+- REPOST: Reposted content from others with little or no original commentary
+- GENERIC-ADVICE: Broad career advice or leadership platitudes not tied to the persona's domain
+- OFF-DOMAIN: Topics far outside the persona's expected professional domain
+- LOW-CONTENT: Vague, superficial, or filler content lacking meaningful information
+
+## Classifier Rules
+1. Choose USEFUL if the post provides professional signal — even if mildly.
+2. Choose NOT USEFUL only when the post clearly adds no relevant professional insight.
+3. When NOT USEFUL, assign one and only one reason label from the available labels.
+4. Labels must be mutually exclusive; choose the best matching category.
+5. Do not infer facts beyond what is directly stated in the post.
+6. Err on the side of marking ambiguous professional posts as USEFUL, not NOT USEFUL.
+
+## Scoring Rules
+For each label you assign, you MUST provide a confidence score between 0.0 and 1.0.
+CRITICAL: The sum of all scores for a single post MUST be exactly 1.0 (probability distribution).
+You must provide scores for ALL available labels, and they must sum to 1.0.
+
+Available Labels: {", ".join(classifier_labels)}
+
+{f"Few-Shot Examples:{examples_text}" if examples_text else ""}"""
+        
+        # Build user prompt (same as classify_post_with_groq)
+        labels_str = ", ".join(classifier_labels)
+        labels_list_str = ", ".join([f'"{label}"' for label in classifier_labels])
+        
+        user_prompt_parts = []
+        
+        # Add custom classification rules from PostClassifier.prompt if provided
+        if classifier_prompt:
+            user_prompt_parts.append(f"## User's Custom Classification Rules\n{classifier_prompt}")
+        
+        # Add classifier description if provided
+        if classifier_description:
+            user_prompt_parts.append(f"## Additional Context\n{classifier_description}")
+        
+        # Add the post to classify
+        user_prompt_parts.append(f"## Post to Classify\n\nPost Content:\n{sample_post_text}")
+        
+        # Add output format requirements
+        example_scores_dict = {}
+        if len(classifier_labels) > 0:
+            remaining = 0.15 / max(1, len(classifier_labels) - 1) if len(classifier_labels) > 1 else 0.0
+            for i, label in enumerate(classifier_labels):
+                example_scores_dict[label] = 0.85 if i == 0 else remaining
+        
+        example_scores_str = ",\n    ".join([f'"{k}": {v}' for k, v in example_scores_dict.items()])
+        
+        user_prompt_parts.append(f"""## Required Output Format
+
+You MUST respond with a valid JSON object with EXACTLY this structure:
+{{
+  "label": "<one of the available labels>",
+  "score": <number between 0.0 and 1.0>,
+  "scores": {{
+    <scores for ALL labels>
+  }}
+}}
+
+REQUIREMENTS:
+1. "label" must be one of these exact labels: {labels_list_str}
+2. "score" must be a number between 0.0 and 1.0 representing confidence in the primary label
+3. "scores" MUST be an object with ALL {len(classifier_labels)} labels as keys: {labels_list_str}
+4. Each score in "scores" must be a number between 0.0 and 1.0
+5. The scores MUST sum to exactly 1.0 (probability distribution)
+6. The score for the primary "label" should be the highest
+
+Example response format:
+{{
+  "label": "{classifier_labels[0] if classifier_labels else 'label'}",
+  "score": 0.85,
+  "scores": {{
+    {example_scores_str}
+  }}
+}}
+
+Respond ONLY with valid JSON. No markdown, no code blocks, no explanation, just the JSON object.""")
+        
+        user_prompt = "\n\n".join(user_prompt_parts)
+        
+        return {
+            "classifier_id": classifier_id,
+            "classifier_name": classifier_name,
+            "system_prompt": system_prompt,
+            "user_prompt": user_prompt,
+            "labels": classifier_labels,
+            "examples_used": bool(classifier_examples),
+            "examples_count": len(classifier_examples) if isinstance(classifier_examples, list) else (len(classifier_examples) if isinstance(classifier_examples, dict) else 0),
+            "system_prompt_length": len(system_prompt),
+            "user_prompt_length": len(user_prompt),
+            "sample_post_text": sample_post_text
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error previewing classifier prompt: {e}")
+        raise HTTPException(status_code=500, detail=f"Failed to preview prompt: {str(e)}")
 
 
 # === GENERATE PROFILE SUMMARIES ENDPOINT ===
