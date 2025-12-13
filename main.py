@@ -1324,6 +1324,268 @@ async def get_profile_posts(audience_room_id: str, profile_id: str):
         raise HTTPException(status_code=500, detail="Failed to fetch posts")
 
 
+async def generate_profile_summary_from_posts(
+    profile_id: str,
+    profile_name: str,
+    profile_title: Optional[str],
+    profile_company: Optional[str],
+    posts: List[Dict[str, Any]],
+) -> Dict[str, Any]:
+    """
+    Generate summary, keywords, and highlights for a profile based on their posts.
+    
+    Args:
+        profile_id: Profile ID
+        profile_name: Profile name
+        profile_title: Profile title/role (optional)
+        profile_company: Profile company (optional)
+        posts: List of post objects
+    
+    Returns:
+        Dictionary with 'summary', 'highlights', and 'keywords' keys
+    """
+    if not openai_client:
+        raise HTTPException(status_code=503, detail="OpenAI client not initialized. Please check OPENAI_API_KEY.")
+    
+    if not posts:
+        return {
+            "summary": None,
+            "highlights": [],
+            "keywords": []
+        }
+    
+    # Extract post text content
+    post_texts = []
+    for post in posts:
+        text = post.get("text", "")
+        if text and text.strip():
+            post_texts.append(text.strip())
+    
+    if not post_texts:
+        return {
+            "summary": None,
+            "highlights": [],
+            "keywords": []
+        }
+    
+    # Combine all post texts for analysis
+    text_for_analysis = "\n\n".join(post_texts)
+    total_posts = len(post_texts)
+    
+    # Build profile context
+    if profile_title and profile_company:
+        profile_context = f"{profile_name}, who is a {profile_title} at {profile_company}"
+    elif profile_company:
+        profile_context = f"{profile_name}, who works at {profile_company}"
+    else:
+        profile_context = profile_name
+    
+    # Build the prompt according to the template
+    user_prompt = f"""Analyze the LinkedIn posts from {profile_context}.
+
+Posts ({total_posts} total):
+{text_for_analysis}
+
+Generate a comprehensive, detailed analysis:
+1. A thorough 5-8 sentence summary that covers:
+   - Their current role and company context (mention company stage if evident: Series A/B, startup, growth stage, etc.)
+   - Main topics, themes, and subjects they frequently post about
+   - Their posting style and tone (technical, thought leadership, personal reflections, etc.)
+   - Key insights, opinions, expertise areas, or perspectives they share
+   - Notable patterns in content (technical depth, problem-solving focus, industry commentary, etc.)
+   - Engagement patterns or community involvement if evident
+   - Any unique value propositions or differentiators in their content
+   
+   Start with "{profile_name} is currently..." or "{profile_name} has..." and write in a natural, engaging way.
+   
+2. Extract 4-6 key highlights/badges (similar to: "Early + Growth", "Fullstack", "Thought Leader", "Technical Expert", "Series B", "Problem Solver", "Startup Experience", etc.) based on:
+   - Company stage mentioned (Series A, B, growth stage, etc.)
+   - Technical skills and expertise demonstrated
+   - Content themes and posting style (thought leadership, technical depth, etc.)
+   - Career patterns or notable experiences mentioned
+   - Industry recognition or patterns in their posts
+   
+3. Identify 10-15 important keywords/phrases that should be highlighted (for keyword highlighting):
+   - Technical skills, tools, frameworks, or technologies mentioned
+   - Programming languages, platforms, or methodologies
+   - Key themes, topics, or subject areas
+   - Company names, industries, or domains
+   - Concepts, practices, or philosophies discussed
+
+Respond in JSON format only:
+{{
+    "summary": "Detailed 5-8 sentence comprehensive summary starting with the person's name",
+    "highlights": ["Highlight 1", "Highlight 2", ...],
+    "keywords": ["keyword1", "keyword2", ...]
+}}"""
+    
+    system_message = "You are an expert at analyzing LinkedIn posts and generating comprehensive, detailed professional summaries. Write thorough, informative summaries that capture the essence and depth of the person's posting style and content. Always respond with valid JSON only."
+    
+    try:
+        completion = openai_client.chat.completions.create(
+            model="gpt-4o-mini",
+            messages=[
+                {"role": "system", "content": system_message},
+                {"role": "user", "content": user_prompt}
+            ],
+            max_tokens=1500,
+            temperature=0.3,
+            response_format={"type": "json_object"}
+        )
+        
+        result = json.loads(completion.choices[0].message.content)
+        
+        # Validate and normalize the response
+        summary = result.get("summary", "")
+        highlights = result.get("highlights", [])
+        keywords = result.get("keywords", [])
+        
+        # Ensure highlights and keywords are lists
+        if not isinstance(highlights, list):
+            highlights = []
+        if not isinstance(keywords, list):
+            keywords = []
+        
+        return {
+            "summary": summary,
+            "highlights": highlights,
+            "keywords": keywords
+        }
+    except json.JSONDecodeError as e:
+        logger.error(f"Failed to parse OpenAI JSON response for profile {profile_id}: {e}")
+        raise HTTPException(status_code=500, detail=f"Failed to parse AI response: {str(e)}")
+    except Exception as e:
+        logger.error(f"Error generating summary for profile {profile_id}: {e}")
+        raise HTTPException(status_code=500, detail=f"Failed to generate summary: {str(e)}")
+
+
+async def process_profile_summary(
+    profile: Any,
+    audience_room_id: str,
+) -> Dict[str, Any]:
+    """
+    Process a single profile: fetch posts, generate summary, and update description JSON.
+    
+    Returns:
+        Dictionary with processing results
+    """
+    profile_id = profile.id
+    profile_name = profile.profileName
+    
+    try:
+        # Fetch profile description JSON from S3
+        if not profile.profileDescriptionS3Url:
+            return {
+                "profile_id": profile_id,
+                "profile_name": profile_name,
+                "status": "skipped",
+                "reason": "no_description_url",
+                "error": None
+            }
+        
+        profile_key = extract_s3_key_from_url(profile.profileDescriptionS3Url)
+        if not profile_key:
+            return {
+                "profile_id": profile_id,
+                "profile_name": profile_name,
+                "status": "error",
+                "reason": "invalid_description_url",
+                "error": "Invalid S3 URL format"
+            }
+        
+        profile_data = fetch_json_from_s3(profile_key)
+        
+        # Extract profile info for the prompt
+        # Note: profile data doesn't have a title field, so we'll use a generic description
+        profile_title = None  # Could be enhanced if title is added to profile data
+        profile_company = profile_data.get("current_company")
+        
+        # Fetch posts from S3
+        if not profile.postsS3Url:
+            return {
+                "profile_id": profile_id,
+                "profile_name": profile_name,
+                "status": "skipped",
+                "reason": "no_posts_url",
+                "error": None
+            }
+        
+        posts_key = extract_s3_key_from_url(profile.postsS3Url)
+        if not posts_key:
+            return {
+                "profile_id": profile_id,
+                "profile_name": profile_name,
+                "status": "error",
+                "reason": "invalid_posts_url",
+                "error": "Invalid S3 URL format for posts"
+            }
+        
+        posts_data = fetch_json_from_s3(posts_key)
+        
+        # Extract posts array
+        posts = []
+        if isinstance(posts_data, dict):
+            posts = posts_data.get("posts", [])
+            if not posts and isinstance(posts_data.get("data"), list):
+                posts = posts_data["data"]
+        elif isinstance(posts_data, list):
+            posts = posts_data
+        
+        if not posts:
+            return {
+                "profile_id": profile_id,
+                "profile_name": profile_name,
+                "status": "skipped",
+                "reason": "no_posts",
+                "error": None
+            }
+        
+        # Generate summary, keywords, and highlights
+        summary_result = await generate_profile_summary_from_posts(
+            profile_id=profile_id,
+            profile_name=profile_name,
+            profile_title=profile_title,
+            profile_company=profile_company,
+            posts=posts,
+        )
+        
+        # Update profile description JSON
+        profile_data["summary"] = summary_result["summary"]
+        profile_data["highlights"] = summary_result["highlights"]
+        profile_data["keywords"] = summary_result["keywords"]
+        
+        # Upload updated profile description back to S3
+        updated_profile_url = upload_json_to_s3(profile_key, profile_data)
+        
+        # Update the profile record with the new URL (same key, but updated content)
+        await audience_prisma.audienceprofile.update(
+            where={"id": profile_id},
+            data={"profileDescriptionS3Url": updated_profile_url}
+        )
+        
+        return {
+            "profile_id": profile_id,
+            "profile_name": profile_name,
+            "status": "success",
+            "summary": summary_result["summary"][:100] + "..." if summary_result["summary"] and len(summary_result["summary"]) > 100 else summary_result["summary"],
+            "highlights_count": len(summary_result["highlights"]),
+            "keywords_count": len(summary_result["keywords"]),
+            "error": None
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error processing profile {profile_id}: {e}")
+        return {
+            "profile_id": profile_id,
+            "profile_name": profile_name,
+            "status": "error",
+            "reason": "processing_failed",
+            "error": str(e)
+        }
+
+
 async def classify_post_with_groq(
     post: Dict[str, Any],
     classifier_name: str,
@@ -1854,6 +2116,97 @@ async def run_classifier(payload: RunClassifierRequest):
     except Exception as e:
         logger.error(f"Error running classifier: {e}")
         raise HTTPException(status_code=500, detail=f"Failed to run classifier: {str(e)}")
+
+
+# === GENERATE PROFILE SUMMARIES ENDPOINT ===
+@app.post("/api/v1/audience-rooms/{audience_room_id}/generate-summaries")
+async def generate_profile_summaries(audience_room_id: str):
+    """
+    Generate summaries, keywords, and highlights for all profiles in an audience room.
+    
+    Flow:
+    1. Fetch all profiles in the audience room
+    2. For each profile:
+       - Fetch posts JSON from S3
+       - Generate summary, keywords, and highlights using OpenAI
+       - Update profile description JSON in S3 with the new data
+    3. Process profiles in parallel to avoid timeouts
+    
+    Returns:
+        Summary of processing results for all profiles
+    """
+    if not audience_prisma:
+        raise HTTPException(status_code=503, detail="Audience database connection not available. Please set AUDIENCE_DATABASE_URL.")
+    if not openai_client:
+        raise HTTPException(status_code=503, detail="OpenAI client not initialized. Please set OPENAI_API_KEY.")
+    if not s3_client or not s3_bucket:
+        raise HTTPException(status_code=503, detail="S3 is not configured; set AUDIENCE_BUCKET_NAME or VECTOR_BUCKET_NAME.")
+    
+    await ensure_prisma_connection(audience_prisma, "Audience")
+    
+    try:
+        # Fetch audience room and profiles
+        audience_room = await audience_prisma.audienceroom.find_unique(
+            where={"id": audience_room_id},
+            include={"profiles": True}
+        )
+        if not audience_room:
+            raise HTTPException(status_code=404, detail=f"Audience room {audience_room_id} not found")
+        
+        profiles = audience_room.profiles
+        if not profiles:
+            raise HTTPException(status_code=404, detail=f"No profiles found in audience room {audience_room_id}")
+        
+        logger.info(f"Generating summaries for {len(profiles)} profiles in audience room {audience_room_id}")
+        
+        # Process all profiles in parallel to avoid timeouts
+        tasks = [
+            process_profile_summary(profile, audience_room_id)
+            for profile in profiles
+        ]
+        
+        results = await asyncio.gather(*tasks, return_exceptions=True)
+        
+        # Process results and handle exceptions
+        processed_results = []
+        success_count = 0
+        error_count = 0
+        skipped_count = 0
+        
+        for idx, result in enumerate(results):
+            if isinstance(result, Exception):
+                logger.error(f"Error processing profile {profiles[idx].id}: {result}")
+                processed_results.append({
+                    "profile_id": profiles[idx].id,
+                    "profile_name": profiles[idx].profileName,
+                    "status": "error",
+                    "reason": "exception",
+                    "error": str(result)
+                })
+                error_count += 1
+            else:
+                processed_results.append(result)
+                if result["status"] == "success":
+                    success_count += 1
+                elif result["status"] == "skipped":
+                    skipped_count += 1
+                else:
+                    error_count += 1
+        
+        return {
+            "audience_room_id": audience_room_id,
+            "total_profiles": len(profiles),
+            "success_count": success_count,
+            "skipped_count": skipped_count,
+            "error_count": error_count,
+            "profiles": processed_results
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error generating profile summaries: {e}")
+        raise HTTPException(status_code=500, detail=f"Failed to generate summaries: {str(e)}")
 
 
 # === STEP 4: TRIGGER POST SCRAPER (ASYNC) ===
