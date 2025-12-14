@@ -29,3 +29,4 @@ ALTER TABLE "AudienceProfile" ADD CONSTRAINT "AudienceProfile_audienceRoomId_fke
 -- CreateIndex
 CREATE INDEX "AudienceProfile_audienceRoomId_idx" ON "AudienceProfile"("audienceRoomId");
 
+

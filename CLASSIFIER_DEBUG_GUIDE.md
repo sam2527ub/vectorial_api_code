@@ -328,3 +328,4 @@ If you're still getting 0.5 defaults after checking logs:
 
 The enhanced logging should now show you exactly what's happening at each step!
 
+

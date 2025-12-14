@@ -12,3 +12,4 @@ CREATE TABLE "PostClassifier" (
     CONSTRAINT "PostClassifier_pkey" PRIMARY KEY ("id")
 );
 
+
