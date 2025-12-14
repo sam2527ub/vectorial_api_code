@@ -1,0 +1,408 @@
+{
+    "id": "fab3901d-e899-453f-b286-2332129bbece",
+    "name": "Post Usefulness",
+    "createdAt": "2025-12-03T14:17:33.711Z",
+    "updatedAt": "2025-12-04T00:08:32.104Z",
+    "userId": null,
+    "description": null,
+    "prompt": "You are a Post Usefulness Classifier. Your job is to evaluate a LinkedIn post and decide whether it is USEFUL for shaping a persona’s professional identity. If the post is NOT USEFUL, you must assign one reason label from the predefined list. What “USEFUL” Means A post is USEFUL if it provides meaningful signal about the persona's professional identity, including: - technical interests, tools, frameworks, workflows - engineering or design opinions - industry commentary - project learnings or case studies - leadership or communication style - problem-solving approach - mentorship or team-building philosophy - concrete expertise or domain-specific knowledge If a post helps understand what this persona cares about professionally, it is USEFUL. What “NOT USEFUL” Means A post is NOT USEFUL if it does not contribute to understanding the persona’s professional identity, or if it is irrelevant, generic, noisy, or superficial. Each NOT USEFUL post must be assigned exactly one reason label from the list below. NOT USEFUL REASON LABELS 1. GEN-QUOTE Generic motivational or inspirational quotes with no professional or domain-specific insight. 2. PERSONAL Personal life updates unrelated to professional identity (e.g., vacations, birthdays, family events, festival wishes). 3. PROMO Company-level promotions or marketing content such as product launches, event announcements, hiring ads, awards, marketing campaigns. (Use this when the post is primarily promotional and not reflective of the persona’s own expertise.) 4. TREND Viral trends, memes, low-signal engagement bait, or generic polls that do not convey meaningful professional insight. 5. REPOST Reposted content from others with little or no original commentary or perspective. 6. GENERIC-ADVICE Broad career advice or leadership platitudes that could come from anyone and are not tied to the persona’s domain. 7. OFF-DOMAIN Topics far outside the persona’s expected professional domain (e.g., a backend engineer posting about stock market memes). 8. LOW-CONTENT Vague, superficial, or filler content lacking meaningful information (e.g., extremely short statements, empty announcements, non-specific reflections). Classifier Rules 1. Choose USEFUL if the post provides professional signal — even if mildly. 2. Choose NOT USEFUL only when the post clearly adds no relevant professional insight. 3. When NOT USEFUL, assign one and only one reason label. 4. Labels must be mutually exclusive; choose the best matching category. 5. Do not infer facts beyond what is directly stated in the post. 6. Err on the side of marking ambiguous professional posts as USEFUL, not NOT USEFUL. ✅ Required Output Format Always respond with this exact JSON structure: { \"useful\": true/false, \"reason\": \"<one of: GEN-QUOTE, PERSONAL, PROMO, TREND, REPOST, GENERIC-ADVICE, OFF-DOMAIN, LOW-CONTENT or null>\", \"short_explanation\": \"One sentence explaining the decision.\" } - When useful = true, set \"reason\": null. - When useful = false, include the appropriate reason label. Below are example posts with their correct classifications. Use them as ground-truth demonstrations for how to classify future posts.",
+    "examples": [
+      {
+        "text": "Today is graduation day and it was an absolute blast to be a part of the founding cohort of the Morning Brew Accelerator MB/A!\n\nShout out to Team 9: Alfredo U., Bryan Elmore, and Ben Pfeffer. Great work! I really enjoyed working with you all these past 8 weeks! \n\n#morningbrew #morningbrewaccelerator #mba",
+        "labels": [
+          "not useful",
+          "personal"
+        ]
+      },
+      {
+        "text": "Today is graduation day and it was an absolute blast to be a part of the founding cohort of the Morning Brew Accelerator MB/A!\n\nShout out to Team 9: Alfredo U., Bryan Elmore, and Ben Pfeffer. Great work! I really enjoyed working with you all these past 8 weeks! \n\n#morningbrew #morningbrewaccelerator #mba",
+        "labels": [
+          "not useful",
+          "personal"
+        ]
+      },
+      {
+        "text": "Lately my feed here feels like everyone is leaving and joining new companies and so I wanted to offer a counter narrative - I just celebrated 7 years at Twilio and I'm not going anywhere! \n\nWell, to be fair, I changed my position recently and became a manager, but I still feel incredibly privileged to work alongside of my great colleagues, such as Vijayaraghavan J. and Michael Carpenter and I'm grateful for the opportunity to contribute to Twilio's success.\n\nDon't get me wrong - I'm really happy for everyone who changed jobs recently - many of my good friends and former colleagues did and I think that it's great for them and the companies they joined. They're all lucky indeed.\n\nBut I also wanted to share that Twilio is an amazing company to work for with opportunities for everyone to grow in their career, develop some cool tech (if that's what you're into) and mainly a group of individuals that care. I'm sure there is something out-there about Twilio Magic if you can find it. Trust me - it's real.",
+        "labels": [
+          "not useful",
+          "generic-advice"
+        ]
+      },
+      {
+        "text": "Our Video Insights \"Apps\" team has open positions for software engineers in Mountain View, CA. If you're interested to build and operate some cool Spark apps as well as Java/Scala microservices that provide unprecedented view into our Video product, let me know or check out the job links below:\nhttps://lnkd.in/g5mYyE-s\nhttps://lnkd.in/gdF4xZqV",
+        "labels": [
+          "useful"
+        ]
+      },
+      {
+        "text": "My team at Twilio is hiring in Europe! Our Voice and Video Insights team is looking for Java/Scala developers with data analytics/processing background. If you're in Madrid or Prague and the job sounds interesting, reach out for more details!",
+        "labels": [
+          "not useful",
+          "low-content"
+        ]
+      },
+      {
+        "text": "Denise is highly skilled!! A great addition to any team",
+        "labels": [
+          "not useful",
+          "low-content"
+        ]
+      },
+      {
+        "text": "Want to see the latest and greatest from our team at LaunchDarkly? Join me at Galaxy 2025, happening virtually on May 14 at 10:00am PT. Tune in to hear about product updates, join one of our hands-on workshops, and learn from our customers. Our sessions will include discussions with some industry-leading customers, including: DraftKings, Toast, Qlik, and our partner AWS. \n\nSign up here: https://lnkd.in/g6rDsAxK",
+        "labels": [
+          "not useful",
+          "promo"
+        ]
+      },
+      {
+        "text": "Always wanted to try experimentation but haven't had the right opportunity to? Sign up for a free trial with LaunchDarkly - Experiments are included! And now we have this onboarding guide to walk you through how it works.",
+        "labels": [
+          "useful"
+        ]
+      },
+      {
+        "text": "this!\ntell me why you're qualified through your resume. it's time consuming, but it's worthwhile.",
+        "labels": [
+          "not useful",
+          "low-content"
+        ]
+      },
+      {
+        "text": "my team is hiring!\nif you're a frontend engineer with a product led growth mindset and have great product ideas, apply here:",
+        "labels": [
+          "not useful",
+          "promo"
+        ]
+      },
+      {
+        "text": "see you at booth #1970!\ncome see a demo and say hi. bring your questions about LaunchDarkly",
+        "labels": [
+          "not useful",
+          "promo"
+        ]
+      },
+      {
+        "text": "UX folks! We're hiring :)",
+        "labels": [
+          "not useful",
+          "promo"
+        ]
+      },
+      {
+        "text": "I’m happy to share that I’m starting a new position as Engineering Manager at LaunchDarkly!",
+        "labels": [
+          "not useful",
+          "low-content"
+        ]
+      },
+      {
+        "text": "Louis is a great manager! Join his SDK team and work alongside some pretty great people ✨",
+        "labels": [
+          "not useful",
+          "low-content"
+        ]
+      },
+      {
+        "text": "How safe is your next software release? 🤔 If you don't know, it's time to find out! Take our risk assessment quiz and uncover your risk score in under 2 minutes. ⏰ Those 2 minutes could save your small updates from becoming BIG issues! 😅 https://bit.ly/4cYqVVt",
+        "labels": [
+          "useful"
+        ]
+      },
+      {
+        "text": "We’re doing the things!\n\nAppreciate your leadership, Jenn Wei ❤️",
+        "labels": [
+          "not useful",
+          "low-content"
+        ]
+      },
+      {
+        "text": "Really enjoyed this post by Beyang breaking down why Agentic AI isn't just an evolution of RAG - it's a shift in how we think about building applications entirely. The part on model selectors becoming obsolete really got me thinking about where infra and tooling need to go next. Worth the read: https://lnkd.in/g9e2gGCN",
+        "labels": [
+          "useful"
+        ]
+      },
+      {
+        "text": "🚨 We’re hiring an Engineering Manager – Agents & Search Platform at Sourcegraph! 🚨\n\n🎯 What you'll lead:\nA team building the foundations of our AI Agent experience\nCore search infrastructure used across all of Sourcegraph\nBoth user-facing product features and backend APIs/platforms\n\n🧠 You might be a great fit if you:\nHave led teams working on AI/ML platforms, semantic search, or developer tools\nThrive in ambiguous, high-impact environments\nEnjoy managing engineers while also scaling systems and teams\n\n🌎 Location: SF Bay Area (hybrid)\n 📈 Level: M4\n 📎 Apply here: https://lnkd.in/giUtYT5F\n\nKnow someone who’d be a great fit? Referrals welcome! 🙌\n \n#Hiring #EngineeringManager #AI #Search #ML #DevTools #Leadership #Sourcegraph",
+        "labels": [
+          "useful"
+        ]
+      },
+      {
+        "text": "🚀 Exciting news! Today marks a significant milestone for developers as we unveil our latest project: AmpCode is now live at ampcode.com. \n\nA big shoutout to the amazing team behind this game-changing initiative. This launch is just the start of an incredible journey, and I can't wait to see what the future holds. \n\nhttps://lnkd.in/g8uNdbeN\n\n#AI #DeveloperTools #LLMs #EngineeringExcellence #Sourcegraph #Ampcode",
+        "labels": [
+          "not useful",
+          "promo"
+        ]
+      },
+      {
+        "text": "🚨 We’re hiring at Sourcegraph! 🚨\nLooking for a Database Platform Engineer (IC4) who thrives on scaling challenges and wants to drive the next evolution of our DB Infrastructure.\n\nThis is a hybrid role—we’d love for you to join us in our San Francisco office and collaborate closely with our high-caliber engineering team.\nWhy join us?\n\nIf you love systems thinking, making things fast and reliable, and want your work to have massive impact—let’s chat.\n\nApply here 👉 https://lnkd.in/gVz_jA5s\n#postgresql #databaseengineering #platformengineering #infrajobs #sourcegraph #hiring #sanfranciscojobs",
+        "labels": [
+          "useful"
+        ]
+      },
+      {
+        "text": "🚀 Sourcegraph is Hiring a Database Platform Engineer! 🚀 \n\nAre you passionate about database performance, scalability, and optimization? Do you thrive on solving complex database challenges and driving high-impact initiatives? If so, I want you on our team! #hiring",
+        "labels": [
+          "useful"
+        ]
+      },
+      {
+        "text": "Proud to be part of a team that’s pushing the boundaries of AI for enterprise software development. With AI coding agents, we're not just building another assistant—we're fundamentally changing how large-scale teams develop software. Excited to see what’s next.",
+        "labels": [
+          "useful"
+        ]
+      },
+      {
+        "text": "Are you passionate about Developer Productivity and Infrastructure? Do you love optimizing CI/CD pipelines, build systems, and making engineering workflows seamless? 🚀\n\n🌟 We are hiring for a Software Engineer - Developer Infrastructure [IC3] role (Remote).\n🌟 We are hiring for a Software Engineer - Developer Infrastructure [IC3] role (San Francisco).\n\nJoin us to empower developers worldwide by improving build systems, enhancing CI/CD workflows, and building tools that increase efficiency across the board.\n\n#DeveloperInfrastructure #DevInfra #DeveloperProductivity #CI #CD #Bazel #Sourcegraph #RemoteWork #Engineering",
+        "labels": [
+          "useful"
+        ]
+      },
+      {
+        "text": "I’m happy to share that I’m starting a new position as Engineering Manager at Sourcegraph!",
+        "labels": [
+          "not useful",
+          "low-content"
+        ]
+      },
+      {
+        "text": "Great writeup by Ka Ieong Chan on how we evolved our interview process https://lnkd.in/gKhS_fa",
+        "labels": [
+          "not useful",
+          "low-content"
+        ]
+      },
+      {
+        "text": "So excited to be attending this year's Grace Hopper Conference with some of my amazing colleagues at Pagerduty! Visit us at PagerDuty Booth 675 to learn more about how you can join our team and grow without limits and meet some of our incredible engineering leaders and contributors #GHC19 #PagerDuty",
+        "labels": [
+          "not useful",
+          "promo"
+        ]
+      },
+      {
+        "text": "I'm looking for a Senior Engineer to join Event Intelligence team at Pagerduty to help build the future of digital operations. Open for either SF or Toronto locations. Comment or ping me if interested!\n\nLearn more about Pagerduty Event Intelligence:",
+        "labels": [
+          "not useful",
+          "low-content"
+        ]
+      },
+      {
+        "text": "We are hiring at PagerDuty in San Francisco, Toronto, your remote location and soon ATLANTA! I'll be building new Engineering teams in Atlanta, let me know if you or someone you know is interested\n\nhttps://lnkd.in/gABzc_x",
+        "labels": [
+          "not useful",
+          "low-content"
+        ]
+      },
+      {
+        "text": "One of the best parts of being an engineering manager at Cortex is that I get to use the same tools we’re building for our customers.\n\nEngineering Intelligence has become a key part of how my team plans sprints and projects. It’s helped us:\n- Spot bottlenecks early\n- Understand trends in incidents and cycle time\n- Plan more accurately based on real throughput\n\nIt’s not just about tracking numbers — it’s about making better decisions faster.\n\nThat’s why I’m especially excited for the From Metrics to Movement workshop at IDPCON this October. It’s a hands-on look at how to take metrics like cycle time, incident rate, and team throughput and connect them directly to the services, teams, and workflows inside your IDP.\n\nIf you’ve ever thought, “We have the data, but what’s next?” this session is your answer.\n\nOctober 9 | NYC | Hosted by Cortex\n\nRegister now at  idpcon.com",
+        "labels": [
+          "useful"
+        ]
+      },
+      {
+        "text": "I’m happy to share that I’m starting a new position as Engineering Manager at Cortex!",
+        "labels": [
+          "not useful",
+          "low-content"
+        ]
+      },
+      {
+        "text": "I had the pleasure of chatting with Jeff Schneider, lead of the developer advocate program at Asana, on our latest #APIIntersection episode. Jeff acts as a mediator and translator for different developers who are building and using #APIs to connect with Asana and personalize their experience. \nI loved picking his brain about how to build out a killer developer relations program. #DevRel Stoplight",
+        "labels": [
+          "useful"
+        ]
+      },
+      {
+        "text": "Come work with us!",
+        "labels": [
+          "not useful",
+          "low-content"
+        ]
+      },
+      {
+        "text": "I'm so excited to share that this Thursday we are organizing a roundtable on APIs, with Phil Sturgeon, Swarna Krishnaswamy, Aliaksei Yanchuk and Colm Doyle, moderated by Alla Pavlova! Such a diverse group of experts, and only one hour during the CET lunch time - please come, ask your questions and share your thoughts with us!\n\n#api #meetup #slack #adyen #stoplight #klm #miro",
+        "labels": [
+          "not useful",
+          "promo"
+        ]
+      },
+      {
+        "text": "Come grow with us!",
+        "labels": [
+          "not useful",
+          "low-content"
+        ]
+      },
+      {
+        "text": "HOW DO YOU DO API DESIGN-FIRST? \n\nThis is my take on using Stoplight and GitHub to design and develop APIs. Let me know your thoughts.\n\n#APIDesign #APIFirst #Development",
+        "labels": [
+          "useful"
+        ]
+      },
+      {
+        "text": "Onwards and upwards for Stoplight!! Very proud to be part of this company.",
+        "labels": [
+          "not useful",
+          "low-content"
+        ]
+      },
+      {
+        "text": "I’m happy to share that I’m starting a new position as Engineering Manager at Sigma!",
+        "labels": [
+          "not useful",
+          "low-content"
+        ]
+      },
+      {
+        "text": "As both a user of Amplitude and member of its product development team, I've always been proud of how powerful the product is and our ability to convert feedback from our customer base on key use cases into product capabilities. The next step is making it radically easier to sign up, send data in, immediately answer questions, and learn about all the product's features. Today we're taking that next step and releasing #AmplitudeMadeEasy! Check it out:",
+        "labels": [
+          "useful"
+        ]
+      },
+      {
+        "text": "⚡ The #1 product and growth conference is back from May 24-26! ⚡ Learn about the future of digital products from leaders in SaaS, crypto, consumer, gaming, media and beyond at #Amplify22. Register now! https://lnkd.in/gcYR5gxZ\n\nDM me for a free pass!",
+        "labels": [
+          "not useful",
+          "promo"
+        ]
+      },
+      {
+        "text": "Congrats to the Amplitude team! It’s been amazing to be surrounded by some of the most motivated individuals, driven to make the most, as well as the right impact. I feel lucky to have ended up where I am today, and am so excited to continue to share in my fellow Ampliteers’ ambitions!\n\n#AmplitudeListed $AMPL",
+        "labels": [
+          "not useful",
+          "low-content"
+        ]
+      },
+      {
+        "text": "Welcome to the Amplitude team, Iteratively!",
+        "labels": [
+          "not useful",
+          "low-content"
+        ]
+      },
+      {
+        "text": "👏🏻 We did it! This is what automated machine learning applied to an already world class product analytics platform looks like 👍🏻 \n\nCongrats to the team from ClearBrain (Bilal Mahmood Eric Pollmann Cynthia Rogers Scott Kramer William Pentney Shrey Valia) and my brave partners (Jenny Chang Richard F. Jeffrey Wang Nirmal Utwani) for an incredible job of integrating this cool technology into the existing platform at Amplitude! These types of things never end up fitting together like perfect puzzle pieces, and their ability to accomplish this in such a short timeframe is 🤯",
+        "labels": [
+          "useful"
+        ]
+      },
+      {
+        "text": "We had a huge year over here at Amplitude, including 50% YoY revenue growth. Big thank you to all of our customers who have chosen us as their operating system for digital business. 🚀 Check out our press release here:",
+        "labels": [
+          "useful"
+        ]
+      },
+      {
+        "text": "Really proud of all the amazing efforts our team put in to understand our customers’ problems and craft an experience to meet their needs! This is just the beginning 👏🏻",
+        "labels": [
+          "not useful",
+          "low-content"
+        ]
+      },
+      {
+        "text": "We’re in the age of digital acceleration. Amplitude just raised its Series E round, surpassing a $1B valuation 🦄. Congratulations to my fellow datamonsters, and thank you to all of our amazing customers and partners!\n\nCheck out the full press release: https://lnkd.in/e7vspdC\n\nAlso, we’re still hiring!\n\n#productintelligence #saas #analytics #data",
+        "labels": [
+          "not useful",
+          "low-content"
+        ]
+      },
+      {
+        "text": "The best products are already adding notetaking and meeting intelligence into their core workflows.\nOn Nov 13, Hazik Afzal and Nick Barraclough will show how the Notetaker API helps teams ship transcripts, summaries, action items, and multi-language support faster — without months of custom integrations.\n👉",
+        "labels": [
+          "useful"
+        ]
+      },
+      {
+        "text": "https://lnkd.in/giii3rna",
+        "labels": [
+          "not useful",
+          "repost"
+        ]
+      },
+      {
+        "text": "I’m happy to share that I’ve obtained a new certification: Fundamentals of MCP from Hugging Face!",
+        "labels": [
+          "not useful",
+          "low-content"
+        ]
+      },
+      {
+        "text": "It is fun to attend Databricks DevConnect at Mountain View. They are introducing a Unified Catalog layer as an adaptor to all kinds of major datastore as long as they use Iceberg format. You can query, write functions and control access in this Unified Catalog. They also have a open-sourced version of this layer.",
+        "labels": [
+          "useful"
+        ]
+      },
+      {
+        "text": "This is a blog posted by my colleague Chitresh Deshpande. It is a wonderful introduction to webhook and distributed messaging service.",
+        "labels": [
+          "not useful",
+          "repost"
+        ]
+      },
+      {
+        "text": "https://lnkd.in/g2Mucg7k",
+        "labels": [
+          "not useful",
+          "repost"
+        ]
+      },
+      {
+        "text": "The life of us immigrants are depending on you. Please remember to register and vote!",
+        "labels": [
+          "not useful",
+          "generic-advice"
+        ]
+      },
+      {
+        "text": "This is a fantastic post written by my teammates Oliver Zsivanov and Pooja Guggari. This blog post explains how we designed a highly customized scheduler solution. People can use Nylas provided front-end component and Nylas APIs to build their own scheduler! #nylas",
+        "labels": [
+          "useful"
+        ]
+      },
+      {
+        "text": "I will be talking about how to tell a good API from bad one. Everyone is welcomed!",
+        "labels": [
+          "not useful",
+          "low-content"
+        ]
+      },
+      {
+        "text": "I am happy",
+        "labels": [
+          "not useful",
+          "gen-quote"
+        ]
+      },
+      {
+        "text": "Our team member Omkar Waingankar wrote this wonderful article about IMAP. IMAP is an old protocol, not an API. It is very frustrating to use IMAP protocol directly if you are expecting API-like behavior. Very few people in the industry is aware of the intricacies of Yahoo, AOL, iCloud servers. That is why many people turn to Nylas when they want to access email data.",
+        "labels": [
+          "useful"
+        ]
+      },
+      {
+        "text": "Spanner support both offset and cursor. With that said, I still recommend cursor because of better query performance.",
+        "labels": [
+          "useful"
+        ]
+      },
+      {
+        "text": "By now, most of us have written an AI agent, an AI-driven feature, or some AI widget to simplify our workflow. That was the fun part. How do you test it? How do you ensure that model upgrades maintain or improve results?\n\nIn just a few week, my company (mabl) will be hosting our annual Experience (https://lnkd.in/eahr-7nc) conference in Boston at the beautiful State Room. Come hear from the Red Hat AI CTO and StackOverflow about how they are moving forward in the AI-first world. Hear from our own mabl devs about how they continue to advance AI-based testing features and agents, through upgrades and model changes. And come see the latest from our MCP tool.\n\nLet me know if a free pass would allow you to come here about our successful experiences.",
+        "labels": [
+          "useful"
+        ]
+      }
+    ],
+    "labels": [
+      "not useful",
+      "personal",
+      "useful",
+      "gen-quote",
+      "promo",
+      "trend",
+      "repost",
+      "generic-advice",
+      "off-domain",
+      "low-content"
+    ]
+  }

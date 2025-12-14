@@ -146,7 +146,7 @@ except Exception as e:
 try:
     # Initialize Groq client for fast LLM inference
     groq_api_key = os.getenv("GROQ_API_KEY")
-    groq_model = os.getenv("GROQ_MODEL", "llama-3.3-70b-versatile")  # Default model, can be overridden
+    groq_model = os.getenv("GROQ_MODEL", "llama-3.1-8b-instant")  # Default model, can be overridden
     if groq_api_key:
         groq_client = Groq(api_key=groq_api_key)
         logger.info(f"Groq client initialized successfully with model: {groq_model}")
@@ -1726,90 +1726,142 @@ async def classify_post_with_groq(
         # Try alternative fields
         post_text = post.get("content", "") or post.get("description", "") or ""
     
-    # Build few-shot examples string
+    # Build few-shot examples string from ALL examples, with intelligent truncation
+    # Set limits to prevent timeout/rate limit issues
+    # Groq models typically have 32k-128k token limits (~128k-512k characters)
+    # We'll use a conservative limit to ensure we don't hit issues
+    MAX_EXAMPLES_LENGTH = int(os.getenv("MAX_EXAMPLES_LENGTH", "80000"))  # ~100k tokens conservative limit
+    MAX_EXAMPLE_POST_LENGTH = int(os.getenv("MAX_EXAMPLE_POST_LENGTH", "2000"))  # Truncate very long posts
+    
     examples_text = ""
+    examples_count = 0
+    examples_skipped = 0
+    examples_truncated = 0
+    
     if classifier_examples:
         if isinstance(classifier_examples, list):
-            for example in classifier_examples[:3]:  # Limit to 3 examples
+            # Process ALL examples, but truncate if needed to prevent timeout
+            for idx, example in enumerate(classifier_examples):
                 if isinstance(example, dict):
-                    example_post = example.get("post", example.get("text", ""))
+                    # Handle different example formats
+                    example_post = example.get("post") or example.get("text", "")
+                    example_labels = example.get("labels", [])
                     example_label = example.get("label", "")
                     example_score = example.get("score", "")
-                    if example_post and example_label:
-                        examples_text += f"\nExample Post: {example_post}\nLabel: {example_label}"
+                    
+                    # Truncate very long example posts
+                    original_post_length = len(example_post)
+                    if len(example_post) > MAX_EXAMPLE_POST_LENGTH:
+                        example_post = example_post[:MAX_EXAMPLE_POST_LENGTH] + "... [truncated]"
+                        examples_truncated += 1
+                    
+                    # If labels is an array, format it properly
+                    if isinstance(example_labels, list) and len(example_labels) > 0:
+                        # Join labels (e.g., ["not useful", "personal"] -> "not useful, personal")
+                        label_display = ", ".join(example_labels)
+                    elif example_label:
+                        label_display = example_label
+                    else:
+                        label_display = ""
+                    
+                    if example_post and label_display:
+                        # Build this example
+                        example_formatted = f"\n\nExample {idx + 1}:\nPost: {example_post}\nLabel(s): {label_display}"
                         if example_score:
-                            examples_text += f" (Score: {example_score})"
+                            example_formatted += f" (Score: {example_score})"
+                        
+                        # Check if adding this example would exceed the limit
+                        if len(examples_text) + len(example_formatted) > MAX_EXAMPLES_LENGTH:
+                            examples_skipped = len(classifier_examples) - idx
+                            logger.warning(f"⚠️ Examples limit reached ({MAX_EXAMPLES_LENGTH} chars). Skipping {examples_skipped} remaining examples to prevent timeout.")
+                            break
+                        
+                        examples_text += example_formatted
+                        examples_count += 1
         elif isinstance(classifier_examples, dict):
-            # Handle dict format
-            for key, value in list(classifier_examples.items())[:3]:
+            # Handle dict format - process all items with truncation
+            for idx, (key, value) in enumerate(classifier_examples.items()):
                 if isinstance(value, dict):
-                    example_post = value.get("post", value.get("text", ""))
+                    example_post = value.get("post") or value.get("text", "")
+                    example_labels = value.get("labels", [])
                     example_label = value.get("label", key)
-                    if example_post and example_label:
-                        examples_text += f"\nExample Post: {example_post}\nLabel: {example_label}"
+                    
+                    # Truncate very long example posts
+                    if len(example_post) > MAX_EXAMPLE_POST_LENGTH:
+                        example_post = example_post[:MAX_EXAMPLE_POST_LENGTH] + "... [truncated]"
+                        examples_truncated += 1
+                    
+                    if isinstance(example_labels, list) and len(example_labels) > 0:
+                        label_display = ", ".join(example_labels)
+                    elif example_label:
+                        label_display = example_label
+                    else:
+                        label_display = key
+                    
+                    if example_post and label_display:
+                        # Build this example
+                        example_formatted = f"\n\nExample {idx + 1}:\nPost: {example_post}\nLabel(s): {label_display}"
+                        
+                        # Check if adding this example would exceed the limit
+                        if len(examples_text) + len(example_formatted) > MAX_EXAMPLES_LENGTH:
+                            remaining = len(classifier_examples) - idx
+                            examples_skipped = remaining
+                            logger.warning(f"⚠️ Examples limit reached ({MAX_EXAMPLES_LENGTH} chars). Skipping {examples_skipped} remaining examples to prevent timeout.")
+                            break
+                        
+                        examples_text += example_formatted
+                        examples_count += 1
     
-    # Construct the SYSTEM prompt (hardcoded rules for Post Usefulness Classifier)
-    system_prompt = f"""You are a Post Usefulness Classifier.
-Your job is to evaluate posts and decide whether they are USEFUL for shaping a persona's professional identity.
-If the post is NOT USEFUL, you must assign one reason label from the provided available labels.
-
-## What "USEFUL" Means
-A post is USEFUL if it provides meaningful signal about the persona's professional identity, including:
-- Technical interests, tools, frameworks, workflows
-- Engineering or design opinions
-- Industry commentary
-- Project learnings or case studies
-- Leadership or communication style
-- Problem-solving approach
-- Mentorship or team-building philosophy
-- Concrete expertise or domain-specific knowledge
-
-If a post helps understand what this persona cares about professionally, it is USEFUL.
-
-## What "NOT USEFUL" Means
-A post is NOT USEFUL if it does not contribute to understanding the persona's professional identity, or if it is irrelevant, generic, noisy, or superficial.
-
-Common NOT USEFUL categories include:
-- GEN-QUOTE: Generic motivational or inspirational quotes with no professional or domain-specific insight
-- PERSONAL: Personal life updates unrelated to professional identity (vacations, birthdays, family events, festival wishes)
-- PROMO: Company-level promotions or marketing content (product launches, event announcements, hiring ads, awards)
-- TREND: Viral trends, memes, low-signal engagement bait, or generic polls
-- REPOST: Reposted content from others with little or no original commentary
-- GENERIC-ADVICE: Broad career advice or leadership platitudes not tied to the persona's domain
-- OFF-DOMAIN: Topics far outside the persona's expected professional domain
-- LOW-CONTENT: Vague, superficial, or filler content lacking meaningful information
-
-## Classifier Rules
-1. Choose USEFUL if the post provides professional signal — even if mildly.
-2. Choose NOT USEFUL only when the post clearly adds no relevant professional insight.
-3. When NOT USEFUL, assign one and only one reason label from the available labels.
-4. Labels must be mutually exclusive; choose the best matching category.
-5. Do not infer facts beyond what is directly stated in the post.
-6. Err on the side of marking ambiguous professional posts as USEFUL, not NOT USEFUL.
-
-## Scoring Rules
-For each label you assign, you MUST provide a confidence score between 0.0 and 1.0.
-CRITICAL: The sum of all scores for a single post MUST be exactly 1.0 (probability distribution).
-You must provide scores for ALL available labels, and they must sum to 1.0.
-
-Available Labels: {", ".join(classifier_labels)}
-
-{f"Few-Shot Examples:{examples_text}" if examples_text else ""}"""
+    # Log summary
+    if examples_count > 0:
+        logger.info(f"📚 Included {examples_count} examples in prompt" + 
+                   (f" ({examples_skipped} skipped due to length limit)" if examples_skipped > 0 else "") +
+                   (f", {examples_truncated} posts truncated" if examples_truncated > 0 else ""))
     
-    # Construct the USER prompt (from PostClassifier.prompt field + post content)
+    # Construct the SYSTEM prompt dynamically from PostClassifier.prompt
+    # Use the user's prompt as the base system prompt
+    system_prompt_parts = []
+    
+    # Start with the classifier prompt if provided (this contains all the rules and instructions)
+    if classifier_prompt:
+        system_prompt_parts.append(classifier_prompt)
+    else:
+        # Fallback if no prompt provided
+        system_prompt_parts.append(f"You are a {classifier_name} classifier. Classify posts according to the available labels.")
+    
+    # Add available labels information
+    if classifier_labels:
+        labels_str = ", ".join(classifier_labels)
+        system_prompt_parts.append(f"\n\nAvailable Labels: {labels_str}")
+    
+    # Add description if provided
+    if classifier_description:
+        system_prompt_parts.append(f"\n\nAdditional Context: {classifier_description}")
+    
+    # Add examples at the end if we have any
+    if examples_text:
+        system_prompt_parts.append(f"\n\nBelow are example posts with their correct classifications. Use them as ground-truth demonstrations for how to classify future posts:{examples_text}")
+    
+    # Combine into final system prompt
+    system_prompt = "\n".join(system_prompt_parts)
+    
+    # Final safety check: Warn if system prompt is very long
+    system_prompt_length = len(system_prompt)
+    MAX_SYSTEM_PROMPT_LENGTH = int(os.getenv("MAX_SYSTEM_PROMPT_LENGTH", "100000"))  # ~125k tokens conservative limit
+    
+    if system_prompt_length > MAX_SYSTEM_PROMPT_LENGTH:
+        logger.warning(f"⚠️ System prompt is very long ({system_prompt_length} chars). This may cause timeout issues.")
+        logger.warning(f"⚠️ Consider reducing examples or prompt length. Current limit: {MAX_SYSTEM_PROMPT_LENGTH} chars")
+    else:
+        logger.debug(f"System prompt length: {system_prompt_length} chars (limit: {MAX_SYSTEM_PROMPT_LENGTH})")
+    
+    # Construct the USER prompt (post content + output format)
     labels_str = ", ".join(classifier_labels)
     labels_list_str = ", ".join([f'"{label}"' for label in classifier_labels])
     
-    # User prompt includes: custom rules from PostClassifier.prompt + post content + output format
+    # User prompt includes: post content + output format requirements
+    # (Classification rules are now in the system prompt)
     user_prompt_parts = []
-    
-    # Add custom classification rules from PostClassifier.prompt if provided
-    if classifier_prompt:
-        user_prompt_parts.append(f"## User's Custom Classification Rules\n{classifier_prompt}")
-    
-    # Add classifier description if provided
-    if classifier_description:
-        user_prompt_parts.append(f"## Additional Context\n{classifier_description}")
     
     # Add the post to classify
     user_prompt_parts.append(f"## Post to Classify\n\nPost Content:\n{post_text}")
@@ -1872,64 +1924,294 @@ Respond ONLY with valid JSON. No markdown, no code blocks, no explanation, just 
     logger.info("=" * 80)
     
     # Get model name from environment or use default
-    model_name = os.getenv("GROQ_MODEL", "llama-3.3-70b-versatile")
+    model_name = os.getenv("GROQ_MODEL", "llama-3.1-8b-instant")
     
-    try:
-        # Call Groq API - try with json_object format first
+    # Timeout configuration to prevent hanging requests
+    groq_timeout = int(os.getenv("GROQ_TIMEOUT_SECONDS", "60"))  # 60 second timeout for API calls
+    
+    # Retry logic with exponential backoff for rate limits
+    max_retries = 5
+    base_delay = 2  # Start with 2 seconds
+    
+    for attempt in range(max_retries):
         try:
-                response = groq_client.chat.completions.create(
-                model=model_name,
-                messages=[
-                    {"role": "system", "content": system_prompt},
-                    {"role": "user", "content": user_prompt}
-                ],
-            temperature=0.3,  # Lower temperature for more consistent classification
-            response_format={"type": "json_object"}  # Force JSON response
-            )
-        except Exception as groq_error:
-            error_str = str(groq_error)
-            logger.error(f"Groq API call failed with json_object format: {groq_error}")
-            
-            # Check if it's a model decommissioned error
-            if "decommissioned" in error_str.lower() or "model_decommissioned" in error_str:
-                logger.error("⚠️ Model has been decommissioned! Trying alternative model...")
-                # Try with a different model
-                try:
-                    response = groq_client.chat.completions.create(
-                        model="llama-3.1-8b-instant",  # Fallback to faster model
-                        messages=[
-                            {"role": "system", "content": system_prompt},
-                            {"role": "user", "content": user_prompt}
-                        ],
-                        temperature=0.3,
-                        response_format={"type": "json_object"}
-                    )
-                    logger.info("✅ Successfully used fallback model: llama-3.1-8b-instant")
-                except Exception as fallback_error:
-                    logger.error(f"Fallback model also failed: {fallback_error}")
-                    # Retry without json_object constraint
-                    logger.info("Retrying without json_object constraint...")
-                    response = groq_client.chat.completions.create(
-                        model="llama-3.1-8b-instant",
-                        messages=[
-                            {"role": "system", "content": system_prompt},
-                            {"role": "user", "content": user_prompt}
-                        ],
-                        temperature=0.3
-                    )
-            else:
-                # Retry without json_object constraint
-                logger.info("Retrying without json_object constraint...")
+            # Call Groq API - try with json_object format first
+            try:
                 response = groq_client.chat.completions.create(
                     model=model_name,
                     messages=[
                         {"role": "system", "content": system_prompt},
                         {"role": "user", "content": user_prompt}
                     ],
-                    temperature=0.3
-        )
-        
-        # Parse response
+                    temperature=0.3,  # Lower temperature for more consistent classification
+                    response_format={"type": "json_object"}  # Force JSON response
+                )
+                # Success! Break out of retry loop
+                break
+            except Exception as groq_error:
+                error_str = str(groq_error).lower()
+                error_repr = repr(groq_error).lower()
+                full_error_str = str(groq_error)  # Keep original case for detailed messages
+                
+                # Check for token quota limit (daily limit) - these cannot be retried
+                is_token_quota_limit = (
+                    "tokens per day" in error_str or "tokens_per_day" in error_str or
+                    "tpd" in error_str or "token quota" in error_str or
+                    "token_limit" in error_str or "daily token" in error_str or
+                    "type': 'tokens'" in error_str or "'code': 'rate_limit_exceeded'" in error_str
+                )
+                
+                # Check for request rate limit errors (429, "rate limit", "too many requests")
+                # These can be retried with backoff
+                is_request_rate_limit = (
+                    ("429" in error_str or "429" in error_repr or
+                    hasattr(groq_error, 'status_code') and groq_error.status_code == 429) and
+                    not is_token_quota_limit  # Make sure it's not a token quota limit
+                )
+                
+                # Token quota limits cannot be resolved by retrying - return clear error
+                if is_token_quota_limit:
+                    logger.error(f"❌ Daily token quota limit exceeded. Cannot retry - quota resets daily.")
+                    logger.error(f"Error details: {full_error_str}")
+                    raise HTTPException(
+                        status_code=429,
+                        detail={
+                            "error": "token_quota_exceeded",
+                            "message": "Daily token quota limit reached for Groq API. This is a quota limit, not a rate limit.",
+                            "type": "token_quota",
+                            "suggestion": "Please wait for the daily quota to reset, or upgrade your Groq plan to increase token limits.",
+                            "groq_error": str(groq_error)
+                        }
+                    )
+                
+                # Request rate limits can be retried with exponential backoff
+                if is_request_rate_limit and attempt < max_retries - 1:
+                    # Calculate exponential backoff delay
+                    delay = base_delay * (2 ** attempt)
+                    logger.warning(f"⚠️ Rate limit hit (attempt {attempt + 1}/{max_retries}). Waiting {delay} seconds before retry...")
+                    await asyncio.sleep(delay)
+                    continue  # Retry the API call
+                
+                logger.error(f"Groq API call failed with json_object format: {groq_error}")
+                
+                # Check if it's a model decommissioned error
+                if "decommissioned" in error_str or "model_decommissioned" in error_str:
+                    logger.error("⚠️ Model has been decommissioned! Trying alternative model...")
+                    # Try with a different model
+                    try:
+                        response = groq_client.chat.completions.create(
+                            model="llama-3.1-8b-instant",  # Fallback to faster model
+                            messages=[
+                                {"role": "system", "content": system_prompt},
+                                {"role": "user", "content": user_prompt}
+                            ],
+                            temperature=0.3,
+                            response_format={"type": "json_object"}
+                        )
+                        logger.info("✅ Successfully used fallback model: llama-3.1-8b-instant")
+                        break  # Success, exit retry loop (response is set)
+                    except Exception as fallback_error:
+                        fallback_error_str = str(fallback_error).lower()
+                        full_fallback_error = str(fallback_error)
+                        
+                        # Check for token quota limit first
+                        is_fallback_token_quota = (
+                            "tokens per day" in fallback_error_str or "tpd" in fallback_error_str or
+                            "token quota" in fallback_error_str or "type': 'tokens'" in fallback_error_str
+                        )
+                        
+                        if is_fallback_token_quota:
+                            logger.error(f"❌ Daily token quota limit exceeded on fallback model.")
+                            raise HTTPException(
+                                status_code=429,
+                                detail={
+                                    "error": "token_quota_exceeded",
+                                    "message": "Daily token quota limit reached for Groq API.",
+                                    "type": "token_quota",
+                                    "suggestion": "Please wait for the daily quota to reset, or upgrade your Groq plan.",
+                                    "groq_error": full_fallback_error
+                                }
+                            )
+                        
+                        is_fallback_rate_limit = (
+                            ("429" in fallback_error_str or
+                            hasattr(fallback_error, 'status_code') and fallback_error.status_code == 429) and
+                            not is_fallback_token_quota
+                        )
+                        
+                        if is_fallback_rate_limit and attempt < max_retries - 1:
+                            delay = base_delay * (2 ** attempt)
+                            logger.warning(f"⚠️ Rate limit on fallback model. Waiting {delay} seconds...")
+                            await asyncio.sleep(delay)
+                            continue
+                        
+                        logger.error(f"Fallback model also failed: {fallback_error}")
+                        # Retry without json_object constraint
+                        logger.info("Retrying without json_object constraint...")
+                        try:
+                            response = groq_client.chat.completions.create(
+                                model="llama-3.1-8b-instant",
+                                messages=[
+                                    {"role": "system", "content": system_prompt},
+                                    {"role": "user", "content": user_prompt}
+                                ],
+                                temperature=0.3
+                            )
+                            break  # Success, exit retry loop (response is set)
+                        except Exception as final_error:
+                            final_error_str = str(final_error).lower()
+                            full_final_error = str(final_error)
+                            
+                            # Check for token quota limit first
+                            is_final_token_quota = (
+                                "tokens per day" in final_error_str or "tpd" in final_error_str or
+                                "token quota" in final_error_str or "type': 'tokens'" in final_error_str
+                            )
+                            
+                            if is_final_token_quota:
+                                logger.error(f"❌ Daily token quota limit exceeded on final retry.")
+                                raise HTTPException(
+                                    status_code=429,
+                                    detail={
+                                        "error": "token_quota_exceeded",
+                                        "message": "Daily token quota limit reached for Groq API.",
+                                        "type": "token_quota",
+                                        "suggestion": "Please wait for the daily quota to reset, or upgrade your Groq plan.",
+                                        "groq_error": full_final_error
+                                    }
+                                )
+                            
+                            if attempt < max_retries - 1:
+                                is_final_rate_limit = (
+                                    ("429" in final_error_str or
+                                    "rate limit" in final_error_str or
+                                    "too many requests" in final_error_str) and
+                                    not is_final_token_quota
+                                )
+                                if is_final_rate_limit:
+                                    delay = base_delay * (2 ** attempt)
+                                    logger.warning(f"⚠️ Rate limit on final retry. Waiting {delay} seconds...")
+                                    await asyncio.sleep(delay)
+                                    continue
+                            raise  # Re-raise if not rate limit or last attempt
+                else:
+                    # For non-decommissioned errors, check if it's a rate limit
+                    # (token quota limits are already handled above and will raise HTTPException)
+                    if is_request_rate_limit and attempt < max_retries - 1:
+                        # Already handled above, but just in case
+                        delay = base_delay * (2 ** attempt)
+                        await asyncio.sleep(delay)
+                        continue
+                    
+                    # Retry without json_object constraint
+                    logger.info("Retrying without json_object constraint...")
+                    try:
+                        response = groq_client.chat.completions.create(
+                            model=model_name,
+                            messages=[
+                                {"role": "system", "content": system_prompt},
+                                {"role": "user", "content": user_prompt}
+                            ],
+                            temperature=0.3
+                        )
+                        break  # Success, exit retry loop (response is set)
+                    except Exception as retry_error:
+                        retry_error_str = str(retry_error).lower()
+                        full_retry_error = str(retry_error)
+                        
+                        # Check for token quota limit first
+                        is_retry_token_quota = (
+                            "tokens per day" in retry_error_str or "tpd" in retry_error_str or
+                            "token quota" in retry_error_str or "type': 'tokens'" in retry_error_str
+                        )
+                        
+                        if is_retry_token_quota:
+                            logger.error(f"❌ Daily token quota limit exceeded on retry without json_object.")
+                            raise HTTPException(
+                                status_code=429,
+                                detail={
+                                    "error": "token_quota_exceeded",
+                                    "message": "Daily token quota limit reached for Groq API.",
+                                    "type": "token_quota",
+                                    "suggestion": "Please wait for the daily quota to reset, or upgrade your Groq plan.",
+                                    "groq_error": full_retry_error
+                                }
+                            )
+                        
+                        is_retry_rate_limit = (
+                            ("429" in retry_error_str or
+                            "rate limit" in retry_error_str or
+                            "too many requests" in retry_error_str or
+                            (hasattr(retry_error, 'status_code') and retry_error.status_code == 429)) and
+                            not is_retry_token_quota
+                        )
+                        
+                        if is_retry_rate_limit and attempt < max_retries - 1:
+                            delay = base_delay * (2 ** attempt)
+                            logger.warning(f"⚠️ Rate limit on retry without json_object. Waiting {delay} seconds...")
+                            await asyncio.sleep(delay)
+                            continue
+                        
+                        # If it's the last attempt or not a rate limit, raise the error
+                        if attempt == max_retries - 1:
+                            logger.error(f"❌ Max retries ({max_retries}) reached. Last error: {retry_error}")
+                            raise
+                        else:
+                            raise
+        except Exception as outer_error:
+            # Check if it's an HTTPException (token quota or other structured errors)
+            if isinstance(outer_error, HTTPException):
+                raise  # Re-raise HTTPExceptions (they already have proper error messages)
+            
+            error_str = str(outer_error).lower()
+            full_outer_error = str(outer_error)
+            
+            # Check for token quota limit first
+            is_outer_token_quota = (
+                "tokens per day" in error_str or "tpd" in error_str or
+                "token quota" in error_str or "type': 'tokens'" in error_str
+            )
+            
+            if is_outer_token_quota:
+                logger.error(f"❌ Daily token quota limit exceeded (outer exception).")
+                raise HTTPException(
+                    status_code=429,
+                    detail={
+                        "error": "token_quota_exceeded",
+                        "message": "Daily token quota limit reached for Groq API.",
+                        "type": "token_quota",
+                        "suggestion": "Please wait for the daily quota to reset, or upgrade your Groq plan.",
+                        "groq_error": full_outer_error
+                    }
+                )
+            
+            # Check for request rate limit
+            is_outer_rate_limit = (
+                ("429" in error_str or
+                "rate limit" in error_str or
+                "too many requests" in error_str or
+                (hasattr(outer_error, 'status_code') and outer_error.status_code == 429)) and
+                not is_outer_token_quota
+            )
+            
+            if is_outer_rate_limit and attempt < max_retries - 1:
+                delay = base_delay * (2 ** attempt)
+                logger.warning(f"⚠️ Outer exception is rate limit. Waiting {delay} seconds...")
+                await asyncio.sleep(delay)
+                continue
+            elif attempt == max_retries - 1:
+                # Last attempt failed
+                logger.error(f"❌ All {max_retries} retry attempts failed. Raising error.")
+                raise HTTPException(
+                    status_code=429 if is_outer_rate_limit else 500,
+                    detail=f"Failed to classify post after {max_retries} attempts: {str(outer_error)}"
+                )
+            else:
+                raise
+    
+    # If we get here, we have a successful response
+    # Parse response
+    try:
         content = response.choices[0].message.content
         logger.info("=" * 80)
         logger.info("📥 GROQ RESPONSE RECEIVED")
@@ -2218,7 +2500,7 @@ async def classify_posts_batch(
     classifier_description: str,
     classifier_labels: List[str],
     classifier_examples: Optional[Dict[str, Any]] = None,
-    batch_size: int = 10,
+    batch_size: int = 5,  # Reduced from 10 to 5 to avoid rate limits
 ) -> List[Dict[str, Any]]:
     """
     Classify multiple posts in parallel batches using Groq.
@@ -2230,7 +2512,7 @@ async def classify_posts_batch(
         classifier_description: Rules/description for classification
         classifier_labels: Available labels
         classifier_examples: Few-shot examples
-        batch_size: Number of posts to process in parallel
+        batch_size: Number of posts to process in parallel (default: 5 to avoid rate limits)
     
     Returns:
         List of classification results (dicts with 'label' and 'score')
@@ -2240,6 +2522,10 @@ async def classify_posts_batch(
     # Process in batches to avoid overwhelming the API
     for i in range(0, len(posts), batch_size):
         batch = posts[i:i + batch_size]
+        batch_num = (i // batch_size) + 1
+        total_batches = (len(posts) + batch_size - 1) // batch_size
+        
+        logger.info(f"Processing batch {batch_num}/{total_batches} ({len(batch)} posts)")
         
         # Create tasks for parallel processing
         tasks = [
@@ -2273,6 +2559,12 @@ async def classify_posts_batch(
                 })
             else:
                 results.append(result)
+        
+        # Add delay between batches to avoid rate limits (except after the last batch)
+        if i + batch_size < len(posts):
+            delay_between_batches = 1.0  # 1 second delay between batches
+            logger.info(f"Waiting {delay_between_batches} seconds before next batch to avoid rate limits...")
+            await asyncio.sleep(delay_between_batches)
     
     return results
 
@@ -2507,7 +2799,7 @@ async def run_classifier(payload: RunClassifierRequest):
                     classifier_description=classifier_description,
                     classifier_labels=classifier_labels,
                     classifier_examples=classifier_examples,
-                    batch_size=10,  # Process 10 posts in parallel
+                    batch_size=5,  # Process 5 posts in parallel to avoid rate limits
                 )
                 
                 # 5. Add labels to each post
@@ -2646,84 +2938,131 @@ async def test_classify_single_post(
             elif isinstance(examples_raw, list):
                 classifier_examples = examples_raw
         
-        # Build the prompts (same as classify_post_with_groq)
-        # Build examples text
+        # Build the prompts (same as classify_post_with_groq) - using dynamic prompt building with safeguards
+        # Set limits to prevent timeout/rate limit issues
+        MAX_EXAMPLES_LENGTH = int(os.getenv("MAX_EXAMPLES_LENGTH", "80000"))
+        MAX_EXAMPLE_POST_LENGTH = int(os.getenv("MAX_EXAMPLE_POST_LENGTH", "2000"))
+        
         examples_text = ""
+        examples_count = 0
+        examples_skipped = 0
+        examples_truncated = 0
+        
         if classifier_examples:
             if isinstance(classifier_examples, list):
-                for example in classifier_examples[:3]:
+                # Process ALL examples, but truncate if needed to prevent timeout
+                for idx, example in enumerate(classifier_examples):
                     if isinstance(example, dict):
-                        example_post = example.get("post", example.get("text", ""))
+                        example_post = example.get("post") or example.get("text", "")
+                        example_labels = example.get("labels", [])
                         example_label = example.get("label", "")
                         example_score = example.get("score", "")
-                        if example_post and example_label:
-                            examples_text += f"\nExample Post: {example_post}\nLabel: {example_label}"
+                        
+                        # Truncate very long example posts
+                        if len(example_post) > MAX_EXAMPLE_POST_LENGTH:
+                            example_post = example_post[:MAX_EXAMPLE_POST_LENGTH] + "... [truncated]"
+                            examples_truncated += 1
+                        
+                        # If labels is an array, format it properly
+                        if isinstance(example_labels, list) and len(example_labels) > 0:
+                            label_display = ", ".join(example_labels)
+                        elif example_label:
+                            label_display = example_label
+                        else:
+                            label_display = ""
+                        
+                        if example_post and label_display:
+                            # Build this example
+                            example_formatted = f"\n\nExample {idx + 1}:\nPost: {example_post}\nLabel(s): {label_display}"
                             if example_score:
-                                examples_text += f" (Score: {example_score})"
+                                example_formatted += f" (Score: {example_score})"
+                            
+                            # Check if adding this example would exceed the limit
+                            if len(examples_text) + len(example_formatted) > MAX_EXAMPLES_LENGTH:
+                                examples_skipped = len(classifier_examples) - idx
+                                logger.warning(f"⚠️ Examples limit reached ({MAX_EXAMPLES_LENGTH} chars). Skipping {examples_skipped} remaining examples.")
+                                break
+                            
+                            examples_text += example_formatted
+                            examples_count += 1
             elif isinstance(classifier_examples, dict):
-                for key, value in list(classifier_examples.items())[:3]:
+                # Handle dict format - process all items with truncation
+                for idx, (key, value) in enumerate(classifier_examples.items()):
                     if isinstance(value, dict):
-                        example_post = value.get("post", value.get("text", ""))
+                        example_post = value.get("post") or value.get("text", "")
+                        example_labels = value.get("labels", [])
                         example_label = value.get("label", key)
-                        if example_post and example_label:
-                            examples_text += f"\nExample Post: {example_post}\nLabel: {example_label}"
+                        
+                        # Truncate very long example posts
+                        if len(example_post) > MAX_EXAMPLE_POST_LENGTH:
+                            example_post = example_post[:MAX_EXAMPLE_POST_LENGTH] + "... [truncated]"
+                            examples_truncated += 1
+                        
+                        if isinstance(example_labels, list) and len(example_labels) > 0:
+                            label_display = ", ".join(example_labels)
+                        elif example_label:
+                            label_display = example_label
+                        else:
+                            label_display = key
+                        
+                        if example_post and label_display:
+                            # Build this example
+                            example_formatted = f"\n\nExample {idx + 1}:\nPost: {example_post}\nLabel(s): {label_display}"
+                            
+                            # Check if adding this example would exceed the limit
+                            if len(examples_text) + len(example_formatted) > MAX_EXAMPLES_LENGTH:
+                                remaining = len(classifier_examples) - idx
+                                examples_skipped = remaining
+                                logger.warning(f"⚠️ Examples limit reached ({MAX_EXAMPLES_LENGTH} chars). Skipping {examples_skipped} remaining examples.")
+                                break
+                            
+                            examples_text += example_formatted
+                            examples_count += 1
         
-        # Build system prompt
-        system_prompt = f"""You are a Post Usefulness Classifier.
-Your job is to evaluate posts and decide whether they are USEFUL for shaping a persona's professional identity.
-If the post is NOT USEFUL, you must assign one reason label from the provided available labels.
-
-## What "USEFUL" Means
-A post is USEFUL if it provides meaningful signal about the persona's professional identity, including:
-- Technical interests, tools, frameworks, workflows
-- Engineering or design opinions
-- Industry commentary
-- Project learnings or case studies
-- Leadership or communication style
-- Problem-solving approach
-- Mentorship or team-building philosophy
-- Concrete expertise or domain-specific knowledge
-
-If a post helps understand what this persona cares about professionally, it is USEFUL.
-
-## What "NOT USEFUL" Means
-A post is NOT USEFUL if it does not contribute to understanding the persona's professional identity, or if it is irrelevant, generic, noisy, or superficial.
-
-Common NOT USEFUL categories include:
-- GEN-QUOTE: Generic motivational or inspirational quotes with no professional or domain-specific insight
-- PERSONAL: Personal life updates unrelated to professional identity (vacations, birthdays, family events, festival wishes)
-- PROMO: Company-level promotions or marketing content (product launches, event announcements, hiring ads, awards)
-- TREND: Viral trends, memes, low-signal engagement bait, or generic polls
-- REPOST: Reposted content from others with little or no original commentary
-- GENERIC-ADVICE: Broad career advice or leadership platitudes not tied to the persona's domain
-- OFF-DOMAIN: Topics far outside the persona's expected professional domain
-- LOW-CONTENT: Vague, superficial, or filler content lacking meaningful information
-
-## Classifier Rules
-1. Choose USEFUL if the post provides professional signal — even if mildly.
-2. Choose NOT USEFUL only when the post clearly adds no relevant professional insight.
-3. When NOT USEFUL, assign one and only one reason label from the available labels.
-4. Labels must be mutually exclusive; choose the best matching category.
-5. Do not infer facts beyond what is directly stated in the post.
-6. Err on the side of marking ambiguous professional posts as USEFUL, not NOT USEFUL.
-
-## Scoring Rules
-For each label you assign, you MUST provide a confidence score between 0.0 and 1.0.
-CRITICAL: The sum of all scores for a single post MUST be exactly 1.0 (probability distribution).
-You must provide scores for ALL available labels, and they must sum to 1.0.
-
-Available Labels: {", ".join(classifier_labels)}
-
-{f"Few-Shot Examples:{examples_text}" if examples_text else ""}"""
+        # Build system prompt dynamically from PostClassifier.prompt
+        system_prompt_parts = []
         
-        # Build user prompt
+        # Start with the classifier prompt if provided (this contains all the rules and instructions)
+        if classifier_prompt:
+            system_prompt_parts.append(classifier_prompt)
+        else:
+            # Fallback if no prompt provided
+            system_prompt_parts.append(f"You are a {classifier_name} classifier. Classify posts according to the available labels.")
+        
+        # Add available labels information
+        if classifier_labels:
+            labels_str = ", ".join(classifier_labels)
+            system_prompt_parts.append(f"\n\nAvailable Labels: {labels_str}")
+        
+        # Add description if provided
+        if classifier_description:
+            system_prompt_parts.append(f"\n\nAdditional Context: {classifier_description}")
+        
+        # Add examples at the end if we have any
+        if examples_text:
+            system_prompt_parts.append(f"\n\nBelow are example posts with their correct classifications. Use them as ground-truth demonstrations for how to classify future posts:{examples_text}")
+        
+        # Combine into final system prompt
+        system_prompt = "\n".join(system_prompt_parts)
+        
+        # Final safety check: Warn if system prompt is very long
+        system_prompt_length = len(system_prompt)
+        MAX_SYSTEM_PROMPT_LENGTH = int(os.getenv("MAX_SYSTEM_PROMPT_LENGTH", "100000"))
+        
+        if system_prompt_length > MAX_SYSTEM_PROMPT_LENGTH:
+            logger.warning(f"⚠️ System prompt is very long ({system_prompt_length} chars). This may cause timeout issues.")
+        
+        # Log example summary
+        if examples_count > 0:
+            logger.info(f"📚 Test endpoint: Included {examples_count} examples in prompt" + 
+                       (f" ({examples_skipped} skipped)" if examples_skipped > 0 else "") +
+                       (f", {examples_truncated} posts truncated" if examples_truncated > 0 else ""))
+        
+        # Build user prompt (post content + output format)
         labels_str = ", ".join(classifier_labels)
         labels_list_str = ", ".join([f'"{label}"' for label in classifier_labels])
         user_prompt_parts = []
-        if classifier_prompt:
-            user_prompt_parts.append(f"## User's Custom Classification Rules\n{classifier_prompt}")
-        if classifier_description:
-            user_prompt_parts.append(f"## Additional Context\n{classifier_description}")
+        # Classification rules are now in the system prompt, so user prompt just has the post
         user_prompt_parts.append(f"## Post to Classify\n\nPost Content:\n{post_text}")
         
         example_scores_dict = {}
@@ -2765,7 +3104,7 @@ Respond ONLY with valid JSON. No markdown, no code blocks, no explanation, just 
         user_prompt = "\n\n".join(user_prompt_parts)
         
         # Get model name
-        model_name = os.getenv("GROQ_MODEL", "llama-3.3-70b-versatile")
+        model_name = os.getenv("GROQ_MODEL", "llama-3.1-8b-instant")
         
         # Call Groq directly and capture everything
         debug_info = {
