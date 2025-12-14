@@ -2493,6 +2493,437 @@ Respond ONLY with valid JSON. No markdown, no code blocks, no explanation, just 
         }
 
 
+async def classify_multiple_posts_single_call(
+    posts_texts: List[str],
+    classifier_name: str,
+    classifier_prompt: str,
+    classifier_description: str,
+    classifier_labels: List[str],
+    classifier_examples: Optional[Dict[str, Any]] = None,
+) -> List[Dict[str, Any]]:
+    """
+    Classify multiple posts in a SINGLE API call to Groq.
+    More efficient than separate calls - sends all posts together.
+    
+    Args:
+        posts_texts: List of post text strings to classify (extracted text only)
+        classifier_name: Name of the classifier
+        classifier_prompt: System prompt for the classifier
+        classifier_description: Rules/description for classification
+        classifier_labels: Available labels
+        classifier_examples: Few-shot examples
+    
+    Returns:
+        List of classification results (dicts with 'label', 'score', and 'allScores')
+    """
+    if not groq_client:
+        raise HTTPException(status_code=503, detail="Groq client not initialized. Please set GROQ_API_KEY.")
+    
+    if not posts_texts:
+        return []
+    
+    # Build few-shot examples string (same as classify_post_with_groq)
+    MAX_EXAMPLES_LENGTH = int(os.getenv("MAX_EXAMPLES_LENGTH", "80000"))
+    MAX_EXAMPLE_POST_LENGTH = int(os.getenv("MAX_EXAMPLE_POST_LENGTH", "2000"))
+    
+    examples_text = ""
+    examples_count = 0
+    examples_skipped = 0
+    examples_truncated = 0
+    
+    if classifier_examples:
+        if isinstance(classifier_examples, list):
+            for idx, example in enumerate(classifier_examples):
+                if isinstance(example, dict):
+                    example_post = example.get("post") or example.get("text", "")
+                    example_labels = example.get("labels", [])
+                    example_label = example.get("label", "")
+                    example_score = example.get("score", "")
+                    
+                    if len(example_post) > MAX_EXAMPLE_POST_LENGTH:
+                        example_post = example_post[:MAX_EXAMPLE_POST_LENGTH] + "... [truncated]"
+                        examples_truncated += 1
+                    
+                    if isinstance(example_labels, list) and len(example_labels) > 0:
+                        label_display = ", ".join(example_labels)
+                    elif example_label:
+                        label_display = example_label
+                    else:
+                        label_display = ""
+                    
+                    if example_post and label_display:
+                        example_formatted = f"\n\nExample {idx + 1}:\nPost: {example_post}\nLabel(s): {label_display}"
+                        if example_score:
+                            example_formatted += f" (Score: {example_score})"
+                        
+                        if len(examples_text) + len(example_formatted) > MAX_EXAMPLES_LENGTH:
+                            examples_skipped = len(classifier_examples) - idx
+                            logger.warning(f"⚠️ Examples limit reached ({MAX_EXAMPLES_LENGTH} chars). Skipping {examples_skipped} remaining examples.")
+                            break
+                        
+                        examples_text += example_formatted
+                        examples_count += 1
+        elif isinstance(classifier_examples, dict):
+            for idx, (key, value) in enumerate(classifier_examples.items()):
+                if isinstance(value, dict):
+                    example_post = value.get("post") or value.get("text", "")
+                    example_labels = value.get("labels", [])
+                    example_label = value.get("label", key)
+                    
+                    if len(example_post) > MAX_EXAMPLE_POST_LENGTH:
+                        example_post = example_post[:MAX_EXAMPLE_POST_LENGTH] + "... [truncated]"
+                        examples_truncated += 1
+                    
+                    if isinstance(example_labels, list) and len(example_labels) > 0:
+                        label_display = ", ".join(example_labels)
+                    elif example_label:
+                        label_display = example_label
+                    else:
+                        label_display = key
+                    
+                    if example_post and label_display:
+                        example_formatted = f"\n\nExample {idx + 1}:\nPost: {example_post}\nLabel(s): {label_display}"
+                        
+                        if len(examples_text) + len(example_formatted) > MAX_EXAMPLES_LENGTH:
+                            remaining = len(classifier_examples) - idx
+                            examples_skipped = remaining
+                            logger.warning(f"⚠️ Examples limit reached ({MAX_EXAMPLES_LENGTH} chars). Skipping {remaining} remaining examples.")
+                            break
+                        
+                        examples_text += example_formatted
+                        examples_count += 1
+    
+    # Build system prompt (same as classify_post_with_groq)
+    system_prompt_parts = []
+    
+    if classifier_prompt:
+        system_prompt_parts.append(classifier_prompt)
+    else:
+        system_prompt_parts.append(f"You are a {classifier_name} classifier. Classify posts according to the available labels.")
+    
+    if classifier_labels:
+        labels_str = ", ".join(classifier_labels)
+        system_prompt_parts.append(f"\n\nAvailable Labels: {labels_str}")
+    
+    if classifier_description:
+        system_prompt_parts.append(f"\n\nAdditional Context: {classifier_description}")
+    
+    if examples_text:
+        system_prompt_parts.append(f"\n\nBelow are example posts with their correct classifications. Use them as ground-truth demonstrations for how to classify future posts:{examples_text}")
+    
+    system_prompt = "\n".join(system_prompt_parts)
+    
+    # Build user prompt with ALL posts
+    labels_list_str = ", ".join([f'"{label}"' for label in classifier_labels])
+    
+    # Format all posts for classification
+    posts_section = ""
+    for idx, post_text in enumerate(posts_texts, 1):
+        posts_section += f"\n\nPost {idx}:\n{post_text}"
+    
+    user_prompt = f"""## Posts to Classify
+
+You need to classify {len(posts_texts)} posts. Each post is numbered below:
+
+{posts_section}
+
+## Required Output Format
+
+You MUST respond with a valid JSON object containing an array of classifications. EXACTLY this structure:
+{{
+  "classifications": [
+    {{
+      "label": "<one of the available labels>",
+      "score": <number between 0.0 and 1.0>,
+      "scores": {{
+        <scores for ALL labels>
+      }}
+    }},
+    {{
+      "label": "<one of the available labels>",
+      "score": <number between 0.0 and 1.0>,
+      "scores": {{
+        <scores for ALL labels>
+      }}
+    }}
+    ... (one object for each post, in order)
+  ]
+}}
+
+REQUIREMENTS:
+1. "classifications" must be an array with EXACTLY {len(posts_texts)} objects (one per post)
+2. Each object's "label" must be one of these exact labels: {labels_list_str}
+3. Each "score" must be a number between 0.0 and 1.0 representing confidence in the primary label
+4. Each "scores" MUST be an object with ALL {len(classifier_labels)} labels as keys: {labels_list_str}
+5. Each score in "scores" must be a number between 0.0 and 1.0
+6. For each post, the scores MUST sum to exactly 1.0 (probability distribution)
+7. The score for the primary "label" should be the highest
+8. The order of classifications must match the order of posts (Post 1 -> classifications[0], Post 2 -> classifications[1], etc.)
+
+Respond ONLY with valid JSON. No markdown, no code blocks, no explanation, just the JSON object."""
+    
+    # Get model name
+    model_name = os.getenv("GROQ_MODEL", "llama-3.1-8b-instant")
+    
+    # Retry logic with exponential backoff for rate limits
+    max_retries = 5
+    base_delay = 2
+    
+    for attempt in range(max_retries):
+        try:
+            try:
+                response = groq_client.chat.completions.create(
+                    model=model_name,
+                    messages=[
+                        {"role": "system", "content": system_prompt},
+                        {"role": "user", "content": user_prompt}
+                    ],
+                    temperature=0.3,
+                    response_format={"type": "json_object"}
+                )
+                break
+            except Exception as groq_error:
+                error_str = str(groq_error).lower()
+                error_repr = repr(groq_error).lower()
+                full_error_str = str(groq_error)
+                
+                # Check for token quota limit (daily limit) - cannot retry
+                is_token_quota_limit = (
+                    "tokens per day" in error_str or "tpd" in error_str or
+                    "token quota" in error_str or "type': 'tokens'" in error_str or
+                    "'code': 'rate_limit_exceeded'" in error_str
+                )
+                
+                if is_token_quota_limit:
+                    logger.error(f"❌ Daily token quota limit exceeded. Cannot retry - quota resets daily.")
+                    raise HTTPException(
+                        status_code=429,
+                        detail={
+                            "error": "token_quota_exceeded",
+                            "message": "Daily token quota limit reached for Groq API. This is a quota limit, not a rate limit.",
+                            "type": "token_quota",
+                            "suggestion": "Please wait for the daily quota to reset, or upgrade your Groq plan to increase token limits.",
+                            "groq_error": full_error_str
+                        }
+                    )
+                
+                # Check for request rate limit - can retry
+                is_request_rate_limit = (
+                    ("429" in error_str or "429" in error_repr or
+                    hasattr(groq_error, 'status_code') and groq_error.status_code == 429) and
+                    not is_token_quota_limit
+                )
+                
+                if is_request_rate_limit and attempt < max_retries - 1:
+                    delay = base_delay * (2 ** attempt)
+                    logger.warning(f"⚠️ Rate limit hit (attempt {attempt + 1}/{max_retries}). Waiting {delay} seconds before retry...")
+                    await asyncio.sleep(delay)
+                    continue
+                
+                # For other errors, try without json_object constraint
+                logger.error(f"Groq API call failed: {groq_error}")
+                if attempt < max_retries - 1:
+                    delay = base_delay * (2 ** attempt)
+                    await asyncio.sleep(delay)
+                    continue
+                else:
+                    raise
+        
+        except HTTPException:
+            raise
+        except Exception as outer_error:
+            if isinstance(outer_error, HTTPException):
+                raise
+            
+            error_str = str(outer_error).lower()
+            full_outer_error = str(outer_error)
+            
+            is_outer_token_quota = (
+                "tokens per day" in error_str or "tpd" in error_str or
+                "token quota" in error_str or "type': 'tokens'" in error_str
+            )
+            
+            if is_outer_token_quota:
+                raise HTTPException(
+                    status_code=429,
+                    detail={
+                        "error": "token_quota_exceeded",
+                        "message": "Daily token quota limit reached for Groq API.",
+                        "type": "token_quota",
+                        "suggestion": "Please wait for the daily quota to reset, or upgrade your Groq plan.",
+                        "groq_error": full_outer_error
+                    }
+                )
+            
+            if attempt == max_retries - 1:
+                raise HTTPException(
+                    status_code=500,
+                    detail=f"Failed to classify posts after {max_retries} attempts: {str(outer_error)}"
+                )
+            else:
+                delay = base_delay * (2 ** attempt)
+                await asyncio.sleep(delay)
+                continue
+    
+    # Parse response
+    try:
+        content = response.choices[0].message.content
+        
+        # Try to extract JSON
+        result = None
+        try:
+            result = json.loads(content)
+        except json.JSONDecodeError:
+            # Try extracting from markdown code blocks
+            if "```json" in content:
+                json_start = content.find("```json") + 7
+                json_end = content.find("```", json_start)
+                if json_end != -1:
+                    result = json.loads(content[json_start:json_end].strip())
+            elif "```" in content:
+                json_start = content.find("```") + 3
+                json_end = content.find("```", json_start)
+                if json_end != -1:
+                    result = json.loads(content[json_start:json_end].strip())
+            else:
+                # Try balanced braces
+                start_idx = content.find('{')
+                if start_idx != -1:
+                    brace_count = 0
+                    end_idx = start_idx
+                    for i in range(start_idx, len(content)):
+                        if content[i] == '{':
+                            brace_count += 1
+                        elif content[i] == '}':
+                            brace_count -= 1
+                            if brace_count == 0:
+                                end_idx = i + 1
+                                break
+                    if brace_count == 0:
+                        result = json.loads(content[start_idx:end_idx])
+        
+        if not result:
+            raise json.JSONDecodeError("Could not parse JSON from response", content, 0)
+        
+        # Extract classifications array
+        classifications = result.get("classifications", [])
+        
+        if not isinstance(classifications, list):
+            raise ValueError(f"Expected classifications array, got: {type(classifications)}")
+        
+        if len(classifications) != len(posts_texts):
+            logger.warning(f"⚠️ Expected {len(posts_texts)} classifications, got {len(classifications)}")
+        
+        # Normalize each classification (same logic as classify_post_with_groq)
+        normalized_results = []
+        for idx, classification in enumerate(classifications):
+            label = classification.get("label", "")
+            score = classification.get("score", 0.0)
+            all_scores = classification.get("scores", {})
+            
+            # Validate and normalize label
+            if label not in classifier_labels:
+                label_lower = label.lower()
+                matched_label = None
+                for available_label in classifier_labels:
+                    if available_label.lower() == label_lower:
+                        matched_label = available_label
+                        break
+                label = matched_label if matched_label else (classifier_labels[0] if classifier_labels else "Unknown")
+            
+            # Normalize score
+            try:
+                score = float(score)
+                if score > 1.0:
+                    score = score / 100.0
+                score = max(0.0, min(1.0, score))
+            except (ValueError, TypeError):
+                score = 0.5
+            
+            # Normalize all scores
+            normalized_scores = {}
+            if isinstance(all_scores, dict) and len(all_scores) > 0:
+                total_score = 0.0
+                for available_label in classifier_labels:
+                    if available_label in all_scores:
+                        try:
+                            label_score = float(all_scores[available_label])
+                            if label_score > 1.0:
+                                label_score = label_score / 100.0
+                            normalized_scores[available_label] = round(max(0.0, min(1.0, label_score)), 2)
+                            total_score += normalized_scores[available_label]
+                        except (ValueError, TypeError):
+                            normalized_scores[available_label] = 0.0
+                    else:
+                        normalized_scores[available_label] = 0.0
+                
+                if total_score > 1.0:
+                    for available_label in classifier_labels:
+                        normalized_scores[available_label] = round(normalized_scores[available_label] / total_score, 2)
+                elif total_score < 1.0 and total_score > 0:
+                    remaining = 1.0 - total_score
+                    missing_labels = [l for l in classifier_labels if normalized_scores[l] == 0.0]
+                    if missing_labels:
+                        per_missing = remaining / len(missing_labels)
+                        for missing_label in missing_labels:
+                            normalized_scores[missing_label] = round(per_missing, 2)
+                    else:
+                        for available_label in classifier_labels:
+                            normalized_scores[available_label] = round(normalized_scores[available_label] / total_score, 2)
+                elif total_score == 0:
+                    remaining = max(0.0, 1.0 - score)
+                    remaining_per_label = remaining / max(1, len(classifier_labels) - 1) if len(classifier_labels) > 1 else 0.0
+                    for available_label in classifier_labels:
+                        if available_label == label:
+                            normalized_scores[available_label] = round(score, 2)
+                        else:
+                            normalized_scores[available_label] = round(remaining_per_label, 2)
+            else:
+                remaining = max(0.0, 1.0 - score)
+                remaining_per_label = remaining / max(1, len(classifier_labels) - 1) if len(classifier_labels) > 1 else 0.0
+                for available_label in classifier_labels:
+                    if available_label == label:
+                        normalized_scores[available_label] = round(score, 2)
+                    else:
+                        normalized_scores[available_label] = round(remaining_per_label, 2)
+            
+            normalized_results.append({
+                "label": label,
+                "score": round(score, 2),
+                "allScores": normalized_scores
+            })
+        
+        # Ensure we have the same number of results as posts
+        while len(normalized_results) < len(posts_texts):
+            default_label = classifier_labels[0] if classifier_labels else "Unknown"
+            default_scores = {label: 0.0 for label in classifier_labels}
+            if default_label in default_scores:
+                default_scores[default_label] = 0.5
+            normalized_results.append({
+                "label": default_label,
+                "score": 0.5,
+                "allScores": default_scores
+            })
+        
+        return normalized_results[:len(posts_texts)]  # Return only what we need
+        
+    except Exception as e:
+        logger.error(f"❌ Error parsing multi-post classification response: {e}")
+        # Return defaults for all posts
+        default_label = classifier_labels[0] if classifier_labels else "Unknown"
+        default_results = []
+        for _ in posts_texts:
+            default_scores = {label: 0.0 for label in classifier_labels}
+            if default_label in default_scores:
+                default_scores[default_label] = 0.5
+            default_results.append({
+                "label": default_label,
+                "score": 0.5,
+                "allScores": default_scores
+            })
+        return default_results
+
+
 async def classify_posts_batch(
     posts: List[Dict[str, Any]],
     classifier_name: str,
@@ -2500,10 +2931,11 @@ async def classify_posts_batch(
     classifier_description: str,
     classifier_labels: List[str],
     classifier_examples: Optional[Dict[str, Any]] = None,
-    batch_size: int = 5,  # Reduced from 10 to 5 to avoid rate limits
+    batch_size: int = 20,  # Process 20 posts together in one API call
 ) -> List[Dict[str, Any]]:
     """
-    Classify multiple posts in parallel batches using Groq.
+    Classify multiple posts in batches using Groq.
+    Each batch sends multiple posts in a SINGLE API call (much more efficient).
     
     Args:
         posts: List of post objects to classify
@@ -2512,43 +2944,49 @@ async def classify_posts_batch(
         classifier_description: Rules/description for classification
         classifier_labels: Available labels
         classifier_examples: Few-shot examples
-        batch_size: Number of posts to process in parallel (default: 5 to avoid rate limits)
+        batch_size: Number of posts to send together in one API call (default: 20)
     
     Returns:
-        List of classification results (dicts with 'label' and 'score')
+        List of classification results (dicts with 'label', 'score', and 'allScores')
     """
     results = []
     
-    # Process in batches to avoid overwhelming the API
-    for i in range(0, len(posts), batch_size):
-        batch = posts[i:i + batch_size]
+    # Extract text from all posts (only send text field, not full objects)
+    posts_texts = []
+    for post in posts:
+        post_text = post.get("text", "")
+        if not post_text:
+            # Try alternative fields
+            post_text = post.get("content", "") or post.get("description", "") or ""
+        posts_texts.append(post_text)
+    
+    # Process in batches - each batch sends multiple posts in ONE API call
+    for i in range(0, len(posts_texts), batch_size):
+        batch_texts = posts_texts[i:i + batch_size]
         batch_num = (i // batch_size) + 1
-        total_batches = (len(posts) + batch_size - 1) // batch_size
+        total_batches = (len(posts_texts) + batch_size - 1) // batch_size
         
-        logger.info(f"Processing batch {batch_num}/{total_batches} ({len(batch)} posts)")
+        logger.info(f"Processing batch {batch_num}/{total_batches} ({len(batch_texts)} posts in single API call)")
         
-        # Create tasks for parallel processing
-        tasks = [
-            classify_post_with_groq(
-                post=post,
+        try:
+            # Classify all posts in this batch with ONE API call
+            batch_results = await classify_multiple_posts_single_call(
+                posts_texts=batch_texts,
                 classifier_name=classifier_name,
                 classifier_prompt=classifier_prompt,
                 classifier_description=classifier_description,
                 classifier_labels=classifier_labels,
                 classifier_examples=classifier_examples,
             )
-            for post in batch
-        ]
-        
-        # Execute batch in parallel
-        batch_results = await asyncio.gather(*tasks, return_exceptions=True)
-        
-        # Handle any exceptions in batch results
-        for idx, result in enumerate(batch_results):
-            if isinstance(result, Exception):
-                logger.error(f"Error classifying post {i + idx}: {result}")
-                # Use default classification on error with all scores
-                default_label = classifier_labels[0] if classifier_labels else "Unknown"
+            
+            # Add results
+            results.extend(batch_results)
+            
+        except Exception as e:
+            logger.error(f"Error classifying batch {batch_num}: {e}")
+            # Use default classification for all posts in this batch
+            default_label = classifier_labels[0] if classifier_labels else "Unknown"
+            for _ in batch_texts:
                 default_scores = {label: 0.0 for label in classifier_labels}
                 if default_label in default_scores:
                     default_scores[default_label] = 0.5
@@ -2557,11 +2995,9 @@ async def classify_posts_batch(
                     "score": 0.5,
                     "allScores": default_scores
                 })
-            else:
-                results.append(result)
         
         # Add delay between batches to avoid rate limits (except after the last batch)
-        if i + batch_size < len(posts):
+        if i + batch_size < len(posts_texts):
             delay_between_batches = 1.0  # 1 second delay between batches
             logger.info(f"Waiting {delay_between_batches} seconds before next batch to avoid rate limits...")
             await asyncio.sleep(delay_between_batches)
@@ -2799,7 +3235,7 @@ async def run_classifier(payload: RunClassifierRequest):
                     classifier_description=classifier_description,
                     classifier_labels=classifier_labels,
                     classifier_examples=classifier_examples,
-                    batch_size=5,  # Process 5 posts in parallel to avoid rate limits
+                    batch_size=20,  # Process 20 posts together in one API call
                 )
                 
                 # 5. Add labels to each post
