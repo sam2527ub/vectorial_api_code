@@ -325,6 +325,7 @@ class CreateAudienceRoomRequest(BaseModel):
     audience_room_name: str = Field(..., description="Name of the audience room")
     audience_description: str = Field(..., description="Plain-text description for the audience room")
     profiles: List[AudienceProfilePayload] = Field(..., min_items=1, description="Profiles to attach to this audience room")
+    userId: str = Field(..., description="User ID associated with this audience room")
 
 
 class UpdateProfilePostsRequest(BaseModel):
@@ -1019,6 +1020,7 @@ async def create_audience_room(payload: CreateAudienceRoomRequest):
                 "id": room_id,
                 "name": payload.audience_room_name,
                 "descriptionS3Url": description_url,
+                "userId": payload.userId,
                 "profiles": {"create": profile_creates},
             },
             include={"profiles": True},
@@ -1028,6 +1030,7 @@ async def create_audience_room(payload: CreateAudienceRoomRequest):
             "audience_room_id": room.id,
             "audience_room_name": room.name,
             "description_s3_url": room.descriptionS3Url,
+            "userId": room.userId,
             "profiles_created": len(room.profiles),
             "profiles": [
                 {
@@ -3926,17 +3929,18 @@ async def generate_profile_summaries(audience_room_id: str):
 @app.post("/api/v1/audience-rooms/{audience_room_id}/generate-group-summary")
 async def generate_group_summary(audience_room_id: str):
     """
-    Generate a group summary for an audience room based on all profile summaries.
+    Generate a group summary and traits for an audience room based on all profile summaries.
     
     Flow:
     1. Fetch all profiles in the audience room
     2. For each profile, fetch description JSON from S3 and extract the summary
     3. Combine all profile summaries
     4. Generate a group summary using OpenAI based on the combined summaries
-    5. Update the audience room description JSON in S3 with the new summary field
+    5. Generate traits (5 traits with keywordTags and descriptions) based on profile summaries
+    6. Update the audience room description JSON in S3 with both summary and traits fields
     
     Returns:
-        The generated group summary and processing results
+        The generated group summary, traits, and processing results
     """
     if not audience_prisma:
         raise HTTPException(status_code=503, detail="Audience database connection not available. Please set AUDIENCE_DATABASE_URL.")
@@ -4070,8 +4074,126 @@ Respond with ONLY the summary text, no JSON or formatting."""
             
             group_summary = completion.choices[0].message.content.strip()
             
-            # Update audience room description JSON with the summary
+            # Generate traits based on profile summaries
+            traits_prompt = f"""Analyze the following group of {len(profile_summaries)} profiles and generate traits in JSON format.
+
+Individual Profile Summaries:
+{combined_summaries}
+
+Based on these profiles, generate a traits JSON object with exactly 5 traits. Each trait must have:
+- title: One of these exact titles (keep them as-is):
+  1. "Skills & Expertise"
+  2. "Working Style"
+  3. "Motivations & Values"
+  4. "Pain Points & Needs"
+  5. "Organizational Leadership & Psychographic Profile"
+
+- keywordTags: An array of 4-6 specific keyword tags relevant to this group of profiles (not generic, but specific to what you observe in their summaries)
+- descriptions: An array of 4-6 descriptive sentences (one per keywordTag) that explain how these tags apply to this specific group
+
+The keywordTags and descriptions should be tailored to this specific group of profiles based on their actual summaries, not generic examples.
+
+Return ONLY valid JSON in this exact format:
+{{
+  "traits": [
+    {{
+      "title": "Skills & Expertise",
+      "keywordTags": ["tag1", "tag2", "tag3", "tag4", "tag5"],
+      "descriptions": ["description1", "description2", "description3", "description4", "description5"]
+    }},
+    {{
+      "title": "Working Style",
+      "keywordTags": ["tag1", "tag2", "tag3", "tag4", "tag5"],
+      "descriptions": ["description1", "description2", "description3", "description4", "description5"]
+    }},
+    {{
+      "title": "Motivations & Values",
+      "keywordTags": ["tag1", "tag2", "tag3", "tag4", "tag5"],
+      "descriptions": ["description1", "description2", "description3", "description4", "description5"]
+    }},
+    {{
+      "title": "Pain Points & Needs",
+      "keywordTags": ["tag1", "tag2", "tag3", "tag4", "tag5"],
+      "descriptions": ["description1", "description2", "description3", "description4", "description5"]
+    }},
+    {{
+      "title": "Organizational Leadership & Psychographic Profile",
+      "keywordTags": ["tag1", "tag2", "tag3", "tag4", "tag5"],
+      "descriptions": ["description1", "description2", "description3", "description4", "description5"]
+    }}
+  ]
+}}
+
+Make sure the JSON is valid and properly formatted. Do not include any text before or after the JSON."""
+            
+            traits_system_message = "You are an expert at analyzing professional profiles and generating structured trait data. Always return valid JSON only, no additional text."
+            
+            try:
+                traits_completion = openai_client.chat.completions.create(
+                    model="gpt-4o-mini",
+                    messages=[
+                        {"role": "system", "content": traits_system_message},
+                        {"role": "user", "content": traits_prompt}
+                    ],
+                    max_tokens=2000,
+                    temperature=0.3,
+                )
+                
+                traits_response = traits_completion.choices[0].message.content.strip()
+                
+                # Parse the JSON response
+                # Sometimes the response might have markdown code blocks, so we need to extract JSON
+                if "```json" in traits_response:
+                    traits_response = traits_response.split("```json")[1].split("```")[0].strip()
+                elif "```" in traits_response:
+                    traits_response = traits_response.split("```")[1].split("```")[0].strip()
+                
+                traits_data = json.loads(traits_response)
+                
+                # Validate that we have the expected structure
+                if not isinstance(traits_data, dict) or "traits" not in traits_data:
+                    raise ValueError("Invalid traits JSON structure: missing 'traits' key")
+                
+                if not isinstance(traits_data["traits"], list) or len(traits_data["traits"]) != 5:
+                    raise ValueError(f"Invalid traits JSON structure: expected 5 traits, got {len(traits_data.get('traits', []))}")
+                
+                # Validate each trait has the required fields
+                required_titles = [
+                    "Skills & Expertise",
+                    "Working Style",
+                    "Motivations & Values",
+                    "Pain Points & Needs",
+                    "Organizational Leadership & Psychographic Profile"
+                ]
+                
+                received_titles = [trait.get("title") for trait in traits_data["traits"]]
+                if set(received_titles) != set(required_titles):
+                    raise ValueError(f"Invalid trait titles. Expected: {required_titles}, Got: {received_titles}")
+                
+                for trait in traits_data["traits"]:
+                    if "keywordTags" not in trait or "descriptions" not in trait:
+                        raise ValueError(f"Trait '{trait.get('title')}' missing required fields")
+                    if not isinstance(trait["keywordTags"], list) or not isinstance(trait["descriptions"], list):
+                        raise ValueError(f"Trait '{trait.get('title')}' has invalid keywordTags or descriptions format")
+                    if len(trait["keywordTags"]) != len(trait["descriptions"]):
+                        raise ValueError(f"Trait '{trait.get('title')}' has mismatched keywordTags and descriptions counts")
+                
+                logger.info(f"Successfully generated traits for audience room {audience_room_id}")
+                
+            except json.JSONDecodeError as e:
+                logger.error(f"Failed to parse traits JSON: {e}")
+                logger.error(f"Traits response: {traits_response[:500]}")
+                raise HTTPException(status_code=500, detail=f"Failed to parse traits JSON: {str(e)}")
+            except ValueError as e:
+                logger.error(f"Invalid traits structure: {e}")
+                raise HTTPException(status_code=500, detail=f"Invalid traits structure: {str(e)}")
+            except Exception as e:
+                logger.error(f"Error generating traits: {e}")
+                raise HTTPException(status_code=500, detail=f"Failed to generate traits: {str(e)}")
+            
+            # Update audience room description JSON with the summary and traits
             room_description_data["summary"] = group_summary
+            room_description_data["traits"] = traits_data["traits"]
             
             # Upload updated description back to S3
             updated_description_url = upload_json_to_s3(description_key, room_description_data)
@@ -4086,6 +4208,7 @@ Respond with ONLY the summary text, no JSON or formatting."""
                 "audience_room_id": audience_room_id,
                 "audience_room_name": audience_room.name,
                 "summary": group_summary,
+                "traits": traits_data["traits"],
                 "total_profiles": len(profiles),
                 "profiles_processed": profiles_processed,
                 "profiles_skipped": profiles_skipped,

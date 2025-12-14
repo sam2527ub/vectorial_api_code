@@ -104,3 +104,93 @@ class BasePostClassifier(_PrismaModel):
         return actions.PostClassifierActions[_PrismaModelT](client or get_client(), cls)
 
 
+class BaseChatAssets(_PrismaModel):
+    __prisma_model__: ClassVar[Literal['ChatAssets']] = 'ChatAssets'
+
+    @classmethod
+    def prisma(cls: Type[_PrismaModelT], client: Optional['Prisma'] = None) -> 'actions.ChatAssetsActions[_PrismaModelT]':
+        from .client import get_client
+
+        return actions.ChatAssetsActions[_PrismaModelT](client or get_client(), cls)
+
+
+class BaseCustomClone(_PrismaModel):
+    __prisma_model__: ClassVar[Literal['CustomClone']] = 'CustomClone'
+
+    @classmethod
+    def prisma(cls: Type[_PrismaModelT], client: Optional['Prisma'] = None) -> 'actions.CustomCloneActions[_PrismaModelT]':
+        from .client import get_client
+
+        return actions.CustomCloneActions[_PrismaModelT](client or get_client(), cls)
+
+
+class BasePreMadePrompt(_PrismaModel):
+    __prisma_model__: ClassVar[Literal['PreMadePrompt']] = 'PreMadePrompt'
+
+    @classmethod
+    def prisma(cls: Type[_PrismaModelT], client: Optional['Prisma'] = None) -> 'actions.PreMadePromptActions[_PrismaModelT]':
+        from .client import get_client
+
+        return actions.PreMadePromptActions[_PrismaModelT](client or get_client(), cls)
+
+
+class BaseScrapeJob(_PrismaModel):
+    __prisma_model__: ClassVar[Literal['ScrapeJob']] = 'ScrapeJob'
+
+    @classmethod
+    def prisma(cls: Type[_PrismaModelT], client: Optional['Prisma'] = None) -> 'actions.ScrapeJobActions[_PrismaModelT]':
+        from .client import get_client
+
+        return actions.ScrapeJobActions[_PrismaModelT](client or get_client(), cls)
+
+
+class BaseSearchQuery(_PrismaModel):
+    __prisma_model__: ClassVar[Literal['SearchQuery']] = 'SearchQuery'
+
+    @classmethod
+    def prisma(cls: Type[_PrismaModelT], client: Optional['Prisma'] = None) -> 'actions.SearchQueryActions[_PrismaModelT]':
+        from .client import get_client
+
+        return actions.SearchQueryActions[_PrismaModelT](client or get_client(), cls)
+
+
+class BaseStoryActions(_PrismaModel):
+    __prisma_model__: ClassVar[Literal['StoryActions']] = 'StoryActions'
+
+    @classmethod
+    def prisma(cls: Type[_PrismaModelT], client: Optional['Prisma'] = None) -> 'actions.StoryActionsActions[_PrismaModelT]':
+        from .client import get_client
+
+        return actions.StoryActionsActions[_PrismaModelT](client or get_client(), cls)
+
+
+class BaseStoryComment(_PrismaModel):
+    __prisma_model__: ClassVar[Literal['StoryComment']] = 'StoryComment'
+
+    @classmethod
+    def prisma(cls: Type[_PrismaModelT], client: Optional['Prisma'] = None) -> 'actions.StoryCommentActions[_PrismaModelT]':
+        from .client import get_client
+
+        return actions.StoryCommentActions[_PrismaModelT](client or get_client(), cls)
+
+
+class BaseVapiCallConfig(_PrismaModel):
+    __prisma_model__: ClassVar[Literal['VapiCallConfig']] = 'VapiCallConfig'
+
+    @classmethod
+    def prisma(cls: Type[_PrismaModelT], client: Optional['Prisma'] = None) -> 'actions.VapiCallConfigActions[_PrismaModelT]':
+        from .client import get_client
+
+        return actions.VapiCallConfigActions[_PrismaModelT](client or get_client(), cls)
+
+
+class BaseVapiToolResult(_PrismaModel):
+    __prisma_model__: ClassVar[Literal['VapiToolResult']] = 'VapiToolResult'
+
+    @classmethod
+    def prisma(cls: Type[_PrismaModelT], client: Optional['Prisma'] = None) -> 'actions.VapiToolResultActions[_PrismaModelT]':
+        from .client import get_client
+
+        return actions.VapiToolResultActions[_PrismaModelT](client or get_client(), cls)
+
+

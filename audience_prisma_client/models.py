@@ -61,10 +61,11 @@ class AudienceRoom(bases.BaseAudienceRoom):
 
     id: _str
     name: _str
-    descriptionS3Url: Optional[_str] = None
-    profiles: Optional[List['models.AudienceProfile']] = None
+    descriptionS3Url: _str
     createdAt: datetime.datetime
     updatedAt: datetime.datetime
+    userId: Optional[_str] = None
+    profiles: Optional[List['models.AudienceProfile']] = None
 
     # take *args and **kwargs so that other metaclasses can define arguments
     def __init_subclass__(
@@ -194,13 +195,13 @@ class AudienceProfile(bases.BaseAudienceProfile):
 
     id: _str
     audienceRoomId: _str
-    audienceRoom: Optional['models.AudienceRoom'] = None
     profileName: _str
     linkedinUrl: _str
     profileDescriptionS3Url: Optional[_str] = None
     postsS3Url: Optional[_str] = None
     createdAt: datetime.datetime
     updatedAt: datetime.datetime
+    audienceRoom: Optional['models.AudienceRoom'] = None
 
     # take *args and **kwargs so that other metaclasses can define arguments
     def __init_subclass__(
@@ -329,10 +330,11 @@ class PostClassifier(bases.BasePostClassifier):
     """Represents a PostClassifier record"""
 
     id: _str
+    userId: Optional[_str] = None
     name: _str
-    prompt: Optional[_str] = None
     description: Optional[_str] = None
-    labels: 'fields.Json'
+    prompt: _str
+    labels: List[_str]
     examples: Optional['fields.Json'] = None
     createdAt: datetime.datetime
     updatedAt: datetime.datetime
@@ -352,6 +354,19 @@ class PostClassifier(bases.BasePostClassifier):
                 stacklevel=3,
             )
 
+    @field_validator('labels', pre=True, allow_reuse=True)
+    @classmethod
+    def _transform_required_list_fields(cls, value: object) -> object:
+        # When using raw queries, some databases will return `None` for an array field that has not been set yet.
+        #
+        # In our case we want to use an empty list instead as that is the internal Prisma behaviour and we want
+        # to use the same consistent structure between the core ORM and raw queries. For example, if we updated
+        # our type definitions to include `None` for `List` fields then it would be misleading as it will only
+        # ever be `None` in raw queries.
+        if value is None:
+            return []
+
+        return value
 
     @staticmethod
     def create_partial(
@@ -436,6 +451,1007 @@ class PostClassifier(bases.BasePostClassifier):
         _created_partial_types.add(name)
 
 
+class ChatAssets(bases.BaseChatAssets):
+    """Represents a ChatAssets record"""
+
+    chatId: _str
+    userId: Optional[_str] = None
+    productId: Optional[_str] = None
+    asset: 'fields.Json'
+    createdAt: datetime.datetime
+    updatedAt: datetime.datetime
+
+    # take *args and **kwargs so that other metaclasses can define arguments
+    def __init_subclass__(
+        cls,
+        *args: Any,
+        warn_subclass: Optional[bool] = None,
+        **kwargs: Any,
+    ) -> None:
+        super().__init_subclass__()
+        if warn_subclass is not None:
+            warnings.warn(
+                'The `warn_subclass` argument is deprecated as it is no longer necessary and will be removed in the next release',
+                DeprecationWarning,
+                stacklevel=3,
+            )
+
+
+    @staticmethod
+    def create_partial(
+        name: str,
+        include: Optional[Iterable['types.ChatAssetsKeys']] = None,
+        exclude: Optional[Iterable['types.ChatAssetsKeys']] = None,
+        required: Optional[Iterable['types.ChatAssetsKeys']] = None,
+        optional: Optional[Iterable['types.ChatAssetsKeys']] = None,
+        relations: Optional[Mapping['types.ChatAssetsRelationalFieldKeys', str]] = None,
+        exclude_relational_fields: bool = False,
+    ) -> None:
+        if not os.environ.get('PRISMA_GENERATOR_INVOCATION'):
+            raise RuntimeError(
+                'Attempted to create a partial type outside of client generation.'
+            )
+
+        if name in _created_partial_types:
+            raise ValueError(f'Partial type "{name}" has already been created.')
+
+        if include is not None:
+            if exclude is not None:
+                raise TypeError('Exclude and include are mutually exclusive.')
+            if exclude_relational_fields is True:
+                raise TypeError('Include and exclude_relational_fields=True are mutually exclusive.')
+
+        if required and optional:
+            shared = set(required) & set(optional)
+            if shared:
+                raise ValueError(f'Cannot make the same field(s) required and optional {shared}')
+
+        if exclude_relational_fields and relations:
+            raise ValueError(
+                'exclude_relational_fields and relations are mutually exclusive'
+            )
+
+        fields: Dict['types.ChatAssetsKeys', PartialModelField] = OrderedDict()
+
+        try:
+            if include:
+                for field in include:
+                    fields[field] = _ChatAssets_fields[field].copy()
+            elif exclude:
+                for field in exclude:
+                    if field not in _ChatAssets_fields:
+                        raise KeyError(field)
+
+                fields = {
+                    key: data.copy()
+                    for key, data in _ChatAssets_fields.items()
+                    if key not in exclude
+                }
+            else:
+                fields = {
+                    key: data.copy()
+                    for key, data in _ChatAssets_fields.items()
+                }
+
+            if required:
+                for field in required:
+                    fields[field]['optional'] = False
+
+            if optional:
+                for field in optional:
+                    fields[field]['optional'] = True
+
+
+            if relations:
+                raise ValueError('Model: "ChatAssets" has no relational fields.')
+        except KeyError as exc:
+            raise ValueError(
+                f'{exc.args[0]} is not a valid ChatAssets / {name} field.'
+            ) from None
+
+        models = partial_models_ctx.get()
+        models.append(
+            {
+                'name': name,
+                'fields': cast(Mapping[str, PartialModelField], fields),
+                'from_model': 'ChatAssets',
+            }
+        )
+        _created_partial_types.add(name)
+
+
+class CustomClone(bases.BaseCustomClone):
+    """Represents a CustomClone record"""
+
+    id: _str
+    userId: _str
+    userEmail: _str
+    cloneName: _str
+    description: Optional[_str] = None
+    category: Optional[_str] = None
+    metadata: 'fields.Json'
+    keywords: List[_str]
+    profiles: Optional['fields.Json'] = None
+    createdAt: datetime.datetime
+    updatedAt: datetime.datetime
+
+    # take *args and **kwargs so that other metaclasses can define arguments
+    def __init_subclass__(
+        cls,
+        *args: Any,
+        warn_subclass: Optional[bool] = None,
+        **kwargs: Any,
+    ) -> None:
+        super().__init_subclass__()
+        if warn_subclass is not None:
+            warnings.warn(
+                'The `warn_subclass` argument is deprecated as it is no longer necessary and will be removed in the next release',
+                DeprecationWarning,
+                stacklevel=3,
+            )
+
+    @field_validator('keywords', pre=True, allow_reuse=True)
+    @classmethod
+    def _transform_required_list_fields(cls, value: object) -> object:
+        # When using raw queries, some databases will return `None` for an array field that has not been set yet.
+        #
+        # In our case we want to use an empty list instead as that is the internal Prisma behaviour and we want
+        # to use the same consistent structure between the core ORM and raw queries. For example, if we updated
+        # our type definitions to include `None` for `List` fields then it would be misleading as it will only
+        # ever be `None` in raw queries.
+        if value is None:
+            return []
+
+        return value
+
+    @staticmethod
+    def create_partial(
+        name: str,
+        include: Optional[Iterable['types.CustomCloneKeys']] = None,
+        exclude: Optional[Iterable['types.CustomCloneKeys']] = None,
+        required: Optional[Iterable['types.CustomCloneKeys']] = None,
+        optional: Optional[Iterable['types.CustomCloneKeys']] = None,
+        relations: Optional[Mapping['types.CustomCloneRelationalFieldKeys', str]] = None,
+        exclude_relational_fields: bool = False,
+    ) -> None:
+        if not os.environ.get('PRISMA_GENERATOR_INVOCATION'):
+            raise RuntimeError(
+                'Attempted to create a partial type outside of client generation.'
+            )
+
+        if name in _created_partial_types:
+            raise ValueError(f'Partial type "{name}" has already been created.')
+
+        if include is not None:
+            if exclude is not None:
+                raise TypeError('Exclude and include are mutually exclusive.')
+            if exclude_relational_fields is True:
+                raise TypeError('Include and exclude_relational_fields=True are mutually exclusive.')
+
+        if required and optional:
+            shared = set(required) & set(optional)
+            if shared:
+                raise ValueError(f'Cannot make the same field(s) required and optional {shared}')
+
+        if exclude_relational_fields and relations:
+            raise ValueError(
+                'exclude_relational_fields and relations are mutually exclusive'
+            )
+
+        fields: Dict['types.CustomCloneKeys', PartialModelField] = OrderedDict()
+
+        try:
+            if include:
+                for field in include:
+                    fields[field] = _CustomClone_fields[field].copy()
+            elif exclude:
+                for field in exclude:
+                    if field not in _CustomClone_fields:
+                        raise KeyError(field)
+
+                fields = {
+                    key: data.copy()
+                    for key, data in _CustomClone_fields.items()
+                    if key not in exclude
+                }
+            else:
+                fields = {
+                    key: data.copy()
+                    for key, data in _CustomClone_fields.items()
+                }
+
+            if required:
+                for field in required:
+                    fields[field]['optional'] = False
+
+            if optional:
+                for field in optional:
+                    fields[field]['optional'] = True
+
+
+            if relations:
+                raise ValueError('Model: "CustomClone" has no relational fields.')
+        except KeyError as exc:
+            raise ValueError(
+                f'{exc.args[0]} is not a valid CustomClone / {name} field.'
+            ) from None
+
+        models = partial_models_ctx.get()
+        models.append(
+            {
+                'name': name,
+                'fields': cast(Mapping[str, PartialModelField], fields),
+                'from_model': 'CustomClone',
+            }
+        )
+        _created_partial_types.add(name)
+
+
+class PreMadePrompt(bases.BasePreMadePrompt):
+    """Represents a PreMadePrompt record"""
+
+    id: _str
+    trigger: _str
+    name: _str
+    description: _str
+    prompt: _str
+    active: _bool
+    createdAt: datetime.datetime
+    updatedAt: datetime.datetime
+
+    # take *args and **kwargs so that other metaclasses can define arguments
+    def __init_subclass__(
+        cls,
+        *args: Any,
+        warn_subclass: Optional[bool] = None,
+        **kwargs: Any,
+    ) -> None:
+        super().__init_subclass__()
+        if warn_subclass is not None:
+            warnings.warn(
+                'The `warn_subclass` argument is deprecated as it is no longer necessary and will be removed in the next release',
+                DeprecationWarning,
+                stacklevel=3,
+            )
+
+
+    @staticmethod
+    def create_partial(
+        name: str,
+        include: Optional[Iterable['types.PreMadePromptKeys']] = None,
+        exclude: Optional[Iterable['types.PreMadePromptKeys']] = None,
+        required: Optional[Iterable['types.PreMadePromptKeys']] = None,
+        optional: Optional[Iterable['types.PreMadePromptKeys']] = None,
+        relations: Optional[Mapping['types.PreMadePromptRelationalFieldKeys', str]] = None,
+        exclude_relational_fields: bool = False,
+    ) -> None:
+        if not os.environ.get('PRISMA_GENERATOR_INVOCATION'):
+            raise RuntimeError(
+                'Attempted to create a partial type outside of client generation.'
+            )
+
+        if name in _created_partial_types:
+            raise ValueError(f'Partial type "{name}" has already been created.')
+
+        if include is not None:
+            if exclude is not None:
+                raise TypeError('Exclude and include are mutually exclusive.')
+            if exclude_relational_fields is True:
+                raise TypeError('Include and exclude_relational_fields=True are mutually exclusive.')
+
+        if required and optional:
+            shared = set(required) & set(optional)
+            if shared:
+                raise ValueError(f'Cannot make the same field(s) required and optional {shared}')
+
+        if exclude_relational_fields and relations:
+            raise ValueError(
+                'exclude_relational_fields and relations are mutually exclusive'
+            )
+
+        fields: Dict['types.PreMadePromptKeys', PartialModelField] = OrderedDict()
+
+        try:
+            if include:
+                for field in include:
+                    fields[field] = _PreMadePrompt_fields[field].copy()
+            elif exclude:
+                for field in exclude:
+                    if field not in _PreMadePrompt_fields:
+                        raise KeyError(field)
+
+                fields = {
+                    key: data.copy()
+                    for key, data in _PreMadePrompt_fields.items()
+                    if key not in exclude
+                }
+            else:
+                fields = {
+                    key: data.copy()
+                    for key, data in _PreMadePrompt_fields.items()
+                }
+
+            if required:
+                for field in required:
+                    fields[field]['optional'] = False
+
+            if optional:
+                for field in optional:
+                    fields[field]['optional'] = True
+
+
+            if relations:
+                raise ValueError('Model: "PreMadePrompt" has no relational fields.')
+        except KeyError as exc:
+            raise ValueError(
+                f'{exc.args[0]} is not a valid PreMadePrompt / {name} field.'
+            ) from None
+
+        models = partial_models_ctx.get()
+        models.append(
+            {
+                'name': name,
+                'fields': cast(Mapping[str, PartialModelField], fields),
+                'from_model': 'PreMadePrompt',
+            }
+        )
+        _created_partial_types.add(name)
+
+
+class ScrapeJob(bases.BaseScrapeJob):
+    """Represents a ScrapeJob record"""
+
+    id: _str
+    status: _str
+    linkedinUrls: 'fields.Json'
+    maxPosts: _int
+    apifyRunId: Optional[_str] = None
+    result: Optional['fields.Json'] = None
+    error: Optional[_str] = None
+    createdAt: datetime.datetime
+    updatedAt: datetime.datetime
+
+    # take *args and **kwargs so that other metaclasses can define arguments
+    def __init_subclass__(
+        cls,
+        *args: Any,
+        warn_subclass: Optional[bool] = None,
+        **kwargs: Any,
+    ) -> None:
+        super().__init_subclass__()
+        if warn_subclass is not None:
+            warnings.warn(
+                'The `warn_subclass` argument is deprecated as it is no longer necessary and will be removed in the next release',
+                DeprecationWarning,
+                stacklevel=3,
+            )
+
+
+    @staticmethod
+    def create_partial(
+        name: str,
+        include: Optional[Iterable['types.ScrapeJobKeys']] = None,
+        exclude: Optional[Iterable['types.ScrapeJobKeys']] = None,
+        required: Optional[Iterable['types.ScrapeJobKeys']] = None,
+        optional: Optional[Iterable['types.ScrapeJobKeys']] = None,
+        relations: Optional[Mapping['types.ScrapeJobRelationalFieldKeys', str]] = None,
+        exclude_relational_fields: bool = False,
+    ) -> None:
+        if not os.environ.get('PRISMA_GENERATOR_INVOCATION'):
+            raise RuntimeError(
+                'Attempted to create a partial type outside of client generation.'
+            )
+
+        if name in _created_partial_types:
+            raise ValueError(f'Partial type "{name}" has already been created.')
+
+        if include is not None:
+            if exclude is not None:
+                raise TypeError('Exclude and include are mutually exclusive.')
+            if exclude_relational_fields is True:
+                raise TypeError('Include and exclude_relational_fields=True are mutually exclusive.')
+
+        if required and optional:
+            shared = set(required) & set(optional)
+            if shared:
+                raise ValueError(f'Cannot make the same field(s) required and optional {shared}')
+
+        if exclude_relational_fields and relations:
+            raise ValueError(
+                'exclude_relational_fields and relations are mutually exclusive'
+            )
+
+        fields: Dict['types.ScrapeJobKeys', PartialModelField] = OrderedDict()
+
+        try:
+            if include:
+                for field in include:
+                    fields[field] = _ScrapeJob_fields[field].copy()
+            elif exclude:
+                for field in exclude:
+                    if field not in _ScrapeJob_fields:
+                        raise KeyError(field)
+
+                fields = {
+                    key: data.copy()
+                    for key, data in _ScrapeJob_fields.items()
+                    if key not in exclude
+                }
+            else:
+                fields = {
+                    key: data.copy()
+                    for key, data in _ScrapeJob_fields.items()
+                }
+
+            if required:
+                for field in required:
+                    fields[field]['optional'] = False
+
+            if optional:
+                for field in optional:
+                    fields[field]['optional'] = True
+
+
+            if relations:
+                raise ValueError('Model: "ScrapeJob" has no relational fields.')
+        except KeyError as exc:
+            raise ValueError(
+                f'{exc.args[0]} is not a valid ScrapeJob / {name} field.'
+            ) from None
+
+        models = partial_models_ctx.get()
+        models.append(
+            {
+                'name': name,
+                'fields': cast(Mapping[str, PartialModelField], fields),
+                'from_model': 'ScrapeJob',
+            }
+        )
+        _created_partial_types.add(name)
+
+
+class SearchQuery(bases.BaseSearchQuery):
+    """Represents a SearchQuery record"""
+
+    id: _str
+    filters: 'fields.Json'
+    sqlQuery: _str
+    resultCount: _int
+    createdAt: datetime.datetime
+
+    # take *args and **kwargs so that other metaclasses can define arguments
+    def __init_subclass__(
+        cls,
+        *args: Any,
+        warn_subclass: Optional[bool] = None,
+        **kwargs: Any,
+    ) -> None:
+        super().__init_subclass__()
+        if warn_subclass is not None:
+            warnings.warn(
+                'The `warn_subclass` argument is deprecated as it is no longer necessary and will be removed in the next release',
+                DeprecationWarning,
+                stacklevel=3,
+            )
+
+
+    @staticmethod
+    def create_partial(
+        name: str,
+        include: Optional[Iterable['types.SearchQueryKeys']] = None,
+        exclude: Optional[Iterable['types.SearchQueryKeys']] = None,
+        required: Optional[Iterable['types.SearchQueryKeys']] = None,
+        optional: Optional[Iterable['types.SearchQueryKeys']] = None,
+        relations: Optional[Mapping['types.SearchQueryRelationalFieldKeys', str]] = None,
+        exclude_relational_fields: bool = False,
+    ) -> None:
+        if not os.environ.get('PRISMA_GENERATOR_INVOCATION'):
+            raise RuntimeError(
+                'Attempted to create a partial type outside of client generation.'
+            )
+
+        if name in _created_partial_types:
+            raise ValueError(f'Partial type "{name}" has already been created.')
+
+        if include is not None:
+            if exclude is not None:
+                raise TypeError('Exclude and include are mutually exclusive.')
+            if exclude_relational_fields is True:
+                raise TypeError('Include and exclude_relational_fields=True are mutually exclusive.')
+
+        if required and optional:
+            shared = set(required) & set(optional)
+            if shared:
+                raise ValueError(f'Cannot make the same field(s) required and optional {shared}')
+
+        if exclude_relational_fields and relations:
+            raise ValueError(
+                'exclude_relational_fields and relations are mutually exclusive'
+            )
+
+        fields: Dict['types.SearchQueryKeys', PartialModelField] = OrderedDict()
+
+        try:
+            if include:
+                for field in include:
+                    fields[field] = _SearchQuery_fields[field].copy()
+            elif exclude:
+                for field in exclude:
+                    if field not in _SearchQuery_fields:
+                        raise KeyError(field)
+
+                fields = {
+                    key: data.copy()
+                    for key, data in _SearchQuery_fields.items()
+                    if key not in exclude
+                }
+            else:
+                fields = {
+                    key: data.copy()
+                    for key, data in _SearchQuery_fields.items()
+                }
+
+            if required:
+                for field in required:
+                    fields[field]['optional'] = False
+
+            if optional:
+                for field in optional:
+                    fields[field]['optional'] = True
+
+
+            if relations:
+                raise ValueError('Model: "SearchQuery" has no relational fields.')
+        except KeyError as exc:
+            raise ValueError(
+                f'{exc.args[0]} is not a valid SearchQuery / {name} field.'
+            ) from None
+
+        models = partial_models_ctx.get()
+        models.append(
+            {
+                'name': name,
+                'fields': cast(Mapping[str, PartialModelField], fields),
+                'from_model': 'SearchQuery',
+            }
+        )
+        _created_partial_types.add(name)
+
+
+class StoryActions(bases.BaseStoryActions):
+    """Represents a StoryActions record"""
+
+    storyId: _str
+    actions: 'fields.Json'
+    actionsUI: 'fields.Json'
+
+    # take *args and **kwargs so that other metaclasses can define arguments
+    def __init_subclass__(
+        cls,
+        *args: Any,
+        warn_subclass: Optional[bool] = None,
+        **kwargs: Any,
+    ) -> None:
+        super().__init_subclass__()
+        if warn_subclass is not None:
+            warnings.warn(
+                'The `warn_subclass` argument is deprecated as it is no longer necessary and will be removed in the next release',
+                DeprecationWarning,
+                stacklevel=3,
+            )
+
+
+    @staticmethod
+    def create_partial(
+        name: str,
+        include: Optional[Iterable['types.StoryActionsKeys']] = None,
+        exclude: Optional[Iterable['types.StoryActionsKeys']] = None,
+        required: Optional[Iterable['types.StoryActionsKeys']] = None,
+        optional: Optional[Iterable['types.StoryActionsKeys']] = None,
+        relations: Optional[Mapping['types.StoryActionsRelationalFieldKeys', str]] = None,
+        exclude_relational_fields: bool = False,
+    ) -> None:
+        if not os.environ.get('PRISMA_GENERATOR_INVOCATION'):
+            raise RuntimeError(
+                'Attempted to create a partial type outside of client generation.'
+            )
+
+        if name in _created_partial_types:
+            raise ValueError(f'Partial type "{name}" has already been created.')
+
+        if include is not None:
+            if exclude is not None:
+                raise TypeError('Exclude and include are mutually exclusive.')
+            if exclude_relational_fields is True:
+                raise TypeError('Include and exclude_relational_fields=True are mutually exclusive.')
+
+        if required and optional:
+            shared = set(required) & set(optional)
+            if shared:
+                raise ValueError(f'Cannot make the same field(s) required and optional {shared}')
+
+        if exclude_relational_fields and relations:
+            raise ValueError(
+                'exclude_relational_fields and relations are mutually exclusive'
+            )
+
+        fields: Dict['types.StoryActionsKeys', PartialModelField] = OrderedDict()
+
+        try:
+            if include:
+                for field in include:
+                    fields[field] = _StoryActions_fields[field].copy()
+            elif exclude:
+                for field in exclude:
+                    if field not in _StoryActions_fields:
+                        raise KeyError(field)
+
+                fields = {
+                    key: data.copy()
+                    for key, data in _StoryActions_fields.items()
+                    if key not in exclude
+                }
+            else:
+                fields = {
+                    key: data.copy()
+                    for key, data in _StoryActions_fields.items()
+                }
+
+            if required:
+                for field in required:
+                    fields[field]['optional'] = False
+
+            if optional:
+                for field in optional:
+                    fields[field]['optional'] = True
+
+
+            if relations:
+                raise ValueError('Model: "StoryActions" has no relational fields.')
+        except KeyError as exc:
+            raise ValueError(
+                f'{exc.args[0]} is not a valid StoryActions / {name} field.'
+            ) from None
+
+        models = partial_models_ctx.get()
+        models.append(
+            {
+                'name': name,
+                'fields': cast(Mapping[str, PartialModelField], fields),
+                'from_model': 'StoryActions',
+            }
+        )
+        _created_partial_types.add(name)
+
+
+class StoryComment(bases.BaseStoryComment):
+    """Represents a StoryComment record"""
+
+    id: _str
+    storyId: _str
+    userId: _str
+    userEmail: Optional[_str] = None
+    userName: Optional[_str] = None
+    comment: _str
+    createdAt: datetime.datetime
+    updatedAt: datetime.datetime
+
+    # take *args and **kwargs so that other metaclasses can define arguments
+    def __init_subclass__(
+        cls,
+        *args: Any,
+        warn_subclass: Optional[bool] = None,
+        **kwargs: Any,
+    ) -> None:
+        super().__init_subclass__()
+        if warn_subclass is not None:
+            warnings.warn(
+                'The `warn_subclass` argument is deprecated as it is no longer necessary and will be removed in the next release',
+                DeprecationWarning,
+                stacklevel=3,
+            )
+
+
+    @staticmethod
+    def create_partial(
+        name: str,
+        include: Optional[Iterable['types.StoryCommentKeys']] = None,
+        exclude: Optional[Iterable['types.StoryCommentKeys']] = None,
+        required: Optional[Iterable['types.StoryCommentKeys']] = None,
+        optional: Optional[Iterable['types.StoryCommentKeys']] = None,
+        relations: Optional[Mapping['types.StoryCommentRelationalFieldKeys', str]] = None,
+        exclude_relational_fields: bool = False,
+    ) -> None:
+        if not os.environ.get('PRISMA_GENERATOR_INVOCATION'):
+            raise RuntimeError(
+                'Attempted to create a partial type outside of client generation.'
+            )
+
+        if name in _created_partial_types:
+            raise ValueError(f'Partial type "{name}" has already been created.')
+
+        if include is not None:
+            if exclude is not None:
+                raise TypeError('Exclude and include are mutually exclusive.')
+            if exclude_relational_fields is True:
+                raise TypeError('Include and exclude_relational_fields=True are mutually exclusive.')
+
+        if required and optional:
+            shared = set(required) & set(optional)
+            if shared:
+                raise ValueError(f'Cannot make the same field(s) required and optional {shared}')
+
+        if exclude_relational_fields and relations:
+            raise ValueError(
+                'exclude_relational_fields and relations are mutually exclusive'
+            )
+
+        fields: Dict['types.StoryCommentKeys', PartialModelField] = OrderedDict()
+
+        try:
+            if include:
+                for field in include:
+                    fields[field] = _StoryComment_fields[field].copy()
+            elif exclude:
+                for field in exclude:
+                    if field not in _StoryComment_fields:
+                        raise KeyError(field)
+
+                fields = {
+                    key: data.copy()
+                    for key, data in _StoryComment_fields.items()
+                    if key not in exclude
+                }
+            else:
+                fields = {
+                    key: data.copy()
+                    for key, data in _StoryComment_fields.items()
+                }
+
+            if required:
+                for field in required:
+                    fields[field]['optional'] = False
+
+            if optional:
+                for field in optional:
+                    fields[field]['optional'] = True
+
+
+            if relations:
+                raise ValueError('Model: "StoryComment" has no relational fields.')
+        except KeyError as exc:
+            raise ValueError(
+                f'{exc.args[0]} is not a valid StoryComment / {name} field.'
+            ) from None
+
+        models = partial_models_ctx.get()
+        models.append(
+            {
+                'name': name,
+                'fields': cast(Mapping[str, PartialModelField], fields),
+                'from_model': 'StoryComment',
+            }
+        )
+        _created_partial_types.add(name)
+
+
+class VapiCallConfig(bases.BaseVapiCallConfig):
+    """Represents a VapiCallConfig record"""
+
+    id: _str
+    sessionId: _str
+    config: 'fields.Json'
+    createdAt: datetime.datetime
+    expiresAt: datetime.datetime
+
+    # take *args and **kwargs so that other metaclasses can define arguments
+    def __init_subclass__(
+        cls,
+        *args: Any,
+        warn_subclass: Optional[bool] = None,
+        **kwargs: Any,
+    ) -> None:
+        super().__init_subclass__()
+        if warn_subclass is not None:
+            warnings.warn(
+                'The `warn_subclass` argument is deprecated as it is no longer necessary and will be removed in the next release',
+                DeprecationWarning,
+                stacklevel=3,
+            )
+
+
+    @staticmethod
+    def create_partial(
+        name: str,
+        include: Optional[Iterable['types.VapiCallConfigKeys']] = None,
+        exclude: Optional[Iterable['types.VapiCallConfigKeys']] = None,
+        required: Optional[Iterable['types.VapiCallConfigKeys']] = None,
+        optional: Optional[Iterable['types.VapiCallConfigKeys']] = None,
+        relations: Optional[Mapping['types.VapiCallConfigRelationalFieldKeys', str]] = None,
+        exclude_relational_fields: bool = False,
+    ) -> None:
+        if not os.environ.get('PRISMA_GENERATOR_INVOCATION'):
+            raise RuntimeError(
+                'Attempted to create a partial type outside of client generation.'
+            )
+
+        if name in _created_partial_types:
+            raise ValueError(f'Partial type "{name}" has already been created.')
+
+        if include is not None:
+            if exclude is not None:
+                raise TypeError('Exclude and include are mutually exclusive.')
+            if exclude_relational_fields is True:
+                raise TypeError('Include and exclude_relational_fields=True are mutually exclusive.')
+
+        if required and optional:
+            shared = set(required) & set(optional)
+            if shared:
+                raise ValueError(f'Cannot make the same field(s) required and optional {shared}')
+
+        if exclude_relational_fields and relations:
+            raise ValueError(
+                'exclude_relational_fields and relations are mutually exclusive'
+            )
+
+        fields: Dict['types.VapiCallConfigKeys', PartialModelField] = OrderedDict()
+
+        try:
+            if include:
+                for field in include:
+                    fields[field] = _VapiCallConfig_fields[field].copy()
+            elif exclude:
+                for field in exclude:
+                    if field not in _VapiCallConfig_fields:
+                        raise KeyError(field)
+
+                fields = {
+                    key: data.copy()
+                    for key, data in _VapiCallConfig_fields.items()
+                    if key not in exclude
+                }
+            else:
+                fields = {
+                    key: data.copy()
+                    for key, data in _VapiCallConfig_fields.items()
+                }
+
+            if required:
+                for field in required:
+                    fields[field]['optional'] = False
+
+            if optional:
+                for field in optional:
+                    fields[field]['optional'] = True
+
+
+            if relations:
+                raise ValueError('Model: "VapiCallConfig" has no relational fields.')
+        except KeyError as exc:
+            raise ValueError(
+                f'{exc.args[0]} is not a valid VapiCallConfig / {name} field.'
+            ) from None
+
+        models = partial_models_ctx.get()
+        models.append(
+            {
+                'name': name,
+                'fields': cast(Mapping[str, PartialModelField], fields),
+                'from_model': 'VapiCallConfig',
+            }
+        )
+        _created_partial_types.add(name)
+
+
+class VapiToolResult(bases.BaseVapiToolResult):
+    """Represents a VapiToolResult record"""
+
+    id: _str
+    sessionId: _str
+    query: _str
+    raw: _str
+    sanitized: _str
+    createdAt: datetime.datetime
+
+    # take *args and **kwargs so that other metaclasses can define arguments
+    def __init_subclass__(
+        cls,
+        *args: Any,
+        warn_subclass: Optional[bool] = None,
+        **kwargs: Any,
+    ) -> None:
+        super().__init_subclass__()
+        if warn_subclass is not None:
+            warnings.warn(
+                'The `warn_subclass` argument is deprecated as it is no longer necessary and will be removed in the next release',
+                DeprecationWarning,
+                stacklevel=3,
+            )
+
+
+    @staticmethod
+    def create_partial(
+        name: str,
+        include: Optional[Iterable['types.VapiToolResultKeys']] = None,
+        exclude: Optional[Iterable['types.VapiToolResultKeys']] = None,
+        required: Optional[Iterable['types.VapiToolResultKeys']] = None,
+        optional: Optional[Iterable['types.VapiToolResultKeys']] = None,
+        relations: Optional[Mapping['types.VapiToolResultRelationalFieldKeys', str]] = None,
+        exclude_relational_fields: bool = False,
+    ) -> None:
+        if not os.environ.get('PRISMA_GENERATOR_INVOCATION'):
+            raise RuntimeError(
+                'Attempted to create a partial type outside of client generation.'
+            )
+
+        if name in _created_partial_types:
+            raise ValueError(f'Partial type "{name}" has already been created.')
+
+        if include is not None:
+            if exclude is not None:
+                raise TypeError('Exclude and include are mutually exclusive.')
+            if exclude_relational_fields is True:
+                raise TypeError('Include and exclude_relational_fields=True are mutually exclusive.')
+
+        if required and optional:
+            shared = set(required) & set(optional)
+            if shared:
+                raise ValueError(f'Cannot make the same field(s) required and optional {shared}')
+
+        if exclude_relational_fields and relations:
+            raise ValueError(
+                'exclude_relational_fields and relations are mutually exclusive'
+            )
+
+        fields: Dict['types.VapiToolResultKeys', PartialModelField] = OrderedDict()
+
+        try:
+            if include:
+                for field in include:
+                    fields[field] = _VapiToolResult_fields[field].copy()
+            elif exclude:
+                for field in exclude:
+                    if field not in _VapiToolResult_fields:
+                        raise KeyError(field)
+
+                fields = {
+                    key: data.copy()
+                    for key, data in _VapiToolResult_fields.items()
+                    if key not in exclude
+                }
+            else:
+                fields = {
+                    key: data.copy()
+                    for key, data in _VapiToolResult_fields.items()
+                }
+
+            if required:
+                for field in required:
+                    fields[field]['optional'] = False
+
+            if optional:
+                for field in optional:
+                    fields[field]['optional'] = True
+
+
+            if relations:
+                raise ValueError('Model: "VapiToolResult" has no relational fields.')
+        except KeyError as exc:
+            raise ValueError(
+                f'{exc.args[0]} is not a valid VapiToolResult / {name} field.'
+            ) from None
+
+        models = partial_models_ctx.get()
+        models.append(
+            {
+                'name': name,
+                'fields': cast(Mapping[str, PartialModelField], fields),
+                'from_model': 'VapiToolResult',
+            }
+        )
+        _created_partial_types.add(name)
+
+
 
 _AudienceRoom_relational_fields: Set[str] = {
         'profiles',
@@ -461,17 +1477,9 @@ _AudienceRoom_fields: Dict['types.AudienceRoomKeys', PartialModelField] = Ordere
         ('descriptionS3Url', {
             'name': 'descriptionS3Url',
             'is_list': False,
-            'optional': True,
+            'optional': False,
             'type': '_str',
             'is_relational': False,
-            'documentation': None,
-        }),
-        ('profiles', {
-            'name': 'profiles',
-            'is_list': True,
-            'optional': True,
-            'type': 'List[\'models.AudienceProfile\']',
-            'is_relational': True,
             'documentation': None,
         }),
         ('createdAt', {
@@ -488,6 +1496,22 @@ _AudienceRoom_fields: Dict['types.AudienceRoomKeys', PartialModelField] = Ordere
             'optional': False,
             'type': 'datetime.datetime',
             'is_relational': False,
+            'documentation': None,
+        }),
+        ('userId', {
+            'name': 'userId',
+            'is_list': False,
+            'optional': True,
+            'type': '_str',
+            'is_relational': False,
+            'documentation': None,
+        }),
+        ('profiles', {
+            'name': 'profiles',
+            'is_list': True,
+            'optional': True,
+            'type': 'List[\'models.AudienceProfile\']',
+            'is_relational': True,
             'documentation': None,
         }),
     ],
@@ -512,14 +1536,6 @@ _AudienceProfile_fields: Dict['types.AudienceProfileKeys', PartialModelField] = 
             'optional': False,
             'type': '_str',
             'is_relational': False,
-            'documentation': None,
-        }),
-        ('audienceRoom', {
-            'name': 'audienceRoom',
-            'is_list': False,
-            'optional': True,
-            'type': 'models.AudienceRoom',
-            'is_relational': True,
             'documentation': None,
         }),
         ('profileName', {
@@ -570,6 +1586,14 @@ _AudienceProfile_fields: Dict['types.AudienceProfileKeys', PartialModelField] = 
             'is_relational': False,
             'documentation': None,
         }),
+        ('audienceRoom', {
+            'name': 'audienceRoom',
+            'is_list': False,
+            'optional': True,
+            'type': 'models.AudienceRoom',
+            'is_relational': True,
+            'documentation': None,
+        }),
     ],
 )
 
@@ -584,18 +1608,18 @@ _PostClassifier_fields: Dict['types.PostClassifierKeys', PartialModelField] = Or
             'is_relational': False,
             'documentation': None,
         }),
-        ('name', {
-            'name': 'name',
+        ('userId', {
+            'name': 'userId',
             'is_list': False,
-            'optional': False,
+            'optional': True,
             'type': '_str',
             'is_relational': False,
             'documentation': None,
         }),
-        ('prompt', {
-            'name': 'prompt',
+        ('name', {
+            'name': 'name',
             'is_list': False,
-            'optional': True,
+            'optional': False,
             'type': '_str',
             'is_relational': False,
             'documentation': None,
@@ -608,11 +1632,19 @@ _PostClassifier_fields: Dict['types.PostClassifierKeys', PartialModelField] = Or
             'is_relational': False,
             'documentation': None,
         }),
-        ('labels', {
-            'name': 'labels',
+        ('prompt', {
+            'name': 'prompt',
             'is_list': False,
             'optional': False,
-            'type': 'fields.Json',
+            'type': '_str',
+            'is_relational': False,
+            'documentation': None,
+        }),
+        ('labels', {
+            'name': 'labels',
+            'is_list': True,
+            'optional': False,
+            'type': 'List[_str]',
             'is_relational': False,
             'documentation': None,
         }),
@@ -643,6 +1675,548 @@ _PostClassifier_fields: Dict['types.PostClassifierKeys', PartialModelField] = Or
     ],
 )
 
+_ChatAssets_relational_fields: Set[str] = set()  # pyright: ignore[reportUnusedVariable]
+_ChatAssets_fields: Dict['types.ChatAssetsKeys', PartialModelField] = OrderedDict(
+    [
+        ('chatId', {
+            'name': 'chatId',
+            'is_list': False,
+            'optional': False,
+            'type': '_str',
+            'is_relational': False,
+            'documentation': None,
+        }),
+        ('userId', {
+            'name': 'userId',
+            'is_list': False,
+            'optional': True,
+            'type': '_str',
+            'is_relational': False,
+            'documentation': None,
+        }),
+        ('productId', {
+            'name': 'productId',
+            'is_list': False,
+            'optional': True,
+            'type': '_str',
+            'is_relational': False,
+            'documentation': None,
+        }),
+        ('asset', {
+            'name': 'asset',
+            'is_list': False,
+            'optional': False,
+            'type': 'fields.Json',
+            'is_relational': False,
+            'documentation': None,
+        }),
+        ('createdAt', {
+            'name': 'createdAt',
+            'is_list': False,
+            'optional': False,
+            'type': 'datetime.datetime',
+            'is_relational': False,
+            'documentation': None,
+        }),
+        ('updatedAt', {
+            'name': 'updatedAt',
+            'is_list': False,
+            'optional': False,
+            'type': 'datetime.datetime',
+            'is_relational': False,
+            'documentation': None,
+        }),
+    ],
+)
+
+_CustomClone_relational_fields: Set[str] = set()  # pyright: ignore[reportUnusedVariable]
+_CustomClone_fields: Dict['types.CustomCloneKeys', PartialModelField] = OrderedDict(
+    [
+        ('id', {
+            'name': 'id',
+            'is_list': False,
+            'optional': False,
+            'type': '_str',
+            'is_relational': False,
+            'documentation': None,
+        }),
+        ('userId', {
+            'name': 'userId',
+            'is_list': False,
+            'optional': False,
+            'type': '_str',
+            'is_relational': False,
+            'documentation': None,
+        }),
+        ('userEmail', {
+            'name': 'userEmail',
+            'is_list': False,
+            'optional': False,
+            'type': '_str',
+            'is_relational': False,
+            'documentation': None,
+        }),
+        ('cloneName', {
+            'name': 'cloneName',
+            'is_list': False,
+            'optional': False,
+            'type': '_str',
+            'is_relational': False,
+            'documentation': None,
+        }),
+        ('description', {
+            'name': 'description',
+            'is_list': False,
+            'optional': True,
+            'type': '_str',
+            'is_relational': False,
+            'documentation': None,
+        }),
+        ('category', {
+            'name': 'category',
+            'is_list': False,
+            'optional': True,
+            'type': '_str',
+            'is_relational': False,
+            'documentation': None,
+        }),
+        ('metadata', {
+            'name': 'metadata',
+            'is_list': False,
+            'optional': False,
+            'type': 'fields.Json',
+            'is_relational': False,
+            'documentation': None,
+        }),
+        ('keywords', {
+            'name': 'keywords',
+            'is_list': True,
+            'optional': False,
+            'type': 'List[_str]',
+            'is_relational': False,
+            'documentation': None,
+        }),
+        ('profiles', {
+            'name': 'profiles',
+            'is_list': False,
+            'optional': True,
+            'type': 'fields.Json',
+            'is_relational': False,
+            'documentation': None,
+        }),
+        ('createdAt', {
+            'name': 'createdAt',
+            'is_list': False,
+            'optional': False,
+            'type': 'datetime.datetime',
+            'is_relational': False,
+            'documentation': None,
+        }),
+        ('updatedAt', {
+            'name': 'updatedAt',
+            'is_list': False,
+            'optional': False,
+            'type': 'datetime.datetime',
+            'is_relational': False,
+            'documentation': None,
+        }),
+    ],
+)
+
+_PreMadePrompt_relational_fields: Set[str] = set()  # pyright: ignore[reportUnusedVariable]
+_PreMadePrompt_fields: Dict['types.PreMadePromptKeys', PartialModelField] = OrderedDict(
+    [
+        ('id', {
+            'name': 'id',
+            'is_list': False,
+            'optional': False,
+            'type': '_str',
+            'is_relational': False,
+            'documentation': None,
+        }),
+        ('trigger', {
+            'name': 'trigger',
+            'is_list': False,
+            'optional': False,
+            'type': '_str',
+            'is_relational': False,
+            'documentation': None,
+        }),
+        ('name', {
+            'name': 'name',
+            'is_list': False,
+            'optional': False,
+            'type': '_str',
+            'is_relational': False,
+            'documentation': None,
+        }),
+        ('description', {
+            'name': 'description',
+            'is_list': False,
+            'optional': False,
+            'type': '_str',
+            'is_relational': False,
+            'documentation': None,
+        }),
+        ('prompt', {
+            'name': 'prompt',
+            'is_list': False,
+            'optional': False,
+            'type': '_str',
+            'is_relational': False,
+            'documentation': None,
+        }),
+        ('active', {
+            'name': 'active',
+            'is_list': False,
+            'optional': False,
+            'type': '_bool',
+            'is_relational': False,
+            'documentation': None,
+        }),
+        ('createdAt', {
+            'name': 'createdAt',
+            'is_list': False,
+            'optional': False,
+            'type': 'datetime.datetime',
+            'is_relational': False,
+            'documentation': None,
+        }),
+        ('updatedAt', {
+            'name': 'updatedAt',
+            'is_list': False,
+            'optional': False,
+            'type': 'datetime.datetime',
+            'is_relational': False,
+            'documentation': None,
+        }),
+    ],
+)
+
+_ScrapeJob_relational_fields: Set[str] = set()  # pyright: ignore[reportUnusedVariable]
+_ScrapeJob_fields: Dict['types.ScrapeJobKeys', PartialModelField] = OrderedDict(
+    [
+        ('id', {
+            'name': 'id',
+            'is_list': False,
+            'optional': False,
+            'type': '_str',
+            'is_relational': False,
+            'documentation': None,
+        }),
+        ('status', {
+            'name': 'status',
+            'is_list': False,
+            'optional': False,
+            'type': '_str',
+            'is_relational': False,
+            'documentation': None,
+        }),
+        ('linkedinUrls', {
+            'name': 'linkedinUrls',
+            'is_list': False,
+            'optional': False,
+            'type': 'fields.Json',
+            'is_relational': False,
+            'documentation': None,
+        }),
+        ('maxPosts', {
+            'name': 'maxPosts',
+            'is_list': False,
+            'optional': False,
+            'type': '_int',
+            'is_relational': False,
+            'documentation': None,
+        }),
+        ('apifyRunId', {
+            'name': 'apifyRunId',
+            'is_list': False,
+            'optional': True,
+            'type': '_str',
+            'is_relational': False,
+            'documentation': None,
+        }),
+        ('result', {
+            'name': 'result',
+            'is_list': False,
+            'optional': True,
+            'type': 'fields.Json',
+            'is_relational': False,
+            'documentation': None,
+        }),
+        ('error', {
+            'name': 'error',
+            'is_list': False,
+            'optional': True,
+            'type': '_str',
+            'is_relational': False,
+            'documentation': None,
+        }),
+        ('createdAt', {
+            'name': 'createdAt',
+            'is_list': False,
+            'optional': False,
+            'type': 'datetime.datetime',
+            'is_relational': False,
+            'documentation': None,
+        }),
+        ('updatedAt', {
+            'name': 'updatedAt',
+            'is_list': False,
+            'optional': False,
+            'type': 'datetime.datetime',
+            'is_relational': False,
+            'documentation': None,
+        }),
+    ],
+)
+
+_SearchQuery_relational_fields: Set[str] = set()  # pyright: ignore[reportUnusedVariable]
+_SearchQuery_fields: Dict['types.SearchQueryKeys', PartialModelField] = OrderedDict(
+    [
+        ('id', {
+            'name': 'id',
+            'is_list': False,
+            'optional': False,
+            'type': '_str',
+            'is_relational': False,
+            'documentation': None,
+        }),
+        ('filters', {
+            'name': 'filters',
+            'is_list': False,
+            'optional': False,
+            'type': 'fields.Json',
+            'is_relational': False,
+            'documentation': None,
+        }),
+        ('sqlQuery', {
+            'name': 'sqlQuery',
+            'is_list': False,
+            'optional': False,
+            'type': '_str',
+            'is_relational': False,
+            'documentation': None,
+        }),
+        ('resultCount', {
+            'name': 'resultCount',
+            'is_list': False,
+            'optional': False,
+            'type': '_int',
+            'is_relational': False,
+            'documentation': None,
+        }),
+        ('createdAt', {
+            'name': 'createdAt',
+            'is_list': False,
+            'optional': False,
+            'type': 'datetime.datetime',
+            'is_relational': False,
+            'documentation': None,
+        }),
+    ],
+)
+
+_StoryActions_relational_fields: Set[str] = set()  # pyright: ignore[reportUnusedVariable]
+_StoryActions_fields: Dict['types.StoryActionsKeys', PartialModelField] = OrderedDict(
+    [
+        ('storyId', {
+            'name': 'storyId',
+            'is_list': False,
+            'optional': False,
+            'type': '_str',
+            'is_relational': False,
+            'documentation': None,
+        }),
+        ('actions', {
+            'name': 'actions',
+            'is_list': False,
+            'optional': False,
+            'type': 'fields.Json',
+            'is_relational': False,
+            'documentation': None,
+        }),
+        ('actionsUI', {
+            'name': 'actionsUI',
+            'is_list': False,
+            'optional': False,
+            'type': 'fields.Json',
+            'is_relational': False,
+            'documentation': None,
+        }),
+    ],
+)
+
+_StoryComment_relational_fields: Set[str] = set()  # pyright: ignore[reportUnusedVariable]
+_StoryComment_fields: Dict['types.StoryCommentKeys', PartialModelField] = OrderedDict(
+    [
+        ('id', {
+            'name': 'id',
+            'is_list': False,
+            'optional': False,
+            'type': '_str',
+            'is_relational': False,
+            'documentation': None,
+        }),
+        ('storyId', {
+            'name': 'storyId',
+            'is_list': False,
+            'optional': False,
+            'type': '_str',
+            'is_relational': False,
+            'documentation': None,
+        }),
+        ('userId', {
+            'name': 'userId',
+            'is_list': False,
+            'optional': False,
+            'type': '_str',
+            'is_relational': False,
+            'documentation': None,
+        }),
+        ('userEmail', {
+            'name': 'userEmail',
+            'is_list': False,
+            'optional': True,
+            'type': '_str',
+            'is_relational': False,
+            'documentation': None,
+        }),
+        ('userName', {
+            'name': 'userName',
+            'is_list': False,
+            'optional': True,
+            'type': '_str',
+            'is_relational': False,
+            'documentation': None,
+        }),
+        ('comment', {
+            'name': 'comment',
+            'is_list': False,
+            'optional': False,
+            'type': '_str',
+            'is_relational': False,
+            'documentation': None,
+        }),
+        ('createdAt', {
+            'name': 'createdAt',
+            'is_list': False,
+            'optional': False,
+            'type': 'datetime.datetime',
+            'is_relational': False,
+            'documentation': None,
+        }),
+        ('updatedAt', {
+            'name': 'updatedAt',
+            'is_list': False,
+            'optional': False,
+            'type': 'datetime.datetime',
+            'is_relational': False,
+            'documentation': None,
+        }),
+    ],
+)
+
+_VapiCallConfig_relational_fields: Set[str] = set()  # pyright: ignore[reportUnusedVariable]
+_VapiCallConfig_fields: Dict['types.VapiCallConfigKeys', PartialModelField] = OrderedDict(
+    [
+        ('id', {
+            'name': 'id',
+            'is_list': False,
+            'optional': False,
+            'type': '_str',
+            'is_relational': False,
+            'documentation': None,
+        }),
+        ('sessionId', {
+            'name': 'sessionId',
+            'is_list': False,
+            'optional': False,
+            'type': '_str',
+            'is_relational': False,
+            'documentation': None,
+        }),
+        ('config', {
+            'name': 'config',
+            'is_list': False,
+            'optional': False,
+            'type': 'fields.Json',
+            'is_relational': False,
+            'documentation': None,
+        }),
+        ('createdAt', {
+            'name': 'createdAt',
+            'is_list': False,
+            'optional': False,
+            'type': 'datetime.datetime',
+            'is_relational': False,
+            'documentation': None,
+        }),
+        ('expiresAt', {
+            'name': 'expiresAt',
+            'is_list': False,
+            'optional': False,
+            'type': 'datetime.datetime',
+            'is_relational': False,
+            'documentation': None,
+        }),
+    ],
+)
+
+_VapiToolResult_relational_fields: Set[str] = set()  # pyright: ignore[reportUnusedVariable]
+_VapiToolResult_fields: Dict['types.VapiToolResultKeys', PartialModelField] = OrderedDict(
+    [
+        ('id', {
+            'name': 'id',
+            'is_list': False,
+            'optional': False,
+            'type': '_str',
+            'is_relational': False,
+            'documentation': None,
+        }),
+        ('sessionId', {
+            'name': 'sessionId',
+            'is_list': False,
+            'optional': False,
+            'type': '_str',
+            'is_relational': False,
+            'documentation': None,
+        }),
+        ('query', {
+            'name': 'query',
+            'is_list': False,
+            'optional': False,
+            'type': '_str',
+            'is_relational': False,
+            'documentation': None,
+        }),
+        ('raw', {
+            'name': 'raw',
+            'is_list': False,
+            'optional': False,
+            'type': '_str',
+            'is_relational': False,
+            'documentation': None,
+        }),
+        ('sanitized', {
+            'name': 'sanitized',
+            'is_list': False,
+            'optional': False,
+            'type': '_str',
+            'is_relational': False,
+            'documentation': None,
+        }),
+        ('createdAt', {
+            'name': 'createdAt',
+            'is_list': False,
+            'optional': False,
+            'type': 'datetime.datetime',
+            'is_relational': False,
+            'documentation': None,
+        }),
+    ],
+)
+
 
 
 # we have to import ourselves as relation types are namespaced to models
@@ -653,3 +2227,12 @@ from . import models, actions
 model_rebuild(AudienceRoom)
 model_rebuild(AudienceProfile)
 model_rebuild(PostClassifier)
+model_rebuild(ChatAssets)
+model_rebuild(CustomClone)
+model_rebuild(PreMadePrompt)
+model_rebuild(ScrapeJob)
+model_rebuild(SearchQuery)
+model_rebuild(StoryActions)
+model_rebuild(StoryComment)
+model_rebuild(VapiCallConfig)
+model_rebuild(VapiToolResult)

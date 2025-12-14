@@ -73,6 +73,15 @@ PRISMA_MODELS: Set[str] = {
     'AudienceRoom',
     'AudienceProfile',
     'PostClassifier',
+    'ChatAssets',
+    'CustomClone',
+    'PreMadePrompt',
+    'ScrapeJob',
+    'SearchQuery',
+    'StoryActions',
+    'StoryComment',
+    'VapiCallConfig',
+    'VapiToolResult',
 }
 
 RELATIONAL_FIELD_MAPPINGS: Dict[str, Dict[str, str]] = {
@@ -83,6 +92,24 @@ RELATIONAL_FIELD_MAPPINGS: Dict[str, Dict[str, str]] = {
         'audienceRoom': 'AudienceRoom',
     },
     'PostClassifier': {
+    },
+    'ChatAssets': {
+    },
+    'CustomClone': {
+    },
+    'PreMadePrompt': {
+    },
+    'ScrapeJob': {
+    },
+    'SearchQuery': {
+    },
+    'StoryActions': {
+    },
+    'StoryComment': {
+    },
+    'VapiCallConfig': {
+    },
+    'VapiToolResult': {
     },
 }
 

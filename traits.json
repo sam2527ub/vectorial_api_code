@@ -1,0 +1,89 @@
+{
+    "traits": [
+      {
+        "title": "Skills & Expertise",
+        "keywordTags": [
+          "End-to-end product lifecycle",
+          "Roadmapping & prioritization",
+          "Customer discovery & research",
+          "Metrics & experimentation",
+          "Domain fluency (consumer, health, enterprise)"
+        ],
+        "descriptions": [
+          "Lead products through the full lifecycle from opportunity assessment to launch and iteration.",
+          "Skilled in structuring roadmaps, defining clear success metrics, and prioritizing features under constraints.",
+          "Use interviews, usage analytics, and market research to inform product decisions.",
+          "Comfortable running experiments, A/B tests, or pilot programs to validate hypotheses.",
+          "Build domain-specific understanding across areas such as healthcare data, retail, smart devices, or enterprise systems."
+        ]
+      },
+      {
+        "title": "Working Style",
+        "keywordTags": [
+          "Cross-functional orchestration",
+          "Clear written & verbal communication",
+          "Structured decision-making",
+          "Strong stakeholder management",
+          "Collaboration with design & engineering"
+        ],
+        "descriptions": [
+          "Act as the hub for engineering, design, data, marketing, and go-to-market teams.",
+          "Communicate requirements and trade-offs clearly through PRDs, specs, and narratives.",
+          "Use structured frameworks (e.g., impact vs. effort, RICE) to drive decisions and alignment.",
+          "Manage stakeholders with competing priorities, ensuring shared understanding of goals and timelines.",
+          "Collaborate closely with design and engineering to refine solutions and ship high-quality releases."
+        ]
+      },
+      {
+        "title": "Motivations & Values",
+        "keywordTags": [
+          "User-centric thinking",
+          "Business impact & outcomes",
+          "Long-term product vision",
+          "Crafting coherent experiences",
+          "Continuous learning & market awareness"
+        ],
+        "descriptions": [
+          "Motivated by solving meaningful user problems and improving end-to-end experiences.",
+          "Care deeply about measurable impact—adoption, retention, revenue, or efficiency—not just feature output.",
+          "Maintain and champion a long-term product vision, even while executing incremental improvements.",
+          "Value coherence and simplicity in user journeys across surfaces and platforms.",
+          "Invest in staying current on competitive landscape, customer needs, and technology trends."
+        ]
+      },
+      {
+        "title": "Pain Points & Needs",
+        "keywordTags": [
+          "Ambiguous or shifting priorities",
+          "Limited engineering capacity",
+          "Fragmented data & instrumentation",
+          "Misalignment on success metrics",
+          "Organizational silos"
+        ],
+        "descriptions": [
+          "Frequently face changing priorities from leadership, sales, or external stakeholders.",
+          "Must make difficult trade-offs due to constrained engineering or design bandwidth.",
+          "Need reliable, well-instrumented data to understand user behavior and evaluate product bets.",
+          "Encounter misalignment when teams lack a shared definition of success or clear KPIs.",
+          "Deal with siloed functions or regional teams that complicate cohesive product execution."
+        ]
+      },
+      {
+        "title": "Organizational Leadership & Psychographic Profile",
+        "keywordTags": [
+          "Influence without formal authority",
+          "Narrative & storytelling skills",
+          "Calm under ambiguity",
+          "Empathetic, low-ego collaborators",
+          "Analytical yet pragmatic mindset"
+        ],
+        "descriptions": [
+          "Lead primarily through influence rather than direct authority, aligning diverse teams around a plan.",
+          "Use storytelling—vision docs, product briefs, demos—to make strategies tangible and persuasive.",
+          "Remain calm and decisive in ambiguous situations, updating plans as new information emerges.",
+          "Show empathy for users and teammates, balancing assertiveness with collaboration.",
+          "Combine analytical rigor with pragmatism, knowing when to seek more data versus when to decide and move."
+        ]
+      }
+    ]
+  }

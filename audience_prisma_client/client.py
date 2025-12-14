@@ -163,11 +163,29 @@ class Prisma:
     audienceroom: 'actions.AudienceRoomActions[models.AudienceRoom]'
     audienceprofile: 'actions.AudienceProfileActions[models.AudienceProfile]'
     postclassifier: 'actions.PostClassifierActions[models.PostClassifier]'
+    chatassets: 'actions.ChatAssetsActions[models.ChatAssets]'
+    customclone: 'actions.CustomCloneActions[models.CustomClone]'
+    premadeprompt: 'actions.PreMadePromptActions[models.PreMadePrompt]'
+    scrapejob: 'actions.ScrapeJobActions[models.ScrapeJob]'
+    searchquery: 'actions.SearchQueryActions[models.SearchQuery]'
+    storyactions: 'actions.StoryActionsActions[models.StoryActions]'
+    storycomment: 'actions.StoryCommentActions[models.StoryComment]'
+    vapicallconfig: 'actions.VapiCallConfigActions[models.VapiCallConfig]'
+    vapitoolresult: 'actions.VapiToolResultActions[models.VapiToolResult]'
 
     __slots__ = (
         'audienceroom',
         'audienceprofile',
         'postclassifier',
+        'chatassets',
+        'customclone',
+        'premadeprompt',
+        'scrapejob',
+        'searchquery',
+        'storyactions',
+        'storycomment',
+        'vapicallconfig',
+        'vapitoolresult',
         '__engine',
         '__copied',
         '_tx_id',
@@ -191,6 +209,15 @@ class Prisma:
         self.audienceroom = actions.AudienceRoomActions[models.AudienceRoom](self, models.AudienceRoom)
         self.audienceprofile = actions.AudienceProfileActions[models.AudienceProfile](self, models.AudienceProfile)
         self.postclassifier = actions.PostClassifierActions[models.PostClassifier](self, models.PostClassifier)
+        self.chatassets = actions.ChatAssetsActions[models.ChatAssets](self, models.ChatAssets)
+        self.customclone = actions.CustomCloneActions[models.CustomClone](self, models.CustomClone)
+        self.premadeprompt = actions.PreMadePromptActions[models.PreMadePrompt](self, models.PreMadePrompt)
+        self.scrapejob = actions.ScrapeJobActions[models.ScrapeJob](self, models.ScrapeJob)
+        self.searchquery = actions.SearchQueryActions[models.SearchQuery](self, models.SearchQuery)
+        self.storyactions = actions.StoryActionsActions[models.StoryActions](self, models.StoryActions)
+        self.storycomment = actions.StoryCommentActions[models.StoryComment](self, models.StoryComment)
+        self.vapicallconfig = actions.VapiCallConfigActions[models.VapiCallConfig](self, models.VapiCallConfig)
+        self.vapitoolresult = actions.VapiToolResultActions[models.VapiToolResult](self, models.VapiToolResult)
 
         # NOTE: if you add any more properties here then you may also need to forward
         # them in the `_copy()` method.
@@ -658,6 +685,15 @@ class Batch:
     audienceroom: 'AudienceRoomBatchActions'
     audienceprofile: 'AudienceProfileBatchActions'
     postclassifier: 'PostClassifierBatchActions'
+    chatassets: 'ChatAssetsBatchActions'
+    customclone: 'CustomCloneBatchActions'
+    premadeprompt: 'PreMadePromptBatchActions'
+    scrapejob: 'ScrapeJobBatchActions'
+    searchquery: 'SearchQueryBatchActions'
+    storyactions: 'StoryActionsBatchActions'
+    storycomment: 'StoryCommentBatchActions'
+    vapicallconfig: 'VapiCallConfigBatchActions'
+    vapitoolresult: 'VapiToolResultBatchActions'
 
     def __init__(self, client: Prisma) -> None:
         self.__client = client
@@ -666,6 +702,15 @@ class Batch:
         self.audienceroom = AudienceRoomBatchActions(self)
         self.audienceprofile = AudienceProfileBatchActions(self)
         self.postclassifier = PostClassifierBatchActions(self)
+        self.chatassets = ChatAssetsBatchActions(self)
+        self.customclone = CustomCloneBatchActions(self)
+        self.premadeprompt = PreMadePromptBatchActions(self)
+        self.scrapejob = ScrapeJobBatchActions(self)
+        self.searchquery = SearchQueryBatchActions(self)
+        self.storyactions = StoryActionsBatchActions(self)
+        self.storycomment = StoryCommentBatchActions(self)
+        self.vapicallconfig = VapiCallConfigBatchActions(self)
+        self.vapitoolresult = VapiToolResultBatchActions(self)
 
     def _add(self, **kwargs: Any) -> None:
         builder = QueryBuilder(**kwargs)
@@ -1041,6 +1086,1005 @@ class PostClassifierBatchActions:
         self._batcher._add(
             method='delete_many',
             model=models.PostClassifier,
+            arguments={'where': where},
+            root_selection=['count'],
+        )
+
+
+
+# NOTE: some arguments are meaningless in this context but are included
+# for completeness sake
+class ChatAssetsBatchActions:
+    def __init__(self, batcher: Batch) -> None:
+        self._batcher = batcher
+
+    def create(
+        self,
+        data: types.ChatAssetsCreateInput,
+        include: Optional[types.ChatAssetsInclude] = None
+    ) -> None:
+        self._batcher._add(
+            method='create',
+            model=models.ChatAssets,
+            arguments={
+                'data': data,
+                'include': include,
+            },
+        )
+
+    def create_many(
+        self,
+        data: List[types.ChatAssetsCreateWithoutRelationsInput],
+        *,
+        skip_duplicates: Optional[bool] = None,
+    ) -> None:
+        if self._batcher._active_provider == 'sqlite':
+            raise errors.UnsupportedDatabaseError('sqlite', 'create_many()')
+
+        self._batcher._add(
+            method='create_many',
+            model=models.ChatAssets,
+            arguments={
+                'data': data,
+                'skipDuplicates': skip_duplicates,
+            },
+            root_selection=['count'],
+        )
+
+    def delete(
+        self,
+        where: types.ChatAssetsWhereUniqueInput,
+        include: Optional[types.ChatAssetsInclude] = None,
+    ) -> None:
+        self._batcher._add(
+            method='delete',
+            model=models.ChatAssets,
+            arguments={
+                'where': where,
+                'include': include,
+            },
+        )
+
+    def update(
+        self,
+        data: types.ChatAssetsUpdateInput,
+        where: types.ChatAssetsWhereUniqueInput,
+        include: Optional[types.ChatAssetsInclude] = None
+    ) -> None:
+        self._batcher._add(
+            method='update',
+            model=models.ChatAssets,
+            arguments={
+                'data': data,
+                'where': where,
+                'include': include,
+            },
+        )
+
+    def upsert(
+        self,
+        where: types.ChatAssetsWhereUniqueInput,
+        data: types.ChatAssetsUpsertInput,
+        include: Optional[types.ChatAssetsInclude] = None,
+    ) -> None:
+        self._batcher._add(
+            method='upsert',
+            model=models.ChatAssets,
+            arguments={
+                'where': where,
+                'include': include,
+                'create': data.get('create'),
+                'update': data.get('update'),
+            },
+        )
+
+    def update_many(
+        self,
+        data: types.ChatAssetsUpdateManyMutationInput,
+        where: types.ChatAssetsWhereInput,
+    ) -> None:
+        self._batcher._add(
+            method='update_many',
+            model=models.ChatAssets,
+            arguments={'data': data, 'where': where,},
+            root_selection=['count'],
+        )
+
+    def delete_many(
+        self,
+        where: Optional[types.ChatAssetsWhereInput] = None,
+    ) -> None:
+        self._batcher._add(
+            method='delete_many',
+            model=models.ChatAssets,
+            arguments={'where': where},
+            root_selection=['count'],
+        )
+
+
+
+# NOTE: some arguments are meaningless in this context but are included
+# for completeness sake
+class CustomCloneBatchActions:
+    def __init__(self, batcher: Batch) -> None:
+        self._batcher = batcher
+
+    def create(
+        self,
+        data: types.CustomCloneCreateInput,
+        include: Optional[types.CustomCloneInclude] = None
+    ) -> None:
+        self._batcher._add(
+            method='create',
+            model=models.CustomClone,
+            arguments={
+                'data': data,
+                'include': include,
+            },
+        )
+
+    def create_many(
+        self,
+        data: List[types.CustomCloneCreateWithoutRelationsInput],
+        *,
+        skip_duplicates: Optional[bool] = None,
+    ) -> None:
+        if self._batcher._active_provider == 'sqlite':
+            raise errors.UnsupportedDatabaseError('sqlite', 'create_many()')
+
+        self._batcher._add(
+            method='create_many',
+            model=models.CustomClone,
+            arguments={
+                'data': data,
+                'skipDuplicates': skip_duplicates,
+            },
+            root_selection=['count'],
+        )
+
+    def delete(
+        self,
+        where: types.CustomCloneWhereUniqueInput,
+        include: Optional[types.CustomCloneInclude] = None,
+    ) -> None:
+        self._batcher._add(
+            method='delete',
+            model=models.CustomClone,
+            arguments={
+                'where': where,
+                'include': include,
+            },
+        )
+
+    def update(
+        self,
+        data: types.CustomCloneUpdateInput,
+        where: types.CustomCloneWhereUniqueInput,
+        include: Optional[types.CustomCloneInclude] = None
+    ) -> None:
+        self._batcher._add(
+            method='update',
+            model=models.CustomClone,
+            arguments={
+                'data': data,
+                'where': where,
+                'include': include,
+            },
+        )
+
+    def upsert(
+        self,
+        where: types.CustomCloneWhereUniqueInput,
+        data: types.CustomCloneUpsertInput,
+        include: Optional[types.CustomCloneInclude] = None,
+    ) -> None:
+        self._batcher._add(
+            method='upsert',
+            model=models.CustomClone,
+            arguments={
+                'where': where,
+                'include': include,
+                'create': data.get('create'),
+                'update': data.get('update'),
+            },
+        )
+
+    def update_many(
+        self,
+        data: types.CustomCloneUpdateManyMutationInput,
+        where: types.CustomCloneWhereInput,
+    ) -> None:
+        self._batcher._add(
+            method='update_many',
+            model=models.CustomClone,
+            arguments={'data': data, 'where': where,},
+            root_selection=['count'],
+        )
+
+    def delete_many(
+        self,
+        where: Optional[types.CustomCloneWhereInput] = None,
+    ) -> None:
+        self._batcher._add(
+            method='delete_many',
+            model=models.CustomClone,
+            arguments={'where': where},
+            root_selection=['count'],
+        )
+
+
+
+# NOTE: some arguments are meaningless in this context but are included
+# for completeness sake
+class PreMadePromptBatchActions:
+    def __init__(self, batcher: Batch) -> None:
+        self._batcher = batcher
+
+    def create(
+        self,
+        data: types.PreMadePromptCreateInput,
+        include: Optional[types.PreMadePromptInclude] = None
+    ) -> None:
+        self._batcher._add(
+            method='create',
+            model=models.PreMadePrompt,
+            arguments={
+                'data': data,
+                'include': include,
+            },
+        )
+
+    def create_many(
+        self,
+        data: List[types.PreMadePromptCreateWithoutRelationsInput],
+        *,
+        skip_duplicates: Optional[bool] = None,
+    ) -> None:
+        if self._batcher._active_provider == 'sqlite':
+            raise errors.UnsupportedDatabaseError('sqlite', 'create_many()')
+
+        self._batcher._add(
+            method='create_many',
+            model=models.PreMadePrompt,
+            arguments={
+                'data': data,
+                'skipDuplicates': skip_duplicates,
+            },
+            root_selection=['count'],
+        )
+
+    def delete(
+        self,
+        where: types.PreMadePromptWhereUniqueInput,
+        include: Optional[types.PreMadePromptInclude] = None,
+    ) -> None:
+        self._batcher._add(
+            method='delete',
+            model=models.PreMadePrompt,
+            arguments={
+                'where': where,
+                'include': include,
+            },
+        )
+
+    def update(
+        self,
+        data: types.PreMadePromptUpdateInput,
+        where: types.PreMadePromptWhereUniqueInput,
+        include: Optional[types.PreMadePromptInclude] = None
+    ) -> None:
+        self._batcher._add(
+            method='update',
+            model=models.PreMadePrompt,
+            arguments={
+                'data': data,
+                'where': where,
+                'include': include,
+            },
+        )
+
+    def upsert(
+        self,
+        where: types.PreMadePromptWhereUniqueInput,
+        data: types.PreMadePromptUpsertInput,
+        include: Optional[types.PreMadePromptInclude] = None,
+    ) -> None:
+        self._batcher._add(
+            method='upsert',
+            model=models.PreMadePrompt,
+            arguments={
+                'where': where,
+                'include': include,
+                'create': data.get('create'),
+                'update': data.get('update'),
+            },
+        )
+
+    def update_many(
+        self,
+        data: types.PreMadePromptUpdateManyMutationInput,
+        where: types.PreMadePromptWhereInput,
+    ) -> None:
+        self._batcher._add(
+            method='update_many',
+            model=models.PreMadePrompt,
+            arguments={'data': data, 'where': where,},
+            root_selection=['count'],
+        )
+
+    def delete_many(
+        self,
+        where: Optional[types.PreMadePromptWhereInput] = None,
+    ) -> None:
+        self._batcher._add(
+            method='delete_many',
+            model=models.PreMadePrompt,
+            arguments={'where': where},
+            root_selection=['count'],
+        )
+
+
+
+# NOTE: some arguments are meaningless in this context but are included
+# for completeness sake
+class ScrapeJobBatchActions:
+    def __init__(self, batcher: Batch) -> None:
+        self._batcher = batcher
+
+    def create(
+        self,
+        data: types.ScrapeJobCreateInput,
+        include: Optional[types.ScrapeJobInclude] = None
+    ) -> None:
+        self._batcher._add(
+            method='create',
+            model=models.ScrapeJob,
+            arguments={
+                'data': data,
+                'include': include,
+            },
+        )
+
+    def create_many(
+        self,
+        data: List[types.ScrapeJobCreateWithoutRelationsInput],
+        *,
+        skip_duplicates: Optional[bool] = None,
+    ) -> None:
+        if self._batcher._active_provider == 'sqlite':
+            raise errors.UnsupportedDatabaseError('sqlite', 'create_many()')
+
+        self._batcher._add(
+            method='create_many',
+            model=models.ScrapeJob,
+            arguments={
+                'data': data,
+                'skipDuplicates': skip_duplicates,
+            },
+            root_selection=['count'],
+        )
+
+    def delete(
+        self,
+        where: types.ScrapeJobWhereUniqueInput,
+        include: Optional[types.ScrapeJobInclude] = None,
+    ) -> None:
+        self._batcher._add(
+            method='delete',
+            model=models.ScrapeJob,
+            arguments={
+                'where': where,
+                'include': include,
+            },
+        )
+
+    def update(
+        self,
+        data: types.ScrapeJobUpdateInput,
+        where: types.ScrapeJobWhereUniqueInput,
+        include: Optional[types.ScrapeJobInclude] = None
+    ) -> None:
+        self._batcher._add(
+            method='update',
+            model=models.ScrapeJob,
+            arguments={
+                'data': data,
+                'where': where,
+                'include': include,
+            },
+        )
+
+    def upsert(
+        self,
+        where: types.ScrapeJobWhereUniqueInput,
+        data: types.ScrapeJobUpsertInput,
+        include: Optional[types.ScrapeJobInclude] = None,
+    ) -> None:
+        self._batcher._add(
+            method='upsert',
+            model=models.ScrapeJob,
+            arguments={
+                'where': where,
+                'include': include,
+                'create': data.get('create'),
+                'update': data.get('update'),
+            },
+        )
+
+    def update_many(
+        self,
+        data: types.ScrapeJobUpdateManyMutationInput,
+        where: types.ScrapeJobWhereInput,
+    ) -> None:
+        self._batcher._add(
+            method='update_many',
+            model=models.ScrapeJob,
+            arguments={'data': data, 'where': where,},
+            root_selection=['count'],
+        )
+
+    def delete_many(
+        self,
+        where: Optional[types.ScrapeJobWhereInput] = None,
+    ) -> None:
+        self._batcher._add(
+            method='delete_many',
+            model=models.ScrapeJob,
+            arguments={'where': where},
+            root_selection=['count'],
+        )
+
+
+
+# NOTE: some arguments are meaningless in this context but are included
+# for completeness sake
+class SearchQueryBatchActions:
+    def __init__(self, batcher: Batch) -> None:
+        self._batcher = batcher
+
+    def create(
+        self,
+        data: types.SearchQueryCreateInput,
+        include: Optional[types.SearchQueryInclude] = None
+    ) -> None:
+        self._batcher._add(
+            method='create',
+            model=models.SearchQuery,
+            arguments={
+                'data': data,
+                'include': include,
+            },
+        )
+
+    def create_many(
+        self,
+        data: List[types.SearchQueryCreateWithoutRelationsInput],
+        *,
+        skip_duplicates: Optional[bool] = None,
+    ) -> None:
+        if self._batcher._active_provider == 'sqlite':
+            raise errors.UnsupportedDatabaseError('sqlite', 'create_many()')
+
+        self._batcher._add(
+            method='create_many',
+            model=models.SearchQuery,
+            arguments={
+                'data': data,
+                'skipDuplicates': skip_duplicates,
+            },
+            root_selection=['count'],
+        )
+
+    def delete(
+        self,
+        where: types.SearchQueryWhereUniqueInput,
+        include: Optional[types.SearchQueryInclude] = None,
+    ) -> None:
+        self._batcher._add(
+            method='delete',
+            model=models.SearchQuery,
+            arguments={
+                'where': where,
+                'include': include,
+            },
+        )
+
+    def update(
+        self,
+        data: types.SearchQueryUpdateInput,
+        where: types.SearchQueryWhereUniqueInput,
+        include: Optional[types.SearchQueryInclude] = None
+    ) -> None:
+        self._batcher._add(
+            method='update',
+            model=models.SearchQuery,
+            arguments={
+                'data': data,
+                'where': where,
+                'include': include,
+            },
+        )
+
+    def upsert(
+        self,
+        where: types.SearchQueryWhereUniqueInput,
+        data: types.SearchQueryUpsertInput,
+        include: Optional[types.SearchQueryInclude] = None,
+    ) -> None:
+        self._batcher._add(
+            method='upsert',
+            model=models.SearchQuery,
+            arguments={
+                'where': where,
+                'include': include,
+                'create': data.get('create'),
+                'update': data.get('update'),
+            },
+        )
+
+    def update_many(
+        self,
+        data: types.SearchQueryUpdateManyMutationInput,
+        where: types.SearchQueryWhereInput,
+    ) -> None:
+        self._batcher._add(
+            method='update_many',
+            model=models.SearchQuery,
+            arguments={'data': data, 'where': where,},
+            root_selection=['count'],
+        )
+
+    def delete_many(
+        self,
+        where: Optional[types.SearchQueryWhereInput] = None,
+    ) -> None:
+        self._batcher._add(
+            method='delete_many',
+            model=models.SearchQuery,
+            arguments={'where': where},
+            root_selection=['count'],
+        )
+
+
+
+# NOTE: some arguments are meaningless in this context but are included
+# for completeness sake
+class StoryActionsBatchActions:
+    def __init__(self, batcher: Batch) -> None:
+        self._batcher = batcher
+
+    def create(
+        self,
+        data: types.StoryActionsCreateInput,
+        include: Optional[types.StoryActionsInclude] = None
+    ) -> None:
+        self._batcher._add(
+            method='create',
+            model=models.StoryActions,
+            arguments={
+                'data': data,
+                'include': include,
+            },
+        )
+
+    def create_many(
+        self,
+        data: List[types.StoryActionsCreateWithoutRelationsInput],
+        *,
+        skip_duplicates: Optional[bool] = None,
+    ) -> None:
+        if self._batcher._active_provider == 'sqlite':
+            raise errors.UnsupportedDatabaseError('sqlite', 'create_many()')
+
+        self._batcher._add(
+            method='create_many',
+            model=models.StoryActions,
+            arguments={
+                'data': data,
+                'skipDuplicates': skip_duplicates,
+            },
+            root_selection=['count'],
+        )
+
+    def delete(
+        self,
+        where: types.StoryActionsWhereUniqueInput,
+        include: Optional[types.StoryActionsInclude] = None,
+    ) -> None:
+        self._batcher._add(
+            method='delete',
+            model=models.StoryActions,
+            arguments={
+                'where': where,
+                'include': include,
+            },
+        )
+
+    def update(
+        self,
+        data: types.StoryActionsUpdateInput,
+        where: types.StoryActionsWhereUniqueInput,
+        include: Optional[types.StoryActionsInclude] = None
+    ) -> None:
+        self._batcher._add(
+            method='update',
+            model=models.StoryActions,
+            arguments={
+                'data': data,
+                'where': where,
+                'include': include,
+            },
+        )
+
+    def upsert(
+        self,
+        where: types.StoryActionsWhereUniqueInput,
+        data: types.StoryActionsUpsertInput,
+        include: Optional[types.StoryActionsInclude] = None,
+    ) -> None:
+        self._batcher._add(
+            method='upsert',
+            model=models.StoryActions,
+            arguments={
+                'where': where,
+                'include': include,
+                'create': data.get('create'),
+                'update': data.get('update'),
+            },
+        )
+
+    def update_many(
+        self,
+        data: types.StoryActionsUpdateManyMutationInput,
+        where: types.StoryActionsWhereInput,
+    ) -> None:
+        self._batcher._add(
+            method='update_many',
+            model=models.StoryActions,
+            arguments={'data': data, 'where': where,},
+            root_selection=['count'],
+        )
+
+    def delete_many(
+        self,
+        where: Optional[types.StoryActionsWhereInput] = None,
+    ) -> None:
+        self._batcher._add(
+            method='delete_many',
+            model=models.StoryActions,
+            arguments={'where': where},
+            root_selection=['count'],
+        )
+
+
+
+# NOTE: some arguments are meaningless in this context but are included
+# for completeness sake
+class StoryCommentBatchActions:
+    def __init__(self, batcher: Batch) -> None:
+        self._batcher = batcher
+
+    def create(
+        self,
+        data: types.StoryCommentCreateInput,
+        include: Optional[types.StoryCommentInclude] = None
+    ) -> None:
+        self._batcher._add(
+            method='create',
+            model=models.StoryComment,
+            arguments={
+                'data': data,
+                'include': include,
+            },
+        )
+
+    def create_many(
+        self,
+        data: List[types.StoryCommentCreateWithoutRelationsInput],
+        *,
+        skip_duplicates: Optional[bool] = None,
+    ) -> None:
+        if self._batcher._active_provider == 'sqlite':
+            raise errors.UnsupportedDatabaseError('sqlite', 'create_many()')
+
+        self._batcher._add(
+            method='create_many',
+            model=models.StoryComment,
+            arguments={
+                'data': data,
+                'skipDuplicates': skip_duplicates,
+            },
+            root_selection=['count'],
+        )
+
+    def delete(
+        self,
+        where: types.StoryCommentWhereUniqueInput,
+        include: Optional[types.StoryCommentInclude] = None,
+    ) -> None:
+        self._batcher._add(
+            method='delete',
+            model=models.StoryComment,
+            arguments={
+                'where': where,
+                'include': include,
+            },
+        )
+
+    def update(
+        self,
+        data: types.StoryCommentUpdateInput,
+        where: types.StoryCommentWhereUniqueInput,
+        include: Optional[types.StoryCommentInclude] = None
+    ) -> None:
+        self._batcher._add(
+            method='update',
+            model=models.StoryComment,
+            arguments={
+                'data': data,
+                'where': where,
+                'include': include,
+            },
+        )
+
+    def upsert(
+        self,
+        where: types.StoryCommentWhereUniqueInput,
+        data: types.StoryCommentUpsertInput,
+        include: Optional[types.StoryCommentInclude] = None,
+    ) -> None:
+        self._batcher._add(
+            method='upsert',
+            model=models.StoryComment,
+            arguments={
+                'where': where,
+                'include': include,
+                'create': data.get('create'),
+                'update': data.get('update'),
+            },
+        )
+
+    def update_many(
+        self,
+        data: types.StoryCommentUpdateManyMutationInput,
+        where: types.StoryCommentWhereInput,
+    ) -> None:
+        self._batcher._add(
+            method='update_many',
+            model=models.StoryComment,
+            arguments={'data': data, 'where': where,},
+            root_selection=['count'],
+        )
+
+    def delete_many(
+        self,
+        where: Optional[types.StoryCommentWhereInput] = None,
+    ) -> None:
+        self._batcher._add(
+            method='delete_many',
+            model=models.StoryComment,
+            arguments={'where': where},
+            root_selection=['count'],
+        )
+
+
+
+# NOTE: some arguments are meaningless in this context but are included
+# for completeness sake
+class VapiCallConfigBatchActions:
+    def __init__(self, batcher: Batch) -> None:
+        self._batcher = batcher
+
+    def create(
+        self,
+        data: types.VapiCallConfigCreateInput,
+        include: Optional[types.VapiCallConfigInclude] = None
+    ) -> None:
+        self._batcher._add(
+            method='create',
+            model=models.VapiCallConfig,
+            arguments={
+                'data': data,
+                'include': include,
+            },
+        )
+
+    def create_many(
+        self,
+        data: List[types.VapiCallConfigCreateWithoutRelationsInput],
+        *,
+        skip_duplicates: Optional[bool] = None,
+    ) -> None:
+        if self._batcher._active_provider == 'sqlite':
+            raise errors.UnsupportedDatabaseError('sqlite', 'create_many()')
+
+        self._batcher._add(
+            method='create_many',
+            model=models.VapiCallConfig,
+            arguments={
+                'data': data,
+                'skipDuplicates': skip_duplicates,
+            },
+            root_selection=['count'],
+        )
+
+    def delete(
+        self,
+        where: types.VapiCallConfigWhereUniqueInput,
+        include: Optional[types.VapiCallConfigInclude] = None,
+    ) -> None:
+        self._batcher._add(
+            method='delete',
+            model=models.VapiCallConfig,
+            arguments={
+                'where': where,
+                'include': include,
+            },
+        )
+
+    def update(
+        self,
+        data: types.VapiCallConfigUpdateInput,
+        where: types.VapiCallConfigWhereUniqueInput,
+        include: Optional[types.VapiCallConfigInclude] = None
+    ) -> None:
+        self._batcher._add(
+            method='update',
+            model=models.VapiCallConfig,
+            arguments={
+                'data': data,
+                'where': where,
+                'include': include,
+            },
+        )
+
+    def upsert(
+        self,
+        where: types.VapiCallConfigWhereUniqueInput,
+        data: types.VapiCallConfigUpsertInput,
+        include: Optional[types.VapiCallConfigInclude] = None,
+    ) -> None:
+        self._batcher._add(
+            method='upsert',
+            model=models.VapiCallConfig,
+            arguments={
+                'where': where,
+                'include': include,
+                'create': data.get('create'),
+                'update': data.get('update'),
+            },
+        )
+
+    def update_many(
+        self,
+        data: types.VapiCallConfigUpdateManyMutationInput,
+        where: types.VapiCallConfigWhereInput,
+    ) -> None:
+        self._batcher._add(
+            method='update_many',
+            model=models.VapiCallConfig,
+            arguments={'data': data, 'where': where,},
+            root_selection=['count'],
+        )
+
+    def delete_many(
+        self,
+        where: Optional[types.VapiCallConfigWhereInput] = None,
+    ) -> None:
+        self._batcher._add(
+            method='delete_many',
+            model=models.VapiCallConfig,
+            arguments={'where': where},
+            root_selection=['count'],
+        )
+
+
+
+# NOTE: some arguments are meaningless in this context but are included
+# for completeness sake
+class VapiToolResultBatchActions:
+    def __init__(self, batcher: Batch) -> None:
+        self._batcher = batcher
+
+    def create(
+        self,
+        data: types.VapiToolResultCreateInput,
+        include: Optional[types.VapiToolResultInclude] = None
+    ) -> None:
+        self._batcher._add(
+            method='create',
+            model=models.VapiToolResult,
+            arguments={
+                'data': data,
+                'include': include,
+            },
+        )
+
+    def create_many(
+        self,
+        data: List[types.VapiToolResultCreateWithoutRelationsInput],
+        *,
+        skip_duplicates: Optional[bool] = None,
+    ) -> None:
+        if self._batcher._active_provider == 'sqlite':
+            raise errors.UnsupportedDatabaseError('sqlite', 'create_many()')
+
+        self._batcher._add(
+            method='create_many',
+            model=models.VapiToolResult,
+            arguments={
+                'data': data,
+                'skipDuplicates': skip_duplicates,
+            },
+            root_selection=['count'],
+        )
+
+    def delete(
+        self,
+        where: types.VapiToolResultWhereUniqueInput,
+        include: Optional[types.VapiToolResultInclude] = None,
+    ) -> None:
+        self._batcher._add(
+            method='delete',
+            model=models.VapiToolResult,
+            arguments={
+                'where': where,
+                'include': include,
+            },
+        )
+
+    def update(
+        self,
+        data: types.VapiToolResultUpdateInput,
+        where: types.VapiToolResultWhereUniqueInput,
+        include: Optional[types.VapiToolResultInclude] = None
+    ) -> None:
+        self._batcher._add(
+            method='update',
+            model=models.VapiToolResult,
+            arguments={
+                'data': data,
+                'where': where,
+                'include': include,
+            },
+        )
+
+    def upsert(
+        self,
+        where: types.VapiToolResultWhereUniqueInput,
+        data: types.VapiToolResultUpsertInput,
+        include: Optional[types.VapiToolResultInclude] = None,
+    ) -> None:
+        self._batcher._add(
+            method='upsert',
+            model=models.VapiToolResult,
+            arguments={
+                'where': where,
+                'include': include,
+                'create': data.get('create'),
+                'update': data.get('update'),
+            },
+        )
+
+    def update_many(
+        self,
+        data: types.VapiToolResultUpdateManyMutationInput,
+        where: types.VapiToolResultWhereInput,
+    ) -> None:
+        self._batcher._add(
+            method='update_many',
+            model=models.VapiToolResult,
+            arguments={'data': data, 'where': where,},
+            root_selection=['count'],
+        )
+
+    def delete_many(
+        self,
+        where: Optional[types.VapiToolResultWhereInput] = None,
+    ) -> None:
+        self._batcher._add(
+            method='delete_many',
+            model=models.VapiToolResult,
             arguments={'where': where},
             root_selection=['count'],
         )
