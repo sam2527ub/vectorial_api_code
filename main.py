@@ -2456,6 +2456,64 @@ Respond ONLY with valid JSON. No markdown, no code blocks, no explanation, just 
         }
 
 
+def _match_classifications_to_posts(classifications: List[Dict], expected_count: int, classifier_labels: List[str]) -> List[Dict]:
+    """
+    Intelligently match classifications to posts when count doesn't match.
+    Uses post_id field if available, otherwise truncates/pads.
+    """
+    # Try to use post_id for matching if available
+    has_post_ids = all(isinstance(c.get("post_id"), int) for c in classifications if isinstance(c, dict))
+    
+    if has_post_ids:
+        # Create a mapping by post_id
+        id_to_classification = {}
+        for c in classifications:
+            if isinstance(c, dict):
+                post_id = c.get("post_id")
+                if isinstance(post_id, int) and 1 <= post_id <= expected_count:
+                    id_to_classification[post_id] = c
+        
+        # Build result array using post_ids
+        matched_results = []
+        for i in range(1, expected_count + 1):
+            if i in id_to_classification:
+                matched_results.append(id_to_classification[i])
+            else:
+                # Fill with default for missing post_id
+                default_label = classifier_labels[0] if classifier_labels else "Unknown"
+                default_scores = {label: 0.0 for label in classifier_labels}
+                if default_label in default_scores:
+                    default_scores[default_label] = 0.5
+                matched_results.append({
+                    "label": default_label,
+                    "score": 0.5,
+                    "scores": default_scores
+                })
+        
+        logger.info(f"✅ Matched {len(id_to_classification)} classifications by post_id, filled {expected_count - len(id_to_classification)} with defaults")
+        return matched_results
+    
+    # Fallback: truncate or pad
+    if len(classifications) > expected_count:
+        logger.info(f"✅ Truncating {len(classifications)} classifications to {expected_count}")
+        return classifications[:expected_count]
+    else:
+        # Pad with defaults
+        result = list(classifications)
+        default_label = classifier_labels[0] if classifier_labels else "Unknown"
+        while len(result) < expected_count:
+            default_scores = {label: 0.0 for label in classifier_labels}
+            if default_label in default_scores:
+                default_scores[default_label] = 0.5
+            result.append({
+                "label": default_label,
+                "score": 0.5,
+                "scores": default_scores
+            })
+        logger.info(f"✅ Padded {len(classifications)} classifications to {expected_count} with defaults")
+        return result
+
+
 async def classify_multiple_posts_single_call(
     posts_texts: List[str],
     classifier_name: str,
@@ -2578,270 +2636,274 @@ async def classify_multiple_posts_single_call(
     
     # Build user prompt with ALL posts
     labels_list_str = ", ".join([f'"{label}"' for label in classifier_labels])
+    num_posts = len(posts_texts)
     
-    # Format all posts for classification
+    # Format all posts for classification with UNIQUE delimiters that won't appear in content
+    # Using distinctive markers that are extremely unlikely to appear in LinkedIn post content
     posts_section = ""
     for idx, post_text in enumerate(posts_texts, 1):
-        posts_section += f"\n\nPost {idx}:\n{post_text}"
+        # Use unique delimiters with special characters that won't appear in normal post content
+        posts_section += f"\n\n<<<POST_ID_{idx}_START>>>\n{post_text}\n<<<POST_ID_{idx}_END>>>"
     
-    user_prompt = f"""## Posts to Classify
+    user_prompt = f"""## Classification Task
 
-You need to classify {len(posts_texts)} posts. Each post is numbered below:
+IMPORTANT: You are classifying EXACTLY {num_posts} posts. Count them carefully.
+Each post is clearly delimited with <<<POST_ID_X_START>>> and <<<POST_ID_X_END>>> markers.
+DO NOT split a single post into multiple classifications. Each delimited block = 1 post = 1 classification.
 
+## Posts to Classify (Total: {num_posts} posts)
 {posts_section}
 
 ## Required Output Format
 
-You MUST respond with a valid JSON object containing an array of classifications. EXACTLY this structure:
+Respond with a JSON object containing EXACTLY {num_posts} classifications (one per post):
 {{
   "classifications": [
-    {{
-      "label": "<one of the available labels>",
-      "score": <number between 0.0 and 1.0>,
-      "scores": {{
-        <scores for ALL labels>
-      }}
-    }},
-    {{
-      "label": "<one of the available labels>",
-      "score": <number between 0.0 and 1.0>,
-      "scores": {{
-        <scores for ALL labels>
-      }}
-    }}
-    ... (one object for each post, in order)
+    {{"post_id": 1, "label": "<label>", "score": <0.0-1.0>, "scores": {{<all labels with scores>}}}},
+    {{"post_id": 2, "label": "<label>", "score": <0.0-1.0>, "scores": {{<all labels with scores>}}}},
+    ... (continue for ALL {num_posts} posts)
+    {{"post_id": {num_posts}, "label": "<label>", "score": <0.0-1.0>, "scores": {{<all labels with scores>}}}}
   ]
 }}
 
-REQUIREMENTS:
-1. "classifications" must be an array with EXACTLY {len(posts_texts)} objects (one per post)
-2. Each object's "label" must be one of these exact labels: {labels_list_str}
-3. Each "score" must be a number between 0.0 and 1.0 representing confidence in the primary label
-4. Each "scores" MUST be an object with ALL {len(classifier_labels)} labels as keys: {labels_list_str}
-5. Each score in "scores" must be a number between 0.0 and 1.0
-6. For each post, the scores MUST sum to exactly 1.0 (probability distribution)
-7. The score for the primary "label" should be the highest
-8. The order of classifications must match the order of posts (Post 1 -> classifications[0], Post 2 -> classifications[1], etc.)
+## STRICT REQUIREMENTS:
+1. "classifications" array must have EXACTLY {num_posts} objects - no more, no less
+2. Include "post_id" (1 to {num_posts}) in each object to match the post number
+3. "label" must be one of: {labels_list_str}
+4. "score" is confidence (0.0-1.0) for the primary label
+5. "scores" must include ALL {len(classifier_labels)} labels: {labels_list_str}
+6. All scores in "scores" must sum to 1.0
+7. Order MUST be: post_id 1 first, post_id {num_posts} last
 
-Respond ONLY with valid JSON. No markdown, no code blocks, no explanation, just the JSON object."""
+⚠️ CRITICAL: Output EXACTLY {num_posts} classification objects. Double-check your count before responding.
+
+Respond ONLY with valid JSON."""
     
     # Get model name
     model_name = os.getenv("GROQ_MODEL", "llama-3.1-8b-instant")
     
-    # Retry logic with exponential backoff for rate limits
+    # Retry logic with exponential backoff for rate limits AND count mismatches
     max_retries = 5
+    max_count_mismatch_retries = 2  # Additional retries specifically for count mismatch
     base_delay = 2
     
-    for attempt in range(max_retries):
-        try:
-            try:
-                response = groq_client.chat.completions.create(
-                    model=model_name,
-                    messages=[
-                        {"role": "system", "content": system_prompt},
-                        {"role": "user", "content": user_prompt}
-                    ],
-                    temperature=0.3,
-                    response_format={"type": "json_object"}
-                )
-                break
-            except Exception as groq_error:
-                error_str = str(groq_error).lower()
-                error_repr = repr(groq_error).lower()
-                full_error_str = str(groq_error)
-                
-                # Check for token quota limit (daily limit) - cannot retry
-                is_token_quota_limit = (
-                    "tokens per day" in error_str or "tpd" in error_str or
-                    "token quota" in error_str or "type': 'tokens'" in error_str or
-                    "'code': 'rate_limit_exceeded'" in error_str
-                )
-                
-                if is_token_quota_limit:
-                    logger.error(f"❌ Daily token quota limit exceeded. Cannot retry - quota resets daily.")
-                    raise HTTPException(
-                        status_code=429,
-                        detail={
-                            "error": "token_quota_exceeded",
-                            "message": "Daily token quota limit reached for Groq API. This is a quota limit, not a rate limit.",
-                            "type": "token_quota",
-                            "suggestion": "Please wait for the daily quota to reset, or upgrade your Groq plan to increase token limits.",
-                            "groq_error": full_error_str
-                        }
-                    )
-                
-                # Check for request rate limit - can retry
-                is_request_rate_limit = (
-                    ("429" in error_str or "429" in error_repr or
-                    hasattr(groq_error, 'status_code') and groq_error.status_code == 429) and
-                    not is_token_quota_limit
-                )
-                
-                if is_request_rate_limit and attempt < max_retries - 1:
-                    delay = base_delay * (2 ** attempt)
-                    logger.warning(f"⚠️ Rate limit hit (attempt {attempt + 1}/{max_retries}). Waiting {delay} seconds before retry...")
-                    await asyncio.sleep(delay)
-                    continue
-                
-                # For other errors, try without json_object constraint
-                logger.error(f"Groq API call failed: {groq_error}")
-                if attempt < max_retries - 1:
-                    delay = base_delay * (2 ** attempt)
-                    await asyncio.sleep(delay)
-                    continue
-                else:
-                    raise
-        
-        except HTTPException:
-            raise
-        except Exception as outer_error:
-            if isinstance(outer_error, HTTPException):
-                raise
-            
-            error_str = str(outer_error).lower()
-            full_outer_error = str(outer_error)
-            
-            is_outer_token_quota = (
-                "tokens per day" in error_str or "tpd" in error_str or
-                "token quota" in error_str or "type': 'tokens'" in error_str
-            )
-            
-            if is_outer_token_quota:
-                raise HTTPException(
-                    status_code=429,
-                    detail={
-                        "error": "token_quota_exceeded",
-                        "message": "Daily token quota limit reached for Groq API.",
-                        "type": "token_quota",
-                        "suggestion": "Please wait for the daily quota to reset, or upgrade your Groq plan.",
-                        "groq_error": full_outer_error
-                    }
-                )
-            
-            if attempt == max_retries - 1:
-                raise HTTPException(
-                    status_code=500,
-                    detail=f"Failed to classify posts after {max_retries} attempts: {str(outer_error)}"
-                )
-            else:
-                delay = base_delay * (2 ** attempt)
-                await asyncio.sleep(delay)
-                continue
+    classifications = None
+    last_count_received = 0
     
-    # Parse response
-    try:
-        content = response.choices[0].message.content
+    for attempt in range(max_retries):
+        count_mismatch_retry = 0
         
-        # Try to extract JSON
-        result = None
-        try:
-            result = json.loads(content)
-        except json.JSONDecodeError:
-            # Try extracting from markdown code blocks
-            if "```json" in content:
-                json_start = content.find("```json") + 7
-                json_end = content.find("```", json_start)
-                if json_end != -1:
-                    result = json.loads(content[json_start:json_end].strip())
-            elif "```" in content:
-                json_start = content.find("```") + 3
-                json_end = content.find("```", json_start)
-                if json_end != -1:
-                    result = json.loads(content[json_start:json_end].strip())
-            else:
-                # Try balanced braces
-                start_idx = content.find('{')
-                if start_idx != -1:
-                    brace_count = 0
-                    end_idx = start_idx
-                    for i in range(start_idx, len(content)):
-                        if content[i] == '{':
-                            brace_count += 1
-                        elif content[i] == '}':
-                            brace_count -= 1
-                            if brace_count == 0:
-                                end_idx = i + 1
-                                break
-                    if brace_count == 0:
-                        result = json.loads(content[start_idx:end_idx])
-        
-        if not result:
-            raise json.JSONDecodeError("Could not parse JSON from response", content, 0)
-        
-        # Extract classifications array
-        classifications = result.get("classifications", [])
-        
-        if not isinstance(classifications, list):
-            raise ValueError(f"Expected classifications array, got: {type(classifications)}")
-        
-        if len(classifications) != len(posts_texts):
-            logger.warning(f"⚠️ Expected {len(posts_texts)} classifications, got {len(classifications)}")
-        
-        # Normalize each classification (same logic as classify_post_with_groq)
-        normalized_results = []
-        for idx, classification in enumerate(classifications):
-            label = classification.get("label", "")
-            score = classification.get("score", 0.0)
-            all_scores = classification.get("scores", {})
-            
-            # Validate and normalize label
-            if label not in classifier_labels:
-                label_lower = label.lower()
-                matched_label = None
-                for available_label in classifier_labels:
-                    if available_label.lower() == label_lower:
-                        matched_label = available_label
-                        break
-                label = matched_label if matched_label else (classifier_labels[0] if classifier_labels else "Unknown")
-            
-            # Normalize score
+        while count_mismatch_retry <= max_count_mismatch_retries:
             try:
-                score = float(score)
-                if score > 1.0:
-                    score = score / 100.0
-                score = max(0.0, min(1.0, score))
-            except (ValueError, TypeError):
-                score = 0.5
+                try:
+                    # Adjust temperature slightly on count mismatch retries to get different results
+                    temp = 0.3 if count_mismatch_retry == 0 else 0.2 + (count_mismatch_retry * 0.1)
+                    
+                    response = groq_client.chat.completions.create(
+                        model=model_name,
+                        messages=[
+                            {"role": "system", "content": system_prompt},
+                            {"role": "user", "content": user_prompt}
+                        ],
+                        temperature=temp,
+                        response_format={"type": "json_object"}
+                    )
+                    
+                    # Parse response immediately to check count
+                    content = response.choices[0].message.content
+                    
+                    # Try to extract JSON
+                    result = None
+                    try:
+                        result = json.loads(content)
+                    except json.JSONDecodeError:
+                        # Try extracting from markdown code blocks
+                        if "```json" in content:
+                            json_start = content.find("```json") + 7
+                            json_end = content.find("```", json_start)
+                            if json_end != -1:
+                                result = json.loads(content[json_start:json_end].strip())
+                        elif "```" in content:
+                            json_start = content.find("```") + 3
+                            json_end = content.find("```", json_start)
+                            if json_end != -1:
+                                result = json.loads(content[json_start:json_end].strip())
+                        else:
+                            # Try balanced braces
+                            start_idx = content.find('{')
+                            if start_idx != -1:
+                                brace_count = 0
+                                end_idx = start_idx
+                                for i in range(start_idx, len(content)):
+                                    if content[i] == '{':
+                                        brace_count += 1
+                                    elif content[i] == '}':
+                                        brace_count -= 1
+                                        if brace_count == 0:
+                                            end_idx = i + 1
+                                            break
+                                if brace_count == 0:
+                                    result = json.loads(content[start_idx:end_idx])
+                    
+                    if not result:
+                        raise json.JSONDecodeError("Could not parse JSON from response", content, 0)
+                    
+                    # Extract classifications array
+                    classifications = result.get("classifications", [])
+                    
+                    if not isinstance(classifications, list):
+                        raise ValueError(f"Expected classifications array, got: {type(classifications)}")
+                    
+                    last_count_received = len(classifications)
+                    
+                    # Check count - if mismatch, retry with count mismatch logic
+                    if len(classifications) != num_posts:
+                        if count_mismatch_retry < max_count_mismatch_retries:
+                            logger.warning(f"⚠️ Count mismatch: expected {num_posts}, got {len(classifications)}. Retrying ({count_mismatch_retry + 1}/{max_count_mismatch_retries})...")
+                            count_mismatch_retry += 1
+                            await asyncio.sleep(0.5)  # Brief pause before retry
+                            continue
+                        else:
+                            # Exhausted count mismatch retries - use intelligent matching
+                            logger.warning(f"⚠️ Count mismatch persists after {max_count_mismatch_retries} retries. Expected {num_posts}, got {len(classifications)}. Using intelligent matching...")
+                            classifications = _match_classifications_to_posts(classifications, num_posts, classifier_labels)
+                    
+                    # Success - we have the right count or have handled the mismatch
+                    break
+                    
+                except json.JSONDecodeError as json_err:
+                    logger.error(f"JSON parse error: {json_err}")
+                    if count_mismatch_retry < max_count_mismatch_retries:
+                        count_mismatch_retry += 1
+                        await asyncio.sleep(0.5)
+                        continue
+                    raise
+                    
+                except Exception as groq_error:
+                    error_str = str(groq_error).lower()
+                    error_repr = repr(groq_error).lower()
+                    full_error_str = str(groq_error)
+                    
+                    # Check for token quota limit (daily limit) - cannot retry
+                    is_token_quota_limit = (
+                        "tokens per day" in error_str or "tpd" in error_str or
+                        "token quota" in error_str or "type': 'tokens'" in error_str or
+                        "'code': 'rate_limit_exceeded'" in error_str
+                    )
+                    
+                    if is_token_quota_limit:
+                        logger.error(f"❌ Daily token quota limit exceeded. Cannot retry - quota resets daily.")
+                        raise HTTPException(
+                            status_code=429,
+                            detail={
+                                "error": "token_quota_exceeded",
+                                "message": "Daily token quota limit reached for Groq API. This is a quota limit, not a rate limit.",
+                                "type": "token_quota",
+                                "suggestion": "Please wait for the daily quota to reset, or upgrade your Groq plan to increase token limits.",
+                                "groq_error": full_error_str
+                            }
+                        )
+                    
+                    # Check for request rate limit - can retry
+                    is_request_rate_limit = (
+                        ("429" in error_str or "429" in error_repr or
+                        hasattr(groq_error, 'status_code') and groq_error.status_code == 429) and
+                        not is_token_quota_limit
+                    )
+                    
+                    if is_request_rate_limit:
+                        raise  # Let outer loop handle rate limit retry
+                    
+                    # For other errors, raise to outer loop
+                    logger.error(f"Groq API call failed: {groq_error}")
+                    raise
             
-            # Normalize all scores
-            normalized_scores = {}
-            if isinstance(all_scores, dict) and len(all_scores) > 0:
-                total_score = 0.0
-                for available_label in classifier_labels:
-                    if available_label in all_scores:
-                        try:
-                            label_score = float(all_scores[available_label])
-                            if label_score > 1.0:
-                                label_score = label_score / 100.0
-                            normalized_scores[available_label] = round(max(0.0, min(1.0, label_score)), 2)
-                            total_score += normalized_scores[available_label]
-                        except (ValueError, TypeError):
-                            normalized_scores[available_label] = 0.0
-                    else:
+            except HTTPException:
+                raise
+            except Exception as inner_error:
+                if count_mismatch_retry < max_count_mismatch_retries:
+                    count_mismatch_retry += 1
+                    await asyncio.sleep(0.5)
+                    continue
+                raise
+        
+        # If we got here with valid classifications, break outer loop
+        if classifications is not None and len(classifications) > 0:
+            break
+            
+        # Handle outer retry logic for rate limits
+        if attempt < max_retries - 1:
+            delay = base_delay * (2 ** attempt)
+            logger.warning(f"⚠️ Retry attempt {attempt + 1}/{max_retries}. Waiting {delay} seconds...")
+            await asyncio.sleep(delay)
+            continue
+        else:
+            raise HTTPException(
+                status_code=500,
+                detail=f"Failed to classify posts after {max_retries} attempts"
+            )
+    
+    # Final validation - ensure we have classifications
+    if classifications is None:
+        raise HTTPException(status_code=500, detail="Failed to get classifications from API")
+    
+    # Normalize each classification (same logic as classify_post_with_groq)
+    normalized_results = []
+    for idx, classification in enumerate(classifications):
+        label = classification.get("label", "")
+        score = classification.get("score", 0.0)
+        all_scores = classification.get("scores", {})
+        
+        # Validate and normalize label
+        if label not in classifier_labels:
+            label_lower = label.lower()
+            matched_label = None
+            for available_label in classifier_labels:
+                if available_label.lower() == label_lower:
+                    matched_label = available_label
+                    break
+            label = matched_label if matched_label else (classifier_labels[0] if classifier_labels else "Unknown")
+        
+        # Normalize score
+        try:
+            score = float(score)
+            if score > 1.0:
+                score = score / 100.0
+            score = max(0.0, min(1.0, score))
+        except (ValueError, TypeError):
+            score = 0.5
+        
+        # Normalize all scores
+        normalized_scores = {}
+        if isinstance(all_scores, dict) and len(all_scores) > 0:
+            total_score = 0.0
+            for available_label in classifier_labels:
+                if available_label in all_scores:
+                    try:
+                        label_score = float(all_scores[available_label])
+                        if label_score > 1.0:
+                            label_score = label_score / 100.0
+                        normalized_scores[available_label] = round(max(0.0, min(1.0, label_score)), 2)
+                        total_score += normalized_scores[available_label]
+                    except (ValueError, TypeError):
                         normalized_scores[available_label] = 0.0
-                
-                if total_score > 1.0:
+                else:
+                    normalized_scores[available_label] = 0.0
+            
+            if total_score > 1.0:
+                for available_label in classifier_labels:
+                    normalized_scores[available_label] = round(normalized_scores[available_label] / total_score, 2)
+            elif total_score < 1.0 and total_score > 0:
+                remaining = 1.0 - total_score
+                missing_labels = [l for l in classifier_labels if normalized_scores[l] == 0.0]
+                if missing_labels:
+                    per_missing = remaining / len(missing_labels)
+                    for missing_label in missing_labels:
+                        normalized_scores[missing_label] = round(per_missing, 2)
+                else:
                     for available_label in classifier_labels:
                         normalized_scores[available_label] = round(normalized_scores[available_label] / total_score, 2)
-                elif total_score < 1.0 and total_score > 0:
-                    remaining = 1.0 - total_score
-                    missing_labels = [l for l in classifier_labels if normalized_scores[l] == 0.0]
-                    if missing_labels:
-                        per_missing = remaining / len(missing_labels)
-                        for missing_label in missing_labels:
-                            normalized_scores[missing_label] = round(per_missing, 2)
-                    else:
-                        for available_label in classifier_labels:
-                            normalized_scores[available_label] = round(normalized_scores[available_label] / total_score, 2)
-                elif total_score == 0:
-                    remaining = max(0.0, 1.0 - score)
-                    remaining_per_label = remaining / max(1, len(classifier_labels) - 1) if len(classifier_labels) > 1 else 0.0
-                    for available_label in classifier_labels:
-                        if available_label == label:
-                            normalized_scores[available_label] = round(score, 2)
-                        else:
-                            normalized_scores[available_label] = round(remaining_per_label, 2)
-            else:
+            elif total_score == 0:
                 remaining = max(0.0, 1.0 - score)
                 remaining_per_label = remaining / max(1, len(classifier_labels) - 1) if len(classifier_labels) > 1 else 0.0
                 for available_label in classifier_labels:
@@ -2849,42 +2911,34 @@ Respond ONLY with valid JSON. No markdown, no code blocks, no explanation, just 
                         normalized_scores[available_label] = round(score, 2)
                     else:
                         normalized_scores[available_label] = round(remaining_per_label, 2)
-            
-            normalized_results.append({
-                "label": label,
-                "score": round(score, 2),
-                "allScores": normalized_scores
-            })
+        else:
+            remaining = max(0.0, 1.0 - score)
+            remaining_per_label = remaining / max(1, len(classifier_labels) - 1) if len(classifier_labels) > 1 else 0.0
+            for available_label in classifier_labels:
+                if available_label == label:
+                    normalized_scores[available_label] = round(score, 2)
+                else:
+                    normalized_scores[available_label] = round(remaining_per_label, 2)
         
-        # Ensure we have the same number of results as posts
-        while len(normalized_results) < len(posts_texts):
-            default_label = classifier_labels[0] if classifier_labels else "Unknown"
-            default_scores = {label: 0.0 for label in classifier_labels}
-            if default_label in default_scores:
-                default_scores[default_label] = 0.5
-            normalized_results.append({
-                "label": default_label,
-                "score": 0.5,
-                "allScores": default_scores
-            })
-        
-        return normalized_results[:len(posts_texts)]  # Return only what we need
-        
-    except Exception as e:
-        logger.error(f"❌ Error parsing multi-post classification response: {e}")
-        # Return defaults for all posts
+        normalized_results.append({
+            "label": label,
+            "score": round(score, 2),
+            "allScores": normalized_scores
+        })
+    
+    # Ensure we have the same number of results as posts
+    while len(normalized_results) < num_posts:
         default_label = classifier_labels[0] if classifier_labels else "Unknown"
-        default_results = []
-        for _ in posts_texts:
-            default_scores = {label: 0.0 for label in classifier_labels}
-            if default_label in default_scores:
-                default_scores[default_label] = 0.5
-            default_results.append({
-                "label": default_label,
-                "score": 0.5,
-                "allScores": default_scores
-            })
-        return default_results
+        default_scores = {label: 0.0 for label in classifier_labels}
+        if default_label in default_scores:
+            default_scores[default_label] = 0.5
+        normalized_results.append({
+            "label": default_label,
+            "score": 0.5,
+            "allScores": default_scores
+        })
+    
+    return normalized_results[:num_posts]  # Return only what we need
 
 
 async def classify_posts_batch(
