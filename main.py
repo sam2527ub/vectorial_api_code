@@ -1850,16 +1850,13 @@ You MUST respond with a valid JSON object with EXACTLY this structure:
 {{
   "label": "<exactly ONE of the available labels>",
   "score": <number between 0.0 and 1.0>,
-  "scores": {{
-    <scores for ALL labels (0.0 for all the labels that are not applicable)>
-  }}
 }}
 
 REQUIREMENTS:
 1. "label" must be EXACTLY ONE of these labels: {labels_list_str}
 2. "score" must be a number between 0.0 and 1.0 representing confidence in the primary label
 3. All other label scores (except the one label that will be applied) will be 0.0
-4. "scores" MUST be an object with ALL {len(classifier_labels)} labels as keys: {labels_list_str}
+
 
 Example response format:
 {{
