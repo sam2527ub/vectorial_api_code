@@ -1287,6 +1287,88 @@ async def get_profile_posts(audience_room_id: str, profile_id: str):
         raise HTTPException(status_code=500, detail="Failed to fetch posts")
 
 
+async def _generate_summary_for_batch(
+    profile_id: str,
+    profile_name: str,
+    profile_context: str,
+    post_texts: List[str],
+    total_posts: int,
+    is_final: bool = True
+) -> Dict[str, Any]:
+    """
+    Generate summary for a single batch of posts.
+    Helper function for batched summary generation.
+    """
+    text_for_analysis = "\n\n".join(post_texts)
+    
+    if is_final:
+        instruction = f"""Generate a comprehensive, detailed analysis:
+1. A thorough 5-8 sentence summary that covers:
+   - Their current role and company context (mention company stage if evident: Series A/B, startup, growth stage, etc.)
+   - Main topics, themes, and subjects they frequently post about
+   - Their posting style and tone (technical, thought leadership, personal reflections, etc.)
+   - Key insights, opinions, expertise areas, or perspectives they share
+   - Notable patterns in content (technical depth, problem-solving focus, industry commentary, etc.)
+   - Engagement patterns or community involvement if evident
+   - Any unique value propositions or differentiators in their content
+   
+   Start with "{profile_name} is currently..." or "{profile_name} has..." and write in a natural, engaging way.
+   
+2. Extract 4-6 key highlights/badges (similar to: "Early + Growth", "Fullstack", "Thought Leader", "Technical Expert", "Series B", "Problem Solver", "Startup Experience", etc.)
+
+3. Identify 10-15 important keywords/phrases for highlighting"""
+    else:
+        instruction = f"""Analyze this batch of posts and provide:
+1. A 3-4 sentence summary of the key themes, topics, and insights from these posts
+2. Extract 3-4 key highlights/badges that apply to these posts
+3. Identify 8-10 important keywords/phrases mentioned
+
+This is a partial analysis that will be combined with other batches."""
+    
+    user_prompt = f"""Analyze the LinkedIn posts from {profile_context}.
+
+Posts ({total_posts} in this batch):
+{text_for_analysis}
+
+{instruction}
+
+Respond in JSON format only:
+{{
+    "summary": "Summary text",
+    "highlights": ["Highlight 1", "Highlight 2", ...],
+    "keywords": ["keyword1", "keyword2", ...]
+}}"""
+    
+    system_message = "You are an expert at analyzing LinkedIn posts and generating professional summaries. Always respond with valid JSON only."
+    
+    try:
+        completion = openai_client.chat.completions.create(
+            model="gpt-4o-mini",
+            messages=[
+                {"role": "system", "content": system_message},
+                {"role": "user", "content": user_prompt}
+            ],
+            max_tokens=1000 if not is_final else 1500,
+            temperature=0.3,
+            response_format={"type": "json_object"}
+        )
+        
+        result = json.loads(completion.choices[0].message.content)
+        
+        return {
+            "summary": result.get("summary", ""),
+            "highlights": result.get("highlights", []),
+            "keywords": result.get("keywords", [])
+        }
+    except Exception as e:
+        logger.error(f"Error generating batch summary for profile {profile_id}: {e}")
+        return {
+            "summary": None,
+            "highlights": [],
+            "keywords": []
+        }
+
+
 async def generate_profile_summary_from_posts(
     profile_id: str,
     profile_name: str,
@@ -1296,6 +1378,7 @@ async def generate_profile_summary_from_posts(
 ) -> Dict[str, Any]:
     """
     Generate summary, keywords, and highlights for a profile based on their posts.
+    Uses map-reduce batching to handle large numbers of posts without hitting context limits.
     
     Args:
         profile_id: Profile ID
@@ -1331,10 +1414,6 @@ async def generate_profile_summary_from_posts(
             "keywords": []
         }
     
-    # Combine all post texts for analysis
-    text_for_analysis = "\n\n".join(post_texts)
-    total_posts = len(post_texts)
-    
     # Build profile context
     if profile_title and profile_company:
         profile_context = f"{profile_name}, who is a {profile_title} at {profile_company}"
@@ -1343,53 +1422,108 @@ async def generate_profile_summary_from_posts(
     else:
         profile_context = profile_name
     
-    # Build the prompt according to the template
-    user_prompt = f"""Analyze the LinkedIn posts from {profile_context}.
+    # Batch configuration to avoid context limits
+    POSTS_PER_BATCH = 100
+    MAX_CHARS_PER_BATCH = 200000  # ~50k tokens, optimized for Tier 2
+    
+    # Split posts into batches
+    batches = []
+    current_batch = []
+    current_chars = 0
+    
+    for text in post_texts:
+        # Start new batch if adding this post would exceed limits
+        if len(current_batch) >= POSTS_PER_BATCH or (current_chars + len(text) > MAX_CHARS_PER_BATCH and current_batch):
+            batches.append(current_batch)
+            current_batch = []
+            current_chars = 0
+        
+        current_batch.append(text)
+        current_chars += len(text)
+    
+    # Don't forget the last batch
+    if current_batch:
+        batches.append(current_batch)
+    
+    logger.info(f"Profile {profile_id}: Processing {len(post_texts)} posts in {len(batches)} batch(es)")
+    
+    # If only one batch, process directly (no need for map-reduce)
+    if len(batches) == 1:
+        return await _generate_summary_for_batch(
+            profile_id, profile_name, profile_context, batches[0], len(post_texts), is_final=True
+        )
+    
+    # Map phase: Generate intermediate summaries for each batch
+    batch_summaries = []
+    all_keywords = []
+    all_highlights = []
+    
+    for idx, batch in enumerate(batches):
+        logger.info(f"Profile {profile_id}: Processing batch {idx + 1}/{len(batches)} ({len(batch)} posts)")
+        
+        batch_result = await _generate_summary_for_batch(
+            profile_id, profile_name, profile_context, batch, len(batch), is_final=False
+        )
+        
+        if batch_result.get("summary"):
+            batch_summaries.append(batch_result["summary"])
+        if batch_result.get("keywords"):
+            all_keywords.extend(batch_result["keywords"])
+        if batch_result.get("highlights"):
+            all_highlights.extend(batch_result["highlights"])
+        
+        # Small delay between batches to avoid rate limits
+        await asyncio.sleep(0.3)
+    
+    # Reduce phase: Combine batch summaries into final summary
+    if not batch_summaries:
+        return {
+            "summary": None,
+            "highlights": [],
+            "keywords": []
+        }
+    
+    # Deduplicate keywords and highlights
+    unique_keywords = list(dict.fromkeys(all_keywords))[:15]  # Keep top 15 unique
+    unique_highlights = list(dict.fromkeys(all_highlights))[:6]  # Keep top 6 unique
+    
+    # Generate final combined summary from batch summaries
+    combined_summaries = "\n\n".join([f"Batch {i+1}: {s}" for i, s in enumerate(batch_summaries)])
+    
+    combine_prompt = f"""You are combining multiple analysis summaries of LinkedIn posts from {profile_context} into ONE final comprehensive summary.
 
-Posts ({total_posts} total):
-{text_for_analysis}
+Here are the summaries from analyzing {len(post_texts)} total posts in {len(batches)} batches:
 
-Generate a comprehensive, detailed analysis:
-1. A thorough 5-8 sentence summary that covers:
-   - Their current role and company context (mention company stage if evident: Series A/B, startup, growth stage, etc.)
-   - Main topics, themes, and subjects they frequently post about
-   - Their posting style and tone (technical, thought leadership, personal reflections, etc.)
-   - Key insights, opinions, expertise areas, or perspectives they share
-   - Notable patterns in content (technical depth, problem-solving focus, industry commentary, etc.)
-   - Engagement patterns or community involvement if evident
-   - Any unique value propositions or differentiators in their content
+{combined_summaries}
+
+Based on ALL these batch summaries, create ONE unified final analysis:
+
+1. A comprehensive 5-8 sentence summary that synthesizes all the insights, covering:
+   - Their current role and company context
+   - Main topics and themes across ALL their posts
+   - Their posting style and tone
+   - Key insights, expertise areas, and perspectives
+   - Notable patterns in their content
    
-   Start with "{profile_name} is currently..." or "{profile_name} has..." and write in a natural, engaging way.
-   
-2. Extract 4-6 key highlights/badges (similar to: "Early + Growth", "Fullstack", "Thought Leader", "Technical Expert", "Series B", "Problem Solver", "Startup Experience", etc.) based on:
-   - Company stage mentioned (Series A, B, growth stage, etc.)
-   - Technical skills and expertise demonstrated
-   - Content themes and posting style (thought leadership, technical depth, etc.)
-   - Career patterns or notable experiences mentioned
-   - Industry recognition or patterns in their posts
-   
-3. Identify 10-15 important keywords/phrases that should be highlighted (for keyword highlighting):
-   - Technical skills, tools, frameworks, or technologies mentioned
-   - Programming languages, platforms, or methodologies
-   - Key themes, topics, or subject areas
-   - Company names, industries, or domains
-   - Concepts, practices, or philosophies discussed
+   Start with "{profile_name} is currently..." or "{profile_name} has..."
+
+2. Select the 4-6 BEST highlights/badges from across all batches that best represent this person
+
+3. Select the 10-15 MOST important keywords from across all batches
 
 Respond in JSON format only:
 {{
-    "summary": "Detailed 5-8 sentence comprehensive summary starting with the person's name",
-    "highlights": ["Highlight 1", "Highlight 2", ...],
+    "summary": "Final comprehensive 5-8 sentence summary",
+    "highlights": ["Best Highlight 1", "Best Highlight 2", ...],
     "keywords": ["keyword1", "keyword2", ...]
 }}"""
-    
-    system_message = "You are an expert at analyzing LinkedIn posts and generating comprehensive, detailed professional summaries. Write thorough, informative summaries that capture the essence and depth of the person's posting style and content. Always respond with valid JSON only."
     
     try:
         completion = openai_client.chat.completions.create(
             model="gpt-4o-mini",
             messages=[
-                {"role": "system", "content": system_message},
-                {"role": "user", "content": user_prompt}
+                {"role": "system", "content": "You are an expert at synthesizing multiple summaries into one comprehensive analysis. Always respond with valid JSON only."},
+                {"role": "user", "content": combine_prompt}
             ],
             max_tokens=1500,
             temperature=0.3,
@@ -1398,28 +1532,19 @@ Respond in JSON format only:
         
         result = json.loads(completion.choices[0].message.content)
         
-        # Validate and normalize the response
-        summary = result.get("summary", "")
-        highlights = result.get("highlights", [])
-        keywords = result.get("keywords", [])
-        
-        # Ensure highlights and keywords are lists
-        if not isinstance(highlights, list):
-            highlights = []
-        if not isinstance(keywords, list):
-            keywords = []
-        
         return {
-            "summary": summary,
-            "highlights": highlights,
-            "keywords": keywords
+            "summary": result.get("summary", ""),
+            "highlights": result.get("highlights", unique_highlights),
+            "keywords": result.get("keywords", unique_keywords)
         }
-    except json.JSONDecodeError as e:
-        logger.error(f"Failed to parse OpenAI JSON response for profile {profile_id}: {e}")
-        raise HTTPException(status_code=500, detail=f"Failed to parse AI response: {str(e)}")
     except Exception as e:
-        logger.error(f"Error generating summary for profile {profile_id}: {e}")
-        raise HTTPException(status_code=500, detail=f"Failed to generate summary: {str(e)}")
+        logger.error(f"Error combining batch summaries for profile {profile_id}: {e}")
+        # Fallback: return first batch summary with collected keywords/highlights
+        return {
+            "summary": batch_summaries[0] if batch_summaries else None,
+            "highlights": unique_highlights,
+            "keywords": unique_keywords
+        }
 
 
 async def process_profile_summary(
@@ -3598,12 +3723,18 @@ async def generate_profile_summaries(audience_room_id: str):
         
         logger.info(f"Generating summaries for {len(profiles)} profiles in audience room {audience_room_id}")
         
-        # Process all profiles in parallel to avoid timeouts
-        tasks = [
-            process_profile_summary(profile, audience_room_id)
-            for profile in profiles
-        ]
+        # Rate-limited batching to avoid OpenAI rate limits / context errors
+        # Process max 3 profiles concurrently (optimized for Tier 2: 2M TPM)
+        MAX_CONCURRENT = 3
+        semaphore = asyncio.Semaphore(MAX_CONCURRENT)
         
+        async def rate_limited_process(profile):
+            async with semaphore:
+                result = await process_profile_summary(profile, audience_room_id)
+                await asyncio.sleep(0.5)  # Small delay to spread out API requests
+                return result
+        
+        tasks = [rate_limited_process(profile) for profile in profiles]
         results = await asyncio.gather(*tasks, return_exceptions=True)
         
         # Process results and handle exceptions
