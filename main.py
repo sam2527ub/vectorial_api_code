@@ -1662,37 +1662,23 @@ async def classify_multiple_posts_single_call(
         # Use unique delimiters with special characters that won't appear in normal post content
         posts_section += f"\n\n<<<POST_ID_{idx}_START>>>\n{post_text}\n<<<POST_ID_{idx}_END>>>"
     
-    user_prompt = f"""## Classification Task
+    user_prompt = f"""Classify exactly {num_posts} posts. Each <<<POST_ID_X_START>>>...<<<POST_ID_X_END>>> block = 1 post.
 
-IMPORTANT: You are classifying EXACTLY {num_posts} posts. Count them carefully.
-Each post is clearly delimited with <<<POST_ID_X_START>>> and <<<POST_ID_X_END>>> markers.
-DO NOT split a single post into multiple classifications. Each delimited block = 1 post = 1 classification.
-
-## Posts to Classify (Total: {num_posts} posts)
 {posts_section}
 
-## Required Output Format
-
-Respond with a JSON object containing EXACTLY {num_posts} classifications (one per post):
+Return JSON with exactly {num_posts} classifications:
 {{
   "classifications": [
-    {{"post_id": 1, "label": "<label>", "score": <0.0-1.0> }},
-    {{"post_id": 2, "label": "<label>", "score": <0.0-1.0> }},
-    ... (continue for ALL {num_posts} posts)
-    {{"post_id": {num_posts}, "label": "<label>", "score": <0.0-1.0> }}
+    {{"post_id": 1, "label": "<single_label>", "score": <0.0-1.0>}},
+    {{"post_id": 2, "label": "<single_label>", "score": <0.0-1.0>}},
+    {{"post_id": {num_posts}, "label": "<single_label>", "score": <0.0-1.0>}}
   ]
 }}
 
-## STRICT REQUIREMENTS:
-1. "classifications" array must have EXACTLY {num_posts} objects - no more, no less
-2. Include "post_id" (1 to {num_posts}) in each object to match the post number
-3. "label" must be EXACTLY ONE of these labels: {labels_list_str}
-4. "score" must be between (0.0-1.0) for the primary label
-5. Order MUST be: post_id 1 first, post_id {num_posts} last
-
-⚠️ CRITICAL: Output EXACTLY {num_posts} classification objects. Double-check your count before responding.
-
-Respond ONLY with valid JSON."""
+Rules:
+- ONLY ONE label per post (pick the best match, score your confidence 0.0-1.0)
+- Array length must equal {num_posts}
+- Order: post_id 1 through {num_posts}"""
     
     # Get model name
     model_name = os.getenv("GROQ_MODEL", "llama-3.3-70b-versatile")
@@ -1712,7 +1698,7 @@ Respond ONLY with valid JSON."""
             try:
                 try:
                     # Adjust temperature slightly on count mismatch retries to get different results
-                    temp = 0.3 if count_mismatch_retry == 0 else 0.2 + (count_mismatch_retry * 0.1)
+                    temp = 0.1 if count_mismatch_retry == 0 else 0.1 + (count_mismatch_retry * 0.1)
                     
                     response = groq_client.chat.completions.create(
                         model=model_name,
