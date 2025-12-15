@@ -1686,8 +1686,8 @@ Respond with a JSON object containing EXACTLY {num_posts} classifications (one p
 ## STRICT REQUIREMENTS:
 1. "classifications" array must have EXACTLY {num_posts} objects - no more, no less
 2. Include "post_id" (1 to {num_posts}) in each object to match the post number
-3. "label" must be exactly one of these labels: {labels_list_str}
-4. "score" is confidence (0.0-1.0) for the primary label
+3. "label" must be EXACTLY ONE of these labels: {labels_list_str}
+4. "score" must be between (0.0-1.0) for the primary label
 5. Order MUST be: post_id 1 first, post_id {num_posts} last
 
 ⚠️ CRITICAL: Output EXACTLY {num_posts} classification objects. Double-check your count before responding.
