@@ -1662,23 +1662,30 @@ async def classify_multiple_posts_single_call(
         # Use unique delimiters with special characters that won't appear in normal post content
         posts_section += f"\n\n<<<POST_ID_{idx}_START>>>\n{post_text}\n<<<POST_ID_{idx}_END>>>"
     
-    user_prompt = f"""Classify exactly {num_posts} posts. Each <<<POST_ID_X_START>>>...<<<POST_ID_X_END>>> block = 1 post.
+user_prompt = f"""
+Classify exactly {num_posts} posts. Each <<<POST_ID_X_START>>>...<<<POST_ID_X_END>>> block = 1 post.
 
 {posts_section}
 
-Return JSON with exactly {num_posts} classifications:
+Return JSON with exactly {num_posts} classifications in this structure:
+
 {{
   "classifications": [
     {{"post_id": 1, "label": "winning_label", "score": 0.85}},
-    {{"post_id": 2, "label": "winning_label", "score": 0.92}}
+    {{"post_id": 2, "label": "winning_label", "score": 0.92}},
+    ...
     {{"post_id": {num_posts}, "label": "winning_label", "score": 0.95}}
   ]
 }}
 
 Rules:
-- ONLY ONE label per post (pick the best match, score your confidence 0.0-1.0)
-- Array length must equal {num_posts}
-- Order: post_id 1 through {num_posts}"""
+1.⁠ ⁠Each post must have *exactly one label*:
+   - "useful"⁠ if the post is USEFUL
+   - One of the NOT USEFUL reason labels if the post is NOT USEFUL
+2.⁠ ⁠⁠"score"⁠ must be a number between 0.0 and 1.0 representing your confidence in the chosen label
+3.⁠ ⁠Array length must equal {num_posts}, and the order must match post_id 1 through {num_posts}
+4.⁠ ⁠Respond *only with valid JSON*, no explanations, no markdown, no extra text
+"""
     
     # Get model name
     model_name = os.getenv("GROQ_MODEL", "llama-3.3-70b-versatile")
