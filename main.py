@@ -227,27 +227,6 @@ class CreateAudienceRoomRequest(BaseModel):
     userId: str = Field(..., description="User ID associated with this audience room")
 
 
-class UpdateProfilePostsRequest(BaseModel):
-    posts: Any = Field(..., description="Posts JSON to store for this profile")
-
-
-class BatchPostsRequest(BaseModel):
-    job_id: Optional[str] = Field(
-        None,
-        description="Scrape job ID to load posts from the ScrapeJob table (must be COMPLETED)",
-    )
-    posts: Optional[List[Any]] = Field(
-        None,
-        description="Full posts dataset (list of records with inputUrl identifying the profile)",
-    )
-
-    @root_validator
-    def ensure_source(cls, values):
-        if not values.get("posts") and not values.get("job_id"):
-            raise ValueError("Provide either posts or job_id")
-        return values
-
-
 class RunClassifierRequest(BaseModel):
     audienceRoomId: str = Field(..., description="ID of the audience room containing profiles to classify")
     classifierId: str = Field(..., description="ID of the classifier to use for classification")
@@ -365,36 +344,6 @@ def upload_json_to_s3(key: str, data: Dict[str, Any]) -> str:
         logger.error(f"S3 upload failed for {key}: {e}")
         raise HTTPException(status_code=500, detail="Failed to upload to S3")
 
-def to_json(data: Any) -> Any:
-    """Return data as-is (JSON handling is done in the db module)."""
-    return data
-
-
-def generate_presigned_get_url(key: str, expires_in: int = 3600) -> Optional[str]:
-    """
-    Generate a presigned GET URL for an S3 object.
-    
-    Default expiration: 1 hour (3600 seconds) for production security.
-    Presigned URLs are time-limited and provide secure access to private S3 objects.
-    
-    Security considerations:
-    - URLs expire after the specified time, preventing long-term unauthorized access
-    - URLs are cryptographically signed, making them tamper-proof
-    - Access is controlled through the API layer (add authentication/authorization as needed)
-    """
-    if not s3_client or not s3_bucket:
-        return None
-    try:
-        return s3_client.generate_presigned_url(
-            ClientMethod="get_object",
-            Params={"Bucket": s3_bucket, "Key": key},
-            ExpiresIn=expires_in,
-        )
-    except Exception as e:
-        logger.error(f"Failed to generate presigned URL for {key}: {e}")
-        return None
-
-
 def extract_s3_key_from_url(s3_url: Optional[str]) -> Optional[str]:
     """Extract S3 key from a full S3 URL.
     
@@ -413,20 +362,6 @@ def extract_s3_key_from_url(s3_url: Optional[str]) -> Optional[str]:
     except Exception as e:
         logger.error(f"Failed to extract S3 key from URL {s3_url}: {e}")
         return None
-
-
-def generate_presigned_url_from_s3_url(s3_url: Optional[str], expires_in: int = 3600) -> Optional[str]:
-    """
-    Generate a presigned URL from a stored S3 URL by extracting the key.
-    
-    Default expiration: 1 hour (3600 seconds) for production security.
-    """
-    if not s3_url:
-        return None
-    key = extract_s3_key_from_url(s3_url)
-    if not key:
-        return None
-    return generate_presigned_get_url(key, expires_in)
 
 
 def fetch_json_from_s3(key: str) -> Dict[str, Any]:
