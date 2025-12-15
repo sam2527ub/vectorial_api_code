@@ -1669,9 +1669,9 @@ async def classify_multiple_posts_single_call(
 Return JSON with exactly {num_posts} classifications:
 {{
   "classifications": [
-    {{"post_id": 1, "label": "<single_label>", "score": <0.0-1.0>}},
-    {{"post_id": 2, "label": "<single_label>", "score": <0.0-1.0>}},
-    {{"post_id": {num_posts}, "label": "<single_label>", "score": <0.0-1.0>}}
+    {{"post_id": 1, "label": "winning_label", "score": 0.85}},
+    {{"post_id": 2, "label": "winning_label", "score": 0.92}}
+    {{"post_id": {num_posts}, "label": "winning_label", "score": 0.95}}
   ]
 }}
 
