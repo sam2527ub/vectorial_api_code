@@ -74,7 +74,7 @@ except Exception as e:
 try:
     # Initialize Groq client for fast LLM inference
     groq_api_key = os.getenv("GROQ_API_KEY")
-    groq_model = os.getenv("GROQ_MODEL", "llama-3.1-8b-instant")  # Default model, can be overridden
+    groq_model = os.getenv("GROQ_MODEL", "llama-3.3-70b-versatile")  # Default model, can be overridden
     if groq_api_key:
         groq_client = Groq(api_key=groq_api_key)
         logger.info(f"Groq client initialized successfully with model: {groq_model}")
@@ -1887,7 +1887,7 @@ Respond ONLY with valid JSON. No markdown, no code blocks, no explanation, just 
     logger.info("=" * 80)
     
     # Get model name from environment or use default
-    model_name = os.getenv("GROQ_MODEL", "llama-3.1-8b-instant")
+    model_name = os.getenv("GROQ_MODEL", "llama-3.3-70b-versatile")
     
     # Timeout configuration to prevent hanging requests
     groq_timeout = int(os.getenv("GROQ_TIMEOUT_SECONDS", "60"))  # 60 second timeout for API calls
@@ -1906,7 +1906,7 @@ Respond ONLY with valid JSON. No markdown, no code blocks, no explanation, just 
                         {"role": "system", "content": system_prompt},
                         {"role": "user", "content": user_prompt}
                     ],
-                    temperature=0.3,  # Lower temperature for more consistent classification
+                    temperature=0.1,  # Lower temperature for more consistent classification
                     response_format={"type": "json_object"}  # Force JSON response
                 )
                 # Success! Break out of retry loop
@@ -1963,7 +1963,7 @@ Respond ONLY with valid JSON. No markdown, no code blocks, no explanation, just 
                     # Try with a different model
                     try:
                         response = groq_client.chat.completions.create(
-                            model="llama-3.1-8b-instant",  # Fallback to faster model
+                            model="llama-3.3-70b-versatile",  # Fallback to faster model
                             messages=[
                                 {"role": "system", "content": system_prompt},
                                 {"role": "user", "content": user_prompt}
@@ -1971,7 +1971,7 @@ Respond ONLY with valid JSON. No markdown, no code blocks, no explanation, just 
                             temperature=0.3,
                             response_format={"type": "json_object"}
                         )
-                        logger.info("✅ Successfully used fallback model: llama-3.1-8b-instant")
+                        logger.info("✅ Successfully used fallback model: llama-3.3-70b-versatile")
                         break  # Success, exit retry loop (response is set)
                     except Exception as fallback_error:
                         fallback_error_str = str(fallback_error).lower()
@@ -2013,12 +2013,12 @@ Respond ONLY with valid JSON. No markdown, no code blocks, no explanation, just 
                         logger.info("Retrying without json_object constraint...")
                         try:
                             response = groq_client.chat.completions.create(
-                                model="llama-3.1-8b-instant",
+                                model="llama-3.3-70b-versatile",
                                 messages=[
                                     {"role": "system", "content": system_prompt},
                                     {"role": "user", "content": user_prompt}
                                 ],
-                                temperature=0.3
+                                temperature=0.1
                             )
                             break  # Success, exit retry loop (response is set)
                         except Exception as final_error:
@@ -2075,7 +2075,7 @@ Respond ONLY with valid JSON. No markdown, no code blocks, no explanation, just 
                                 {"role": "system", "content": system_prompt},
                                 {"role": "user", "content": user_prompt}
                             ],
-                            temperature=0.3
+                            temperature=0.1
                         )
                         break  # Success, exit retry loop (response is set)
                     except Exception as retry_error:
@@ -2659,28 +2659,26 @@ DO NOT split a single post into multiple classifications. Each delimited block =
 Respond with a JSON object containing EXACTLY {num_posts} classifications (one per post):
 {{
   "classifications": [
-    {{"post_id": 1, "label": "<label>", "score": <0.0-1.0>, "scores": {{<all labels with scores>}}}},
-    {{"post_id": 2, "label": "<label>", "score": <0.0-1.0>, "scores": {{<all labels with scores>}}}},
+    {{"post_id": 1, "label": "<label>", "score": <0.0-1.0> }},
+    {{"post_id": 2, "label": "<label>", "score": <0.0-1.0> }},
     ... (continue for ALL {num_posts} posts)
-    {{"post_id": {num_posts}, "label": "<label>", "score": <0.0-1.0>, "scores": {{<all labels with scores>}}}}
+    {{"post_id": {num_posts}, "label": "<label>", "score": <0.0-1.0> }}
   ]
 }}
 
 ## STRICT REQUIREMENTS:
 1. "classifications" array must have EXACTLY {num_posts} objects - no more, no less
 2. Include "post_id" (1 to {num_posts}) in each object to match the post number
-3. "label" must be one of: {labels_list_str}
+3. "label" must be exactly one of these labels: {labels_list_str}
 4. "score" is confidence (0.0-1.0) for the primary label
-5. "scores" must include ALL {len(classifier_labels)} labels: {labels_list_str}
-6. All scores in "scores" must sum to 1.0
-7. Order MUST be: post_id 1 first, post_id {num_posts} last
+5. Order MUST be: post_id 1 first, post_id {num_posts} last
 
 ⚠️ CRITICAL: Output EXACTLY {num_posts} classification objects. Double-check your count before responding.
 
 Respond ONLY with valid JSON."""
     
     # Get model name
-    model_name = os.getenv("GROQ_MODEL", "llama-3.1-8b-instant")
+    model_name = os.getenv("GROQ_MODEL", "llama-3.3-70b-versatile")
     
     # Retry logic with exponential backoff for rate limits AND count mismatches
     max_retries = 5
@@ -3468,7 +3466,7 @@ Respond ONLY with valid JSON. No markdown, no code blocks, no explanation, just 
         user_prompt = "\n\n".join(user_prompt_parts)
         
         # Get model name
-        model_name = os.getenv("GROQ_MODEL", "llama-3.1-8b-instant")
+        model_name = os.getenv("GROQ_MODEL", "llama-3.3-70b-versatile")
         
         # Call Groq directly and capture everything
         debug_info = {
