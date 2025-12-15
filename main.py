@@ -1848,7 +1848,7 @@ async def classify_post_with_groq(
 
 You MUST respond with a valid JSON object with EXACTLY this structure:
 {{
-  "label": "<exactly one of the available labels>",
+  "label": "<exactly ONE of the available labels>",
   "score": <number between 0.0 and 1.0>,
   "scores": {{
     <scores for ALL labels (0.0 for all the labels that are not applicable)>
@@ -1856,16 +1856,15 @@ You MUST respond with a valid JSON object with EXACTLY this structure:
 }}
 
 REQUIREMENTS:
-1. "label" must be exactly one of these exact labels: {labels_list_str}
+1. "label" must be EXACTLY ONE of these labels: {labels_list_str}
 2. "score" must be a number between 0.0 and 1.0 representing confidence in the primary label
-3. If the label to be applied has been decided with its score , all other label scores will be 0.0
+3. All other label scores (except the one label that will be applied) will be 0.0
 4. "scores" MUST be an object with ALL {len(classifier_labels)} labels as keys: {labels_list_str}
-5. Each score in "scores" must be a number between 0.0 and 1.0
 
 Example response format:
 {{
   "label": "{classifier_labels[0] if classifier_labels else 'label'}",
-  "score": 0.85,
+  "score": 0.8,
   "scores": {{
     {example_scores_str}
   }}
