@@ -231,6 +231,12 @@ class RunClassifierRequest(BaseModel):
     audienceRoomId: str = Field(..., description="ID of the audience room containing profiles to classify")
     classifierId: str = Field(..., description="ID of the classifier to use for classification")
 
+
+class RunClassifierForProfilesRequest(BaseModel):
+    audienceRoomId: str = Field(..., description="ID of the audience room containing profiles")
+    classifierId: str = Field(..., description="ID of the classifier to use for classification")
+    profileIds: List[str] = Field(..., min_items=1, max_items=5, description="List of profile IDs to classify (max 5 profiles)")
+
 # --- 3. HELPER FUNCTIONS ---
 
 def calculate_experience_years(experience_list: List[Dict]) -> float:
@@ -2254,6 +2260,243 @@ async def run_classifier(payload: RunClassifierRequest):
     except Exception as e:
         logger.error(f"Error running classifier: {e}")
         raise HTTPException(status_code=500, detail=f"Failed to run classifier: {str(e)}")
+
+
+@app.post("/api/classifier/run-profiles")
+async def run_classifier_for_profiles(payload: RunClassifierForProfilesRequest):
+    """
+    Run a classifier on posts for specific profiles in an audience room.
+    
+    Flow:
+    1. Fetch Classifier details from audience database
+    2. Fetch AudienceRoom and specified Profiles (by profile IDs)
+    3. For each Profile, download posts from S3
+    4. Classify each post using Groq LLM in batches
+    5. Add labels to posts and upload back to S3
+    
+    This endpoint is similar to /api/classifier/run but only processes the specified profiles.
+    """
+    ensure_db_available("audience")
+    if not groq_client:
+        raise HTTPException(status_code=503, detail="Groq client not initialized. Please set GROQ_API_KEY.")
+    if not s3_client or not s3_bucket:
+        raise HTTPException(status_code=503, detail="S3 is not configured; set AUDIENCE_BUCKET_NAME or VECTOR_BUCKET_NAME.")
+    
+    try:
+        # 1. Fetch Classifier details using psycopg2
+        classifier = database.find_post_classifier_by_id(payload.classifierId)
+        if not classifier:
+            raise HTTPException(status_code=404, detail=f"Classifier {payload.classifierId} not found")
+        
+        # Extract classifier fields
+        classifier_name = classifier.name
+        classifier_prompt = classifier.prompt or ""
+        classifier_description = classifier.description or ""
+        
+        # Handle labels (Prisma Json field - could be list, dict, or string representation)
+        classifier_labels = []
+        try:
+            labels_raw = classifier.labels
+            # If it's already a list, use it directly
+            if isinstance(labels_raw, list):
+                classifier_labels = labels_raw
+            # If it's a string, try to parse it
+            elif isinstance(labels_raw, str):
+                try:
+                    parsed = json.loads(labels_raw)
+                    if isinstance(parsed, list):
+                        classifier_labels = parsed
+                    else:
+                        classifier_labels = [labels_raw]
+                except (json.JSONDecodeError, TypeError):
+                    # If parsing fails, treat as single label
+                    classifier_labels = [labels_raw]
+            # If it's a dict (unlikely but handle it)
+            elif isinstance(labels_raw, dict):
+                # Try to extract list from dict, or convert dict keys/values
+                if "labels" in labels_raw and isinstance(labels_raw["labels"], list):
+                    classifier_labels = labels_raw["labels"]
+                else:
+                    classifier_labels = list(labels_raw.keys()) if labels_raw else []
+            else:
+                # Try to convert to list if it's iterable
+                try:
+                    classifier_labels = list(labels_raw) if labels_raw else []
+                except (TypeError, ValueError):
+                    classifier_labels = []
+        except Exception as e:
+            logger.warning(f"Error parsing classifier labels: {e}")
+            classifier_labels = []
+        
+        # Ensure all labels are strings
+        classifier_labels = [str(label) for label in classifier_labels if label]
+        
+        if not classifier_labels:
+            raise HTTPException(status_code=400, detail="Classifier has no labels defined")
+        
+        # Handle examples (JSON field)
+        classifier_examples = None
+        if classifier.examples:
+            try:
+                examples_raw = classifier.examples
+                if isinstance(examples_raw, dict):
+                    classifier_examples = examples_raw
+                elif isinstance(examples_raw, str):
+                    try:
+                        classifier_examples = json.loads(examples_raw)
+                    except json.JSONDecodeError:
+                        classifier_examples = None
+                elif isinstance(examples_raw, list):
+                    classifier_examples = examples_raw
+                else:
+                    classifier_examples = None
+            except Exception as e:
+                logger.warning(f"Error parsing classifier examples: {e}")
+                classifier_examples = None
+        
+        # 2. Fetch AudienceRoom and specified Profiles
+        audience_room = database.find_audience_room_by_id(payload.audienceRoomId, include_profiles=True)
+        if not audience_room:
+            raise HTTPException(status_code=404, detail=f"Audience room {payload.audienceRoomId} not found")
+        
+        # Filter profiles to only include the specified profile IDs
+        all_profiles = audience_room.profiles
+        profiles = [p for p in all_profiles if p.id in payload.profileIds]
+        
+        if not profiles:
+            raise HTTPException(status_code=404, detail=f"No profiles found with the specified IDs in audience room {payload.audienceRoomId}")
+        
+        # Check if all requested profile IDs were found
+        found_profile_ids = {p.id for p in profiles}
+        missing_profile_ids = set(payload.profileIds) - found_profile_ids
+        if missing_profile_ids:
+            logger.warning(f"Some profile IDs were not found: {missing_profile_ids}")
+        
+        # 3. Process each profile's posts
+        processed_profiles = []
+        total_posts_classified = 0
+        
+        for profile in profiles:
+            profile_id = profile.id
+            profile_name = profile.profileName
+            
+            # Skip if no posts URL
+            if not profile.postsS3Url:
+                logger.warning(f"Profile {profile_id} ({profile_name}) has no posts URL, skipping")
+                processed_profiles.append({
+                    "profile_id": profile_id,
+                    "profile_name": profile_name,
+                    "status": "skipped",
+                    "reason": "no_posts_url",
+                    "posts_classified": 0
+                })
+                continue
+            
+            try:
+                # Extract S3 key and fetch posts
+                posts_key = extract_s3_key_from_url(profile.postsS3Url)
+                if not posts_key:
+                    logger.error(f"Invalid S3 URL format for profile {profile_id}: {profile.postsS3Url}")
+                    processed_profiles.append({
+                        "profile_id": profile_id,
+                        "profile_name": profile_name,
+                        "status": "error",
+                        "reason": "invalid_s3_url",
+                        "posts_classified": 0
+                    })
+                    continue
+                
+                # Fetch posts JSON from S3
+                posts_data = fetch_json_from_s3(posts_key)
+                
+                # Extract posts array (could be in different formats)
+                posts = []
+                if isinstance(posts_data, dict):
+                    posts = posts_data.get("posts", [])
+                    if not posts and isinstance(posts_data.get("data"), list):
+                        posts = posts_data["data"]
+                elif isinstance(posts_data, list):
+                    posts = posts_data
+                
+                if not posts:
+                    logger.warning(f"No posts found for profile {profile_id}")
+                    processed_profiles.append({
+                        "profile_id": profile_id,
+                        "profile_name": profile_name,
+                        "status": "skipped",
+                        "reason": "no_posts",
+                        "posts_classified": 0
+                    })
+                    continue
+                
+                # 4. Classify all posts in batches
+                logger.info(f"Classifying {len(posts)} posts for profile {profile_id}")
+                classification_results = await classify_posts_batch(
+                    posts=posts,
+                    classifier_name=classifier_name,
+                    classifier_prompt=classifier_prompt,
+                    classifier_description=classifier_description,
+                    classifier_labels=classifier_labels,
+                    classifier_examples=classifier_examples,
+                    batch_size=20,  # Process 20 posts together in one API call
+                )
+                
+                # 5. Add labels to each post
+                for idx, post in enumerate(posts):
+                    if idx < len(classification_results):
+                        classification = classification_results[idx]
+                        # Create labels object with all scores
+                        labels_obj = classification.get("allScores", {})
+                        # Add classifierId to the labels object
+                        labels_obj["classifierId"] = payload.classifierId
+                        post["labels"] = labels_obj
+                
+                # Update the posts data structure
+                if isinstance(posts_data, dict):
+                    posts_data["posts"] = posts
+                else:
+                    posts_data = posts
+                
+                # 6. Upload updated posts back to S3
+                updated_posts_url = upload_json_to_s3(posts_key, posts_data)
+                
+                # Update profile record with new posts URL (same key, but updated content)
+                database.update_audience_profile(profile_id, {"postsS3Url": updated_posts_url})
+                
+                total_posts_classified += len(posts)
+                processed_profiles.append({
+                    "profile_id": profile_id,
+                    "profile_name": profile_name,
+                    "status": "success",
+                    "posts_classified": len(posts),
+                    "updated_posts_url": updated_posts_url
+                })
+                
+            except Exception as e:
+                logger.error(f"Error processing profile {profile_id}: {e}")
+                processed_profiles.append({
+                    "profile_id": profile_id,
+                    "profile_name": profile_name,
+                    "status": "error",
+                    "reason": str(e),
+                    "posts_classified": 0
+                })
+        
+        return {
+            "classifier_id": payload.classifierId,
+            "classifier_name": classifier_name,
+            "audience_room_id": payload.audienceRoomId,
+            "requested_profile_ids": payload.profileIds,
+            "total_profiles_processed": len(profiles),
+            "total_posts_classified": total_posts_classified,
+            "profiles": processed_profiles
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error running classifier for profiles: {e}")
+        raise HTTPException(status_code=500, detail=f"Failed to run classifier for profiles: {str(e)}")
 
 
 
