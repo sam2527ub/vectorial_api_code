@@ -491,6 +491,35 @@ def query_first(sql: str, *args) -> Optional[Dict[str, Any]]:
 
 
 # ============================================
+# Preview Operations (Audience Database)
+# ============================================
+
+def find_all_previews(user_id: Optional[str] = None) -> List[Dict[str, Any]]:
+    """Fetch all preview records from the database, optionally filtered by user_id."""
+    with get_audience_connection() as conn:
+        with conn.cursor(cursor_factory=RealDictCursor) as cur:
+            if user_id:
+                cur.execute('SELECT * FROM "previews" WHERE user_id = %s ORDER BY created_at DESC', (user_id,))
+            else:
+                cur.execute('SELECT * FROM "previews" ORDER BY created_at DESC')
+            rows = cur.fetchall()
+            return [dict(row) for row in rows]
+
+
+def find_preview_by_room_id(room_id: str, user_id: Optional[str] = None) -> Optional[Dict[str, Any]]:
+    """Fetch a single preview by room ID and optionally user ID."""
+    with get_audience_connection() as conn:
+        with conn.cursor(cursor_factory=RealDictCursor) as cur:
+            if user_id:
+                cur.execute('SELECT * FROM "previews" WHERE room_id = %s AND user_id = %s', (room_id, user_id))
+            else:
+                # If no user_id provided, get the first match (for backward compatibility)
+                cur.execute('SELECT * FROM "previews" WHERE room_id = %s LIMIT 1', (room_id,))
+            row = cur.fetchone()
+            return dict(row) if row else None
+
+
+# ============================================
 # Database Health Check
 # ============================================
 
