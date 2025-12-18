@@ -10,4 +10,5 @@ python-dateutil==2.8.2
 prisma==0.11.0
 psycopg2-binary==2.9.9
 groq>=0.4.0
+httpx>=0.24.0
 

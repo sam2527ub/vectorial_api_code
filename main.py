@@ -11,7 +11,9 @@ from dateutil.parser import parse, ParserError
 # FastAPI Imports
 from fastapi import FastAPI, HTTPException, Body, Path, Query
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import StreamingResponse
 from pydantic import BaseModel, Field, root_validator
+import httpx
 
 # Third-party Clients
 from dotenv import load_dotenv
@@ -236,6 +238,12 @@ class RunClassifierForProfilesRequest(BaseModel):
     audienceRoomId: str = Field(..., description="ID of the audience room containing profiles")
     classifierId: str = Field(..., description="ID of the classifier to use for classification")
     profileIds: List[str] = Field(..., min_items=1, max_items=5, description="List of profile IDs to classify (max 5 profiles)")
+
+
+class ParallelSearchRequest(BaseModel):
+    query: str = Field(..., description="Search query string for Parallel FindAll")
+    model: str = Field("core", description="Model to use: 'core' or 'base'")
+    match_limit: int = Field(100, ge=1, le=1000, description="Maximum number of matches to return")
 
 # --- 3. HELPER FUNCTIONS ---
 
@@ -790,6 +798,294 @@ async def search_profiles(payload: SearchFilters):
     except Exception as e:
         logger.error(f"Search error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
+
+@app.post("/api/search/parallel")
+async def search_parallel_stream(payload: ParallelSearchRequest):
+    """
+    Search for LinkedIn profiles using Parallel AI FindAll API with real-time SSE streaming.
+    
+    This endpoint:
+    1. Starts a Parallel FindAll run
+    2. Immediately connects to the Parallel SSE endpoint (no polling)
+    3. Proxies and transforms events to frontend format
+    
+    Events handled:
+    - candidate_found: Transformed to frontend format with linkedin_url and match_status
+    - run_completed: Signals completion and closes stream
+    - run_failed: Signals error and closes stream
+    - ping: Keeps connection alive (not forwarded unless needed)
+    """
+    parallel_api_key = os.getenv("PARALLEL_API_KEY")
+    if not parallel_api_key:
+        raise HTTPException(
+            status_code=503,
+            detail="PARALLEL_API_KEY not configured. Please set the environment variable."
+        )
+    
+    parallel_base_url = "https://api.parallel.ai/v1beta/findall"
+    
+    # Headers for Parallel API
+    headers = {
+        "x-api-key": parallel_api_key,
+        "Content-Type": "application/json",
+        "parallel-beta": "findall-2025-09-15"
+    }
+    
+    # Payload for starting the run
+    # Parallel API expects top-level fields: objective, entity_type, match_conditions, generator, match_limit
+    run_payload = {
+        "objective": payload.query,
+        "entity_type": "people",
+        "match_conditions": [
+            {
+                "name": "query_match",
+                "description": payload.query
+            }
+        ],
+        "generator": payload.model,
+        "match_limit": payload.match_limit
+    }
+    
+    async def stream_parallel_events():
+        """
+        Generator function that:
+        1. Starts the Parallel FindAll run
+        2. Immediately connects to SSE stream
+        3. Transforms and forwards events to frontend
+        """
+        run_id = None
+        
+        try:
+            # Step 1: Start the FindAll run
+            async with httpx.AsyncClient(timeout=30.0) as client:
+                logger.info(f"Starting Parallel FindAll run with query: {payload.query}")
+                
+                start_response = await client.post(
+                    f"{parallel_base_url}/runs",
+                    json=run_payload,
+                    headers=headers
+                )
+                
+                # Accept both 200 and 201 as success status codes
+                if start_response.status_code not in [200, 201]:
+                    error_detail = start_response.text
+                    logger.error(f"Failed to start Parallel run: {error_detail}")
+                    yield f"data: {json.dumps({'type': 'error', 'message': f'Failed to start run: {error_detail}'})}\n\n"
+                    return
+                
+                run_data = start_response.json()
+                run_id = run_data.get("findall_id") or run_data.get("id") or run_data.get("run_id")
+                
+                if not run_id:
+                    logger.error(f"No run ID in response: {run_data}")
+                    yield f"data: {json.dumps({'type': 'error', 'message': 'No run ID returned from Parallel API'})}\n\n"
+                    return
+                
+                logger.info(f"Parallel FindAll run started successfully: {run_id}")
+                
+                # Step 2: Immediately connect to SSE endpoint (NO POLLING)
+                sse_headers = {
+                    "x-api-key": parallel_api_key,
+                    "Accept": "text/event-stream",
+                    "parallel-beta": "findall-2025-09-15"
+                }
+                
+                sse_url = f"{parallel_base_url}/runs/{run_id}/events"
+                logger.info(f"Connecting to SSE stream: {sse_url}")
+                
+                # Connect to Parallel SSE stream
+                async with client.stream(
+                    "GET",
+                    sse_url,
+                    headers=sse_headers,
+                    timeout=None  # No timeout for streaming
+                ) as sse_response:
+                    
+                    if sse_response.status_code != 200:
+                        error_detail = await sse_response.aread()
+                        error_text = error_detail.decode('utf-8', errors='ignore') if error_detail else "Unknown error"
+                        logger.error(f"Failed to connect to SSE stream: {error_text}")
+                        yield f"data: {json.dumps({'type': 'error', 'message': f'Failed to connect to SSE stream: {error_text}'})}\n\n"
+                        return
+                    
+                    # Step 3: Process SSE stream and forward events
+                    buffer = ""
+                    
+                    async for chunk in sse_response.aiter_bytes():
+                        if not chunk:
+                            continue
+                        
+                        try:
+                            # Decode chunk and add to buffer
+                            buffer += chunk.decode('utf-8', errors='replace')
+                            
+                            # Process complete lines
+                            while '\n' in buffer:
+                                line, buffer = buffer.split('\n', 1)
+                                line = line.strip()
+                                
+                                if not line:
+                                    continue
+                                
+                                # Handle SSE format: "data: {...}" or "event: ..." followed by "data: ..."
+                                if line.startswith('event: '):
+                                    # Store event type if needed, but we'll use the data line
+                                    continue
+                                elif line.startswith('data: '):
+                                    event_json = line[6:]  # Remove "data: " prefix
+                                elif line.startswith('id: '):
+                                    # SSE event ID, skip
+                                    continue
+                                elif line.startswith('retry: '):
+                                    # SSE retry interval, skip
+                                    continue
+                                else:
+                                    # Assume it's a data line without prefix
+                                    event_json = line
+                                
+                                if not event_json:
+                                    continue
+                                
+                                try:
+                                    # Parse the event JSON
+                                    event_data = json.loads(event_json)
+                                    
+                                    # Extract event type - check multiple possible fields
+                                    event_type = (
+                                        event_data.get("type") or 
+                                        event_data.get("event") or 
+                                        event_data.get("event_type") or
+                                        ""
+                                    ).lower()
+                                    
+                                    # Handle candidate events - Parallel API uses findall.candidate.matched/unmatched
+                                    if "candidate" in event_type:
+                                        # Parallel API event types: findall.candidate.matched, findall.candidate.unmatched, findall.candidate.generated
+                                        if "matched" in event_type or "unmatched" in event_type or "generated" in event_type:
+                                            # Extract candidate data - check both direct data and nested candidate
+                                            candidate = event_data.get("data", {})
+                                            # Sometimes candidate is nested
+                                            if "candidate" in candidate:
+                                                candidate = candidate.get("candidate", {})
+                                            
+                                            # Extract linkedin_url (check multiple possible fields)
+                                            linkedin_url = (
+                                                candidate.get("linkedin_url") or 
+                                                candidate.get("url") or 
+                                                candidate.get("profile_url") or
+                                                candidate.get("linkedin_profile_url") or
+                                                ""
+                                            )
+                                            
+                                            # Extract match_status based on event type
+                                            if "matched" in event_type:
+                                                match_status = "matched"
+                                            else:
+                                                match_status = "unmatched"
+                                            
+                                            # Extract summary/description
+                                            summary = (
+                                                candidate.get("summary") or 
+                                                candidate.get("description") or
+                                                candidate.get("profile_summary") or
+                                                candidate.get("bio") or
+                                                ""
+                                            )
+                                            
+                                            # Extract reasoning/basis
+                                            reasoning = (
+                                                candidate.get("reasoning") or 
+                                                candidate.get("basis") or
+                                                candidate.get("match_reason") or
+                                                candidate.get("explanation") or
+                                                ""
+                                            )
+                                            
+                                            # Transform to frontend format
+                                            transformed = {
+                                                "type": "profile",
+                                                "status": match_status,
+                                                "data": {
+                                                    "url": linkedin_url,
+                                                    "summary": summary,
+                                                    "reasoning": reasoning
+                                                }
+                                            }
+                                            
+                                            # Forward if we have a LinkedIn URL, or log for debugging
+                                            if linkedin_url:
+                                                yield f"data: {json.dumps(transformed)}\n\n"
+                                                logger.info(f"Forwarded candidate: {linkedin_url} ({match_status})")
+                                            else:
+                                                # Log the event for debugging
+                                                logger.debug(f"Candidate event without LinkedIn URL: {json.dumps(event_data)[:500]}")
+                                    
+                                    # Handle run_completed
+                                    elif "run_completed" in event_type or "completed" in event_type:
+                                        logger.info("Parallel run completed")
+                                        yield f"data: {json.dumps({'type': 'completed', 'message': 'Run completed successfully'})}\n\n"
+                                        return
+                                    
+                                    # Handle run_failed
+                                    elif "run_failed" in event_type or "failed" in event_type:
+                                        error_msg = (
+                                            event_data.get("data", {}).get("error") or 
+                                            event_data.get("data", {}).get("message") or
+                                            event_data.get("message") or
+                                            event_data.get("error") or
+                                            "Run failed"
+                                        )
+                                        logger.error(f"Parallel run failed: {error_msg}")
+                                        yield f"data: {json.dumps({'type': 'error', 'message': error_msg})}\n\n"
+                                        return
+                                    
+                                    # Handle ping events (keep-alive)
+                                    elif event_type == "ping":
+                                        # Don't forward pings to frontend (they're just keep-alive)
+                                        # Uncomment the line below if you want to forward pings for health checks:
+                                        # yield f"data: {json.dumps({'type': 'ping'})}\n\n"
+                                        continue
+                                    
+                                    else:
+                                        # Log ALL events for debugging to see what Parallel is sending
+                                        logger.info(f"Received Parallel event - type: {event_type}, data: {json.dumps(event_data)[:500]}")
+                                        continue
+                                        
+                                except json.JSONDecodeError as e:
+                                    logger.warning(f"Failed to parse event JSON: {event_json[:100]}..., error: {e}")
+                                    continue
+                                    
+                        except UnicodeDecodeError:
+                            # Handle partial UTF-8 sequences - wait for more data
+                            continue
+                        except Exception as e:
+                            logger.error(f"Error processing SSE chunk: {e}")
+                            continue
+                    
+                    # If we exit the stream loop normally, send completion
+                    logger.info("SSE stream ended normally")
+                    yield f"data: {json.dumps({'type': 'completed', 'message': 'Stream ended'})}\n\n"
+                    
+        except httpx.TimeoutException:
+            logger.error("Request to Parallel API timed out")
+            yield f"data: {json.dumps({'type': 'error', 'message': 'Request to Parallel API timed out'})}\n\n"
+        except httpx.RequestError as e:
+            logger.error(f"Request error connecting to Parallel API: {e}")
+            yield f"data: {json.dumps({'type': 'error', 'message': f'Failed to connect to Parallel API: {str(e)}'})}\n\n"
+        except Exception as e:
+            logger.error(f"Unexpected error in Parallel search stream: {e}", exc_info=True)
+            yield f"data: {json.dumps({'type': 'error', 'message': f'Unexpected error: {str(e)}'})}\n\n"
+    
+    # Return StreamingResponse with proper SSE headers
+    return StreamingResponse(
+        stream_parallel_events(),
+        media_type="text/event-stream",
+        headers={
+            "Cache-Control": "no-cache",
+            "Connection": "keep-alive",
+            "X-Accel-Buffering": "no"  # Disable buffering in nginx/proxy
+        }
+    )
 
 # === STEP 3B: CREATE AUDIENCE ROOM WITH SELECTED PROFILES ===
 @app.post("/api/v1/audience-rooms")
