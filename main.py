@@ -160,6 +160,7 @@ app.add_middleware(
 
 # Constants
 POST_SCRAPER_ACTOR_ID = "curious_coder/linkedin-post-search-scraper"
+PROFILE_SCRAPER_ACTOR_ID = "2SyF0bVxmgGr8IVCZ"  # LinkedIn Profile Scraper
 
 # --- 2. DATA MODELS (Request/Response Schemas) ---
 
@@ -799,6 +800,129 @@ async def search_profiles(payload: SearchFilters):
         logger.error(f"Search error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
+async def fetch_linkedin_profile_info(linkedin_url: str) -> Optional[Dict[str, Any]]:
+    """
+    Fetch LinkedIn profile information from Apify scraper for a given LinkedIn URL.
+    
+    Args:
+        linkedin_url: LinkedIn profile URL to scrape
+        
+    Returns:
+        Dictionary with profile information or None if failed
+    """
+    if not apify_client:
+        logger.warning("Apify client not initialized, skipping profile fetch")
+        return None
+    
+    try:
+        # Normalize URL for Apify
+        url = linkedin_url.strip()
+        if not url.startswith("http://") and not url.startswith("https://"):
+            url = "https://" + url
+        if url.startswith("https://linkedin.com") and not url.startswith("https://www.linkedin.com"):
+            url = url.replace("https://linkedin.com", "https://www.linkedin.com")
+        
+        # Prepare input for Apify actor
+        run_input = {
+            "profileUrls": [url],
+            "proxy": {"useApifyProxy": True}
+        }
+        
+        logger.info(f"Starting Apify profile scraper for: {url}")
+        
+        # Start the Apify actor run
+        run = apify_client.actor(PROFILE_SCRAPER_ACTOR_ID).start(run_input=run_input)
+        run_data = None
+        if isinstance(run, dict):
+            run_data = run.get("data", run)
+        if not run_data or not isinstance(run_data, dict):
+            logger.error(f"Apify start returned unexpected response for {url}")
+            return None
+        
+        apify_run_id = run_data.get('id')
+        if not apify_run_id:
+            logger.error(f"Apify start did not return a run id for {url}")
+            return None
+        
+        logger.info(f"Apify run started: {apify_run_id} for {url}")
+        
+        # Wait for the run to complete (with timeout)
+        max_wait_time = 120  # 2 minutes max wait
+        wait_interval = 2  # Check every 2 seconds
+        elapsed = 0
+        
+        while elapsed < max_wait_time:
+            await asyncio.sleep(wait_interval)
+            elapsed += wait_interval
+            
+            run_status = apify_client.run(apify_run_id).get()
+            status = run_status.get("status", "").upper()
+            
+            if status == "SUCCEEDED":
+                # Fetch the dataset items
+                dataset_id = run_status.get("defaultDatasetId")
+                if dataset_id:
+                    # Use iterate_items() to get the first item
+                    for item in apify_client.dataset(dataset_id).iterate_items():
+                        logger.info(f"Successfully fetched profile info for {url}")
+                        return item
+                    # If no items found
+                    logger.warning(f"No data returned from Apify for {url}")
+                    return None
+                else:
+                    logger.warning(f"No dataset ID in Apify run for {url}")
+                    return None
+            elif status in ["FAILED", "ABORTED", "TIMED-OUT"]:
+                error_msg = run_status.get("statusMessage", "Unknown error")
+                logger.error(f"Apify run failed for {url}: {error_msg}")
+                return None
+        
+        # Timeout
+        logger.warning(f"Apify run timed out for {url} after {max_wait_time} seconds")
+        return None
+        
+    except Exception as e:
+        logger.error(f"Error fetching profile info from Apify for {linkedin_url}: {e}")
+        return None
+
+def extract_apify_profile_fields(apify_data: dict) -> dict:
+    """
+    Extract only the required fields from Apify profile data.
+    
+    Args:
+        apify_data: Full Apify profile data dictionary
+        
+    Returns:
+        Dictionary with only the required fields
+    """
+    if not apify_data or not isinstance(apify_data, dict):
+        return {}
+    
+    # Extract education data - get degree and institution
+    educations = []
+    for edu in apify_data.get("educations", []):
+        edu_entry = {
+            "institution": edu.get("title", ""),
+            "degree": edu.get("subtitle", ""),
+            "period": edu.get("period", {})
+        }
+        educations.append(edu_entry)
+    
+    # Extract the required fields
+    extracted = {
+        "fullName": apify_data.get("fullName", ""),
+        "jobTitle": apify_data.get("jobTitle", ""),
+        "currentCompany": apify_data.get("companyName", ""),
+        "companyIndustry": apify_data.get("companyIndustry", ""),
+        "currentLocation": apify_data.get("jobLocation") or apify_data.get("addressWithCountry", ""),
+        "totalYearsExperience": apify_data.get("totalExperienceYears", 0),
+        "education": educations,
+        "about": apify_data.get("about", ""),
+        "headline": apify_data.get("headline", "")
+    }
+    
+    return extracted
+
 @app.post("/api/search/parallel")
 async def search_parallel_stream(payload: ParallelSearchRequest):
     """
@@ -808,9 +932,11 @@ async def search_parallel_stream(payload: ParallelSearchRequest):
     1. Starts a Parallel FindAll run
     2. Immediately connects to the Parallel SSE endpoint (no polling)
     3. Proxies and transforms events to frontend format
+    4. For each LinkedIn URL found, fetches profile info from Apify scraper in parallel
+    5. Streams profile info back in real-time via SSE
     
     Events handled:
-    - candidate_found: Transformed to frontend format with linkedin_url and match_status
+    - candidate_found: Transformed to frontend format with linkedin_url, match_status, and profile_info
     - run_completed: Signals completion and closes stream
     - run_failed: Signals error and closes stream
     - ping: Keeps connection alive (not forwarded unless needed)
@@ -852,8 +978,27 @@ async def search_parallel_stream(payload: ParallelSearchRequest):
         1. Starts the Parallel FindAll run
         2. Immediately connects to SSE stream
         3. Transforms and forwards events to frontend
+        4. For each LinkedIn URL, fetches profile info from Apify in parallel
+        5. Streams profile info updates in real-time
         """
         run_id = None
+        # Queue to hold profile info updates from Apify
+        profile_info_queue = asyncio.Queue()
+        # Track active Apify tasks
+        active_tasks = set()
+        
+        async def fetch_and_queue_profile_info(linkedin_url: str, profile_data: Dict[str, Any]):
+            """Fetch profile info from Apify and queue it for streaming"""
+            try:
+                profile_info = await fetch_linkedin_profile_info(linkedin_url)
+                if profile_info:
+                    await profile_info_queue.put({
+                        "linkedin_url": linkedin_url,
+                        "profile_info": profile_info,
+                        "original_data": profile_data
+                    })
+            except Exception as e:
+                logger.error(f"Error in fetch_and_queue_profile_info for {linkedin_url}: {e}")
         
         try:
             # Step 1: Start the FindAll run
@@ -910,6 +1055,7 @@ async def search_parallel_stream(payload: ParallelSearchRequest):
                     
                     # Step 3: Process SSE stream and forward events
                     buffer = ""
+                    stream_completed = False
                     
                     async for chunk in sse_response.aiter_bytes():
                         if not chunk:
@@ -945,6 +1091,34 @@ async def search_parallel_stream(payload: ParallelSearchRequest):
                                 
                                 if not event_json:
                                     continue
+                                
+                                # Check for profile info updates from Apify (non-blocking)
+                                while not profile_info_queue.empty():
+                                    try:
+                                        update = profile_info_queue.get_nowait()
+                                        linkedin_url = update["linkedin_url"]
+                                        profile_info = update["profile_info"]
+                                        original_data = update["original_data"]
+                                        
+                                        # Extract only required fields from Apify data
+                                        extracted_profile = extract_apify_profile_fields(profile_info) if profile_info else {}
+                                        
+                                        # Yield profile update with extracted Apify data
+                                        profile_update = {
+                                            "type": "profile_update",
+                                            "status": original_data.get("status", "matched"),
+                                            "data": {
+                                                "url": linkedin_url,
+                                                "summary": original_data.get("data", {}).get("summary", ""),
+                                                "reasoning": original_data.get("data", {}).get("reasoning", ""),
+                                                "apify_data": extracted_profile  # Extracted Apify fields
+                                            }
+                                        }
+                                        yield f"data: {json.dumps(profile_update)}\n\n"
+                                        logger.info(f"Forwarded profile info update for: {linkedin_url}")
+                                    except Exception as e:
+                                        logger.error(f"Error processing profile info update: {e}")
+                                        break
                                 
                                 try:
                                     # Parse the event JSON
@@ -1008,14 +1182,23 @@ async def search_parallel_stream(payload: ParallelSearchRequest):
                                                 "data": {
                                                     "url": linkedin_url,
                                                     "summary": summary,
-                                                    "reasoning": reasoning
+                                                    "reasoning": reasoning,
+                                                    "apify_data": None  # Will be populated when Apify returns
                                                 }
                                             }
                                             
                                             # Forward if we have a LinkedIn URL, or log for debugging
                                             if linkedin_url:
+                                                # First, yield the profile event immediately with URL
                                                 yield f"data: {json.dumps(transformed)}\n\n"
                                                 logger.info(f"Forwarded candidate: {linkedin_url} ({match_status})")
+                                                
+                                                # Then, trigger Apify scraper in parallel (non-blocking)
+                                                task = asyncio.create_task(
+                                                    fetch_and_queue_profile_info(linkedin_url, transformed)
+                                                )
+                                                active_tasks.add(task)
+                                                task.add_done_callback(active_tasks.discard)
                                             else:
                                                 # Log the event for debugging
                                                 logger.debug(f"Candidate event without LinkedIn URL: {json.dumps(event_data)[:500]}")
@@ -1023,8 +1206,9 @@ async def search_parallel_stream(payload: ParallelSearchRequest):
                                     # Handle run_completed
                                     elif "run_completed" in event_type or "completed" in event_type:
                                         logger.info("Parallel run completed")
-                                        yield f"data: {json.dumps({'type': 'completed', 'message': 'Run completed successfully'})}\n\n"
-                                        return
+                                        stream_completed = True
+                                        # Don't return yet - wait for pending Apify tasks
+                                        break
                                     
                                     # Handle run_failed
                                     elif "run_failed" in event_type or "failed" in event_type:
@@ -1061,6 +1245,72 @@ async def search_parallel_stream(payload: ParallelSearchRequest):
                         except Exception as e:
                             logger.error(f"Error processing SSE chunk: {e}")
                             continue
+                    
+                    # Step 4: Process profile info updates from Apify as they arrive
+                    # Continue processing queue items and active tasks
+                    while active_tasks or not profile_info_queue.empty():
+                        # Check for profile info updates (with timeout to allow checking active tasks)
+                        try:
+                            update = await asyncio.wait_for(profile_info_queue.get(), timeout=1.0)
+                            linkedin_url = update["linkedin_url"]
+                            profile_info = update["profile_info"]
+                            original_data = update["original_data"]
+                            
+                            # Extract only required fields from Apify data
+                            extracted_profile = extract_apify_profile_fields(profile_info) if profile_info else {}
+                            
+                            # Yield profile update with extracted Apify data
+                            profile_update = {
+                                "type": "profile_update",
+                                "status": original_data.get("status", "matched"),
+                                "data": {
+                                    "url": linkedin_url,
+                                    "summary": original_data.get("data", {}).get("summary", ""),
+                                    "reasoning": original_data.get("data", {}).get("reasoning", ""),
+                                    "apify_data": extracted_profile  # Extracted Apify fields
+                                }
+                            }
+                            yield f"data: {json.dumps(profile_update)}\n\n"
+                            logger.info(f"Forwarded profile info update for: {linkedin_url}")
+                        except asyncio.TimeoutError:
+                            # Timeout is fine - just check if we should continue
+                            continue
+                        except Exception as e:
+                            logger.error(f"Error processing profile info update: {e}")
+                            continue
+                    
+                    # Wait for all active Apify tasks to complete (with timeout)
+                    if active_tasks:
+                        logger.info(f"Waiting for {len(active_tasks)} active Apify tasks to complete...")
+                        try:
+                            await asyncio.wait_for(
+                                asyncio.gather(*active_tasks, return_exceptions=True),
+                                timeout=300  # 5 minutes max wait for remaining tasks
+                            )
+                            # Process any remaining queue items
+                            while not profile_info_queue.empty():
+                                try:
+                                    update = profile_info_queue.get_nowait()
+                                    linkedin_url = update["linkedin_url"]
+                                    profile_info = update["profile_info"]
+                                    original_data = update["original_data"]
+                                    
+                                    profile_update = {
+                                        "type": "profile_update",
+                                        "status": original_data.get("status", "matched"),
+                                        "data": {
+                                            "url": linkedin_url,
+                                            "summary": original_data.get("data", {}).get("summary", ""),
+                                            "reasoning": original_data.get("data", {}).get("reasoning", ""),
+                                            "profile_info": profile_info
+                                        }
+                                    }
+                                    yield f"data: {json.dumps(profile_update)}\n\n"
+                                    logger.info(f"Forwarded profile info update for: {linkedin_url}")
+                                except Exception as e:
+                                    logger.error(f"Error processing final profile info update: {e}")
+                        except asyncio.TimeoutError:
+                            logger.warning("Timeout waiting for Apify tasks to complete")
                     
                     # If we exit the stream loop normally, send completion
                     logger.info("SSE stream ended normally")
@@ -1392,6 +1642,93 @@ async def get_profile_posts(audience_room_id: str, profile_id: str):
         raise HTTPException(status_code=500, detail="Failed to fetch posts")
 
 
+async def _call_openai_with_retry(
+    profile_id: str,
+    messages: List[Dict[str, str]],
+    max_tokens: int,
+    max_retries: int = 3,
+    initial_delay: float = 1.0,
+    validate_summary: bool = False
+) -> Dict[str, Any]:
+    """
+    Call OpenAI API with exponential backoff retry logic.
+    
+    Args:
+        profile_id: Profile ID for logging
+        messages: List of message dicts for OpenAI API
+        max_tokens: Maximum tokens for the completion
+        max_retries: Maximum number of retry attempts
+        initial_delay: Initial delay in seconds before first retry
+        validate_summary: If True, validates that summary is not empty (for final summaries only)
+    
+    Returns:
+        Parsed JSON result from OpenAI
+    
+    Raises:
+        Exception: If all retries fail
+    """
+    last_exception = None
+    
+    for attempt in range(max_retries):
+        try:
+            completion = openai_client.chat.completions.create(
+                model="gpt-4o-mini",
+                messages=messages,
+                max_tokens=max_tokens,
+                temperature=0.3,
+                response_format={"type": "json_object"}
+            )
+            
+            result = json.loads(completion.choices[0].message.content)
+            
+            # Validate that we got a summary (only for final summaries)
+            if validate_summary and (not result.get("summary") or not result.get("summary", "").strip()):
+                raise ValueError("OpenAI returned empty summary")
+            
+            return result
+            
+        except json.JSONDecodeError as e:
+            last_exception = e
+            logger.warning(f"Profile {profile_id}: JSON decode error on attempt {attempt + 1}/{max_retries}: {e}")
+            if attempt < max_retries - 1:
+                delay = initial_delay * (2 ** attempt)
+                logger.info(f"Profile {profile_id}: Retrying in {delay:.1f} seconds...")
+                await asyncio.sleep(delay)
+            else:
+                logger.error(f"Profile {profile_id}: Failed to parse JSON after {max_retries} attempts")
+                raise
+                
+        except Exception as e:
+            last_exception = e
+            error_str = str(e).lower()
+            
+            # Check if it's a rate limit error
+            is_rate_limit = (
+                "rate limit" in error_str or 
+                "429" in error_str or
+                "too many requests" in error_str
+            )
+            
+            if is_rate_limit:
+                # Longer delay for rate limits
+                delay = initial_delay * (2 ** attempt) * 2  # Double the delay for rate limits
+                logger.warning(f"Profile {profile_id}: Rate limit hit on attempt {attempt + 1}/{max_retries}. Waiting {delay:.1f} seconds...")
+            else:
+                delay = initial_delay * (2 ** attempt)
+                logger.warning(f"Profile {profile_id}: Error on attempt {attempt + 1}/{max_retries}: {e}")
+            
+            if attempt < max_retries - 1:
+                await asyncio.sleep(delay)
+            else:
+                logger.error(f"Profile {profile_id}: Failed after {max_retries} attempts: {e}")
+                raise
+    
+    # Should never reach here, but just in case
+    if last_exception:
+        raise last_exception
+    raise Exception("Unknown error in retry logic")
+
+
 async def _generate_summary_for_batch(
     profile_id: str,
     profile_name: str,
@@ -1447,18 +1784,17 @@ Respond in JSON format only:
     system_message = "You are an expert at analyzing LinkedIn posts and generating professional summaries. Always respond with valid JSON only."
     
     try:
-        completion = openai_client.chat.completions.create(
-            model="gpt-4o-mini",
+        result = await _call_openai_with_retry(
+            profile_id=profile_id,
             messages=[
                 {"role": "system", "content": system_message},
                 {"role": "user", "content": user_prompt}
             ],
             max_tokens=1000 if not is_final else 1500,
-            temperature=0.3,
-            response_format={"type": "json_object"}
+            max_retries=3,
+            initial_delay=1.0,
+            validate_summary=is_final  # Only validate summary for final batches
         )
-        
-        result = json.loads(completion.choices[0].message.content)
         
         return {
             "summary": result.get("summary", ""),
@@ -1466,7 +1802,8 @@ Respond in JSON format only:
             "keywords": result.get("keywords", [])
         }
     except Exception as e:
-        logger.error(f"Error generating batch summary for profile {profile_id}: {e}")
+        logger.error(f"Error generating batch summary for profile {profile_id} after retries: {e}")
+        logger.error(f"Exception type: {type(e).__name__}")
         return {
             "summary": None,
             "highlights": [],
@@ -1577,11 +1914,12 @@ async def generate_profile_summary_from_posts(
         if batch_result.get("highlights"):
             all_highlights.extend(batch_result["highlights"])
         
-        # Small delay between batches to avoid rate limits
-        await asyncio.sleep(0.3)
+        # Increased delay between batches to avoid rate limits
+        await asyncio.sleep(0.8)  # Increased from 0.3 to 0.8 seconds
     
     # Reduce phase: Combine batch summaries into final summary
     if not batch_summaries:
+        logger.error(f"Profile {profile_id}: All batches failed - no summaries to combine")
         return {
             "summary": None,
             "highlights": [],
@@ -1624,18 +1962,17 @@ Respond in JSON format only:
 }}"""
     
     try:
-        completion = openai_client.chat.completions.create(
-            model="gpt-4o-mini",
+        result = await _call_openai_with_retry(
+            profile_id=profile_id,
             messages=[
                 {"role": "system", "content": "You are an expert at synthesizing multiple summaries into one comprehensive analysis. Always respond with valid JSON only."},
                 {"role": "user", "content": combine_prompt}
             ],
             max_tokens=1500,
-            temperature=0.3,
-            response_format={"type": "json_object"}
+            max_retries=3,
+            initial_delay=1.0,
+            validate_summary=True  # Always validate for combine phase (final summary)
         )
-        
-        result = json.loads(completion.choices[0].message.content)
         
         return {
             "summary": result.get("summary", ""),
@@ -1643,10 +1980,14 @@ Respond in JSON format only:
             "keywords": result.get("keywords", unique_keywords)
         }
     except Exception as e:
-        logger.error(f"Error combining batch summaries for profile {profile_id}: {e}")
+        logger.error(f"Error combining batch summaries for profile {profile_id} after retries: {e}")
+        logger.error(f"Exception type: {type(e).__name__}")
         # Fallback: return first batch summary with collected keywords/highlights
+        fallback_summary = batch_summaries[0] if batch_summaries else None
+        if not fallback_summary:
+            logger.error(f"Profile {profile_id}: No batch summaries available for fallback")
         return {
-            "summary": batch_summaries[0] if batch_summaries else None,
+            "summary": fallback_summary,
             "highlights": unique_highlights,
             "keywords": unique_keywords
         }
@@ -1741,6 +2082,20 @@ async def process_profile_summary(
             profile_company=profile_company,
             posts=posts,
         )
+        
+        # ✅ FIX: Validate that summary generation actually succeeded
+        summary_text = summary_result.get("summary")
+        if not summary_text or not summary_text.strip():
+            logger.error(f"Profile {profile_id} ({profile_name}): Summary generation returned empty result")
+            logger.error(f"Summary result keys: {list(summary_result.keys())}")
+            logger.error(f"Summary value: {repr(summary_text)}")
+            return {
+                "profile_id": profile_id,
+                "profile_name": profile_name,
+                "status": "error",
+                "reason": "empty_summary",
+                "error": "OpenAI API call failed or returned empty summary. Check logs for details."
+            }
         
         # Update profile description JSON
         profile_data["summary"] = summary_result["summary"]
@@ -2835,14 +3190,15 @@ async def generate_profile_summaries(audience_room_id: str):
         logger.info(f"Generating summaries for {len(profiles)} profiles in audience room {audience_room_id}")
         
         # Rate-limited batching to avoid OpenAI rate limits / context errors
-        # Process max 3 profiles concurrently (optimized for Tier 2: 2M TPM)
-        MAX_CONCURRENT = 3
+        # Reduced to 2 concurrent profiles to avoid rate limits (was 3)
+        MAX_CONCURRENT = 2
         semaphore = asyncio.Semaphore(MAX_CONCURRENT)
         
         async def rate_limited_process(profile):
             async with semaphore:
                 result = await process_profile_summary(profile, audience_room_id)
-                await asyncio.sleep(0.5)  # Small delay to spread out API requests
+                # Increased delay to spread out API requests and avoid rate limits
+                await asyncio.sleep(1.0)  # Increased from 0.5 to 1.0 seconds
                 return result
         
         tasks = [rate_limited_process(profile) for profile in profiles]
