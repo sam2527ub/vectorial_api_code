@@ -246,6 +246,9 @@ class ParallelSearchRequest(BaseModel):
     model: str = Field("core", description="Model to use: 'core' or 'base'")
     match_limit: int = Field(100, ge=1, le=1000, description="Maximum number of matches to return")
 
+class ParallelSearchPreviewRequest(BaseModel):
+    query: str = Field(..., description="Search query string for Parallel FindAll preview")
+
 # --- 3. HELPER FUNCTIONS ---
 
 def calculate_experience_years(experience_list: List[Dict]) -> float:
@@ -1324,6 +1327,425 @@ async def search_parallel_stream(payload: ParallelSearchRequest):
             yield f"data: {json.dumps({'type': 'error', 'message': f'Failed to connect to Parallel API: {str(e)}'})}\n\n"
         except Exception as e:
             logger.error(f"Unexpected error in Parallel search stream: {e}", exc_info=True)
+            yield f"data: {json.dumps({'type': 'error', 'message': f'Unexpected error: {str(e)}'})}\n\n"
+    
+    # Return StreamingResponse with proper SSE headers
+    return StreamingResponse(
+        stream_parallel_events(),
+        media_type="text/event-stream",
+        headers={
+            "Cache-Control": "no-cache",
+            "Connection": "keep-alive",
+            "X-Accel-Buffering": "no"  # Disable buffering in nginx/proxy
+        }
+    )
+
+@app.post("/api/search/parallel/preview")
+async def search_parallel_preview_stream(payload: ParallelSearchPreviewRequest):
+    """
+    Preview search for LinkedIn profiles using Parallel AI FindAll API with real-time SSE streaming.
+    
+    This endpoint is identical to /api/search/parallel but with fixed parameters:
+    - model: "core" (fixed)
+    - match_limit: 10 (fixed)
+    
+    This endpoint:
+    1. Starts a Parallel FindAll run
+    2. Immediately connects to the Parallel SSE endpoint (no polling)
+    3. Proxies and transforms events to frontend format
+    4. For each LinkedIn URL found, fetches profile info from Apify scraper in parallel
+    5. Streams profile info back in real-time via SSE
+    
+    Events handled:
+    - candidate_found: Transformed to frontend format with linkedin_url, match_status, and profile_info
+    - run_completed: Signals completion and closes stream
+    - run_failed: Signals error and closes stream
+    - ping: Keeps connection alive (not forwarded unless needed)
+    """
+    parallel_api_key = os.getenv("PARALLEL_API_KEY")
+    if not parallel_api_key:
+        raise HTTPException(
+            status_code=503,
+            detail="PARALLEL_API_KEY not configured. Please set the environment variable."
+        )
+    
+    parallel_base_url = "https://api.parallel.ai/v1beta/findall"
+    
+    # Headers for Parallel API
+    headers = {
+        "x-api-key": parallel_api_key,
+        "Content-Type": "application/json",
+        "parallel-beta": "findall-2025-09-15"
+    }
+    
+    # Payload for starting the run - FIXED VALUES for preview
+    # model: "core" (fixed)
+    # match_limit: 10 (fixed)
+    run_payload = {
+        "objective": payload.query,
+        "entity_type": "people",
+        "match_conditions": [
+            {
+                "name": "query_match",
+                "description": payload.query
+            }
+        ],
+        "generator": "core",  # Fixed to "core"
+        "match_limit": 10  # Fixed to 10
+    }
+    
+    async def stream_parallel_events():
+        """
+        Generator function that:
+        1. Starts the Parallel FindAll run
+        2. Immediately connects to SSE stream
+        3. Transforms and forwards events to frontend
+        4. For each LinkedIn URL, fetches profile info from Apify in parallel
+        5. Streams profile info updates in real-time
+        """
+        run_id = None
+        # Queue to hold profile info updates from Apify
+        profile_info_queue = asyncio.Queue()
+        # Track active Apify tasks
+        active_tasks = set()
+        
+        async def fetch_and_queue_profile_info(linkedin_url: str, profile_data: Dict[str, Any]):
+            """Fetch profile info from Apify and queue it for streaming"""
+            try:
+                profile_info = await fetch_linkedin_profile_info(linkedin_url)
+                if profile_info:
+                    await profile_info_queue.put({
+                        "linkedin_url": linkedin_url,
+                        "profile_info": profile_info,
+                        "original_data": profile_data
+                    })
+            except Exception as e:
+                logger.error(f"Error in fetch_and_queue_profile_info for {linkedin_url}: {e}")
+        
+        try:
+            # Step 1: Start the FindAll run
+            async with httpx.AsyncClient(timeout=30.0) as client:
+                logger.info(f"Starting Parallel FindAll preview run with query: {payload.query}")
+                
+                start_response = await client.post(
+                    f"{parallel_base_url}/runs",
+                    json=run_payload,
+                    headers=headers
+                )
+                
+                # Accept both 200 and 201 as success status codes
+                if start_response.status_code not in [200, 201]:
+                    error_detail = start_response.text
+                    logger.error(f"Failed to start Parallel preview run: {error_detail}")
+                    yield f"data: {json.dumps({'type': 'error', 'message': f'Failed to start run: {error_detail}'})}\n\n"
+                    return
+                
+                run_data = start_response.json()
+                run_id = run_data.get("findall_id") or run_data.get("id") or run_data.get("run_id")
+                
+                if not run_id:
+                    logger.error(f"No run ID in response: {run_data}")
+                    yield f"data: {json.dumps({'type': 'error', 'message': 'No run ID returned from Parallel API'})}\n\n"
+                    return
+                
+                logger.info(f"Parallel FindAll preview run started successfully: {run_id}")
+                
+                # Step 2: Immediately connect to SSE endpoint (NO POLLING)
+                sse_headers = {
+                    "x-api-key": parallel_api_key,
+                    "Accept": "text/event-stream",
+                    "parallel-beta": "findall-2025-09-15"
+                }
+                
+                sse_url = f"{parallel_base_url}/runs/{run_id}/events"
+                logger.info(f"Connecting to SSE stream: {sse_url}")
+                
+                # Connect to Parallel SSE stream
+                async with client.stream(
+                    "GET",
+                    sse_url,
+                    headers=sse_headers,
+                    timeout=None  # No timeout for streaming
+                ) as sse_response:
+                    
+                    if sse_response.status_code != 200:
+                        error_detail = await sse_response.aread()
+                        error_text = error_detail.decode('utf-8', errors='ignore') if error_detail else "Unknown error"
+                        logger.error(f"Failed to connect to SSE stream: {error_text}")
+                        yield f"data: {json.dumps({'type': 'error', 'message': f'Failed to connect to SSE stream: {error_text}'})}\n\n"
+                        return
+                    
+                    # Step 3: Process SSE stream and forward events
+                    buffer = ""
+                    stream_completed = False
+                    
+                    async for chunk in sse_response.aiter_bytes():
+                        if not chunk:
+                            continue
+                        
+                        try:
+                            # Decode chunk and add to buffer
+                            buffer += chunk.decode('utf-8', errors='replace')
+                            
+                            # Process complete lines
+                            while '\n' in buffer:
+                                line, buffer = buffer.split('\n', 1)
+                                line = line.strip()
+                                
+                                if not line:
+                                    continue
+                                
+                                # Handle SSE format: "data: {...}" or "event: ..." followed by "data: ..."
+                                if line.startswith('event: '):
+                                    # Store event type if needed, but we'll use the data line
+                                    continue
+                                elif line.startswith('data: '):
+                                    event_json = line[6:]  # Remove "data: " prefix
+                                elif line.startswith('id: '):
+                                    # SSE event ID, skip
+                                    continue
+                                elif line.startswith('retry: '):
+                                    # SSE retry interval, skip
+                                    continue
+                                else:
+                                    # Assume it's a data line without prefix
+                                    event_json = line
+                                
+                                if not event_json:
+                                    continue
+                                
+                                # Check for profile info updates from Apify (non-blocking)
+                                while not profile_info_queue.empty():
+                                    try:
+                                        update = profile_info_queue.get_nowait()
+                                        linkedin_url = update["linkedin_url"]
+                                        profile_info = update["profile_info"]
+                                        original_data = update["original_data"]
+                                        
+                                        # Extract only required fields from Apify data
+                                        extracted_profile = extract_apify_profile_fields(profile_info) if profile_info else {}
+                                        
+                                        # Yield profile update with extracted Apify data
+                                        profile_update = {
+                                            "type": "profile_update",
+                                            "status": original_data.get("status", "matched"),
+                                            "data": {
+                                                "url": linkedin_url,
+                                                "summary": original_data.get("data", {}).get("summary", ""),
+                                                "reasoning": original_data.get("data", {}).get("reasoning", ""),
+                                                "apify_data": extracted_profile  # Extracted Apify fields
+                                            }
+                                        }
+                                        yield f"data: {json.dumps(profile_update)}\n\n"
+                                        logger.info(f"Forwarded profile info update for: {linkedin_url}")
+                                    except Exception as e:
+                                        logger.error(f"Error processing profile info update: {e}")
+                                        break
+                                
+                                try:
+                                    # Parse the event JSON
+                                    event_data = json.loads(event_json)
+                                    
+                                    # Extract event type - check multiple possible fields
+                                    event_type = (
+                                        event_data.get("type") or 
+                                        event_data.get("event") or 
+                                        event_data.get("event_type") or
+                                        ""
+                                    ).lower()
+                                    
+                                    # Handle candidate events - Parallel API uses findall.candidate.matched/unmatched
+                                    if "candidate" in event_type:
+                                        # Parallel API event types: findall.candidate.matched, findall.candidate.unmatched, findall.candidate.generated
+                                        if "matched" in event_type or "unmatched" in event_type or "generated" in event_type:
+                                            # Extract candidate data - check both direct data and nested candidate
+                                            candidate = event_data.get("data", {})
+                                            # Sometimes candidate is nested
+                                            if "candidate" in candidate:
+                                                candidate = candidate.get("candidate", {})
+                                            
+                                            # Extract linkedin_url (check multiple possible fields)
+                                            linkedin_url = (
+                                                candidate.get("linkedin_url") or 
+                                                candidate.get("url") or 
+                                                candidate.get("profile_url") or
+                                                candidate.get("linkedin_profile_url") or
+                                                ""
+                                            )
+                                            
+                                            # Extract match_status based on event type
+                                            if "matched" in event_type:
+                                                match_status = "matched"
+                                            else:
+                                                match_status = "unmatched"
+                                            
+                                            # Extract summary/description
+                                            summary = (
+                                                candidate.get("summary") or 
+                                                candidate.get("description") or
+                                                candidate.get("profile_summary") or
+                                                candidate.get("bio") or
+                                                ""
+                                            )
+                                            
+                                            # Extract reasoning/basis
+                                            reasoning = (
+                                                candidate.get("reasoning") or 
+                                                candidate.get("basis") or
+                                                candidate.get("match_reason") or
+                                                candidate.get("explanation") or
+                                                ""
+                                            )
+                                            
+                                            # Transform to frontend format
+                                            transformed = {
+                                                "type": "profile",
+                                                "status": match_status,
+                                                "data": {
+                                                    "url": linkedin_url,
+                                                    "summary": summary,
+                                                    "reasoning": reasoning,
+                                                    "apify_data": None  # Will be populated when Apify returns
+                                                }
+                                            }
+                                            
+                                            # Forward if we have a LinkedIn URL, or log for debugging
+                                            if linkedin_url:
+                                                # First, yield the profile event immediately with URL
+                                                yield f"data: {json.dumps(transformed)}\n\n"
+                                                logger.info(f"Forwarded candidate: {linkedin_url} ({match_status})")
+                                                
+                                                # Then, trigger Apify scraper in parallel (non-blocking)
+                                                task = asyncio.create_task(
+                                                    fetch_and_queue_profile_info(linkedin_url, transformed)
+                                                )
+                                                active_tasks.add(task)
+                                                task.add_done_callback(active_tasks.discard)
+                                            else:
+                                                # Log the event for debugging
+                                                logger.debug(f"Candidate event without LinkedIn URL: {json.dumps(event_data)[:500]}")
+                                    
+                                    # Handle run_completed
+                                    elif "run_completed" in event_type or "completed" in event_type:
+                                        logger.info("Parallel preview run completed")
+                                        stream_completed = True
+                                        # Don't return yet - wait for pending Apify tasks
+                                        break
+                                    
+                                    # Handle run_failed
+                                    elif "run_failed" in event_type or "failed" in event_type:
+                                        error_msg = (
+                                            event_data.get("data", {}).get("error") or 
+                                            event_data.get("data", {}).get("message") or
+                                            event_data.get("message") or
+                                            event_data.get("error") or
+                                            "Run failed"
+                                        )
+                                        logger.error(f"Parallel preview run failed: {error_msg}")
+                                        yield f"data: {json.dumps({'type': 'error', 'message': error_msg})}\n\n"
+                                        return
+                                    
+                                    # Handle ping events (keep-alive)
+                                    elif event_type == "ping":
+                                        # Don't forward pings to frontend (they're just keep-alive)
+                                        # Uncomment the line below if you want to forward pings for health checks:
+                                        # yield f"data: {json.dumps({'type': 'ping'})}\n\n"
+                                        continue
+                                    
+                                    else:
+                                        # Log ALL events for debugging to see what Parallel is sending
+                                        logger.info(f"Received Parallel event - type: {event_type}, data: {json.dumps(event_data)[:500]}")
+                                        continue
+                                        
+                                except json.JSONDecodeError as e:
+                                    logger.warning(f"Failed to parse event JSON: {event_json[:100]}..., error: {e}")
+                                    continue
+                                    
+                        except UnicodeDecodeError:
+                            # Handle partial UTF-8 sequences - wait for more data
+                            continue
+                        except Exception as e:
+                            logger.error(f"Error processing SSE chunk: {e}")
+                            continue
+                    
+                    # Step 4: Process profile info updates from Apify as they arrive
+                    # Continue processing queue items and active tasks
+                    while active_tasks or not profile_info_queue.empty():
+                        # Check for profile info updates (with timeout to allow checking active tasks)
+                        try:
+                            update = await asyncio.wait_for(profile_info_queue.get(), timeout=1.0)
+                            linkedin_url = update["linkedin_url"]
+                            profile_info = update["profile_info"]
+                            original_data = update["original_data"]
+                            
+                            # Extract only required fields from Apify data
+                            extracted_profile = extract_apify_profile_fields(profile_info) if profile_info else {}
+                            
+                            # Yield profile update with extracted Apify data
+                            profile_update = {
+                                "type": "profile_update",
+                                "status": original_data.get("status", "matched"),
+                                "data": {
+                                    "url": linkedin_url,
+                                    "summary": original_data.get("data", {}).get("summary", ""),
+                                    "reasoning": original_data.get("data", {}).get("reasoning", ""),
+                                    "apify_data": extracted_profile  # Extracted Apify fields
+                                }
+                            }
+                            yield f"data: {json.dumps(profile_update)}\n\n"
+                            logger.info(f"Forwarded profile info update for: {linkedin_url}")
+                        except asyncio.TimeoutError:
+                            # Timeout is fine - just check if we should continue
+                            continue
+                        except Exception as e:
+                            logger.error(f"Error processing profile info update: {e}")
+                            continue
+                    
+                    # Wait for all active Apify tasks to complete (with timeout)
+                    if active_tasks:
+                        logger.info(f"Waiting for {len(active_tasks)} active Apify tasks to complete...")
+                        try:
+                            await asyncio.wait_for(
+                                asyncio.gather(*active_tasks, return_exceptions=True),
+                                timeout=300  # 5 minutes max wait for remaining tasks
+                            )
+                            # Process any remaining queue items
+                            while not profile_info_queue.empty():
+                                try:
+                                    update = profile_info_queue.get_nowait()
+                                    linkedin_url = update["linkedin_url"]
+                                    profile_info = update["profile_info"]
+                                    original_data = update["original_data"]
+                                    
+                                    profile_update = {
+                                        "type": "profile_update",
+                                        "status": original_data.get("status", "matched"),
+                                        "data": {
+                                            "url": linkedin_url,
+                                            "summary": original_data.get("data", {}).get("summary", ""),
+                                            "reasoning": original_data.get("data", {}).get("reasoning", ""),
+                                            "profile_info": profile_info
+                                        }
+                                    }
+                                    yield f"data: {json.dumps(profile_update)}\n\n"
+                                    logger.info(f"Forwarded profile info update for: {linkedin_url}")
+                                except Exception as e:
+                                    logger.error(f"Error processing final profile info update: {e}")
+                        except asyncio.TimeoutError:
+                            logger.warning("Timeout waiting for Apify tasks to complete")
+                    
+                    # If we exit the stream loop normally, send completion
+                    logger.info("SSE stream ended normally")
+                    yield f"data: {json.dumps({'type': 'completed', 'message': 'Stream ended'})}\n\n"
+                    
+        except httpx.TimeoutException:
+            logger.error("Request to Parallel API timed out")
+            yield f"data: {json.dumps({'type': 'error', 'message': 'Request to Parallel API timed out'})}\n\n"
+        except httpx.RequestError as e:
+            logger.error(f"Request error connecting to Parallel API: {e}")
+            yield f"data: {json.dumps({'type': 'error', 'message': f'Failed to connect to Parallel API: {str(e)}'})}\n\n"
+        except Exception as e:
+            logger.error(f"Unexpected error in Parallel preview search stream: {e}", exc_info=True)
             yield f"data: {json.dumps({'type': 'error', 'message': f'Unexpected error: {str(e)}'})}\n\n"
     
     # Return StreamingResponse with proper SSE headers
