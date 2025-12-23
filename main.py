@@ -1347,7 +1347,7 @@ async def search_parallel_preview_stream(payload: ParallelSearchPreviewRequest):
     
     This endpoint is identical to /api/search/parallel but with fixed parameters:
     - model: "core" (fixed)
-    - match_limit: 10 (fixed)
+    - match_limit: 5 (fixed)
     
     This endpoint:
     1. Starts a Parallel FindAll run
@@ -1380,7 +1380,7 @@ async def search_parallel_preview_stream(payload: ParallelSearchPreviewRequest):
     
     # Payload for starting the run - FIXED VALUES for preview
     # model: "core" (fixed)
-    # match_limit: 10 (fixed)
+    # match_limit: 5 (fixed)
     run_payload = {
         "objective": payload.query,
         "entity_type": "people",
@@ -1391,7 +1391,7 @@ async def search_parallel_preview_stream(payload: ParallelSearchPreviewRequest):
             }
         ],
         "generator": "core",  # Fixed to "core"
-        "match_limit": 10  # Fixed to 10
+        "match_limit": 5  # Fixed to 5
     }
     
     async def stream_parallel_events():
@@ -1615,12 +1615,16 @@ async def search_parallel_preview_stream(payload: ParallelSearchPreviewRequest):
                                                 yield f"data: {json.dumps(transformed)}\n\n"
                                                 logger.info(f"Forwarded candidate: {linkedin_url} ({match_status})")
                                                 
-                                                # Then, trigger Apify scraper in parallel (non-blocking)
-                                                task = asyncio.create_task(
-                                                    fetch_and_queue_profile_info(linkedin_url, transformed)
-                                                )
-                                                active_tasks.add(task)
-                                                task.add_done_callback(active_tasks.discard)
+                                                # Only trigger Apify scraper for matched profiles
+                                                if match_status == "matched":
+                                                    # Then, trigger Apify scraper in parallel (non-blocking)
+                                                    task = asyncio.create_task(
+                                                        fetch_and_queue_profile_info(linkedin_url, transformed)
+                                                    )
+                                                    active_tasks.add(task)
+                                                    task.add_done_callback(active_tasks.discard)
+                                                else:
+                                                    logger.info(f"Skipping Apify enrichment for unmatched profile: {linkedin_url}")
                                             else:
                                                 # Log the event for debugging
                                                 logger.debug(f"Candidate event without LinkedIn URL: {json.dumps(event_data)[:500]}")

@@ -27,8 +27,8 @@ The Parallel Search Preview API allows you to quickly preview LinkedIn profile s
 - Natural language search queries
 - Automatic profile matching with reasoning
 - No polling required - results stream as they're found
-- **Fixed parameters for consistency**: Uses "core" model and returns up to 10 matches
-- **Automatic profile enrichment**: Each LinkedIn URL is automatically scraped using Apify to fetch full profile information
+- **Fixed parameters for consistency**: Uses "core" model and returns up to 5 matches
+- **Automatic profile enrichment**: Only matched LinkedIn URLs are automatically scraped using Apify to fetch full profile information (unmatched profiles are not enriched)
 - **Parallel processing**: Profile scraping happens in parallel for all URLs, providing real-time updates
 
 **Base URL**: `https://audience-workflow.vercel.app`
@@ -62,7 +62,7 @@ text/event-stream (Server-Sent Events)
 
 This endpoint uses fixed parameters that cannot be customized:
 - **Model**: `"core"` (fixed) - Uses the more accurate model for better results
-- **Match Limit**: `10` (fixed) - Returns up to 10 profile matches
+- **Match Limit**: `5` (fixed) - Returns up to 5 profile matches
 
 For customizable parameters, use the main `/api/search/parallel` endpoint instead.
 
@@ -252,7 +252,7 @@ Sent when profile information is successfully fetched from the Apify LinkedIn pr
 | `data.reasoning` | string | Match reasoning from Parallel API |
 | `data.apify_data` | object | Full profile information scraped from LinkedIn via Apify |
 
-**Note:** Profile updates are fetched in parallel for each LinkedIn URL as they arrive. The `profile_update` event may arrive shortly after the initial `profile` event, depending on Apify scraper response time.
+**Note:** Profile updates are fetched in parallel for matched LinkedIn URLs only. Unmatched profiles will not receive `profile_update` events. The `profile_update` event may arrive shortly after the initial `profile` event, depending on Apify scraper response time.
 
 ### Completed Event
 
@@ -603,7 +603,7 @@ function PreviewSearchComponent() {
 
       {error && <div className="error">{error}</div>}
 
-      {isLoading && <div>Loading profiles... (up to 10 results)</div>}
+      {isLoading && <div>Loading profiles... (up to 5 results)</div>}
 
       <div>
         <h3>Found {profiles.length} profiles</h3>
@@ -642,7 +642,7 @@ function PreviewSearchComponent() {
     <button @click="reset">Reset</button>
 
     <div v-if="error" class="error">{{ error }}</div>
-    <div v-if="isLoading">Loading profiles... (up to 10 results)</div>
+    <div v-if="isLoading">Loading profiles... (up to 5 results)</div>
     <div v-if="isComplete">Preview search completed! Found {{ profiles.length }} profiles.</div>
 
     <div v-for="(profile, index) in profiles" :key="index">
@@ -834,8 +834,8 @@ if (event.type === 'error') {
 
 ### 2. Performance
 
-- This endpoint uses fixed parameters (`model: "core"`, `match_limit: 10`) for consistent, fast previews
-- Results are limited to 10 profiles, making it ideal for quick testing
+- This endpoint uses fixed parameters (`model: "core"`, `match_limit: 5`) for consistent, fast previews
+- Results are limited to 5 profiles, making it ideal for quick testing
 - For larger searches with custom parameters, use `/api/search/parallel` instead
 - Cancel previous searches when starting a new one
 
@@ -843,10 +843,10 @@ if (event.type === 'error') {
 
 - Show loading state while `isLoading` is true
 - Display profiles as they arrive (real-time updates)
-- Show progress: "Found X of 10 profiles..."
+- Show progress: "Found X of 5 profiles..."
 - Handle errors gracefully with user-friendly messages
 - Allow users to cancel/stop the search
-- Indicate that this is a preview (limited to 10 results)
+- Indicate that this is a preview (limited to 5 results)
 - Show when profile data is being enriched (waiting for `profile_update` events)
 
 ### 4. State Management
@@ -892,7 +892,7 @@ if (event.type === 'error') {
 ### Slow performance
 
 1. **This endpoint uses "core" model** - it's optimized for accuracy, may be slower than "base"
-2. **Limited to 10 results** - should complete faster than larger searches
+2. **Limited to 5 results** - should complete faster than larger searches
 3. **Simplify query** - complex queries take longer
 4. **Check network latency** - Parallel API response time varies
 
@@ -911,7 +911,7 @@ If you encounter CORS errors:
 
 Use `/api/search/parallel/preview` when:
 - ✅ You want to quickly test a search query
-- ✅ You only need up to 10 results
+- ✅ You only need up to 5 results
 - ✅ You want consistent, predictable behavior
 - ✅ You're building a preview/quick search feature
 - ✅ You want to demonstrate search functionality
@@ -919,7 +919,7 @@ Use `/api/search/parallel/preview` when:
 ### When to Use Main API
 
 Use `/api/search/parallel` when:
-- ✅ You need more than 10 results (up to 1000)
+- ✅ You need more than 5 results (up to 1000)
 - ✅ You want to customize the model (`core` or `base`)
 - ✅ You need to adjust the match limit
 - ✅ You're running production searches
@@ -931,7 +931,7 @@ Use `/api/search/parallel` when:
 | **Endpoint** | `/api/search/parallel/preview` | `/api/search/parallel` |
 | **Query** | Required | Required |
 | **Model** | Fixed: `"core"` | Configurable: `"core"` or `"base"` |
-| **Match Limit** | Fixed: `10` | Configurable: `1-1000` (default: `100`) |
+| **Match Limit** | Fixed: `5` | Configurable: `1-1000` (default: `100`) |
 | **Use Case** | Quick previews, testing | Production searches |
 | **Response Format** | Same SSE format | Same SSE format |
 | **Profile Enrichment** | Yes (Apify) | Yes (Apify) |
@@ -963,5 +963,5 @@ For issues or questions:
 **Last Updated**: 2025-01-XX
 **API Version**: v1
 **Endpoint**: `/api/search/parallel/preview`
-**Fixed Parameters**: `model: "core"`, `match_limit: 10`
+**Fixed Parameters**: `model: "core"`, `match_limit: 5`
 
