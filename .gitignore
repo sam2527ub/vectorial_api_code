@@ -1,3 +1,9 @@
 __pycache__/
 *.pyc
 .env
+
+# AWS/CDK specific files (not needed for Vercel deployment)
+cdk/
+cdk-outputs.json
+deploy-aws.sh
+Dockerfile

@@ -991,15 +991,33 @@ async def search_parallel_stream(payload: ParallelSearchRequest):
         active_tasks = set()
         
         async def fetch_and_queue_profile_info(linkedin_url: str, profile_data: Dict[str, Any]):
-            """Fetch profile info from Apify and queue it for streaming"""
+            """Fetch profile info from Apify and queue it for streaming - only if profile exists"""
             try:
                 profile_info = await fetch_linkedin_profile_info(linkedin_url)
-                if profile_info:
-                    await profile_info_queue.put({
-                        "linkedin_url": linkedin_url,
-                        "profile_info": profile_info,
-                        "original_data": profile_data
-                    })
+                if profile_info and isinstance(profile_info, dict):
+                    # Validate that profile has meaningful data (indicates profile exists)
+                    # Check for key indicators that profile exists
+                    has_valid_data = (
+                        profile_info.get("fullName") or 
+                        profile_info.get("jobTitle") or 
+                        profile_info.get("companyName") or
+                        profile_info.get("about") or
+                        profile_info.get("headline")
+                    )
+                    if has_valid_data:
+                        await profile_info_queue.put({
+                            "linkedin_url": linkedin_url,
+                            "profile_info": profile_info,
+                            "original_data": profile_data,
+                            "is_valid": True
+                        })
+                        logger.info(f"Profile validated and queued: {linkedin_url}")
+                    else:
+                        # Profile doesn't exist or has no meaningful data
+                        logger.warning(f"Profile validation failed for {linkedin_url}: No valid data returned from Apify")
+                else:
+                    # Apify returned None or invalid data - profile doesn't exist
+                    logger.warning(f"Profile validation failed for {linkedin_url}: Apify returned None or invalid data")
             except Exception as e:
                 logger.error(f"Error in fetch_and_queue_profile_info for {linkedin_url}: {e}")
         
@@ -1102,11 +1120,22 @@ async def search_parallel_stream(payload: ParallelSearchRequest):
                                         linkedin_url = update["linkedin_url"]
                                         profile_info = update["profile_info"]
                                         original_data = update["original_data"]
+                                        is_valid = update.get("is_valid", False)
+                                        
+                                        # Only send profiles that passed validation
+                                        if not is_valid:
+                                            logger.info(f"Skipping invalid/non-existent profile: {linkedin_url}")
+                                            continue
                                         
                                         # Extract only required fields from Apify data
                                         extracted_profile = extract_apify_profile_fields(profile_info) if profile_info else {}
                                         
-                                        # Yield profile update with extracted Apify data
+                                        # Double-check extracted data has meaningful content
+                                        if not extracted_profile or (not extracted_profile.get("fullName") and not extracted_profile.get("jobTitle")):
+                                            logger.warning(f"Skipping profile with insufficient data: {linkedin_url}")
+                                            continue
+                                        
+                                        # Yield profile update with extracted Apify data (only valid profiles)
                                         profile_update = {
                                             "type": "profile_update",
                                             "status": original_data.get("status", "matched"),
@@ -1118,7 +1147,7 @@ async def search_parallel_stream(payload: ParallelSearchRequest):
                                             }
                                         }
                                         yield f"data: {json.dumps(profile_update)}\n\n"
-                                        logger.info(f"Forwarded profile info update for: {linkedin_url}")
+                                        logger.info(f"Forwarded validated profile: {linkedin_url}")
                                     except Exception as e:
                                         logger.error(f"Error processing profile info update: {e}")
                                         break
@@ -1192,11 +1221,9 @@ async def search_parallel_stream(payload: ParallelSearchRequest):
                                             
                                             # Forward if we have a LinkedIn URL, or log for debugging
                                             if linkedin_url:
-                                                # First, yield the profile event immediately with URL
-                                                yield f"data: {json.dumps(transformed)}\n\n"
-                                                logger.info(f"Forwarded candidate: {linkedin_url} ({match_status})")
-                                                
-                                                # Then, trigger Apify scraper in parallel (non-blocking)
+                                                # DON'T send immediately - wait for Apify validation first
+                                                # Trigger Apify scraper to validate profile exists
+                                                logger.info(f"Validating candidate: {linkedin_url} ({match_status})")
                                                 task = asyncio.create_task(
                                                     fetch_and_queue_profile_info(linkedin_url, transformed)
                                                 )
@@ -1258,11 +1285,22 @@ async def search_parallel_stream(payload: ParallelSearchRequest):
                             linkedin_url = update["linkedin_url"]
                             profile_info = update["profile_info"]
                             original_data = update["original_data"]
+                            is_valid = update.get("is_valid", False)
+                            
+                            # Only send profiles that passed validation
+                            if not is_valid:
+                                logger.info(f"Skipping invalid/non-existent profile: {linkedin_url}")
+                                continue
                             
                             # Extract only required fields from Apify data
                             extracted_profile = extract_apify_profile_fields(profile_info) if profile_info else {}
                             
-                            # Yield profile update with extracted Apify data
+                            # Double-check extracted data has meaningful content
+                            if not extracted_profile or (not extracted_profile.get("fullName") and not extracted_profile.get("jobTitle")):
+                                logger.warning(f"Skipping profile with insufficient data: {linkedin_url}")
+                                continue
+                            
+                            # Yield profile update with extracted Apify data (only valid profiles)
                             profile_update = {
                                 "type": "profile_update",
                                 "status": original_data.get("status", "matched"),
@@ -1274,7 +1312,7 @@ async def search_parallel_stream(payload: ParallelSearchRequest):
                                 }
                             }
                             yield f"data: {json.dumps(profile_update)}\n\n"
-                            logger.info(f"Forwarded profile info update for: {linkedin_url}")
+                            logger.info(f"Forwarded validated profile: {linkedin_url}")
                         except asyncio.TimeoutError:
                             # Timeout is fine - just check if we should continue
                             continue
@@ -1297,6 +1335,20 @@ async def search_parallel_stream(payload: ParallelSearchRequest):
                                     linkedin_url = update["linkedin_url"]
                                     profile_info = update["profile_info"]
                                     original_data = update["original_data"]
+                                    is_valid = update.get("is_valid", False)
+                                    
+                                    # Only send profiles that passed validation
+                                    if not is_valid:
+                                        logger.info(f"Skipping invalid/non-existent profile: {linkedin_url}")
+                                        continue
+                                    
+                                    # Extract only required fields from Apify data
+                                    extracted_profile = extract_apify_profile_fields(profile_info) if profile_info else {}
+                                    
+                                    # Double-check extracted data has meaningful content
+                                    if not extracted_profile or (not extracted_profile.get("fullName") and not extracted_profile.get("jobTitle")):
+                                        logger.warning(f"Skipping profile with insufficient data: {linkedin_url}")
+                                        continue
                                     
                                     profile_update = {
                                         "type": "profile_update",
@@ -1305,11 +1357,11 @@ async def search_parallel_stream(payload: ParallelSearchRequest):
                                             "url": linkedin_url,
                                             "summary": original_data.get("data", {}).get("summary", ""),
                                             "reasoning": original_data.get("data", {}).get("reasoning", ""),
-                                            "profile_info": profile_info
+                                            "apify_data": extracted_profile
                                         }
                                     }
                                     yield f"data: {json.dumps(profile_update)}\n\n"
-                                    logger.info(f"Forwarded profile info update for: {linkedin_url}")
+                                    logger.info(f"Forwarded validated profile: {linkedin_url}")
                                 except Exception as e:
                                     logger.error(f"Error processing final profile info update: {e}")
                         except asyncio.TimeoutError:
@@ -1410,15 +1462,33 @@ async def search_parallel_preview_stream(payload: ParallelSearchPreviewRequest):
         active_tasks = set()
         
         async def fetch_and_queue_profile_info(linkedin_url: str, profile_data: Dict[str, Any]):
-            """Fetch profile info from Apify and queue it for streaming"""
+            """Fetch profile info from Apify and queue it for streaming - only if profile exists"""
             try:
                 profile_info = await fetch_linkedin_profile_info(linkedin_url)
-                if profile_info:
-                    await profile_info_queue.put({
-                        "linkedin_url": linkedin_url,
-                        "profile_info": profile_info,
-                        "original_data": profile_data
-                    })
+                if profile_info and isinstance(profile_info, dict):
+                    # Validate that profile has meaningful data (indicates profile exists)
+                    # Check for key indicators that profile exists
+                    has_valid_data = (
+                        profile_info.get("fullName") or 
+                        profile_info.get("jobTitle") or 
+                        profile_info.get("companyName") or
+                        profile_info.get("about") or
+                        profile_info.get("headline")
+                    )
+                    if has_valid_data:
+                        await profile_info_queue.put({
+                            "linkedin_url": linkedin_url,
+                            "profile_info": profile_info,
+                            "original_data": profile_data,
+                            "is_valid": True
+                        })
+                        logger.info(f"Profile validated and queued: {linkedin_url}")
+                    else:
+                        # Profile doesn't exist or has no meaningful data
+                        logger.warning(f"Profile validation failed for {linkedin_url}: No valid data returned from Apify")
+                else:
+                    # Apify returned None or invalid data - profile doesn't exist
+                    logger.warning(f"Profile validation failed for {linkedin_url}: Apify returned None or invalid data")
             except Exception as e:
                 logger.error(f"Error in fetch_and_queue_profile_info for {linkedin_url}: {e}")
         
@@ -1521,11 +1591,22 @@ async def search_parallel_preview_stream(payload: ParallelSearchPreviewRequest):
                                         linkedin_url = update["linkedin_url"]
                                         profile_info = update["profile_info"]
                                         original_data = update["original_data"]
+                                        is_valid = update.get("is_valid", False)
+                                        
+                                        # Only send profiles that passed validation
+                                        if not is_valid:
+                                            logger.info(f"Skipping invalid/non-existent profile: {linkedin_url}")
+                                            continue
                                         
                                         # Extract only required fields from Apify data
                                         extracted_profile = extract_apify_profile_fields(profile_info) if profile_info else {}
                                         
-                                        # Yield profile update with extracted Apify data
+                                        # Double-check extracted data has meaningful content
+                                        if not extracted_profile or (not extracted_profile.get("fullName") and not extracted_profile.get("jobTitle")):
+                                            logger.warning(f"Skipping profile with insufficient data: {linkedin_url}")
+                                            continue
+                                        
+                                        # Yield profile update with extracted Apify data (only valid profiles)
                                         profile_update = {
                                             "type": "profile_update",
                                             "status": original_data.get("status", "matched"),
@@ -1537,7 +1618,7 @@ async def search_parallel_preview_stream(payload: ParallelSearchPreviewRequest):
                                             }
                                         }
                                         yield f"data: {json.dumps(profile_update)}\n\n"
-                                        logger.info(f"Forwarded profile info update for: {linkedin_url}")
+                                        logger.info(f"Forwarded validated profile: {linkedin_url}")
                                     except Exception as e:
                                         logger.error(f"Error processing profile info update: {e}")
                                         break
@@ -1611,20 +1692,14 @@ async def search_parallel_preview_stream(payload: ParallelSearchPreviewRequest):
                                             
                                             # Forward if we have a LinkedIn URL, or log for debugging
                                             if linkedin_url:
-                                                # First, yield the profile event immediately with URL
-                                                yield f"data: {json.dumps(transformed)}\n\n"
-                                                logger.info(f"Forwarded candidate: {linkedin_url} ({match_status})")
-                                                
-                                                # Only trigger Apify scraper for matched profiles
-                                                if match_status == "matched":
-                                                    # Then, trigger Apify scraper in parallel (non-blocking)
-                                                    task = asyncio.create_task(
-                                                        fetch_and_queue_profile_info(linkedin_url, transformed)
-                                                    )
-                                                    active_tasks.add(task)
-                                                    task.add_done_callback(active_tasks.discard)
-                                                else:
-                                                    logger.info(f"Skipping Apify enrichment for unmatched profile: {linkedin_url}")
+                                                # DON'T send immediately - wait for Apify validation first
+                                                # Trigger Apify scraper to validate profile exists
+                                                logger.info(f"Validating candidate: {linkedin_url} ({match_status})")
+                                                task = asyncio.create_task(
+                                                    fetch_and_queue_profile_info(linkedin_url, transformed)
+                                                )
+                                                active_tasks.add(task)
+                                                task.add_done_callback(active_tasks.discard)
                                             else:
                                                 # Log the event for debugging
                                                 logger.debug(f"Candidate event without LinkedIn URL: {json.dumps(event_data)[:500]}")
@@ -1681,11 +1756,22 @@ async def search_parallel_preview_stream(payload: ParallelSearchPreviewRequest):
                             linkedin_url = update["linkedin_url"]
                             profile_info = update["profile_info"]
                             original_data = update["original_data"]
+                            is_valid = update.get("is_valid", False)
+                            
+                            # Only send profiles that passed validation
+                            if not is_valid:
+                                logger.info(f"Skipping invalid/non-existent profile: {linkedin_url}")
+                                continue
                             
                             # Extract only required fields from Apify data
                             extracted_profile = extract_apify_profile_fields(profile_info) if profile_info else {}
                             
-                            # Yield profile update with extracted Apify data
+                            # Double-check extracted data has meaningful content
+                            if not extracted_profile or (not extracted_profile.get("fullName") and not extracted_profile.get("jobTitle")):
+                                logger.warning(f"Skipping profile with insufficient data: {linkedin_url}")
+                                continue
+                            
+                            # Yield profile update with extracted Apify data (only valid profiles)
                             profile_update = {
                                 "type": "profile_update",
                                 "status": original_data.get("status", "matched"),
@@ -1697,7 +1783,7 @@ async def search_parallel_preview_stream(payload: ParallelSearchPreviewRequest):
                                 }
                             }
                             yield f"data: {json.dumps(profile_update)}\n\n"
-                            logger.info(f"Forwarded profile info update for: {linkedin_url}")
+                            logger.info(f"Forwarded validated profile: {linkedin_url}")
                         except asyncio.TimeoutError:
                             # Timeout is fine - just check if we should continue
                             continue
@@ -1720,6 +1806,20 @@ async def search_parallel_preview_stream(payload: ParallelSearchPreviewRequest):
                                     linkedin_url = update["linkedin_url"]
                                     profile_info = update["profile_info"]
                                     original_data = update["original_data"]
+                                    is_valid = update.get("is_valid", False)
+                                    
+                                    # Only send profiles that passed validation
+                                    if not is_valid:
+                                        logger.info(f"Skipping invalid/non-existent profile: {linkedin_url}")
+                                        continue
+                                    
+                                    # Extract only required fields from Apify data
+                                    extracted_profile = extract_apify_profile_fields(profile_info) if profile_info else {}
+                                    
+                                    # Double-check extracted data has meaningful content
+                                    if not extracted_profile or (not extracted_profile.get("fullName") and not extracted_profile.get("jobTitle")):
+                                        logger.warning(f"Skipping profile with insufficient data: {linkedin_url}")
+                                        continue
                                     
                                     profile_update = {
                                         "type": "profile_update",
@@ -1728,11 +1828,11 @@ async def search_parallel_preview_stream(payload: ParallelSearchPreviewRequest):
                                             "url": linkedin_url,
                                             "summary": original_data.get("data", {}).get("summary", ""),
                                             "reasoning": original_data.get("data", {}).get("reasoning", ""),
-                                            "profile_info": profile_info
+                                            "apify_data": extracted_profile
                                         }
                                     }
                                     yield f"data: {json.dumps(profile_update)}\n\n"
-                                    logger.info(f"Forwarded profile info update for: {linkedin_url}")
+                                    logger.info(f"Forwarded validated profile: {linkedin_url}")
                                 except Exception as e:
                                     logger.error(f"Error processing final profile info update: {e}")
                         except asyncio.TimeoutError:
