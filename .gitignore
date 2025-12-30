@@ -2,6 +2,10 @@ __pycache__/
 *.pyc
 .env
 
+# Generated Prisma clients (regenerated from schemas)
+prisma_client/
+audience_prisma_client/
+
 # AWS/CDK specific files (not needed for Vercel deployment)
 cdk/
 cdk-outputs.json

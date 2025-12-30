@@ -39,7 +39,7 @@ echo "Generating Prisma client..."
 echo "========================================="
 
 # Generate Prisma client
-python3 -m prisma generate --schema=schema.prisma
+python3 -m prisma generate --schema=prisma/schema.prisma
 
 echo "========================================="
 echo "Verifying Prisma client..."

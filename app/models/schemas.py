@@ -1,0 +1,95 @@
+"""Pydantic models for request/response schemas."""
+from typing import List, Optional
+from pydantic import BaseModel, Field
+
+
+class EnrichRequest(BaseModel):
+    job_title: str = Field(..., example="Machine Learning Engineer")
+
+
+class DescriptionRequest(BaseModel):
+    description: str = Field(..., example="Software Engineers in SF working at Series B companies")
+
+
+class SearchFilters(BaseModel):
+    titles: List[str] = []
+    skills: List[str] = []
+    locations: List[str] = []
+    industries: List[str] = []
+    company_names: List[str] = []
+    company_sizes: List[str] = []
+    education_degrees: List[str] = []
+    seniority_levels: List[str] = []
+    job_roles: List[str] = []
+    
+    # Search Modes
+    role_search_type: str = "Current Role Only"  # Options: "Current Role Only", "Entire History"
+    company_search_type: str = "Current Company Only"  # Options: "Current Company Only", "Entire History"
+    
+    limit: int = 10
+    experience_bucket: str = "Any"  # Handled in Python after API fetch
+
+
+class Cookie(BaseModel):
+    domain: str
+    expirationDate: Optional[float] = None
+    hostOnly: bool = False
+    httpOnly: bool = False
+    name: str
+    path: str = "/"
+    sameSite: Optional[str] = None
+    secure: bool = True
+    session: bool = False
+    storeId: Optional[str] = None
+    value: str
+
+
+class ScrapeRequest(BaseModel):
+    linkedin_urls: List[str] = Field(..., min_items=1, description="List of LinkedIn profile URLs to scrape")
+    max_posts: int = Field(25, ge=1, le=100, description="Maximum number of posts to scrape per profile")
+    cookies: List[Cookie] = Field(..., min_items=1, description="List of cookie objects for authentication")
+    user_agent: str = Field(..., description="User agent string to use for scraping")
+    audience_room_id: Optional[str] = Field(
+        None,
+        description="If provided, scraped posts will be auto-mapped to this audience room when the job completes",
+    )
+
+
+class AudienceProfilePayload(BaseModel):
+    name: str = Field(..., description="Full name of the profile")
+    age: Optional[int] = Field(None, description="Age if available")
+    current_company: Optional[str] = Field(None, description="Current company")
+    current_location: Optional[str] = Field(None, description="Current location")
+    total_years_experience: Optional[float] = Field(None, description="Total years of experience")
+    industry: Optional[str] = Field(None, description="Industry")
+    education: Optional[str] = Field(None, description="Education summary")
+    linkedin_profile_url: str = Field(..., description="LinkedIn profile URL")
+
+
+class CreateAudienceRoomRequest(BaseModel):
+    audience_room_name: str = Field(..., description="Name of the audience room")
+    audience_description: str = Field(..., description="Plain-text description for the audience room")
+    profiles: List[AudienceProfilePayload] = Field(..., min_items=1, description="Profiles to attach to this audience room")
+    userId: str = Field(..., description="User ID associated with this audience room")
+
+
+class RunClassifierRequest(BaseModel):
+    audienceRoomId: str = Field(..., description="ID of the audience room containing profiles to classify")
+    classifierId: str = Field(..., description="ID of the classifier to use for classification")
+
+
+class RunClassifierForProfilesRequest(BaseModel):
+    audienceRoomId: str = Field(..., description="ID of the audience room containing profiles")
+    classifierId: str = Field(..., description="ID of the classifier to use for classification")
+    profileIds: List[str] = Field(..., min_items=1, max_items=5, description="List of profile IDs to classify (max 5 profiles)")
+
+
+class ParallelSearchRequest(BaseModel):
+    query: str = Field(..., description="Search query string for Parallel FindAll")
+    model: str = Field("core", description="Model to use: 'core' or 'base'")
+    match_limit: int = Field(100, ge=1, le=1000, description="Maximum number of matches to return")
+
+
+class ParallelSearchPreviewRequest(BaseModel):
+    query: str = Field(..., description="Search query string for Parallel FindAll preview")
+
