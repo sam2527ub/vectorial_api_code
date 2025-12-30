@@ -60,7 +60,7 @@ async def create_audience_room(payload: CreateAudienceRoomRequest):
             {
                 "id": profile_id,
                 "profileName": profile.name,
-                "linkedinUrl": profile.linkedin_profile_url,
+                "profileUrl": profile.linkedin_profile_url,
                 "profileDescriptionS3Url": profile_url,
                 "postsS3Url": None,
             }
@@ -85,7 +85,7 @@ async def create_audience_room(payload: CreateAudienceRoomRequest):
                 {
                     "profile_id": p.id,
                     "profile_name": p.profileName,
-                    "linkedin_url": p.linkedinUrl,
+                    "linkedin_url": p.profileUrl,
                     "profile_description_s3_url": p.profileDescriptionS3Url,
                     "posts_s3_url": p.postsS3Url,
                 }
