@@ -479,9 +479,14 @@ def update_audience_room(room_id: str, data: Dict[str, Any]) -> Optional[Audienc
             return AudienceRoom(row) if row else None
 
 
-def delete_audience_room(room_id: str) -> bool:
-    """Delete an AudienceRoom (profiles should cascade delete)."""
-    with get_audience_connection() as conn:
+def delete_audience_room(room_id: str, enterprise_name: Optional[str] = None) -> bool:
+    """Delete an AudienceRoom (profiles should cascade delete).
+    
+    Args:
+        room_id: The audience room ID
+        enterprise_name: Optional enterprise name (gamma, app, entelligence). Defaults to AUDIENCE_DATABASE_URL if None.
+    """
+    with get_enterprise_audience_connection(enterprise_name) as conn:
         with conn.cursor() as cur:
             cur.execute('DELETE FROM "AudienceRoom" WHERE id = %s', (room_id,))
             return cur.rowcount > 0
@@ -580,9 +585,14 @@ def update_audience_profile(profile_id: str, data: Dict[str, Any]) -> Optional[A
             return AudienceProfile(row) if row else None
 
 
-def delete_audience_profiles_by_room(room_id: str) -> int:
-    """Delete all profiles in an audience room."""
-    with get_audience_connection() as conn:
+def delete_audience_profiles_by_room(room_id: str, enterprise_name: Optional[str] = None) -> int:
+    """Delete all profiles in an audience room.
+    
+    Args:
+        room_id: The audience room ID
+        enterprise_name: Optional enterprise name (gamma, app, entelligence). Defaults to AUDIENCE_DATABASE_URL if None.
+    """
+    with get_enterprise_audience_connection(enterprise_name) as conn:
         with conn.cursor() as cur:
             cur.execute(
                 'DELETE FROM "AudienceProfile" WHERE "audienceRoomId" = %s',

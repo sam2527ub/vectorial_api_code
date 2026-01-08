@@ -129,7 +129,10 @@ async def create_audience_room(payload: CreateAudienceRoomRequest):
 
 
 @router.delete("/api/v1/audience-rooms/{audience_room_id}")
-async def delete_audience_room(audience_room_id: str = Path(...)):
+async def delete_audience_room(
+    audience_room_id: str = Path(...),
+    enterpriseName: Optional[str] = None
+):
     """
     Delete an audience room and all associated data.
     
@@ -137,14 +140,19 @@ async def delete_audience_room(audience_room_id: str = Path(...)):
     1. Deletes all S3 files associated with the audience room
     2. Deletes all profiles from the AudienceProfile table (cascade delete)
     3. Deletes the audience room from the AudienceRoom table
+    
+    Args:
+        audience_room_id: The audience room ID
+        enterpriseName: Optional enterprise name (gamma, app, entelligence). 
+                       If not provided, uses AUDIENCE_DATABASE_URL.
     """
     ensure_db_available("audience")
     if not s3_client or not s3_bucket:
         raise HTTPException(status_code=503, detail="S3 is not configured; set AUDIENCE_BUCKET_NAME or VECTOR_BUCKET_NAME.")
 
     try:
-        # Fetch audience room with all profiles
-        audience_room = database.find_audience_room_by_id(audience_room_id, include_profiles=True)
+        # Fetch audience room with all profiles using enterprise-specific database if provided
+        audience_room = database.find_audience_room_by_id(audience_room_id, include_profiles=True, enterprise_name=enterpriseName)
         
         if not audience_room:
             raise HTTPException(status_code=404, detail=f"Audience room {audience_room_id} not found")
@@ -188,18 +196,18 @@ async def delete_audience_room(audience_room_id: str = Path(...)):
             logger.error(f"Error deleting S3 files for audience room {audience_room_id}: {e}")
             # Continue with database deletion even if S3 deletion fails
         
-        # Delete all profiles from database first
+        # Delete all profiles from database first using enterprise-specific database if provided
         if profiles:
             try:
-                deleted_count = database.delete_audience_profiles_by_room(audience_room_id)
+                deleted_count = database.delete_audience_profiles_by_room(audience_room_id, enterprise_name=enterpriseName)
                 logger.info(f"Deleted {deleted_count} profiles for audience room {audience_room_id}")
             except Exception as e:
                 logger.error(f"Error deleting profiles for audience room {audience_room_id}: {e}")
                 raise HTTPException(status_code=500, detail=f"Failed to delete profiles: {str(e)}")
         
-        # Delete the audience room from database
+        # Delete the audience room from database using enterprise-specific database if provided
         try:
-            database.delete_audience_room(audience_room_id)
+            database.delete_audience_room(audience_room_id, enterprise_name=enterpriseName)
             logger.info(f"Deleted audience room {audience_room_id}")
         except Exception as e:
             logger.error(f"Error deleting audience room {audience_room_id}: {e}")
@@ -349,6 +357,91 @@ async def get_profile_posts(
     except Exception as e:
         logger.error(f"Error fetching posts for profile {profile_id}: {e}")
         raise HTTPException(status_code=500, detail="Failed to fetch posts")
+
+
+@router.get("/api/v1/audience-rooms/{audience_room_id}/indexes")
+async def get_audience_room_indexes(
+    audience_room_id: str = Path(...),
+    enterpriseName: Optional[str] = None
+):
+    """Fetch and return the audience room indexes JSON from S3.
+    
+    Args:
+        audience_room_id: The audience room ID
+        enterpriseName: Optional enterprise name (gamma, app, entelligence). 
+                       If not provided, uses AUDIENCE_DATABASE_URL.
+    """
+    ensure_db_available("audience")
+    if not s3_client or not s3_bucket:
+        raise HTTPException(status_code=503, detail="S3 is not configured; set AUDIENCE_BUCKET_NAME or VECTOR_BUCKET_NAME.")
+    
+    try:
+        # Verify room exists using enterprise-specific database if provided
+        room = database.find_audience_room_by_id(audience_room_id, enterprise_name=enterpriseName)
+        if not room:
+            raise HTTPException(status_code=404, detail=f"Audience room {audience_room_id} not found")
+        
+        if not room.indexesS3Url:
+            raise HTTPException(status_code=404, detail="Indexes not found for this audience room")
+        
+        # Extract S3 key from URL
+        indexes_key = extract_s3_key_from_url(room.indexesS3Url)
+        if not indexes_key:
+            raise HTTPException(status_code=500, detail="Invalid S3 URL format")
+        
+        # Fetch JSON from S3
+        indexes_data = fetch_json_from_s3(indexes_key)
+        return indexes_data
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error fetching indexes for audience room {audience_room_id}: {e}")
+        raise HTTPException(status_code=500, detail="Failed to fetch indexes")
+
+
+@router.get("/api/v1/audience-rooms/{audience_room_id}/profiles/{profile_id}/comments")
+async def get_profile_comments(
+    audience_room_id: str = Path(...),
+    profile_id: str = Path(...),
+    enterpriseName: Optional[str] = None
+):
+    """Fetch and return the profile comments JSON from S3.
+    
+    Args:
+        audience_room_id: The audience room ID
+        profile_id: The profile ID
+        enterpriseName: Optional enterprise name (gamma, app, entelligence). 
+                       If not provided, uses AUDIENCE_DATABASE_URL.
+    """
+    ensure_db_available("audience")
+    if not s3_client or not s3_bucket:
+        raise HTTPException(status_code=503, detail="S3 is not configured; set AUDIENCE_BUCKET_NAME or VECTOR_BUCKET_NAME.")
+    
+    try:
+        # Verify profile exists and belongs to the room using enterprise-specific database if provided
+        profile = database.find_audience_profile_by_id(profile_id, include_room=True, enterprise_name=enterpriseName)
+        if not profile:
+            raise HTTPException(status_code=404, detail=f"Profile {profile_id} not found")
+        
+        if profile.audienceRoomId != audience_room_id:
+            raise HTTPException(status_code=404, detail=f"Profile {profile_id} does not belong to audience room {audience_room_id}")
+        
+        if not profile.commentsS3Url:
+            raise HTTPException(status_code=404, detail="Comments not found for this profile")
+        
+        # Extract S3 key from URL
+        comments_key = extract_s3_key_from_url(profile.commentsS3Url)
+        if not comments_key:
+            raise HTTPException(status_code=500, detail="Invalid S3 URL format")
+        
+        # Fetch JSON from S3
+        comments_data = fetch_json_from_s3(comments_key)
+        return comments_data
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error fetching comments for profile {profile_id}: {e}")
+        raise HTTPException(status_code=500, detail="Failed to fetch comments")
 
 
 @router.post("/api/v1/audience-rooms/{audience_room_id}/generate-summaries")
