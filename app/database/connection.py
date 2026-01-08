@@ -20,6 +20,9 @@ logger = logging.getLogger(__name__)
 # Connection pools for both databases
 _main_pool: Optional[ThreadedConnectionPool] = None
 _audience_pool: Optional[ThreadedConnectionPool] = None
+_gamma_pool: Optional[ThreadedConnectionPool] = None
+_app_pool: Optional[ThreadedConnectionPool] = None
+_entelligence_pool: Optional[ThreadedConnectionPool] = None
 
 
 def get_main_pool() -> Optional[ThreadedConnectionPool]:
@@ -48,6 +51,48 @@ def get_audience_pool() -> Optional[ThreadedConnectionPool]:
             except Exception as e:
                 logger.error(f"Failed to initialize audience database pool: {e}")
     return _audience_pool
+
+
+def get_gamma_pool() -> Optional[ThreadedConnectionPool]:
+    """Get or create the gamma database connection pool."""
+    global _gamma_pool
+    if _gamma_pool is None:
+        database_url = os.getenv("GAMMA_DATABASE_URL")
+        if database_url:
+            try:
+                _gamma_pool = ThreadedConnectionPool(1, 10, database_url)
+                logger.info("Gamma database pool initialized successfully")
+            except Exception as e:
+                logger.error(f"Failed to initialize gamma database pool: {e}")
+    return _gamma_pool
+
+
+def get_app_pool() -> Optional[ThreadedConnectionPool]:
+    """Get or create the app database connection pool."""
+    global _app_pool
+    if _app_pool is None:
+        database_url = os.getenv("APP_DATABASE_URL")
+        if database_url:
+            try:
+                _app_pool = ThreadedConnectionPool(1, 10, database_url)
+                logger.info("App database pool initialized successfully")
+            except Exception as e:
+                logger.error(f"Failed to initialize app database pool: {e}")
+    return _app_pool
+
+
+def get_entelligence_pool() -> Optional[ThreadedConnectionPool]:
+    """Get or create the entelligence database connection pool."""
+    global _entelligence_pool
+    if _entelligence_pool is None:
+        database_url = os.getenv("ENTELLIGENCE_DATABASE_URL")
+        if database_url:
+            try:
+                _entelligence_pool = ThreadedConnectionPool(1, 10, database_url)
+                logger.info("Entelligence database pool initialized successfully")
+            except Exception as e:
+                logger.error(f"Failed to initialize entelligence database pool: {e}")
+    return _entelligence_pool
 
 
 @contextmanager
@@ -84,9 +129,51 @@ def get_audience_connection():
         pool.putconn(conn)
 
 
+@contextmanager
+def get_enterprise_audience_connection(enterprise_name: Optional[str] = None):
+    """Context manager for enterprise-specific audience database connections.
+    
+    Args:
+        enterprise_name: Optional enterprise name. If provided, must be one of:
+            - "gamma" -> uses GAMMA_DATABASE_URL
+            - "app" -> uses APP_DATABASE_URL
+            - "entelligence" -> uses ENTELLIGENCE_DATABASE_URL
+        If None or not provided, defaults to AUDIENCE_DATABASE_URL
+    """
+    pool = None
+    
+    if enterprise_name == "gamma":
+        pool = get_gamma_pool()
+        if not pool:
+            raise Exception("Gamma database pool not available. Please set GAMMA_DATABASE_URL.")
+    elif enterprise_name == "app":
+        pool = get_app_pool()
+        if not pool:
+            raise Exception("App database pool not available. Please set APP_DATABASE_URL.")
+    elif enterprise_name == "entelligence":
+        pool = get_entelligence_pool()
+        if not pool:
+            raise Exception("Entelligence database pool not available. Please set ENTELLIGENCE_DATABASE_URL.")
+    else:
+        # Default to audience database
+        pool = get_audience_pool()
+        if not pool:
+            raise Exception("Audience database pool not available. Please set AUDIENCE_DATABASE_URL.")
+    
+    conn = pool.getconn()
+    try:
+        yield conn
+        conn.commit()
+    except Exception as e:
+        conn.rollback()
+        raise e
+    finally:
+        pool.putconn(conn)
+
+
 def close_pools():
     """Close all connection pools."""
-    global _main_pool, _audience_pool
+    global _main_pool, _audience_pool, _gamma_pool, _app_pool, _entelligence_pool
     if _main_pool:
         _main_pool.closeall()
         _main_pool = None
@@ -95,6 +182,18 @@ def close_pools():
         _audience_pool.closeall()
         _audience_pool = None
         logger.info("Audience database pool closed")
+    if _gamma_pool:
+        _gamma_pool.closeall()
+        _gamma_pool = None
+        logger.info("Gamma database pool closed")
+    if _app_pool:
+        _app_pool.closeall()
+        _app_pool = None
+        logger.info("App database pool closed")
+    if _entelligence_pool:
+        _entelligence_pool.closeall()
+        _entelligence_pool = None
+        logger.info("Entelligence database pool closed")
 
 
 # ============================================
@@ -318,9 +417,15 @@ def create_audience_room(
             return room
 
 
-def find_audience_room_by_id(room_id: str, include_profiles: bool = False) -> Optional[AudienceRoom]:
-    """Find an AudienceRoom by ID, optionally including profiles."""
-    with get_audience_connection() as conn:
+def find_audience_room_by_id(room_id: str, include_profiles: bool = False, enterprise_name: Optional[str] = None) -> Optional[AudienceRoom]:
+    """Find an AudienceRoom by ID, optionally including profiles.
+    
+    Args:
+        room_id: The audience room ID
+        include_profiles: Whether to include associated profiles
+        enterprise_name: Optional enterprise name (gamma, app, entelligence). Defaults to AUDIENCE_DATABASE_URL if None.
+    """
+    with get_enterprise_audience_connection(enterprise_name) as conn:
         with conn.cursor(cursor_factory=RealDictCursor) as cur:
             cur.execute('SELECT * FROM "AudienceRoom" WHERE id = %s', (room_id,))
             row = cur.fetchone()
@@ -409,10 +514,17 @@ def find_audience_profiles(
 
 def find_audience_profile_by_id(
     profile_id: str,
-    include_room: bool = False
+    include_room: bool = False,
+    enterprise_name: Optional[str] = None
 ) -> Optional[AudienceProfile]:
-    """Find an AudienceProfile by ID, optionally including the room."""
-    with get_audience_connection() as conn:
+    """Find an AudienceProfile by ID, optionally including the room.
+    
+    Args:
+        profile_id: The profile ID
+        include_room: Whether to include the associated room
+        enterprise_name: Optional enterprise name (gamma, app, entelligence). Defaults to AUDIENCE_DATABASE_URL if None.
+    """
+    with get_enterprise_audience_connection(enterprise_name) as conn:
         with conn.cursor(cursor_factory=RealDictCursor) as cur:
             cur.execute('SELECT * FROM "AudienceProfile" WHERE id = %s', (profile_id,))
             row = cur.fetchone()

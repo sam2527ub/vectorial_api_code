@@ -1,6 +1,8 @@
 """Audience room endpoints."""
 import uuid
 import asyncio
+from datetime import datetime
+from typing import Optional
 from fastapi import APIRouter, HTTPException, Path
 from app.models.schemas import CreateAudienceRoomRequest
 from app.config import s3_client, s3_bucket, logger
@@ -18,6 +20,7 @@ async def create_audience_room(payload: CreateAudienceRoomRequest):
     Create an audience room, store its description and profile payloads in S3, and persist metadata in Postgres.
     - Stores audience description at: audiences/{audience_room_id}/description.json
     - Stores each profile payload (with summary=null) at: audiences/{audience_room_id}/profiles/{profile_id}/profile.json
+    - If query and search_results provided: stores search results at: audiences/{audience_room_id}/indexes.json
     """
     ensure_db_available("audience")
     if not s3_client or not s3_bucket:
@@ -35,6 +38,27 @@ async def create_audience_room(payload: CreateAudienceRoomRequest):
             "description": payload.audience_description,
         },
     )
+
+    # Handle search results/indexes if provided
+    indexes_s3_url = None
+    if payload.query and payload.search_results:
+        try:
+            # Prepare the indexes/search results JSON
+            indexes_data = {
+                "audience_room_id": room_id,
+                "query": payload.query,
+                "total_results": len(payload.search_results),
+                "results": payload.search_results,
+                "timestamp": datetime.utcnow().isoformat()
+            }
+            
+            # Upload indexes to S3
+            indexes_key = f"audiences/{room_id}/indexes.json"
+            indexes_s3_url = upload_json_to_s3(indexes_key, indexes_data)
+            logger.info(f"Uploaded search results/indexes to S3 for audience room {room_id}")
+        except Exception as e:
+            logger.error(f"Failed to upload search results to S3: {e}")
+            # Continue with room creation even if indexes upload fails
 
     # Build profile records and upload payloads to S3 (summary starts as null)
     profile_creates = []
@@ -72,6 +96,9 @@ async def create_audience_room(payload: CreateAudienceRoomRequest):
             name=payload.audience_room_name,
             description_s3_url=description_url,
             user_id=payload.userId,
+            source=payload.source,
+            query=payload.query,
+            indexes_s3_url=indexes_s3_url,
             profiles_data=profile_creates,
         )
 
@@ -80,6 +107,8 @@ async def create_audience_room(payload: CreateAudienceRoomRequest):
             "audience_room_name": room.name,
             "description_s3_url": room.descriptionS3Url,
             "userId": room.userId,
+            "query": room.query,
+            "indexes_s3_url": room.indexesS3Url,
             "profiles_created": len(room.profiles),
             "profiles": [
                 {
@@ -193,15 +222,24 @@ async def delete_audience_room(audience_room_id: str = Path(...)):
 
 
 @router.get("/api/v1/audience-rooms/{audience_room_id}/description")
-async def get_audience_room_description(audience_room_id: str = Path(...)):
-    """Fetch and return the audience room description JSON from S3."""
+async def get_audience_room_description(
+    audience_room_id: str = Path(...),
+    enterpriseName: Optional[str] = None
+):
+    """Fetch and return the audience room description JSON from S3.
+    
+    Args:
+        audience_room_id: The audience room ID
+        enterpriseName: Optional enterprise name (gamma, app, entelligence). 
+                       If not provided, uses AUDIENCE_DATABASE_URL.
+    """
     ensure_db_available("audience")
     if not s3_client or not s3_bucket:
         raise HTTPException(status_code=503, detail="S3 is not configured; set AUDIENCE_BUCKET_NAME or VECTOR_BUCKET_NAME.")
     
     try:
-        # Verify room exists
-        room = database.find_audience_room_by_id(audience_room_id)
+        # Verify room exists using enterprise-specific database if provided
+        room = database.find_audience_room_by_id(audience_room_id, enterprise_name=enterpriseName)
         if not room:
             raise HTTPException(status_code=404, detail=f"Audience room {audience_room_id} not found")
         
@@ -226,16 +264,24 @@ async def get_audience_room_description(audience_room_id: str = Path(...)):
 @router.get("/api/v1/audience-rooms/{audience_room_id}/profiles/{profile_id}/description")
 async def get_profile_description(
     audience_room_id: str = Path(...),
-    profile_id: str = Path(...)
+    profile_id: str = Path(...),
+    enterpriseName: Optional[str] = None
 ):
-    """Fetch and return the profile description JSON from S3."""
+    """Fetch and return the profile description JSON from S3.
+    
+    Args:
+        audience_room_id: The audience room ID
+        profile_id: The profile ID
+        enterpriseName: Optional enterprise name (gamma, app, entelligence). 
+                       If not provided, uses AUDIENCE_DATABASE_URL.
+    """
     ensure_db_available("audience")
     if not s3_client or not s3_bucket:
         raise HTTPException(status_code=503, detail="S3 is not configured; set AUDIENCE_BUCKET_NAME or VECTOR_BUCKET_NAME.")
     
     try:
-        # Verify profile exists and belongs to the room
-        profile = database.find_audience_profile_by_id(profile_id, include_room=True)
+        # Verify profile exists and belongs to the room using enterprise-specific database if provided
+        profile = database.find_audience_profile_by_id(profile_id, include_room=True, enterprise_name=enterpriseName)
         if not profile:
             raise HTTPException(status_code=404, detail=f"Profile {profile_id} not found")
         
@@ -263,16 +309,24 @@ async def get_profile_description(
 @router.get("/api/v1/audience-rooms/{audience_room_id}/profiles/{profile_id}/posts")
 async def get_profile_posts(
     audience_room_id: str = Path(...),
-    profile_id: str = Path(...)
+    profile_id: str = Path(...),
+    enterpriseName: Optional[str] = None
 ):
-    """Fetch and return the profile posts JSON from S3."""
+    """Fetch and return the profile posts JSON from S3.
+    
+    Args:
+        audience_room_id: The audience room ID
+        profile_id: The profile ID
+        enterpriseName: Optional enterprise name (gamma, app, entelligence). 
+                       If not provided, uses AUDIENCE_DATABASE_URL.
+    """
     ensure_db_available("audience")
     if not s3_client or not s3_bucket:
         raise HTTPException(status_code=503, detail="S3 is not configured; set AUDIENCE_BUCKET_NAME or VECTOR_BUCKET_NAME.")
     
     try:
-        # Verify profile exists and belongs to the room
-        profile = database.find_audience_profile_by_id(profile_id, include_room=True)
+        # Verify profile exists and belongs to the room using enterprise-specific database if provided
+        profile = database.find_audience_profile_by_id(profile_id, include_room=True, enterprise_name=enterpriseName)
         if not profile:
             raise HTTPException(status_code=404, detail=f"Profile {profile_id} not found")
         

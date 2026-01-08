@@ -71,6 +71,9 @@ class CreateAudienceRoomRequest(BaseModel):
     audience_description: str = Field(..., description="Plain-text description for the audience room")
     profiles: List[AudienceProfilePayload] = Field(..., min_items=1, description="Profiles to attach to this audience room")
     userId: str = Field(..., description="User ID associated with this audience room")
+    query: Optional[str] = Field(None, description="Optional: The parallel search query used to find these profiles")
+    search_results: Optional[List[dict]] = Field(None, description="Optional: The full parallel search results/indexes to store")
+    source: Optional[str] = Field(None, description="Optional: Source of the audience room creation")
 
 
 class RunClassifierRequest(BaseModel):

@@ -3,5 +3,11 @@
   "version": "1.0.0",
   "scripts": {
     "postinstall": "python3 -m prisma generate || python -m prisma generate || echo 'Prisma generate skipped - will run during build'"
+  },
+  "devDependencies": {
+    "prisma": "^6.19.0"
+  },
+  "dependencies": {
+    "@prisma/client": "^6.19.0"
   }
 }

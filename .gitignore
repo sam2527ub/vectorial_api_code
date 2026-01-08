@@ -13,3 +13,5 @@ cdk/
 cdk-outputs.json
 deploy-aws.sh
 Dockerfile
+
+node_modules/
