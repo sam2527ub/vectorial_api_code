@@ -48,6 +48,7 @@ from app.database.connection import (
     ensure_preview_table_exists,
     upsert_preview,
     delete_preview,
+    delete_orphaned_previews,
     find_all_audience_rooms_with_profiles,
     find_audience_room_with_profiles_for_preview,
     
@@ -86,6 +87,7 @@ __all__ = [
     "ensure_preview_table_exists",
     "upsert_preview",
     "delete_preview",
+    "delete_orphaned_previews",
     "find_all_audience_rooms_with_profiles",
     "find_audience_room_with_profiles_for_preview",
     "query_first",

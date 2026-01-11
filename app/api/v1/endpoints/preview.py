@@ -225,14 +225,23 @@ async def update_preview_for_room(
 
 
 @router.post("/api/v1/previews/populate-all")
-async def populate_all_previews():
+async def populate_all_previews(
+    enterpriseName: Optional[str] = Query(None, description="Enterprise name (gamma, app, entelligence). If not provided, uses default audience database.")
+):
     """
     Populate previews for ALL audience rooms in the database.
     
     This endpoint:
     1. Ensures the preview table exists with the proper schema
-    2. Fetches all audience rooms from the database
+    2. Fetches all audience rooms from the database based on enterprise name
     3. For each room, fetches data from S3 and creates/updates preview
+    
+    Query Parameters:
+    - enterpriseName (optional): Enterprise name to determine which database to use:
+        - "gamma" -> uses GAMMA_DATABASE_URL
+        - "app" -> uses APP_DATABASE_URL
+        - "entelligence" -> uses ENTELLIGENCE_DATABASE_URL
+        - If not provided, uses AUDIENCE_DATABASE_URL
     
     Use this for:
     - Initial population of the preview table
@@ -248,10 +257,10 @@ async def populate_all_previews():
     
     try:
         # Ensure preview table exists with proper schema
-        database.ensure_preview_table_exists()
+        database.ensure_preview_table_exists(enterprise_name=enterpriseName)
         
         # Fetch all rooms with profiles (READ-ONLY)
-        rooms = database.find_all_audience_rooms_with_profiles(limit=PREVIEW_PROFILE_LIMIT)
+        rooms = database.find_all_audience_rooms_with_profiles(limit=PREVIEW_PROFILE_LIMIT, enterprise_name=enterpriseName)
         
         if not rooms:
             return {
@@ -283,7 +292,8 @@ async def populate_all_previews():
                     description_summary=preview_data['description_summary'],
                     source=preview_data['source'],
                     total_profile_count=preview_data['total_profile_count'],
-                    profiles=preview_data['profiles']
+                    profiles=preview_data['profiles'],
+                    enterprise_name=enterpriseName
                 )
                 
                 results.append({
@@ -307,12 +317,22 @@ async def populate_all_previews():
         
         logger.info(f"Preview population complete: {successful} successful, {failed} failed")
         
+        # Clean up orphaned previews (previews for rooms that no longer exist)
+        try:
+            orphaned_deleted = database.delete_orphaned_previews(enterprise_name=enterpriseName)
+            logger.info(f"Deleted {orphaned_deleted} orphaned preview entries")
+        except Exception as e:
+            logger.error(f"Error deleting orphaned previews: {e}")
+            # Don't fail the entire operation if cleanup fails
+            orphaned_deleted = 0
+        
         return {
             "status": "success",
             "message": f"Populated previews for {successful} rooms",
             "total_rooms": len(rooms),
             "successful": successful,
             "failed": failed,
+            "orphaned_deleted": orphaned_deleted,
             "rooms": results
         }
         

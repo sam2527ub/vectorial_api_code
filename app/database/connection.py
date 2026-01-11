@@ -673,14 +673,18 @@ def find_preview_by_room_id(room_id: str, user_id: Optional[str] = None, enterpr
             return dict(row) if row else None
 
 
-def ensure_preview_table_exists() -> bool:
+def ensure_preview_table_exists(enterprise_name: Optional[str] = None) -> bool:
     """
     Ensure the previews table exists with the improved schema.
     Creates or alters the table as needed.
     
+    Args:
+        enterprise_name: Optional enterprise name (gamma, app, entelligence). 
+                        Defaults to AUDIENCE_DATABASE_URL if None.
+    
     WARNING: This only touches the previews table, no other tables are modified.
     """
-    with get_audience_connection() as conn:
+    with get_enterprise_audience_connection(enterprise_name) as conn:
         with conn.cursor() as cur:
             # Create or update the previews table with improved schema
             cur.execute("""
@@ -743,16 +747,21 @@ def upsert_preview(
     description_summary: Optional[str] = None,
     source: Optional[str] = None,
     total_profile_count: int = 0,
-    profiles: Optional[List[Dict[str, Any]]] = None
+    profiles: Optional[List[Dict[str, Any]]] = None,
+    enterprise_name: Optional[str] = None
 ) -> Dict[str, Any]:
     """
     Insert or update a preview record.
+    
+    Args:
+        enterprise_name: Optional enterprise name (gamma, app, entelligence). 
+                        Defaults to AUDIENCE_DATABASE_URL if None.
     
     WARNING: This only modifies the previews table, no other tables are touched.
     """
     now = datetime.utcnow()
     
-    with get_audience_connection() as conn:
+    with get_enterprise_audience_connection(enterprise_name) as conn:
         with conn.cursor(cursor_factory=RealDictCursor) as cur:
             cur.execute("""
                 INSERT INTO "previews" 
@@ -783,13 +792,19 @@ def upsert_preview(
             return dict(row) if row else {}
 
 
-def delete_preview(room_id: str, user_id: Optional[str] = None) -> bool:
+def delete_preview(room_id: str, user_id: Optional[str] = None, enterprise_name: Optional[str] = None) -> bool:
     """
     Delete a preview record.
     
+    Args:
+        room_id: The room ID to delete preview for
+        user_id: Optional user ID to scope deletion
+        enterprise_name: Optional enterprise name (gamma, app, entelligence). 
+                        Defaults to AUDIENCE_DATABASE_URL if None.
+    
     WARNING: This only deletes from previews table, no other tables are touched.
     """
-    with get_audience_connection() as conn:
+    with get_enterprise_audience_connection(enterprise_name) as conn:
         with conn.cursor() as cur:
             if user_id:
                 cur.execute('DELETE FROM "previews" WHERE room_id = %s AND user_id = %s', (room_id, user_id))
@@ -801,14 +816,45 @@ def delete_preview(room_id: str, user_id: Optional[str] = None) -> bool:
             return deleted
 
 
-def find_all_audience_rooms_with_profiles(limit: int = 5) -> List[Dict[str, Any]]:
+def delete_orphaned_previews(enterprise_name: Optional[str] = None) -> int:
+    """
+    Delete preview entries for rooms that no longer exist in the AudienceRoom table.
+    
+    Args:
+        enterprise_name: Optional enterprise name (gamma, app, entelligence). 
+                        Defaults to AUDIENCE_DATABASE_URL if None.
+    
+    Returns:
+        Number of orphaned preview entries deleted.
+    
+    WARNING: This only deletes from previews table, no other tables are touched.
+    """
+    with get_enterprise_audience_connection(enterprise_name) as conn:
+        with conn.cursor() as cur:
+            # Delete previews where room_id doesn't exist in AudienceRoom table
+            cur.execute("""
+                DELETE FROM "previews"
+                WHERE room_id NOT IN (SELECT id FROM "AudienceRoom")
+            """)
+            deleted_count = cur.rowcount
+            if deleted_count > 0:
+                logger.info(f"Deleted {deleted_count} orphaned preview entries")
+            return deleted_count
+
+
+def find_all_audience_rooms_with_profiles(limit: int = 5, enterprise_name: Optional[str] = None) -> List[Dict[str, Any]]:
     """
     Fetch all audience rooms with their first N profiles.
     Used for bulk preview population.
     
+    Args:
+        limit: Number of profiles to fetch per room
+        enterprise_name: Optional enterprise name (gamma, app, entelligence). 
+                        Defaults to AUDIENCE_DATABASE_URL if None.
+    
     WARNING: This is READ-ONLY, no modifications to any tables.
     """
-    with get_audience_connection() as conn:
+    with get_enterprise_audience_connection(enterprise_name) as conn:
         with conn.cursor(cursor_factory=RealDictCursor) as cur:
             # Fetch all rooms
             cur.execute("""
