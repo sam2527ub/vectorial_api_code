@@ -317,14 +317,14 @@ async def populate_all_previews(
         
         logger.info(f"Preview population complete: {successful} successful, {failed} failed")
         
-        # Clean up orphaned previews (previews for rooms that no longer exist)
+        # Clean up orphaned and duplicate previews
         try:
-            orphaned_deleted = database.delete_orphaned_previews(enterprise_name=enterpriseName)
-            logger.info(f"Deleted {orphaned_deleted} orphaned preview entries")
+            cleanup_results = database.delete_orphaned_previews(enterprise_name=enterpriseName)
+            logger.info(f"Cleanup complete: Deleted {cleanup_results.get('orphaned', 0)} orphaned and {cleanup_results.get('duplicates', 0)} duplicate preview entries")
         except Exception as e:
-            logger.error(f"Error deleting orphaned previews: {e}")
+            logger.error(f"Error deleting orphaned/duplicate previews: {e}", exc_info=True)
             # Don't fail the entire operation if cleanup fails
-            orphaned_deleted = 0
+            cleanup_results = {"orphaned": 0, "duplicates": 0, "total": 0}
         
         return {
             "status": "success",
@@ -332,7 +332,11 @@ async def populate_all_previews(
             "total_rooms": len(rooms),
             "successful": successful,
             "failed": failed,
-            "orphaned_deleted": orphaned_deleted,
+            "cleanup": {
+                "orphaned_deleted": cleanup_results.get("orphaned", 0),
+                "duplicates_deleted": cleanup_results.get("duplicates", 0),
+                "total_deleted": cleanup_results.get("total", 0)
+            },
             "rooms": results
         }
         

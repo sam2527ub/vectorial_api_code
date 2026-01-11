@@ -816,30 +816,62 @@ def delete_preview(room_id: str, user_id: Optional[str] = None, enterprise_name:
             return deleted
 
 
-def delete_orphaned_previews(enterprise_name: Optional[str] = None) -> int:
+def delete_orphaned_previews(enterprise_name: Optional[str] = None) -> Dict[str, int]:
     """
-    Delete preview entries for rooms that no longer exist in the AudienceRoom table.
+    Delete preview entries for rooms that no longer exist in the AudienceRoom table,
+    and also delete duplicate preview entries (keeping only the most recent one per room_id).
     
     Args:
         enterprise_name: Optional enterprise name (gamma, app, entelligence). 
                         Defaults to AUDIENCE_DATABASE_URL if None.
     
     Returns:
-        Number of orphaned preview entries deleted.
+        Dictionary with counts of orphaned and duplicate entries deleted.
+        Format: {"orphaned": count, "duplicates": count}
     
     WARNING: This only deletes from previews table, no other tables are touched.
     """
     with get_enterprise_audience_connection(enterprise_name) as conn:
         with conn.cursor() as cur:
-            # Delete previews where room_id doesn't exist in AudienceRoom table
+            # Step 1: Delete orphaned previews (previews for rooms that don't exist)
             cur.execute("""
-                DELETE FROM "previews"
-                WHERE room_id NOT IN (SELECT id FROM "AudienceRoom")
+                DELETE FROM "previews" p
+                WHERE NOT EXISTS (
+                    SELECT 1 FROM "AudienceRoom" ar 
+                    WHERE ar.id = p.room_id
+                )
             """)
-            deleted_count = cur.rowcount
-            if deleted_count > 0:
-                logger.info(f"Deleted {deleted_count} orphaned preview entries")
-            return deleted_count
+            orphaned_count = cur.rowcount
+            
+            # Step 2: Delete duplicate previews (keep only the most recent one per room_id)
+            # For each room_id, keep only the preview with the latest updated_at
+            # If there are multiple previews with the same room_id, delete all except the most recent one
+            cur.execute("""
+                DELETE FROM "previews" p1
+                WHERE EXISTS (
+                    SELECT 1 FROM "previews" p2
+                    WHERE p2.room_id = p1.room_id
+                    AND (
+                        p2.updated_at > p1.updated_at
+                        OR (p2.updated_at = p1.updated_at AND p2.created_at > p1.created_at)
+                        OR (p2.updated_at = p1.updated_at AND p2.created_at = p1.created_at AND p2.user_id > p1.user_id)
+                    )
+                )
+            """)
+            duplicates_count = cur.rowcount
+            
+            total_deleted = orphaned_count + duplicates_count
+            
+            if total_deleted > 0:
+                logger.info(f"Cleanup complete: Deleted {orphaned_count} orphaned and {duplicates_count} duplicate preview entries")
+            else:
+                logger.info("No orphaned or duplicate preview entries found to delete")
+            
+            return {
+                "orphaned": orphaned_count,
+                "duplicates": duplicates_count,
+                "total": total_deleted
+            }
 
 
 def find_all_audience_rooms_with_profiles(limit: int = 5, enterprise_name: Optional[str] = None) -> List[Dict[str, Any]]:
