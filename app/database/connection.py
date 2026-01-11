@@ -658,6 +658,220 @@ def find_preview_by_room_id(room_id: str, user_id: Optional[str] = None) -> Opti
             return dict(row) if row else None
 
 
+def ensure_preview_table_exists() -> bool:
+    """
+    Ensure the previews table exists with the improved schema.
+    Creates or alters the table as needed.
+    
+    WARNING: This only touches the previews table, no other tables are modified.
+    """
+    with get_audience_connection() as conn:
+        with conn.cursor() as cur:
+            # Create or update the previews table with improved schema
+            cur.execute("""
+                CREATE TABLE IF NOT EXISTS "previews" (
+                    room_id VARCHAR(255) NOT NULL,
+                    user_id VARCHAR(255) NOT NULL DEFAULT 'default',
+                    name VARCHAR(500),
+                    description_summary TEXT,
+                    source VARCHAR(50),
+                    total_profile_count INTEGER DEFAULT 0,
+                    traits JSONB,
+                    profiles JSONB,
+                    created_at TIMESTAMP DEFAULT NOW(),
+                    updated_at TIMESTAMP DEFAULT NOW(),
+                    PRIMARY KEY (room_id, user_id)
+                )
+            """)
+            
+            # Add missing columns if table already exists (for migration)
+            # Check and add source column
+            cur.execute("""
+                DO $$ 
+                BEGIN 
+                    IF NOT EXISTS (SELECT 1 FROM information_schema.columns 
+                                   WHERE table_name='previews' AND column_name='source') THEN
+                        ALTER TABLE "previews" ADD COLUMN source VARCHAR(50);
+                    END IF;
+                END $$;
+            """)
+            
+            # Check and add total_profile_count column
+            cur.execute("""
+                DO $$ 
+                BEGIN 
+                    IF NOT EXISTS (SELECT 1 FROM information_schema.columns 
+                                   WHERE table_name='previews' AND column_name='total_profile_count') THEN
+                        ALTER TABLE "previews" ADD COLUMN total_profile_count INTEGER DEFAULT 0;
+                    END IF;
+                END $$;
+            """)
+            
+            # Check and add traits column
+            cur.execute("""
+                DO $$ 
+                BEGIN 
+                    IF NOT EXISTS (SELECT 1 FROM information_schema.columns 
+                                   WHERE table_name='previews' AND column_name='traits') THEN
+                        ALTER TABLE "previews" ADD COLUMN traits JSONB;
+                    END IF;
+                END $$;
+            """)
+            
+            logger.info("Preview table schema ensured successfully")
+            return True
+
+
+def upsert_preview(
+    room_id: str,
+    name: str,
+    user_id: str = "default",
+    description_summary: Optional[str] = None,
+    source: Optional[str] = None,
+    total_profile_count: int = 0,
+    traits: Optional[List[Dict[str, Any]]] = None,
+    profiles: Optional[List[Dict[str, Any]]] = None
+) -> Dict[str, Any]:
+    """
+    Insert or update a preview record.
+    
+    WARNING: This only modifies the previews table, no other tables are touched.
+    """
+    now = datetime.utcnow()
+    
+    with get_audience_connection() as conn:
+        with conn.cursor(cursor_factory=RealDictCursor) as cur:
+            cur.execute("""
+                INSERT INTO "previews" 
+                (room_id, user_id, name, description_summary, source, total_profile_count, traits, profiles, created_at, updated_at)
+                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+                ON CONFLICT (room_id, user_id) 
+                DO UPDATE SET
+                    name = EXCLUDED.name,
+                    description_summary = EXCLUDED.description_summary,
+                    source = EXCLUDED.source,
+                    total_profile_count = EXCLUDED.total_profile_count,
+                    traits = EXCLUDED.traits,
+                    profiles = EXCLUDED.profiles,
+                    updated_at = EXCLUDED.updated_at
+                RETURNING *
+            """, (
+                room_id,
+                user_id,
+                name,
+                description_summary,
+                source,
+                total_profile_count,
+                Json(traits) if traits else None,
+                Json(profiles) if profiles else None,
+                now,
+                now
+            ))
+            row = cur.fetchone()
+            logger.info(f"Upserted preview for room {room_id}")
+            return dict(row) if row else {}
+
+
+def delete_preview(room_id: str, user_id: Optional[str] = None) -> bool:
+    """
+    Delete a preview record.
+    
+    WARNING: This only deletes from previews table, no other tables are touched.
+    """
+    with get_audience_connection() as conn:
+        with conn.cursor() as cur:
+            if user_id:
+                cur.execute('DELETE FROM "previews" WHERE room_id = %s AND user_id = %s', (room_id, user_id))
+            else:
+                cur.execute('DELETE FROM "previews" WHERE room_id = %s', (room_id,))
+            deleted = cur.rowcount > 0
+            if deleted:
+                logger.info(f"Deleted preview for room {room_id}")
+            return deleted
+
+
+def find_all_audience_rooms_with_profiles(limit: int = 5) -> List[Dict[str, Any]]:
+    """
+    Fetch all audience rooms with their first N profiles.
+    Used for bulk preview population.
+    
+    WARNING: This is READ-ONLY, no modifications to any tables.
+    """
+    with get_audience_connection() as conn:
+        with conn.cursor(cursor_factory=RealDictCursor) as cur:
+            # Fetch all rooms
+            cur.execute("""
+                SELECT id, name, "descriptionS3Url", source, "userId", query, "createdAt"
+                FROM "AudienceRoom"
+                ORDER BY "createdAt" DESC
+            """)
+            rooms = [dict(row) for row in cur.fetchall()]
+            
+            # For each room, fetch profiles
+            for room in rooms:
+                # Get total profile count
+                cur.execute(
+                    'SELECT COUNT(*) as count FROM "AudienceProfile" WHERE "audienceRoomId" = %s',
+                    (room['id'],)
+                )
+                count_row = cur.fetchone()
+                room['total_profile_count'] = count_row['count'] if count_row else 0
+                
+                # Get first N profiles
+                cur.execute("""
+                    SELECT id, "profileName", "profileUrl", "profileDescriptionS3Url", source
+                    FROM "AudienceProfile"
+                    WHERE "audienceRoomId" = %s
+                    ORDER BY "createdAt"
+                    LIMIT %s
+                """, (room['id'], limit))
+                room['profiles'] = [dict(row) for row in cur.fetchall()]
+            
+            return rooms
+
+
+def find_audience_room_with_profiles_for_preview(room_id: str, profile_limit: int = 5) -> Optional[Dict[str, Any]]:
+    """
+    Fetch a single audience room with its first N profiles for preview generation.
+    
+    WARNING: This is READ-ONLY, no modifications to any tables.
+    """
+    with get_audience_connection() as conn:
+        with conn.cursor(cursor_factory=RealDictCursor) as cur:
+            # Fetch room
+            cur.execute("""
+                SELECT id, name, "descriptionS3Url", source, "userId", query, "createdAt"
+                FROM "AudienceRoom"
+                WHERE id = %s
+            """, (room_id,))
+            room_row = cur.fetchone()
+            
+            if not room_row:
+                return None
+            
+            room = dict(room_row)
+            
+            # Get total profile count
+            cur.execute(
+                'SELECT COUNT(*) as count FROM "AudienceProfile" WHERE "audienceRoomId" = %s',
+                (room_id,)
+            )
+            count_row = cur.fetchone()
+            room['total_profile_count'] = count_row['count'] if count_row else 0
+            
+            # Get first N profiles
+            cur.execute("""
+                SELECT id, "profileName", "profileUrl", "profileDescriptionS3Url", source
+                FROM "AudienceProfile"
+                WHERE "audienceRoomId" = %s
+                ORDER BY "createdAt"
+                LIMIT %s
+            """, (room_id, profile_limit))
+            room['profiles'] = [dict(row) for row in cur.fetchall()]
+            
+            return room
+
+
 # ============================================
 # Database Health Check
 # ============================================

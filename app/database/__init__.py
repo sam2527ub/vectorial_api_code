@@ -45,6 +45,11 @@ from app.database.connection import (
     # Preview operations (audience database)
     find_all_previews,
     find_preview_by_room_id,
+    ensure_preview_table_exists,
+    upsert_preview,
+    delete_preview,
+    find_all_audience_rooms_with_profiles,
+    find_audience_room_with_profiles_for_preview,
     
     # Raw query helper
     query_first,
@@ -78,6 +83,11 @@ __all__ = [
     "find_post_classifier_by_id",
     "find_all_previews",
     "find_preview_by_room_id",
+    "ensure_preview_table_exists",
+    "upsert_preview",
+    "delete_preview",
+    "find_all_audience_rooms_with_profiles",
+    "find_audience_room_with_profiles_for_preview",
     "query_first",
 ]
 

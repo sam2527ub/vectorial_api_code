@@ -3,7 +3,7 @@ import uuid
 import asyncio
 from datetime import datetime
 from typing import Optional
-from fastapi import APIRouter, HTTPException, Path
+from fastapi import APIRouter, HTTPException, Path, Query
 from app.models.schemas import CreateAudienceRoomRequest
 from app.config import s3_client, s3_bucket, logger
 from app.utils.helpers import ensure_db_available
@@ -445,17 +445,30 @@ async def get_profile_comments(
 
 
 @router.post("/api/v1/audience-rooms/{audience_room_id}/generate-summaries")
-async def generate_profile_summaries(audience_room_id: str = Path(...)):
+async def generate_profile_summaries(
+    audience_room_id: str = Path(...),
+    offset: int = Query(0, ge=0, description="Offset for chunking (start index)"),
+    limit: int = Query(10, ge=1, le=20, description="Number of profiles to process per chunk (max 20)")
+):
     """
-    Generate summaries, keywords, and highlights for all profiles in an audience room.
+    Generate summaries, keywords, and highlights for profiles in an audience room.
+    
+    Uses chunking to avoid timeouts - processes profiles in smaller batches.
+    Client should call this endpoint multiple times with increasing offsets until has_more is false.
     
     Flow:
     1. Fetch all profiles in the audience room
-    2. For each profile:
+    2. Process only the chunk specified by offset/limit
+    3. For each profile in chunk:
        - Fetch posts JSON from S3
        - Generate summary, keywords, and highlights using OpenAI
        - Update profile description JSON in S3 with the new data
-    3. Process profiles in parallel to avoid timeouts
+    4. Return results with info about remaining chunks
+    
+    Example usage:
+    - First call: POST /generate-summaries?offset=0&limit=10
+    - Second call: POST /generate-summaries?offset=10&limit=10
+    - Continue until has_more is false
     """
     ensure_db_available("audience")
     from app.config import openai_client
@@ -470,11 +483,37 @@ async def generate_profile_summaries(audience_room_id: str = Path(...)):
         if not audience_room:
             raise HTTPException(status_code=404, detail=f"Audience room {audience_room_id} not found")
         
-        profiles = audience_room.profiles
-        if not profiles:
+        all_profiles = audience_room.profiles
+        if not all_profiles:
             raise HTTPException(status_code=404, detail=f"No profiles found in audience room {audience_room_id}")
         
-        logger.info(f"Generating summaries for {len(profiles)} profiles in audience room {audience_room_id}")
+        total_profiles = len(all_profiles)
+        
+        # Calculate chunk boundaries
+        chunk_start = offset
+        chunk_end = min(offset + limit, total_profiles)
+        profiles_chunk = all_profiles[chunk_start:chunk_end]
+        
+        if not profiles_chunk:
+            return {
+                "audience_room_id": audience_room_id,
+                "total_profiles": total_profiles,
+                "chunk": {
+                    "offset": offset,
+                    "limit": limit,
+                    "processed": 0,
+                    "start_index": chunk_start,
+                    "end_index": chunk_end
+                },
+                "success_count": 0,
+                "skipped_count": 0,
+                "error_count": 0,
+                "has_more": False,
+                "next_offset": None,
+                "profiles": []
+            }
+        
+        logger.info(f"Processing chunk {chunk_start}-{chunk_end} of {total_profiles} profiles for audience room {audience_room_id}")
         
         # Rate-limited batching to avoid OpenAI rate limits
         MAX_CONCURRENT = 2
@@ -486,7 +525,7 @@ async def generate_profile_summaries(audience_room_id: str = Path(...)):
                 await asyncio.sleep(1.0)  # Delay to spread out API requests
                 return result
         
-        tasks = [rate_limited_process(profile) for profile in profiles]
+        tasks = [rate_limited_process(profile) for profile in profiles_chunk]
         results = await asyncio.gather(*tasks, return_exceptions=True)
         
         # Process results and handle exceptions
@@ -497,10 +536,10 @@ async def generate_profile_summaries(audience_room_id: str = Path(...)):
         
         for idx, result in enumerate(results):
             if isinstance(result, Exception):
-                logger.error(f"Error processing profile {profiles[idx].id}: {result}")
+                logger.error(f"Error processing profile {profiles_chunk[idx].id}: {result}")
                 processed_results.append({
-                    "profile_id": profiles[idx].id,
-                    "profile_name": profiles[idx].profileName,
+                    "profile_id": profiles_chunk[idx].id,
+                    "profile_name": profiles_chunk[idx].profileName,
                     "status": "error",
                     "reason": "exception",
                     "error": str(result)
@@ -515,12 +554,25 @@ async def generate_profile_summaries(audience_room_id: str = Path(...)):
                 else:
                     error_count += 1
         
+        # Calculate if there are more chunks
+        has_more = chunk_end < total_profiles
+        next_offset = chunk_end if has_more else None
+        
         return {
             "audience_room_id": audience_room_id,
-            "total_profiles": len(profiles),
+            "total_profiles": total_profiles,
+            "chunk": {
+                "offset": offset,
+                "limit": limit,
+                "processed": len(profiles_chunk),
+                "start_index": chunk_start,
+                "end_index": chunk_end
+            },
             "success_count": success_count,
             "skipped_count": skipped_count,
             "error_count": error_count,
+            "has_more": has_more,
+            "next_offset": next_offset,
             "profiles": processed_results
         }
         
