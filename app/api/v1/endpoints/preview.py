@@ -82,7 +82,6 @@ def _generate_preview_for_room(room: Dict[str, Any]) -> Dict[str, Any]:
     # Fetch room description from S3
     room_description_data = _fetch_s3_json_safe(room.get('descriptionS3Url'))
     description_summary = room_description_data.get('summary')
-    traits = room_description_data.get('traits')
     
     # Build profile previews
     profile_previews = []
@@ -107,91 +106,54 @@ def _generate_preview_for_room(room: Dict[str, Any]) -> Dict[str, Any]:
         'description_summary': description_summary,
         'source': source.lower() if source else None,
         'total_profile_count': total_profile_count,
-        'traits': traits,
         'profiles': profile_previews
     }
 
 
 @router.get("/api/v1/previews")
-async def get_all_previews(user_id: Optional[str] = Query(None, description="Filter previews by user ID")):
+async def get_previews(
+    enterpriseName: Optional[str] = Query(None, description="Enterprise name (gamma, app, entelligence). If not provided, uses default audience database.")
+):
     """
     Get all audience room previews from the Preview table.
     
-    Returns cached preview data with room info and first 5 profiles for each room.
-    This is much faster than fetching from S3 as it reads directly from the database.
+    This endpoint fetches preview data from the database based on the enterprise name.
+    This is a READ-ONLY operation - no tables are modified.
     
     Query Parameters:
-    - user_id (optional): Filter previews by user ID
+    - enterpriseName (optional): Enterprise name to determine which database to query:
+        - "gamma" -> uses GAMMA_DATABASE_URL
+        - "app" -> uses APP_DATABASE_URL
+        - "entelligence" -> uses ENTELLIGENCE_DATABASE_URL
+        - If not provided, uses AUDIENCE_DATABASE_URL
     
     Response includes:
-    - room_id: UUID of the audience room
-    - user_id: User ID who owns this preview
-    - name: Room name
-    - source: Source type (linkedin/reddit)
-    - description_summary: Summary from room description (if available)
-    - total_profile_count: Total number of profiles in the room
-    - traits: Array of trait objects
-    - profiles: Array of first 5 profiles with their details
-    - created_at: Timestamp when preview was created
-    - updated_at: Timestamp when preview was last updated
+    - count: Number of previews returned
+    - enterpriseName: Enterprise name used (if any)
+    - previews: Array of preview objects with:
+        - room_id: UUID of the audience room
+        - user_id: User ID who owns this preview
+        - name: Room name
+        - source: Source type (linkedin/reddit)
+        - description_summary: Summary from room description (if available)
+        - total_profile_count: Total number of profiles in the room
+        - profiles: Array of first 5 profiles with their details
+        - created_at: Timestamp when preview was created
+        - updated_at: Timestamp when preview was last updated
     """
     ensure_db_available("audience")
     
     try:
-        previews = database.find_all_previews(user_id=user_id)
+        previews = database.find_all_previews(enterprise_name=enterpriseName)
         
         return {
             "count": len(previews),
-            "user_id": user_id,
+            "enterpriseName": enterpriseName,
             "previews": previews
         }
     except Exception as e:
         logger.error(f"Error fetching previews: {e}")
         raise HTTPException(status_code=500, detail=f"Failed to fetch previews: {str(e)}")
-
-
-@router.get("/api/v1/previews/{room_id}")
-async def get_preview_by_room_id(
-    room_id: str,
-    user_id: Optional[str] = Query(None, description="Filter by user ID")
-):
-    """
-    Get a single audience room preview by room ID.
-    
-    Returns cached preview data for a specific room with first 5 profiles.
-    
-    Query Parameters:
-    - user_id (optional): Filter by user ID
-    
-    Response includes:
-    - room_id: UUID of the audience room
-    - user_id: User ID who owns this preview
-    - name: Room name
-    - source: Source type (linkedin/reddit)
-    - description_summary: Summary from room description (if available)
-    - total_profile_count: Total number of profiles in the room
-    - traits: Array of trait objects
-    - profiles: Array of first 5 profiles with their details
-    - created_at: Timestamp when preview was created
-    - updated_at: Timestamp when preview was last updated
-    """
-    ensure_db_available("audience")
-    
-    try:
-        preview = database.find_preview_by_room_id(room_id, user_id=user_id)
-        
-        if not preview:
-            if user_id:
-                raise HTTPException(status_code=404, detail=f"Preview not found for room {room_id} and user {user_id}")
-            else:
-                raise HTTPException(status_code=404, detail=f"Preview not found for room {room_id}")
-        
-        return preview
-    except HTTPException:
-        raise
-    except Exception as e:
-        logger.error(f"Error fetching preview for room {room_id}: {e}")
-        raise HTTPException(status_code=500, detail=f"Failed to fetch preview: {str(e)}")
 
 
 @router.post("/api/v1/previews/update-room/{room_id}")
@@ -240,7 +202,6 @@ async def update_preview_for_room(
             description_summary=preview_data['description_summary'],
             source=preview_data['source'],
             total_profile_count=preview_data['total_profile_count'],
-            traits=preview_data['traits'],
             profiles=preview_data['profiles']
         )
         
@@ -253,8 +214,7 @@ async def update_preview_for_room(
             "source": preview_data['source'],
             "total_profile_count": preview_data['total_profile_count'],
             "preview_profiles_count": len(preview_data['profiles']),
-            "has_summary": bool(preview_data['description_summary']),
-            "has_traits": bool(preview_data['traits'])
+            "has_summary": bool(preview_data['description_summary'])
         }
         
     except HTTPException:
@@ -323,7 +283,6 @@ async def populate_all_previews():
                     description_summary=preview_data['description_summary'],
                     source=preview_data['source'],
                     total_profile_count=preview_data['total_profile_count'],
-                    traits=preview_data['traits'],
                     profiles=preview_data['profiles']
                 )
                 

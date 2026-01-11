@@ -111,7 +111,6 @@ def ensure_preview_table_exists(conn):
                 description_summary TEXT,
                 source VARCHAR(50),
                 total_profile_count INTEGER DEFAULT 0,
-                traits JSONB,
                 profiles JSONB,
                 created_at TIMESTAMP DEFAULT NOW(),
                 updated_at TIMESTAMP DEFAULT NOW(),
@@ -123,7 +122,6 @@ def ensure_preview_table_exists(conn):
         for col_name, col_def in [
             ('source', 'VARCHAR(50)'),
             ('total_profile_count', 'INTEGER DEFAULT 0'),
-            ('traits', 'JSONB'),
         ]:
             cur.execute(f"""
                 DO $$ 
@@ -134,6 +132,17 @@ def ensure_preview_table_exists(conn):
                     END IF;
                 END $$;
             """)
+        
+        # Remove traits column if it exists (cleanup)
+        cur.execute("""
+            DO $$ 
+            BEGIN 
+                IF EXISTS (SELECT 1 FROM information_schema.columns 
+                           WHERE table_name='previews' AND column_name='traits') THEN
+                    ALTER TABLE "previews" DROP COLUMN traits;
+                END IF;
+            END $$;
+        """)
         
     conn.commit()
     log("Preview table schema ensured", "SUCCESS")
@@ -208,8 +217,7 @@ def build_profile_preview(profile: Dict[str, Any], source: str, s3_client) -> Di
 
 def upsert_preview(conn, room_id: str, name: str, user_id: str, 
                    description_summary: Optional[str], source: Optional[str],
-                   total_profile_count: int, traits: Optional[List],
-                   profiles: Optional[List]) -> bool:
+                   total_profile_count: int, profiles: Optional[List]) -> bool:
     """Insert or update a preview record."""
     now = datetime.utcnow()
     
@@ -217,15 +225,14 @@ def upsert_preview(conn, room_id: str, name: str, user_id: str,
         with conn.cursor() as cur:
             cur.execute("""
                 INSERT INTO "previews" 
-                (room_id, user_id, name, description_summary, source, total_profile_count, traits, profiles, created_at, updated_at)
-                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+                (room_id, user_id, name, description_summary, source, total_profile_count, profiles, created_at, updated_at)
+                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
                 ON CONFLICT (room_id, user_id) 
                 DO UPDATE SET
                     name = EXCLUDED.name,
                     description_summary = EXCLUDED.description_summary,
                     source = EXCLUDED.source,
                     total_profile_count = EXCLUDED.total_profile_count,
-                    traits = EXCLUDED.traits,
                     profiles = EXCLUDED.profiles,
                     updated_at = EXCLUDED.updated_at
             """, (
@@ -235,7 +242,6 @@ def upsert_preview(conn, room_id: str, name: str, user_id: str,
                 description_summary,
                 source,
                 total_profile_count,
-                Json(traits) if traits else None,
                 Json(profiles) if profiles else None,
                 now,
                 now
@@ -303,7 +309,6 @@ def main():
                 room_description_data = fetch_json_from_s3_safe(s3_client, description_key) if description_key else {}
                 
                 description_summary = room_description_data.get('summary')
-                traits = room_description_data.get('traits')
                 
                 # Build profile previews
                 profile_previews = []
@@ -329,7 +334,6 @@ def main():
                     description_summary=description_summary,
                     source=source.lower() if source else None,
                     total_profile_count=room.get('total_profile_count', 0),
-                    traits=traits,
                     profiles=profile_previews
                 )
                 
@@ -367,4 +371,5 @@ def main():
 
 if __name__ == "__main__":
     main()
+
 

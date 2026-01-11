@@ -633,9 +633,16 @@ def query_first(sql: str, *args) -> Optional[Dict[str, Any]]:
 # Preview Operations (Audience Database)
 # ============================================
 
-def find_all_previews(user_id: Optional[str] = None) -> List[Dict[str, Any]]:
-    """Fetch all preview records from the database, optionally filtered by user_id."""
-    with get_audience_connection() as conn:
+def find_all_previews(user_id: Optional[str] = None, enterprise_name: Optional[str] = None) -> List[Dict[str, Any]]:
+    """
+    Fetch all preview records from the database, optionally filtered by user_id.
+    
+    Args:
+        user_id: Optional user ID to filter by
+        enterprise_name: Optional enterprise name (gamma, app, entelligence). 
+                        Defaults to AUDIENCE_DATABASE_URL if None.
+    """
+    with get_enterprise_audience_connection(enterprise_name) as conn:
         with conn.cursor(cursor_factory=RealDictCursor) as cur:
             if user_id:
                 cur.execute('SELECT * FROM "previews" WHERE user_id = %s ORDER BY created_at DESC', (user_id,))
@@ -645,9 +652,17 @@ def find_all_previews(user_id: Optional[str] = None) -> List[Dict[str, Any]]:
             return [dict(row) for row in rows]
 
 
-def find_preview_by_room_id(room_id: str, user_id: Optional[str] = None) -> Optional[Dict[str, Any]]:
-    """Fetch a single preview by room ID and optionally user ID."""
-    with get_audience_connection() as conn:
+def find_preview_by_room_id(room_id: str, user_id: Optional[str] = None, enterprise_name: Optional[str] = None) -> Optional[Dict[str, Any]]:
+    """
+    Fetch a single preview by room ID and optionally user ID.
+    
+    Args:
+        room_id: The room ID to fetch preview for
+        user_id: Optional user ID to filter by
+        enterprise_name: Optional enterprise name (gamma, app, entelligence). 
+                        Defaults to AUDIENCE_DATABASE_URL if None.
+    """
+    with get_enterprise_audience_connection(enterprise_name) as conn:
         with conn.cursor(cursor_factory=RealDictCursor) as cur:
             if user_id:
                 cur.execute('SELECT * FROM "previews" WHERE room_id = %s AND user_id = %s', (room_id, user_id))
@@ -676,7 +691,6 @@ def ensure_preview_table_exists() -> bool:
                     description_summary TEXT,
                     source VARCHAR(50),
                     total_profile_count INTEGER DEFAULT 0,
-                    traits JSONB,
                     profiles JSONB,
                     created_at TIMESTAMP DEFAULT NOW(),
                     updated_at TIMESTAMP DEFAULT NOW(),
@@ -707,13 +721,13 @@ def ensure_preview_table_exists() -> bool:
                 END $$;
             """)
             
-            # Check and add traits column
+            # Remove traits column if it exists (cleanup)
             cur.execute("""
                 DO $$ 
                 BEGIN 
-                    IF NOT EXISTS (SELECT 1 FROM information_schema.columns 
-                                   WHERE table_name='previews' AND column_name='traits') THEN
-                        ALTER TABLE "previews" ADD COLUMN traits JSONB;
+                    IF EXISTS (SELECT 1 FROM information_schema.columns 
+                               WHERE table_name='previews' AND column_name='traits') THEN
+                        ALTER TABLE "previews" DROP COLUMN traits;
                     END IF;
                 END $$;
             """)
@@ -729,7 +743,6 @@ def upsert_preview(
     description_summary: Optional[str] = None,
     source: Optional[str] = None,
     total_profile_count: int = 0,
-    traits: Optional[List[Dict[str, Any]]] = None,
     profiles: Optional[List[Dict[str, Any]]] = None
 ) -> Dict[str, Any]:
     """
@@ -743,15 +756,14 @@ def upsert_preview(
         with conn.cursor(cursor_factory=RealDictCursor) as cur:
             cur.execute("""
                 INSERT INTO "previews" 
-                (room_id, user_id, name, description_summary, source, total_profile_count, traits, profiles, created_at, updated_at)
-                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+                (room_id, user_id, name, description_summary, source, total_profile_count, profiles, created_at, updated_at)
+                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
                 ON CONFLICT (room_id, user_id) 
                 DO UPDATE SET
                     name = EXCLUDED.name,
                     description_summary = EXCLUDED.description_summary,
                     source = EXCLUDED.source,
                     total_profile_count = EXCLUDED.total_profile_count,
-                    traits = EXCLUDED.traits,
                     profiles = EXCLUDED.profiles,
                     updated_at = EXCLUDED.updated_at
                 RETURNING *
@@ -762,7 +774,6 @@ def upsert_preview(
                 description_summary,
                 source,
                 total_profile_count,
-                Json(traits) if traits else None,
                 Json(profiles) if profiles else None,
                 now,
                 now
