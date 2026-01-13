@@ -1,7 +1,14 @@
 import time
+import logging
 from typing import Any, Optional
 from langsmith import Client
-from src.config.logging_config import logger
+
+# Use standard logging if src.config.logging_config is not available
+try:
+    from src.config.logging_config import logger
+except ImportError:
+    # Fallback to standard logging
+    logger = logging.getLogger(__name__)
 
 class PromptService:
     def __init__(self, api_key: str, cache_duration: int = 600):

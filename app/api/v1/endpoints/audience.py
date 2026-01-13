@@ -685,29 +685,25 @@ async def generate_group_summary(audience_room_id: str = Path(...)):
         company_list = ", ".join(sorted(companies)) if companies else "various companies"
         company_type = company_list if len(companies) <= 3 else f"{len(companies)} companies"
         
-        # Build the prompt according to the template
-        user_prompt = f"""Analyze the following group of {len(profile_summaries)} profiles who work at {company_type}.
-
-Companies represented: {company_list}
-
-Individual Profile Summaries:
-{combined_summaries}
-
-Generate a comprehensive high-level summary (6-10 sentences) that covers:
-1. Overall themes and patterns across all profiles in this group
-2. Common topics, technologies, or expertise areas shared among them
-3. Company culture and stage characteristics evident from their posts
-4. Professional focus areas (e.g., technical depth, thought leadership, product development)
-5. Industry trends or insights that emerge from the collective content
-6. Unique characteristics or differentiators of this group
-7. Common posting styles or engagement patterns
-8. Key value propositions or strengths evident across the group
-
-Write in a natural, engaging way that provides insights into this collective group of professionals from {company_type}.
-
-Respond with ONLY the summary text, no JSON or formatting."""
+        # Use group_summary_prompt from LangSmith
+        from prompts import group_summary_prompt
         
-        system_message = "You are an expert at analyzing groups of LinkedIn profiles and generating comprehensive, insightful high-level summaries. Write detailed, informative summaries that capture collective patterns and insights."
+        full_group_prompt = group_summary_prompt.format(
+            total_profiles=len(profile_summaries),
+            company_type=company_type,
+            company_list=company_list,
+            combined_summaries=combined_summaries
+        )
+        
+        # Split the prompt into system and user messages
+        if "\n\n" in full_group_prompt:
+            parts = full_group_prompt.split("\n\n", 1)
+            system_message = parts[0] if parts[0].startswith("You are") else "You are an expert at analyzing groups of LinkedIn profiles and generating comprehensive, insightful high-level summaries. Write detailed, informative summaries that capture collective patterns and insights."
+            user_prompt = parts[1] if len(parts) > 1 else full_group_prompt
+        else:
+            # Fallback if prompt doesn't have clear separation
+            system_message = "You are an expert at analyzing groups of LinkedIn profiles and generating comprehensive, insightful high-level summaries. Write detailed, informative summaries that capture collective patterns and insights."
+            user_prompt = full_group_prompt
         
         # Generate group summary using OpenAI
         try:
@@ -723,39 +719,24 @@ Respond with ONLY the summary text, no JSON or formatting."""
             
             group_summary = completion.choices[0].message.content.strip()
             
-            # Generate traits based on profile summaries
+            # Generate traits based on profile summaries using LangSmith prompt
             import json
-            traits_prompt = f"""Analyze the following group of {len(profile_summaries)} profiles and generate traits in JSON format.
-
-Individual Profile Summaries:
-{combined_summaries}
-
-Based on these profiles, generate a traits JSON object with exactly 5 traits. Each trait must have:
-- title: One of these exact titles (keep them as-is):
-  1. "Skills & Expertise"
-  2. "Working Style"
-  3. "Motivations & Values"
-  4. "Pain Points & Needs"
-  5. "Organizational Leadership & Psychographic Profile"
-
-- keywordTags: An array of 4-6 specific keyword tags relevant to this group of profiles
-- descriptions: An array of 4-6 descriptive sentences (one per keywordTag) that explain how these tags apply to this specific group
-
-Return ONLY valid JSON in this exact format:
-{{
-  "traits": [
-    {{
-      "title": "Skills & Expertise",
-      "keywordTags": ["tag1", "tag2", "tag3", "tag4", "tag5"],
-      "descriptions": ["description1", "description2", "description3", "description4", "description5"]
-    }},
-    ...
-  ]
-}}
-
-Make sure the JSON is valid and properly formatted. Do not include any text before or after the JSON."""
+            from prompts import traits_generation_prompt
             
-            traits_system_message = "You are an expert at analyzing professional profiles and generating structured trait data. Always return valid JSON only, no additional text."
+            full_traits_prompt = traits_generation_prompt.format(
+                total_profiles=len(profile_summaries),
+                combined_summaries=combined_summaries
+            )
+            
+            # Split the prompt into system and user messages
+            if "\n\n" in full_traits_prompt:
+                parts = full_traits_prompt.split("\n\n", 1)
+                traits_system_message = parts[0] if parts[0].startswith("You are") else "You are an expert at analyzing professional profiles and generating structured trait data. Always return valid JSON only, no additional text."
+                traits_prompt = parts[1] if len(parts) > 1 else full_traits_prompt
+            else:
+                # Fallback if prompt doesn't have clear separation
+                traits_system_message = "You are an expert at analyzing professional profiles and generating structured trait data. Always return valid JSON only, no additional text."
+                traits_prompt = full_traits_prompt
             
             try:
                 traits_completion = openai_client.chat.completions.create(

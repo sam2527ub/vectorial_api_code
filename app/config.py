@@ -1,14 +1,16 @@
 """Configuration and client initialization."""
 import os
 import logging
-from typing import Optional
+from typing import Optional, TYPE_CHECKING
 from dotenv import load_dotenv
-from peopledatalabs import PDLPY
 from apify_client import ApifyClient
 from openai import OpenAI
 import boto3
 from groq import Groq
 from app import database
+
+if TYPE_CHECKING:
+    from peopledatalabs import PDLPY
 
 # Load environment variables
 load_dotenv()
@@ -22,7 +24,7 @@ POST_SCRAPER_ACTOR_ID = "curious_coder/linkedin-post-search-scraper"
 PROFILE_SCRAPER_ACTOR_ID = "2SyF0bVxmgGr8IVCZ"  # LinkedIn Profile Scraper
 
 # Initialize Clients (Global variables - will be set during initialization)
-pdl_client: Optional[PDLPY] = None
+pdl_client: Optional["PDLPY"] = None
 apify_client: Optional[ApifyClient] = None
 openai_client: Optional[OpenAI] = None
 groq_client: Optional[Groq] = None
@@ -41,11 +43,14 @@ def initialize_clients():
     """Initialize all third-party clients."""
     global pdl_client, apify_client, openai_client, groq_client, dynamodb_resource, s3_client
     
-    # Initialize PDL client
+    # Initialize PDL client (lazy import to avoid Pydantic compatibility issues)
     try:
+        from peopledatalabs import PDLPY
         pdl_client = PDLPY(api_key=os.getenv("PDL_API_KEY"))
-    except Exception as e:
+    except (ImportError, TypeError, Exception) as e:
         logger.error(f"Failed to initialize PDL client: {e}")
+        logger.warning("PDL client will not be available. This may be due to Pydantic version incompatibility.")
+        pdl_client = None
     
     # Initialize Apify client
     try:

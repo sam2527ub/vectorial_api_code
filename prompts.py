@@ -1,8 +1,27 @@
 import os
-from src.service.PromptService import PromptService, CachedPrompt
+import sys
+from pathlib import Path
+from dotenv import load_dotenv
+
+# Load environment variables from .env file
+load_dotenv()
+
+# Add the root directory to the path to allow importing PromptService
+root_dir = Path(__file__).parent
+sys.path.insert(0, str(root_dir))
+
+from PromptService import PromptService, CachedPrompt
 CACHE_DURATION = 600
 
-prompt_service = PromptService(api_key=os.environ["LANGSMITH_API_KEY"], cache_duration=CACHE_DURATION)
+# Initialize prompt service with optional API key
+langsmith_api_key = os.getenv("LANGSMITH_API_KEY")
+if not langsmith_api_key:
+    import logging
+    logging.warning("LANGSMITH_API_KEY not set. Prompt service may not work correctly.")
+    # Use a dummy key to allow initialization, but it will fail when used
+    langsmith_api_key = "dummy-key"
+
+prompt_service = PromptService(api_key=langsmith_api_key, cache_duration=CACHE_DURATION)
 
 analyze_query_prompt = CachedPrompt("analyze_query_prompt", prompt_service)
 grade_results_prompt = CachedPrompt("grade_results_prompt", prompt_service)
@@ -35,6 +54,14 @@ google_drive_search_query_prompt = CachedPrompt("google_drive_search_query_promp
 web_search_query_prompt = CachedPrompt("web_search_query_prompt", prompt_service)
 unknown_sources_search_query_prompt = CachedPrompt("unknown_sources_search_query_prompt", prompt_service)
 
+# Summary-related prompts
+profile_posts_summary_prompt = CachedPrompt("profile_posts_summary_prompt", prompt_service)
+profile_posts_batch_summary_prompt = CachedPrompt("profile_posts_batch_summary_prompt", prompt_service)
+combine_batch_summaries_prompt = CachedPrompt("combine_batch_summaries_prompt", prompt_service)
+profile_comments_summary_prompt = CachedPrompt("profile_comments_summary_prompt", prompt_service)
+group_summary_prompt = CachedPrompt("group_summary_prompt", prompt_service)
+traits_generation_prompt = CachedPrompt("traits_generation_prompt", prompt_service)
+
 __all__ = [
     "analyze_query_prompt",
     "grade_results_prompt",
@@ -66,5 +93,12 @@ __all__ = [
     "product_story_search_query_prompt",
     "google_drive_search_query_prompt",
     "web_search_query_prompt",
-    "unknown_sources_search_query_prompt"
+    "unknown_sources_search_query_prompt",
+    # Summary-related prompts
+    "profile_posts_summary_prompt",
+    "profile_posts_batch_summary_prompt",
+    "combine_batch_summaries_prompt",
+    "profile_comments_summary_prompt",
+    "group_summary_prompt",
+    "traits_generation_prompt"
 ]

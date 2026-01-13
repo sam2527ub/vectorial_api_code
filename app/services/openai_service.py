@@ -5,6 +5,11 @@ import asyncio
 from typing import List, Dict, Any, Optional
 from fastapi import HTTPException
 from app.config import openai_client, logger
+from prompts import (
+    profile_posts_summary_prompt,
+    profile_posts_batch_summary_prompt,
+    combine_batch_summaries_prompt
+)
 
 # Re-export logger for convenience
 __all__ = [
@@ -115,45 +120,33 @@ async def generate_summary_for_batch(
     """
     text_for_analysis = "\n\n".join(post_texts)
     
+    # Use LangSmith prompts - they fetch from LangSmith and cache for 10 minutes
     if is_final:
-        instruction = f"""Generate a comprehensive, detailed analysis:
-1. A thorough 5-8 sentence summary that covers:
-   - Their current role and company context (mention company stage if evident: Series A/B, startup, growth stage, etc.)
-   - Main topics, themes, and subjects they frequently post about
-   - Their posting style and tone (technical, thought leadership, personal reflections, etc.)
-   - Key insights, opinions, expertise areas, or perspectives they share
-   - Notable patterns in content (technical depth, problem-solving focus, industry commentary, etc.)
-   - Engagement patterns or community involvement if evident
-   - Any unique value propositions or differentiators in their content
-   
-   Start with "{profile_name} is currently..." or "{profile_name} has..." and write in a natural, engaging way.
-   
-2. Extract 4-6 key highlights/badges (similar to: "Early + Growth", "Fullstack", "Thought Leader", "Technical Expert", "Series B", "Problem Solver", "Startup Experience", etc.)
-
-3. Identify 10-15 important keywords/phrases for highlighting"""
+        # Use profile_posts_summary_prompt from LangSmith
+        full_prompt = profile_posts_summary_prompt.format(
+            profile_context=profile_context,
+            total_posts=total_posts,
+            text_for_analysis=text_for_analysis,
+            profile_name=profile_name
+        )
     else:
-        instruction = f"""Analyze this batch of posts and provide:
-1. A 3-4 sentence summary of the key themes, topics, and insights from these posts
-2. Extract 3-4 key highlights/badges that apply to these posts
-3. Identify 8-10 important keywords/phrases mentioned
-
-This is a partial analysis that will be combined with other batches."""
+        # Use profile_posts_batch_summary_prompt from LangSmith
+        full_prompt = profile_posts_batch_summary_prompt.format(
+            profile_context=profile_context,
+            total_posts=total_posts,
+            text_for_analysis=text_for_analysis
+        )
     
-    user_prompt = f"""Analyze the LinkedIn posts from {profile_context}.
-
-Posts ({total_posts} in this batch):
-{text_for_analysis}
-
-{instruction}
-
-Respond in JSON format only:
-{{
-    "summary": "Summary text",
-    "highlights": ["Highlight 1", "Highlight 2", ...],
-    "keywords": ["keyword1", "keyword2", ...]
-}}"""
-    
-    system_message = "You are an expert at analyzing LinkedIn posts and generating professional summaries. Always respond with valid JSON only."
+    # Split the prompt into system and user messages
+    # LangSmith prompts are stored as: "System message\n\nUser message"
+    if "\n\n" in full_prompt:
+        parts = full_prompt.split("\n\n", 1)
+        system_message = parts[0] if parts[0].startswith("You are") else "You are an expert at analyzing LinkedIn posts and generating professional summaries. Always respond with valid JSON only."
+        user_prompt = parts[1] if len(parts) > 1 else full_prompt
+    else:
+        # Fallback if prompt doesn't have clear separation
+        system_message = "You are an expert at analyzing LinkedIn posts and generating professional summaries. Always respond with valid JSON only."
+        user_prompt = full_prompt
     
     try:
         result = await call_openai_with_retry(
@@ -305,39 +298,30 @@ async def generate_profile_summary_from_posts(
     # Generate final combined summary from batch summaries
     combined_summaries = "\n\n".join([f"Batch {i+1}: {s}" for i, s in enumerate(batch_summaries)])
     
-    combine_prompt = f"""You are combining multiple analysis summaries of LinkedIn posts from {profile_context} into ONE final comprehensive summary.
-
-Here are the summaries from analyzing {len(post_texts)} total posts in {len(batches)} batches:
-
-{combined_summaries}
-
-Based on ALL these batch summaries, create ONE unified final analysis:
-
-1. A comprehensive 5-8 sentence summary that synthesizes all the insights, covering:
-   - Their current role and company context
-   - Main topics and themes across ALL their posts
-   - Their posting style and tone
-   - Key insights, expertise areas, and perspectives
-   - Notable patterns in their content
-   
-   Start with "{profile_name} is currently..." or "{profile_name} has..."
-
-2. Select the 4-6 BEST highlights/badges from across all batches that best represent this person
-
-3. Select the 10-15 MOST important keywords from across all batches
-
-Respond in JSON format only:
-{{
-    "summary": "Final comprehensive 5-8 sentence summary",
-    "highlights": ["Best Highlight 1", "Best Highlight 2", ...],
-    "keywords": ["keyword1", "keyword2", ...]
-}}"""
+    # Use combine_batch_summaries_prompt from LangSmith
+    full_combine_prompt = combine_batch_summaries_prompt.format(
+        profile_context=profile_context,
+        total_posts=len(post_texts),
+        batch_count=len(batches),
+        combined_summaries=combined_summaries,
+        profile_name=profile_name
+    )
+    
+    # Split the prompt into system and user messages
+    if "\n\n" in full_combine_prompt:
+        parts = full_combine_prompt.split("\n\n", 1)
+        system_message = parts[0] if parts[0].startswith("You are") else "You are an expert at synthesizing multiple summaries into one comprehensive analysis. Always respond with valid JSON only."
+        combine_prompt = parts[1] if len(parts) > 1 else full_combine_prompt
+    else:
+        # Fallback if prompt doesn't have clear separation
+        system_message = "You are an expert at synthesizing multiple summaries into one comprehensive analysis. Always respond with valid JSON only."
+        combine_prompt = full_combine_prompt
     
     try:
         result = await call_openai_with_retry(
             profile_id=profile_id,
             messages=[
-                {"role": "system", "content": "You are an expert at synthesizing multiple summaries into one comprehensive analysis. Always respond with valid JSON only."},
+                {"role": "system", "content": system_message},
                 {"role": "user", "content": combine_prompt}
             ],
             max_tokens=1500,
