@@ -112,7 +112,8 @@ def _generate_preview_for_room(room: Dict[str, Any]) -> Dict[str, Any]:
 
 @router.get("/api/v1/previews")
 async def get_previews(
-    enterpriseName: Optional[str] = Query(None, description="Enterprise name (gamma, app, entelligence). If not provided, uses default audience database.")
+    enterpriseName: Optional[str] = Query(None, description="Enterprise name (gamma, app, entelligence). If not provided, uses default audience database."),
+    beta: Optional[bool] = Query(None, description="If True, uses beta database. Takes precedence over enterpriseName.")
 ):
     """
     Get all audience room previews from the Preview table.
@@ -126,6 +127,7 @@ async def get_previews(
         - "app" -> uses APP_DATABASE_URL
         - "entelligence" -> uses ENTELLIGENCE_DATABASE_URL
         - If not provided, uses AUDIENCE_DATABASE_URL
+    - beta (optional): If True, uses BETA_DATABASE_URL (takes precedence over enterpriseName)
     
     Response includes:
     - count: Number of previews returned
@@ -144,7 +146,7 @@ async def get_previews(
     ensure_db_available("audience")
     
     try:
-        previews = database.find_all_previews(enterprise_name=enterpriseName)
+        previews = database.find_all_previews(enterprise_name=enterpriseName, beta=beta)
         
         return {
             "count": len(previews),
@@ -226,7 +228,8 @@ async def update_preview_for_room(
 
 @router.post("/api/v1/previews/populate-all")
 async def populate_all_previews(
-    enterpriseName: Optional[str] = Query(None, description="Enterprise name (gamma, app, entelligence). If not provided, uses default audience database.")
+    enterpriseName: Optional[str] = Query(None, description="Enterprise name (gamma, app, entelligence). If not provided, uses default audience database."),
+    beta: Optional[bool] = Query(None, description="If True, uses beta database. Takes precedence over enterpriseName.")
 ):
     """
     Populate previews for ALL audience rooms in the database.
@@ -242,6 +245,7 @@ async def populate_all_previews(
         - "app" -> uses APP_DATABASE_URL
         - "entelligence" -> uses ENTELLIGENCE_DATABASE_URL
         - If not provided, uses AUDIENCE_DATABASE_URL
+    - beta (optional): If True, uses BETA_DATABASE_URL (takes precedence over enterpriseName)
     
     Use this for:
     - Initial population of the preview table
@@ -257,10 +261,10 @@ async def populate_all_previews(
     
     try:
         # Ensure preview table exists with proper schema
-        database.ensure_preview_table_exists(enterprise_name=enterpriseName)
+        database.ensure_preview_table_exists(enterprise_name=enterpriseName, beta=beta)
         
         # Fetch all rooms with profiles (READ-ONLY)
-        rooms = database.find_all_audience_rooms_with_profiles(limit=PREVIEW_PROFILE_LIMIT, enterprise_name=enterpriseName)
+        rooms = database.find_all_audience_rooms_with_profiles(limit=PREVIEW_PROFILE_LIMIT, enterprise_name=enterpriseName, beta=beta)
         
         if not rooms:
             return {
@@ -293,7 +297,8 @@ async def populate_all_previews(
                     source=preview_data['source'],
                     total_profile_count=preview_data['total_profile_count'],
                     profiles=preview_data['profiles'],
-                    enterprise_name=enterpriseName
+                    enterprise_name=enterpriseName,
+                    beta=beta
                 )
                 
                 results.append({
@@ -319,7 +324,7 @@ async def populate_all_previews(
         
         # Clean up orphaned and duplicate previews
         try:
-            cleanup_results = database.delete_orphaned_previews(enterprise_name=enterpriseName)
+            cleanup_results = database.delete_orphaned_previews(enterprise_name=enterpriseName, beta=beta)
             logger.info(f"Cleanup complete: Deleted {cleanup_results.get('orphaned', 0)} orphaned and {cleanup_results.get('duplicates', 0)} duplicate preview entries")
         except Exception as e:
             logger.error(f"Error deleting orphaned/duplicate previews: {e}", exc_info=True)
