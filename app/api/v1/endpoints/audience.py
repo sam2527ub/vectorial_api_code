@@ -131,8 +131,7 @@ async def create_audience_room(payload: CreateAudienceRoomRequest):
 @router.delete("/api/v1/audience-rooms/{audience_room_id}")
 async def delete_audience_room(
     audience_room_id: str = Path(...),
-    enterpriseName: Optional[str] = Query(None, description="Enterprise name (gamma, app, entelligence). If not provided, uses default audience database."),
-    beta: Optional[bool] = Query(None, description="If True, uses beta database. Takes precedence over enterpriseName.")
+    enterpriseName: Optional[str] = Query(None, description="Enterprise name (gamma, app, entelligence, beta). If not provided, uses default audience database.")
 ):
     """
     Delete an audience room and all associated data.
@@ -144,9 +143,8 @@ async def delete_audience_room(
     
     Args:
         audience_room_id: The audience room ID
-        enterpriseName: Optional enterprise name (gamma, app, entelligence). 
+        enterpriseName: Optional enterprise name (gamma, app, entelligence, beta). 
                        If not provided, uses AUDIENCE_DATABASE_URL.
-        beta: Optional flag. If True, uses BETA_DATABASE_URL (takes precedence over enterpriseName)
     """
     ensure_db_available("audience")
     if not s3_client or not s3_bucket:
@@ -154,7 +152,7 @@ async def delete_audience_room(
 
     try:
         # Fetch audience room with all profiles using enterprise-specific database if provided
-        audience_room = database.find_audience_room_by_id(audience_room_id, include_profiles=True, enterprise_name=enterpriseName, beta=beta)
+        audience_room = database.find_audience_room_by_id(audience_room_id, include_profiles=True, enterprise_name=enterpriseName)
         
         if not audience_room:
             raise HTTPException(status_code=404, detail=f"Audience room {audience_room_id} not found")
@@ -201,7 +199,7 @@ async def delete_audience_room(
         # Delete all profiles from database first using enterprise-specific database if provided
         if profiles:
             try:
-                deleted_count = database.delete_audience_profiles_by_room(audience_room_id, enterprise_name=enterpriseName, beta=beta)
+                deleted_count = database.delete_audience_profiles_by_room(audience_room_id, enterprise_name=enterpriseName)
                 logger.info(f"Deleted {deleted_count} profiles for audience room {audience_room_id}")
             except Exception as e:
                 logger.error(f"Error deleting profiles for audience room {audience_room_id}: {e}")
@@ -209,7 +207,7 @@ async def delete_audience_room(
         
         # Delete the audience room from database using enterprise-specific database if provided
         try:
-            database.delete_audience_room(audience_room_id, enterprise_name=enterpriseName, beta=beta)
+            database.delete_audience_room(audience_room_id, enterprise_name=enterpriseName)
             logger.info(f"Deleted audience room {audience_room_id}")
         except Exception as e:
             logger.error(f"Error deleting audience room {audience_room_id}: {e}")
@@ -234,16 +232,14 @@ async def delete_audience_room(
 @router.get("/api/v1/audience-rooms/{audience_room_id}/description")
 async def get_audience_room_description(
     audience_room_id: str = Path(...),
-    enterpriseName: Optional[str] = Query(None, description="Enterprise name (gamma, app, entelligence). If not provided, uses default audience database."),
-    beta: Optional[bool] = Query(None, description="If True, uses beta database. Takes precedence over enterpriseName.")
+    enterpriseName: Optional[str] = Query(None, description="Enterprise name (gamma, app, entelligence, beta). If not provided, uses default audience database.")
 ):
     """Fetch and return the audience room description JSON from S3.
     
     Args:
         audience_room_id: The audience room ID
-        enterpriseName: Optional enterprise name (gamma, app, entelligence). 
+        enterpriseName: Optional enterprise name (gamma, app, entelligence, beta). 
                        If not provided, uses AUDIENCE_DATABASE_URL.
-        beta: Optional flag. If True, uses BETA_DATABASE_URL (takes precedence over enterpriseName)
     """
     ensure_db_available("audience")
     if not s3_client or not s3_bucket:
@@ -251,7 +247,7 @@ async def get_audience_room_description(
     
     try:
         # Verify room exists using enterprise-specific database if provided
-        room = database.find_audience_room_by_id(audience_room_id, enterprise_name=enterpriseName, beta=beta)
+        room = database.find_audience_room_by_id(audience_room_id, enterprise_name=enterpriseName)
         if not room:
             raise HTTPException(status_code=404, detail=f"Audience room {audience_room_id} not found")
         
@@ -277,17 +273,15 @@ async def get_audience_room_description(
 async def get_profile_description(
     audience_room_id: str = Path(...),
     profile_id: str = Path(...),
-    enterpriseName: Optional[str] = Query(None, description="Enterprise name (gamma, app, entelligence). If not provided, uses default audience database."),
-    beta: Optional[bool] = Query(None, description="If True, uses beta database. Takes precedence over enterpriseName.")
+    enterpriseName: Optional[str] = Query(None, description="Enterprise name (gamma, app, entelligence, beta). If not provided, uses default audience database.")
 ):
     """Fetch and return the profile description JSON from S3.
     
     Args:
         audience_room_id: The audience room ID
         profile_id: The profile ID
-        enterpriseName: Optional enterprise name (gamma, app, entelligence). 
+        enterpriseName: Optional enterprise name (gamma, app, entelligence, beta). 
                        If not provided, uses AUDIENCE_DATABASE_URL.
-        beta: Optional flag. If True, uses BETA_DATABASE_URL (takes precedence over enterpriseName)
     """
     ensure_db_available("audience")
     if not s3_client or not s3_bucket:
@@ -295,7 +289,7 @@ async def get_profile_description(
     
     try:
         # Verify profile exists and belongs to the room using enterprise-specific database if provided
-        profile = database.find_audience_profile_by_id(profile_id, include_room=True, enterprise_name=enterpriseName, beta=beta)
+        profile = database.find_audience_profile_by_id(profile_id, include_room=True, enterprise_name=enterpriseName)
         if not profile:
             raise HTTPException(status_code=404, detail=f"Profile {profile_id} not found")
         
@@ -324,17 +318,15 @@ async def get_profile_description(
 async def get_profile_posts(
     audience_room_id: str = Path(...),
     profile_id: str = Path(...),
-    enterpriseName: Optional[str] = Query(None, description="Enterprise name (gamma, app, entelligence). If not provided, uses default audience database."),
-    beta: Optional[bool] = Query(None, description="If True, uses beta database. Takes precedence over enterpriseName.")
+    enterpriseName: Optional[str] = Query(None, description="Enterprise name (gamma, app, entelligence, beta). If not provided, uses default audience database.")
 ):
     """Fetch and return the profile posts JSON from S3.
     
     Args:
         audience_room_id: The audience room ID
         profile_id: The profile ID
-        enterpriseName: Optional enterprise name (gamma, app, entelligence). 
+        enterpriseName: Optional enterprise name (gamma, app, entelligence, beta). 
                        If not provided, uses AUDIENCE_DATABASE_URL.
-        beta: Optional flag. If True, uses BETA_DATABASE_URL (takes precedence over enterpriseName)
     """
     ensure_db_available("audience")
     if not s3_client or not s3_bucket:
@@ -342,7 +334,7 @@ async def get_profile_posts(
     
     try:
         # Verify profile exists and belongs to the room using enterprise-specific database if provided
-        profile = database.find_audience_profile_by_id(profile_id, include_room=True, enterprise_name=enterpriseName, beta=beta)
+        profile = database.find_audience_profile_by_id(profile_id, include_room=True, enterprise_name=enterpriseName)
         if not profile:
             raise HTTPException(status_code=404, detail=f"Profile {profile_id} not found")
         
@@ -370,16 +362,14 @@ async def get_profile_posts(
 @router.get("/api/v1/audience-rooms/{audience_room_id}/indexes")
 async def get_audience_room_indexes(
     audience_room_id: str = Path(...),
-    enterpriseName: Optional[str] = Query(None, description="Enterprise name (gamma, app, entelligence). If not provided, uses default audience database."),
-    beta: Optional[bool] = Query(None, description="If True, uses beta database. Takes precedence over enterpriseName.")
+    enterpriseName: Optional[str] = Query(None, description="Enterprise name (gamma, app, entelligence, beta). If not provided, uses default audience database.")
 ):
     """Fetch and return the audience room indexes JSON from S3.
     
     Args:
         audience_room_id: The audience room ID
-        enterpriseName: Optional enterprise name (gamma, app, entelligence). 
+        enterpriseName: Optional enterprise name (gamma, app, entelligence, beta). 
                        If not provided, uses AUDIENCE_DATABASE_URL.
-        beta: Optional flag. If True, uses BETA_DATABASE_URL (takes precedence over enterpriseName)
     """
     ensure_db_available("audience")
     if not s3_client or not s3_bucket:
@@ -387,7 +377,7 @@ async def get_audience_room_indexes(
     
     try:
         # Verify room exists using enterprise-specific database if provided
-        room = database.find_audience_room_by_id(audience_room_id, enterprise_name=enterpriseName, beta=beta)
+        room = database.find_audience_room_by_id(audience_room_id, enterprise_name=enterpriseName)
         if not room:
             raise HTTPException(status_code=404, detail=f"Audience room {audience_room_id} not found")
         
@@ -413,17 +403,15 @@ async def get_audience_room_indexes(
 async def get_profile_comments(
     audience_room_id: str = Path(...),
     profile_id: str = Path(...),
-    enterpriseName: Optional[str] = Query(None, description="Enterprise name (gamma, app, entelligence). If not provided, uses default audience database."),
-    beta: Optional[bool] = Query(None, description="If True, uses beta database. Takes precedence over enterpriseName.")
+    enterpriseName: Optional[str] = Query(None, description="Enterprise name (gamma, app, entelligence, beta). If not provided, uses default audience database.")
 ):
     """Fetch and return the profile comments JSON from S3.
     
     Args:
         audience_room_id: The audience room ID
         profile_id: The profile ID
-        enterpriseName: Optional enterprise name (gamma, app, entelligence). 
+        enterpriseName: Optional enterprise name (gamma, app, entelligence, beta). 
                        If not provided, uses AUDIENCE_DATABASE_URL.
-        beta: Optional flag. If True, uses BETA_DATABASE_URL (takes precedence over enterpriseName)
     """
     ensure_db_available("audience")
     if not s3_client or not s3_bucket:
@@ -431,7 +419,7 @@ async def get_profile_comments(
     
     try:
         # Verify profile exists and belongs to the room using enterprise-specific database if provided
-        profile = database.find_audience_profile_by_id(profile_id, include_room=True, enterprise_name=enterpriseName, beta=beta)
+        profile = database.find_audience_profile_by_id(profile_id, include_room=True, enterprise_name=enterpriseName)
         if not profile:
             raise HTTPException(status_code=404, detail=f"Profile {profile_id} not found")
         
