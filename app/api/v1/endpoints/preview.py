@@ -112,7 +112,7 @@ def _generate_preview_for_room(room: Dict[str, Any]) -> Dict[str, Any]:
 
 @router.get("/api/v1/previews")
 async def get_previews(
-    user_id: Optional[str] = Query(None, description="User ID to filter previews by"),
+    userId: Optional[str] = Query(None, description="User ID to filter previews by"),
     enterpriseName: Optional[str] = Query(None, description="Enterprise name (gamma, app, entelligence, beta). If not provided, uses default audience database.")
 ):
     """
@@ -122,7 +122,7 @@ async def get_previews(
     This is a READ-ONLY operation - no tables are modified.
     
     Query Parameters:
-    - user_id (optional): User ID to filter previews by. If provided, only returns previews for that user.
+    - userId (optional): User ID to filter previews by. If provided, only returns previews for that user.
     - enterpriseName (optional): Enterprise name to determine which database to query:
         - "gamma" -> uses GAMMA_DATABASE_URL
         - "app" -> uses APP_DATABASE_URL
@@ -133,7 +133,7 @@ async def get_previews(
     Response includes:
     - count: Number of previews returned
     - enterpriseName: Enterprise name used (if any)
-    - user_id: User ID filter used (if any)
+    - userId: User ID filter used (if any)
     - previews: Array of preview objects with:
         - room_id: UUID of the audience room
         - user_id: User ID who owns this preview
@@ -148,12 +148,12 @@ async def get_previews(
     ensure_db_available("audience")
     
     try:
-        previews = database.find_all_previews(user_id=user_id, enterprise_name=enterpriseName)
+        previews = database.find_all_previews(user_id=userId, enterprise_name=enterpriseName)
         
         return {
             "count": len(previews),
             "enterpriseName": enterpriseName,
-            "user_id": user_id,
+            "userId": userId,
             "previews": previews
         }
     except Exception as e:
