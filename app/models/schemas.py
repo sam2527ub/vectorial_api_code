@@ -102,3 +102,9 @@ class UpdatePreviewNameRequest(BaseModel):
     newName: str = Field(..., description="The new name for the audience room")
     audienceRoomId: str = Field(..., description="The ID of the audience room to update")
 
+
+class UpdateAudienceRoomNameRequest(BaseModel):
+    enterpriseName: Optional[str] = Field(None, description="Enterprise name (gamma, app, entelligence, beta). If not provided, uses default audience database.")
+    newName: str = Field(..., description="The new name for the audience room")
+    audienceRoomId: str = Field(..., description="The ID of the audience room to update")
+

@@ -4,7 +4,7 @@ import asyncio
 from datetime import datetime
 from typing import Optional
 from fastapi import APIRouter, HTTPException, Path, Query
-from app.models.schemas import CreateAudienceRoomRequest
+from app.models.schemas import CreateAudienceRoomRequest, UpdateAudienceRoomNameRequest
 from app.config import s3_client, s3_bucket, logger
 from app.utils.helpers import ensure_db_available
 from app.utils.s3_utils import upload_json_to_s3, extract_s3_key_from_url, fetch_json_from_s3
@@ -126,6 +126,63 @@ async def create_audience_room(payload: CreateAudienceRoomRequest):
     except Exception as e:
         logger.error(f"Error creating audience room: {e}")
         raise HTTPException(status_code=500, detail="Failed to create audience room")
+
+
+@router.patch("/api/v1/audience-rooms/update-name")
+async def update_audience_room_name_endpoint(request: UpdateAudienceRoomNameRequest):
+    """
+    Update the name of an audience room in the AudienceRoom table.
+    
+    This endpoint updates only the name field in the AudienceRoom table for the specified audience room.
+    
+    Request Body:
+    - enterpriseName (optional): Enterprise name to determine which database to use:
+        - "gamma" -> uses GAMMA_DATABASE_URL
+        - "app" -> uses APP_DATABASE_URL
+        - "entelligence" -> uses ENTELLIGENCE_DATABASE_URL
+        - "beta" -> uses BETA_DATABASE_URL
+        - If not provided, uses AUDIENCE_DATABASE_URL
+    - newName (required): The new name to set for the audience room
+    - audienceRoomId (required): The ID of the audience room to update
+    
+    Response includes:
+    - status: Success status
+    - room_id: The audience room ID that was updated
+    - new_name: The new name that was set
+    - enterpriseName: The enterprise name used (if any)
+    
+    WARNING: This only modifies the AudienceRoom table, no other tables are touched.
+    """
+    ensure_db_available("audience")
+    
+    try:
+        updated_room = database.update_audience_room(
+            room_id=request.audienceRoomId,
+            data={"name": request.newName},
+            enterprise_name=request.enterpriseName
+        )
+        
+        if not updated_room:
+            raise HTTPException(
+                status_code=404,
+                detail=f"Audience room {request.audienceRoomId} not found"
+            )
+        
+        return {
+            "status": "success",
+            "message": f"Audience room name updated for room {request.audienceRoomId}",
+            "room_id": request.audienceRoomId,
+            "new_name": request.newName,
+            "enterpriseName": request.enterpriseName
+        }
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error updating audience room name for room {request.audienceRoomId}: {e}")
+        raise HTTPException(
+            status_code=500,
+            detail=f"Failed to update audience room name: {str(e)}"
+        )
 
 
 @router.delete("/api/v1/audience-rooms/{audience_room_id}")

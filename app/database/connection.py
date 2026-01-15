@@ -469,10 +469,17 @@ def find_audience_room_by_id(room_id: str, include_profiles: bool = False, enter
             return room
 
 
-def update_audience_room(room_id: str, data: Dict[str, Any]) -> Optional[AudienceRoom]:
-    """Update an AudienceRoom record."""
+def update_audience_room(room_id: str, data: Dict[str, Any], enterprise_name: Optional[str] = None) -> Optional[AudienceRoom]:
+    """Update an AudienceRoom record.
+    
+    Args:
+        room_id: The audience room ID to update
+        data: Dictionary of fields to update
+        enterprise_name: Optional enterprise name (gamma, app, entelligence, beta). 
+                        Defaults to AUDIENCE_DATABASE_URL if None.
+    """
     if not data:
-        return find_audience_room_by_id(room_id)
+        return find_audience_room_by_id(room_id, enterprise_name=enterprise_name)
     
     set_clauses = []
     values = []
@@ -495,7 +502,7 @@ def update_audience_room(room_id: str, data: Dict[str, Any]) -> Optional[Audienc
     values.append(datetime.utcnow())
     values.append(room_id)
     
-    with get_audience_connection() as conn:
+    with get_enterprise_audience_connection(enterprise_name) as conn:
         with conn.cursor(cursor_factory=RealDictCursor) as cur:
             query = f'UPDATE "AudienceRoom" SET {", ".join(set_clauses)} WHERE id = %s RETURNING *'
             cur.execute(query, values)
