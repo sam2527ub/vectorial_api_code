@@ -840,6 +840,44 @@ def delete_preview(room_id: str, user_id: Optional[str] = None, enterprise_name:
             return deleted
 
 
+def update_preview_name(
+    room_id: str,
+    new_name: str,
+    enterprise_name: Optional[str] = None
+) -> Optional[Dict[str, Any]]:
+    """
+    Update the name of an audience room in the previews table.
+    
+    Args:
+        room_id: The audience room ID to update
+        new_name: The new name to set
+        enterprise_name: Optional enterprise name (gamma, app, entelligence, beta). 
+                        Defaults to AUDIENCE_DATABASE_URL if None.
+    
+    Returns:
+        Updated preview record as a dictionary, or None if not found.
+    
+    WARNING: This only modifies the previews table, no other tables are touched.
+    """
+    now = datetime.utcnow()
+    
+    with get_enterprise_audience_connection(enterprise_name) as conn:
+        with conn.cursor(cursor_factory=RealDictCursor) as cur:
+            cur.execute("""
+                UPDATE "previews"
+                SET name = %s, updated_at = %s
+                WHERE room_id = %s
+                RETURNING *
+            """, (new_name, now, room_id))
+            row = cur.fetchone()
+            if row:
+                logger.info(f"Updated preview name for room {room_id} to '{new_name}'")
+                return dict(row)
+            else:
+                logger.warning(f"Preview not found for room {room_id}")
+                return None
+
+
 def delete_orphaned_previews(enterprise_name: Optional[str] = None) -> Dict[str, int]:
     """
     Delete preview entries for rooms that no longer exist in the AudienceRoom table,

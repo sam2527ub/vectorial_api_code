@@ -96,3 +96,9 @@ class ParallelSearchRequest(BaseModel):
 class ParallelSearchPreviewRequest(BaseModel):
     query: str = Field(..., description="Search query string for Parallel FindAll preview")
 
+
+class UpdatePreviewNameRequest(BaseModel):
+    enterpriseName: Optional[str] = Field(None, description="Enterprise name (gamma, app, entelligence, beta). If not provided, uses default audience database.")
+    newName: str = Field(..., description="The new name for the audience room")
+    audienceRoomId: str = Field(..., description="The ID of the audience room to update")
+

@@ -10,6 +10,7 @@ from app.config import logger, s3_client, s3_bucket
 from app.utils.helpers import ensure_db_available
 from app.utils.s3_utils import extract_s3_key_from_url, fetch_json_from_s3
 from app import database
+from app.models.schemas import UpdatePreviewNameRequest
 
 router = APIRouter()
 
@@ -349,6 +350,63 @@ async def populate_all_previews(
     except Exception as e:
         logger.error(f"Error populating all previews: {e}")
         raise HTTPException(status_code=500, detail=f"Failed to populate previews: {str(e)}")
+
+
+@router.patch("/api/v1/previews/update-name")
+async def update_preview_name_endpoint(request: UpdatePreviewNameRequest):
+    """
+    Update the name of an audience room in the preview table.
+    
+    This endpoint updates only the name field in the previews table for the specified audience room.
+    
+    Request Body:
+    - enterpriseName (optional): Enterprise name to determine which database to use:
+        - "gamma" -> uses GAMMA_DATABASE_URL
+        - "app" -> uses APP_DATABASE_URL
+        - "entelligence" -> uses ENTELLIGENCE_DATABASE_URL
+        - "beta" -> uses BETA_DATABASE_URL
+        - If not provided, uses AUDIENCE_DATABASE_URL
+    - newName (required): The new name to set for the audience room
+    - audienceRoomId (required): The ID of the audience room to update
+    
+    Response includes:
+    - status: Success status
+    - room_id: The audience room ID that was updated
+    - new_name: The new name that was set
+    - enterpriseName: The enterprise name used (if any)
+    
+    WARNING: This only modifies the previews table, no other tables are touched.
+    """
+    ensure_db_available("audience")
+    
+    try:
+        updated_preview = database.update_preview_name(
+            room_id=request.audienceRoomId,
+            new_name=request.newName,
+            enterprise_name=request.enterpriseName
+        )
+        
+        if not updated_preview:
+            raise HTTPException(
+                status_code=404,
+                detail=f"Preview not found for room {request.audienceRoomId}"
+            )
+        
+        return {
+            "status": "success",
+            "message": f"Preview name updated for room {request.audienceRoomId}",
+            "room_id": request.audienceRoomId,
+            "new_name": request.newName,
+            "enterpriseName": request.enterpriseName
+        }
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error updating preview name for room {request.audienceRoomId}: {e}")
+        raise HTTPException(
+            status_code=500,
+            detail=f"Failed to update preview name: {str(e)}"
+        )
 
 
 @router.delete("/api/v1/previews/{room_id}")
