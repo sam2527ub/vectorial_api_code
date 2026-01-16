@@ -158,24 +158,30 @@ def get_enterprise_audience_connection(enterprise_name: Optional[str] = None):
     """
     pool = None
     
-    if enterprise_name == "gamma":
+    # Normalize enterprise name: lowercase and strip whitespace
+    normalized_enterprise = enterprise_name.lower().strip() if enterprise_name else None
+    logger.info(f"get_enterprise_audience_connection called with enterprise_name='{enterprise_name}', normalized='{normalized_enterprise}'")
+    
+    if normalized_enterprise == "gamma":
         pool = get_gamma_pool()
         if not pool:
             raise Exception("Gamma database pool not available. Please set GAMMA_DATABASE_URL.")
-    elif enterprise_name == "app":
+    elif normalized_enterprise == "app":
         pool = get_app_pool()
         if not pool:
             raise Exception("App database pool not available. Please set APP_DATABASE_URL.")
-    elif enterprise_name == "entelligence":
+    elif normalized_enterprise == "entelligence":
         pool = get_entelligence_pool()
         if not pool:
             raise Exception("Entelligence database pool not available. Please set ENTELLIGENCE_DATABASE_URL.")
-    elif enterprise_name == "beta":
+    elif normalized_enterprise == "beta":
+        logger.info("Using BETA database connection")
         pool = get_beta_pool()
         if not pool:
             raise Exception("Beta database pool not available. Please set BETA_DATABASE_URL.")
     else:
         # Default to audience database
+        logger.info(f"Using default AUDIENCE database connection (enterprise_name was '{enterprise_name}', normalized='{normalized_enterprise}')")
         pool = get_audience_pool()
         if not pool:
             raise Exception("Audience database pool not available. Please set AUDIENCE_DATABASE_URL.")
@@ -304,19 +310,25 @@ class PostClassifier:
 
 
 # ============================================
-# ScrapeJob Operations (Main Database)
+# ScrapeJob Operations (Audience Database)
 # ============================================
 
 def create_scrape_job(
     linkedin_urls: List[str],
     max_posts: int,
-    audience_room_id: Optional[str] = None
+    audience_room_id: Optional[str] = None,
+    enterprise_name: Optional[str] = None
 ) -> ScrapeJob:
-    """Create a new ScrapeJob record."""
+    """Create a new ScrapeJob record.
+    
+    Args:
+        enterprise_name: Optional enterprise name (gamma, app, entelligence, beta). 
+                        Defaults to AUDIENCE_DATABASE_URL if None.
+    """
     job_id = str(uuid.uuid4())
     now = datetime.utcnow()
     
-    with get_main_connection() as conn:
+    with get_enterprise_audience_connection(enterprise_name) as conn:
         with conn.cursor(cursor_factory=RealDictCursor) as cur:
             cur.execute(
                 """
@@ -330,19 +342,32 @@ def create_scrape_job(
             return ScrapeJob(row)
 
 
-def find_scrape_job_by_id(job_id: str) -> Optional[ScrapeJob]:
-    """Find a ScrapeJob by ID."""
-    with get_main_connection() as conn:
+def find_scrape_job_by_id(job_id: str, enterprise_name: Optional[str] = None) -> Optional[ScrapeJob]:
+    """Find a ScrapeJob by ID.
+    
+    Args:
+        job_id: The scrape job ID
+        enterprise_name: Optional enterprise name (gamma, app, entelligence, beta). 
+                        Defaults to AUDIENCE_DATABASE_URL if None.
+    """
+    with get_enterprise_audience_connection(enterprise_name) as conn:
         with conn.cursor(cursor_factory=RealDictCursor) as cur:
             cur.execute('SELECT * FROM "ScrapeJob" WHERE id = %s', (job_id,))
             row = cur.fetchone()
             return ScrapeJob(row) if row else None
 
 
-def update_scrape_job(job_id: str, data: Dict[str, Any]) -> Optional[ScrapeJob]:
-    """Update a ScrapeJob record."""
+def update_scrape_job(job_id: str, data: Dict[str, Any], enterprise_name: Optional[str] = None) -> Optional[ScrapeJob]:
+    """Update a ScrapeJob record.
+    
+    Args:
+        job_id: The scrape job ID to update
+        data: Dictionary of fields to update
+        enterprise_name: Optional enterprise name (gamma, app, entelligence, beta). 
+                        Defaults to AUDIENCE_DATABASE_URL if None.
+    """
     if not data:
-        return find_scrape_job_by_id(job_id)
+        return find_scrape_job_by_id(job_id, enterprise_name=enterprise_name)
     
     # Build update query dynamically
     set_clauses = []
@@ -372,7 +397,7 @@ def update_scrape_job(job_id: str, data: Dict[str, Any]) -> Optional[ScrapeJob]:
     # Add job_id for WHERE clause
     values.append(job_id)
     
-    with get_main_connection() as conn:
+    with get_enterprise_audience_connection(enterprise_name) as conn:
         with conn.cursor(cursor_factory=RealDictCursor) as cur:
             query = f'UPDATE "ScrapeJob" SET {", ".join(set_clauses)} WHERE id = %s RETURNING *'
             cur.execute(query, values)
@@ -392,12 +417,18 @@ def create_audience_room(
     source: Optional[str] = None,
     query: Optional[str] = None,
     indexes_s3_url: Optional[str] = None,
-    profiles_data: Optional[List[Dict[str, Any]]] = None
+    profiles_data: Optional[List[Dict[str, Any]]] = None,
+    enterprise_name: Optional[str] = None
 ) -> AudienceRoom:
-    """Create a new AudienceRoom with optional profiles."""
+    """Create a new AudienceRoom with optional profiles.
+    
+    Args:
+        enterprise_name: Optional enterprise name (gamma, app, entelligence, beta). 
+                        Defaults to AUDIENCE_DATABASE_URL if None.
+    """
     now = datetime.utcnow()
     
-    with get_audience_connection() as conn:
+    with get_enterprise_audience_connection(enterprise_name) as conn:
         with conn.cursor(cursor_factory=RealDictCursor) as cur:
             # Create the room
             cur.execute(
@@ -529,10 +560,18 @@ def delete_audience_room(room_id: str, enterprise_name: Optional[str] = None) ->
 
 def find_audience_profiles(
     audience_room_id: Optional[str] = None,
-    all_profiles: bool = False
+    all_profiles: bool = False,
+    enterprise_name: Optional[str] = None
 ) -> List[AudienceProfile]:
-    """Find AudienceProfiles, optionally filtered by room ID."""
-    with get_audience_connection() as conn:
+    """Find AudienceProfiles, optionally filtered by room ID.
+    
+    Args:
+        audience_room_id: Optional room ID to filter by
+        all_profiles: If True, return all profiles (requires enterprise_name if not default)
+        enterprise_name: Optional enterprise name (gamma, app, entelligence, beta). 
+                        Defaults to AUDIENCE_DATABASE_URL if None.
+    """
+    with get_enterprise_audience_connection(enterprise_name) as conn:
         with conn.cursor(cursor_factory=RealDictCursor) as cur:
             if audience_room_id:
                 cur.execute(
@@ -581,10 +620,17 @@ def find_audience_profile_by_id(
             return profile
 
 
-def update_audience_profile(profile_id: str, data: Dict[str, Any]) -> Optional[AudienceProfile]:
-    """Update an AudienceProfile record."""
+def update_audience_profile(profile_id: str, data: Dict[str, Any], enterprise_name: Optional[str] = None) -> Optional[AudienceProfile]:
+    """Update an AudienceProfile record.
+    
+    Args:
+        profile_id: The profile ID to update
+        data: Dictionary of fields to update
+        enterprise_name: Optional enterprise name (gamma, app, entelligence, beta). 
+                        Defaults to AUDIENCE_DATABASE_URL if None.
+    """
     if not data:
-        return find_audience_profile_by_id(profile_id)
+        return find_audience_profile_by_id(profile_id, enterprise_name=enterprise_name)
     
     set_clauses = []
     values = []
@@ -608,7 +654,7 @@ def update_audience_profile(profile_id: str, data: Dict[str, Any]) -> Optional[A
     values.append(datetime.utcnow())
     values.append(profile_id)
     
-    with get_audience_connection() as conn:
+    with get_enterprise_audience_connection(enterprise_name) as conn:
         with conn.cursor(cursor_factory=RealDictCursor) as cur:
             query = f'UPDATE "AudienceProfile" SET {", ".join(set_clauses)} WHERE id = %s RETURNING *'
             cur.execute(query, values)

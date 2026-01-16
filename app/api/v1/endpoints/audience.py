@@ -21,6 +21,14 @@ async def create_audience_room(payload: CreateAudienceRoomRequest):
     - Stores audience description at: audiences/{audience_room_id}/description.json
     - Stores each profile payload (with summary=null) at: audiences/{audience_room_id}/profiles/{profile_id}/profile.json
     - If query and search_results provided: stores search results at: audiences/{audience_room_id}/indexes.json
+    
+    Request Body:
+    - enterpriseName (optional): Enterprise name to determine which database to use:
+        - "gamma" -> uses GAMMA_DATABASE_URL
+        - "app" -> uses APP_DATABASE_URL
+        - "entelligence" -> uses ENTELLIGENCE_DATABASE_URL
+        - "beta" -> uses BETA_DATABASE_URL
+        - If not provided, uses AUDIENCE_DATABASE_URL
     """
     ensure_db_available("audience")
     if not s3_client or not s3_bucket:
@@ -91,6 +99,9 @@ async def create_audience_room(payload: CreateAudienceRoomRequest):
         )
 
     try:
+        # Log enterprise name for debugging
+        logger.info(f"Creating audience room with enterpriseName: {payload.enterpriseName}")
+        
         room = database.create_audience_room(
             room_id=room_id,
             name=payload.audience_room_name,
@@ -100,6 +111,7 @@ async def create_audience_room(payload: CreateAudienceRoomRequest):
             query=payload.query,
             indexes_s3_url=indexes_s3_url,
             profiles_data=profile_creates,
+            enterprise_name=payload.enterpriseName,
         )
 
         return {
@@ -505,7 +517,8 @@ async def get_profile_comments(
 async def generate_profile_summaries(
     audience_room_id: str = Path(...),
     offset: int = Query(0, ge=0, description="Offset for chunking (start index)"),
-    limit: int = Query(10, ge=1, le=20, description="Number of profiles to process per chunk (max 20)")
+    limit: int = Query(10, ge=1, le=20, description="Number of profiles to process per chunk (max 20)"),
+    enterpriseName: Optional[str] = Query(None, description="Enterprise name (gamma, app, entelligence, beta). If not provided, uses default audience database.")
 ):
     """
     Generate summaries, keywords, and highlights for profiles in an audience room.
@@ -526,6 +539,14 @@ async def generate_profile_summaries(
     - First call: POST /generate-summaries?offset=0&limit=10
     - Second call: POST /generate-summaries?offset=10&limit=10
     - Continue until has_more is false
+    
+    Query Parameters:
+    - enterpriseName (optional): Enterprise name to determine which database to use:
+        - "gamma" -> uses GAMMA_DATABASE_URL
+        - "app" -> uses APP_DATABASE_URL
+        - "entelligence" -> uses ENTELLIGENCE_DATABASE_URL
+        - "beta" -> uses BETA_DATABASE_URL
+        - If not provided, uses AUDIENCE_DATABASE_URL
     """
     ensure_db_available("audience")
     from app.config import openai_client
@@ -536,7 +557,7 @@ async def generate_profile_summaries(
     
     try:
         # Fetch audience room and profiles
-        audience_room = database.find_audience_room_by_id(audience_room_id, include_profiles=True)
+        audience_room = database.find_audience_room_by_id(audience_room_id, include_profiles=True, enterprise_name=enterpriseName)
         if not audience_room:
             raise HTTPException(status_code=404, detail=f"Audience room {audience_room_id} not found")
         
@@ -578,7 +599,7 @@ async def generate_profile_summaries(
         
         async def rate_limited_process(profile):
             async with semaphore:
-                result = await process_profile_summary(profile, audience_room_id)
+                result = await process_profile_summary(profile, audience_room_id, enterprise_name=enterpriseName)
                 await asyncio.sleep(1.0)  # Delay to spread out API requests
                 return result
         
@@ -641,7 +662,10 @@ async def generate_profile_summaries(
 
 
 @router.post("/api/v1/audience-rooms/{audience_room_id}/generate-group-summary")
-async def generate_group_summary(audience_room_id: str = Path(...)):
+async def generate_group_summary(
+    audience_room_id: str = Path(...),
+    enterpriseName: Optional[str] = Query(None, description="Enterprise name (gamma, app, entelligence, beta). If not provided, uses default audience database.")
+):
     """
     Generate a group summary and traits for an audience room based on all profile summaries.
     
@@ -652,6 +676,14 @@ async def generate_group_summary(audience_room_id: str = Path(...)):
     4. Generate a group summary using OpenAI based on the combined summaries
     5. Generate traits (5 traits with keywordTags and descriptions) based on profile summaries
     6. Update the audience room description JSON in S3 with both summary and traits fields
+    
+    Query Parameters:
+    - enterpriseName (optional): Enterprise name to determine which database to use:
+        - "gamma" -> uses GAMMA_DATABASE_URL
+        - "app" -> uses APP_DATABASE_URL
+        - "entelligence" -> uses ENTELLIGENCE_DATABASE_URL
+        - "beta" -> uses BETA_DATABASE_URL
+        - If not provided, uses AUDIENCE_DATABASE_URL
     """
     ensure_db_available("audience")
     from app.config import openai_client
@@ -662,7 +694,7 @@ async def generate_group_summary(audience_room_id: str = Path(...)):
     
     try:
         # Fetch audience room and profiles
-        audience_room = database.find_audience_room_by_id(audience_room_id, include_profiles=True)
+        audience_room = database.find_audience_room_by_id(audience_room_id, include_profiles=True, enterprise_name=enterpriseName)
         if not audience_room:
             raise HTTPException(status_code=404, detail=f"Audience room {audience_room_id} not found")
         
@@ -864,7 +896,7 @@ async def generate_group_summary(audience_room_id: str = Path(...)):
             updated_description_url = upload_json_to_s3(description_key, room_description_data)
             
             # Update the audience room record with the new URL
-            database.update_audience_room(audience_room_id, {"descriptionS3Url": updated_description_url})
+            database.update_audience_room(audience_room_id, {"descriptionS3Url": updated_description_url}, enterprise_name=enterpriseName)
             
             return {
                 "audience_room_id": audience_room_id,
@@ -890,7 +922,10 @@ async def generate_group_summary(audience_room_id: str = Path(...)):
 
 
 @router.post("/api/v1/audience-rooms/{audience_room_id}/remove-labels")
-async def remove_labels_from_posts(audience_room_id: str = Path(...)):
+async def remove_labels_from_posts(
+    audience_room_id: str = Path(...),
+    enterpriseName: Optional[str] = Query(None, description="Enterprise name (gamma, app, entelligence, beta). If not provided, uses default audience database.")
+):
     """
     Remove the 'labels' field from all posts JSON for all profiles in an audience room.
     
@@ -901,6 +936,14 @@ async def remove_labels_from_posts(audience_room_id: str = Path(...)):
        - Remove 'labels' field from each post
        - Upload updated JSON back to S3
        - Update the profile record in the database
+    
+    Query Parameters:
+    - enterpriseName (optional): Enterprise name to determine which database to use:
+        - "gamma" -> uses GAMMA_DATABASE_URL
+        - "app" -> uses APP_DATABASE_URL
+        - "entelligence" -> uses ENTELLIGENCE_DATABASE_URL
+        - "beta" -> uses BETA_DATABASE_URL
+        - If not provided, uses AUDIENCE_DATABASE_URL
     """
     ensure_db_available("audience")
     if not s3_client or not s3_bucket:
@@ -908,7 +951,7 @@ async def remove_labels_from_posts(audience_room_id: str = Path(...)):
     
     try:
         # Fetch audience room and profiles
-        audience_room = database.find_audience_room_by_id(audience_room_id, include_profiles=True)
+        audience_room = database.find_audience_room_by_id(audience_room_id, include_profiles=True, enterprise_name=enterpriseName)
         if not audience_room:
             raise HTTPException(status_code=404, detail=f"Audience room {audience_room_id} not found")
         
@@ -1011,7 +1054,7 @@ async def remove_labels_from_posts(audience_room_id: str = Path(...)):
                 updated_posts_url = upload_json_to_s3(posts_key, updated_posts_data)
                 
                 # Update profile record with new posts URL
-                database.update_audience_profile(profile_id, {"postsS3Url": updated_posts_url})
+                database.update_audience_profile(profile_id, {"postsS3Url": updated_posts_url}, enterprise_name=enterpriseName)
                 
                 total_posts_updated += posts_updated_count
                 processed_profiles.append({

@@ -1,7 +1,8 @@
 """Scraping endpoints."""
 import logging
 from datetime import datetime
-from fastapi import APIRouter, HTTPException, Path
+from typing import Optional
+from fastapi import APIRouter, HTTPException, Path, Query
 from app.models.schemas import ScrapeRequest
 from app.config import apify_client, POST_SCRAPER_ACTOR_ID, logger
 from app.utils.helpers import normalize_linkedin_url, ensure_db_available
@@ -17,6 +18,14 @@ async def trigger_scraping(payload: ScrapeRequest):
     Triggers Apify Actor (linkedin-post-search-scraper) asynchronously.
     Creates a job record and starts the Apify actor without waiting for completion.
     Returns job_id immediately for polling status.
+    
+    Request Body:
+    - enterpriseName (optional): Enterprise name to determine which database to use:
+        - "gamma" -> uses GAMMA_DATABASE_URL
+        - "app" -> uses APP_DATABASE_URL
+        - "entelligence" -> uses ENTELLIGENCE_DATABASE_URL
+        - "beta" -> uses BETA_DATABASE_URL
+        - If not provided, uses AUDIENCE_DATABASE_URL
     """
     # Convert Cookie Pydantic models to dictionaries for Apify
     cookies_dict = [cookie.dict(exclude_none=True) for cookie in payload.cookies]
@@ -47,7 +56,7 @@ async def trigger_scraping(payload: ScrapeRequest):
     }
 
     # Check if database is available
-    ensure_db_available("main")
+    ensure_db_available("audience")
     
     try:
         # Create job record in database
@@ -55,6 +64,7 @@ async def trigger_scraping(payload: ScrapeRequest):
             linkedin_urls=normalized_urls,
             max_posts=payload.max_posts,
             audience_room_id=payload.audience_room_id,
+            enterprise_name=payload.enterpriseName,
         )
         job_id = job.id
         
@@ -77,7 +87,7 @@ async def trigger_scraping(payload: ScrapeRequest):
             database.update_scrape_job(job_id, {
                 "status": "PROCESSING",
                 "apifyRunId": apify_run_id
-            })
+            }, enterprise_name=payload.enterpriseName)
             
             logger.info(f"Started Apify run {apify_run_id} for job {job_id}")
             
@@ -92,7 +102,7 @@ async def trigger_scraping(payload: ScrapeRequest):
             database.update_scrape_job(job_id, {
                 "status": "FAILED",
                 "error": error_message
-            })
+            }, enterprise_name=payload.enterpriseName)
             raise apify_error
             
     except Exception as e:
@@ -152,18 +162,29 @@ async def trigger_scraping(payload: ScrapeRequest):
 
 
 @router.get("/api/v1/scrape/status/{job_id}")
-async def get_scrape_status(job_id: str = Path(..., description="Job ID returned from /api/v1/scrape")):
+async def get_scrape_status(
+    job_id: str = Path(..., description="Job ID returned from /api/v1/scrape"),
+    enterpriseName: Optional[str] = Query(None, description="Enterprise name (gamma, app, entelligence, beta). If not provided, uses default audience database.")
+):
     """
     Check the status of a scraping job.
     If job is PENDING or PROCESSING, checks Apify API for completion.
     If completed, fetches results and updates database.
+    
+    Query Parameters:
+    - enterpriseName (optional): Enterprise name to determine which database to use:
+        - "gamma" -> uses GAMMA_DATABASE_URL
+        - "app" -> uses APP_DATABASE_URL
+        - "entelligence" -> uses ENTELLIGENCE_DATABASE_URL
+        - "beta" -> uses BETA_DATABASE_URL
+        - If not provided, uses AUDIENCE_DATABASE_URL
     """
     # Check if database is available
-    ensure_db_available("main")
+    ensure_db_available("audience")
     
     try:
         # Get job from database
-        job = database.find_scrape_job_by_id(job_id)
+        job = database.find_scrape_job_by_id(job_id, enterprise_name=enterpriseName)
         
         if not job:
             raise HTTPException(status_code=404, detail=f"Job {job_id} not found")
@@ -211,6 +232,7 @@ async def get_scrape_status(job_id: str = Path(..., description="Job ID returned
                         job_id=job_id,
                         audience_room_id=job.audienceRoomId,
                         linkedin_urls=linkedin_urls_list if linkedin_urls_list else None,
+                        enterprise_name=enterpriseName,
                     )
                     
                     # Update job result with processing info
@@ -218,7 +240,7 @@ async def get_scrape_status(job_id: str = Path(..., description="Job ID returned
                         "dataset_id": dataset_id,
                         **processing_result,
                     }
-                    database.update_scrape_job(job_id, {"result": new_result})
+                    database.update_scrape_job(job_id, {"result": new_result}, enterprise_name=enterpriseName)
                     
                     return {
                         "job_id": job_id,
@@ -298,6 +320,7 @@ async def get_scrape_status(job_id: str = Path(..., description="Job ID returned
                     job_id=job_id,
                     audience_room_id=job.audienceRoomId,
                     linkedin_urls=linkedin_urls_list if linkedin_urls_list else None,
+                    enterprise_name=enterpriseName,
                 )
 
                 database.update_scrape_job(job_id, {
@@ -306,7 +329,7 @@ async def get_scrape_status(job_id: str = Path(..., description="Job ID returned
                         "dataset_id": dataset_id,
                         **processing_result,
                     },
-                })
+                }, enterprise_name=enterpriseName)
 
                 return {
                     "job_id": job_id,
@@ -325,7 +348,7 @@ async def get_scrape_status(job_id: str = Path(..., description="Job ID returned
                 database.update_scrape_job(job_id, {
                     "status": "FAILED",
                     "error": f"Apify run failed: {error_msg}"
-                })
+                }, enterprise_name=enterpriseName)
                 return {
                     "job_id": job_id,
                     "status": "FAILED",

@@ -22,7 +22,7 @@ from app.database.connection import (
     AudienceProfile,
     PostClassifier,
     
-    # ScrapeJob operations (main database)
+    # ScrapeJob operations (audience database)
     create_scrape_job,
     find_scrape_job_by_id,
     update_scrape_job,

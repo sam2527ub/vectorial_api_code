@@ -13,6 +13,7 @@ async def process_posts_and_update_profiles(
     job_id: str,
     audience_room_id: Optional[str] = None,
     linkedin_urls: Optional[List[str]] = None,
+    enterprise_name: Optional[str] = None,
 ) -> Dict[str, Any]:
     """
     Process posts from Apify dataset, split by profile, upload to S3, and update AudienceProfile table.
@@ -22,6 +23,8 @@ async def process_posts_and_update_profiles(
         job_id: Scrape job ID
         audience_room_id: Optional audience room ID to filter profiles
         linkedin_urls: Optional list of LinkedIn URLs that were scraped (for matching)
+        enterprise_name: Optional enterprise name (gamma, app, entelligence, beta). 
+                        Defaults to AUDIENCE_DATABASE_URL if None.
     
     Returns:
         Dictionary with processing results (posts_found, profiles_updated, profiles_missing, etc.)
@@ -38,11 +41,12 @@ async def process_posts_and_update_profiles(
     
     # Fetch profiles - either from specific room or all profiles if URLs provided
     if audience_room_id:
-        # Get profiles from specific audience room
-        profiles = database.find_audience_profiles(audience_room_id=audience_room_id)
+        # Get profiles from specific audience room using find_audience_room_by_id which supports enterprise_name
+        room = database.find_audience_room_by_id(audience_room_id, include_profiles=True, enterprise_name=enterprise_name)
+        profiles = room.profiles if room else []
     elif linkedin_urls:
         # Get all profiles that match any of the scraped URLs
-        all_profiles = database.find_audience_profiles(all_profiles=True)
+        all_profiles = database.find_audience_profiles(all_profiles=True, enterprise_name=enterprise_name)
         # Normalize scraped URLs for matching
         normalized_scraped_urls = set()
         for url in linkedin_urls:
@@ -123,7 +127,7 @@ async def process_posts_and_update_profiles(
         )
         
         try:
-            database.update_audience_profile(pid, {"postsS3Url": posts_url})
+            database.update_audience_profile(pid, {"postsS3Url": posts_url}, enterprise_name=enterprise_name)
             updated.append({
                 "profile_id": pid,
                 "profile_name": p["profileName"],

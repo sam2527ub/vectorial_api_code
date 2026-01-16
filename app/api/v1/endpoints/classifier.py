@@ -22,6 +22,14 @@ async def run_classifier(payload: RunClassifierRequest):
     3. For each Profile, download posts from S3
     4. Classify each post using Groq LLM
     5. Add labels to posts and upload back to S3
+    
+    Request Body:
+    - enterpriseName (optional): Enterprise name to determine which database to use:
+        - "gamma" -> uses GAMMA_DATABASE_URL
+        - "app" -> uses APP_DATABASE_URL
+        - "entelligence" -> uses ENTELLIGENCE_DATABASE_URL
+        - "beta" -> uses BETA_DATABASE_URL
+        - If not provided, uses AUDIENCE_DATABASE_URL
     """
     ensure_db_available("audience")
     if not groq_client:
@@ -91,7 +99,7 @@ async def run_classifier(payload: RunClassifierRequest):
                 classifier_examples = None
         
         # 2. Fetch AudienceRoom and Profiles
-        audience_room = database.find_audience_room_by_id(payload.audienceRoomId, include_profiles=True)
+        audience_room = database.find_audience_room_by_id(payload.audienceRoomId, include_profiles=True, enterprise_name=payload.enterpriseName)
         if not audience_room:
             raise HTTPException(status_code=404, detail=f"Audience room {payload.audienceRoomId} not found")
         
@@ -188,7 +196,7 @@ async def run_classifier(payload: RunClassifierRequest):
                 updated_posts_url = upload_json_to_s3(posts_key, posts_data)
                 
                 # Update profile record with new posts URL
-                database.update_audience_profile(profile_id, {"postsS3Url": updated_posts_url})
+                database.update_audience_profile(profile_id, {"postsS3Url": updated_posts_url}, enterprise_name=payload.enterpriseName)
                 
                 total_posts_classified += len(posts)
                 processed_profiles.append({
@@ -231,6 +239,14 @@ async def run_classifier_for_profiles(payload: RunClassifierForProfilesRequest):
     Run a classifier on posts for specific profiles in an audience room.
     
     Similar to /api/classifier/run but only processes the specified profiles.
+    
+    Request Body:
+    - enterpriseName (optional): Enterprise name to determine which database to use:
+        - "gamma" -> uses GAMMA_DATABASE_URL
+        - "app" -> uses APP_DATABASE_URL
+        - "entelligence" -> uses ENTELLIGENCE_DATABASE_URL
+        - "beta" -> uses BETA_DATABASE_URL
+        - If not provided, uses AUDIENCE_DATABASE_URL
     """
     ensure_db_available("audience")
     if not groq_client:
@@ -299,7 +315,7 @@ async def run_classifier_for_profiles(payload: RunClassifierForProfilesRequest):
                 classifier_examples = None
         
         # 2. Fetch AudienceRoom and specified Profiles
-        audience_room = database.find_audience_room_by_id(payload.audienceRoomId, include_profiles=True)
+        audience_room = database.find_audience_room_by_id(payload.audienceRoomId, include_profiles=True, enterprise_name=payload.enterpriseName)
         if not audience_room:
             raise HTTPException(status_code=404, detail=f"Audience room {payload.audienceRoomId} not found")
         
@@ -393,7 +409,7 @@ async def run_classifier_for_profiles(payload: RunClassifierForProfilesRequest):
                     posts_data = posts
                 
                 updated_posts_url = upload_json_to_s3(posts_key, posts_data)
-                database.update_audience_profile(profile_id, {"postsS3Url": updated_posts_url})
+                database.update_audience_profile(profile_id, {"postsS3Url": updated_posts_url}, enterprise_name=payload.enterpriseName)
                 
                 total_posts_classified += len(posts)
                 processed_profiles.append({

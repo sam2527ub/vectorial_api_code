@@ -11,6 +11,7 @@ from app import database
 async def process_profile_summary(
     profile: AnyType,
     audience_room_id: str,
+    enterprise_name: Optional[str] = None,
 ) -> Dict[str, Any]:
     """
     Process a single profile: fetch posts, generate summary, and update description JSON.
@@ -118,7 +119,7 @@ async def process_profile_summary(
         updated_profile_url = upload_json_to_s3(profile_key, profile_data)
         
         # Update the profile record with the new URL
-        database.update_audience_profile(profile_id, {"profileDescriptionS3Url": updated_profile_url})
+        database.update_audience_profile(profile_id, {"profileDescriptionS3Url": updated_profile_url}, enterprise_name=enterprise_name)
         
         return {
             "profile_id": profile_id,

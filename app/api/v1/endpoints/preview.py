@@ -164,7 +164,8 @@ async def get_previews(
 
 @router.post("/api/v1/previews/update-room/{room_id}")
 async def update_preview_for_room(
-    room_id: str = Path(..., description="The audience room ID to update preview for")
+    room_id: str = Path(..., description="The audience room ID to update preview for"),
+    enterpriseName: Optional[str] = Query(None, description="Enterprise name (gamma, app, entelligence, beta). If not provided, uses default audience database.")
 ):
     """
     Update or create preview for a specific audience room.
@@ -180,6 +181,14 @@ async def update_preview_for_room(
     - Generating group summary
     - Any update to room or profile data
     
+    Query Parameters:
+    - enterpriseName (optional): Enterprise name to determine which database to use:
+        - "gamma" -> uses GAMMA_DATABASE_URL
+        - "app" -> uses APP_DATABASE_URL
+        - "entelligence" -> uses ENTELLIGENCE_DATABASE_URL
+        - "beta" -> uses BETA_DATABASE_URL
+        - If not provided, uses AUDIENCE_DATABASE_URL
+    
     WARNING: This only modifies the previews table, no other tables are touched.
     """
     ensure_db_available("audience")
@@ -189,13 +198,35 @@ async def update_preview_for_room(
     
     try:
         # Ensure preview table exists with proper schema
-        database.ensure_preview_table_exists()
+        database.ensure_preview_table_exists(enterprise_name=enterpriseName)
         
         # Fetch room with profiles from database (READ-ONLY)
-        room = database.find_audience_room_with_profiles_for_preview(room_id, PREVIEW_PROFILE_LIMIT)
+        # Use find_audience_room_by_id instead of find_audience_room_with_profiles_for_preview
+        # since it supports enterprise_name
+        room_obj = database.find_audience_room_by_id(room_id, include_profiles=True, enterprise_name=enterpriseName)
         
-        if not room:
+        if not room_obj:
             raise HTTPException(status_code=404, detail=f"Audience room {room_id} not found")
+        
+        # Convert room object to dict format for _generate_preview_for_room
+        room = {
+            'id': room_obj.id,
+            'name': room_obj.name,
+            'descriptionS3Url': room_obj.descriptionS3Url,
+            'source': room_obj.source,
+            'userId': room_obj.userId,
+            'profiles': [
+                {
+                    'id': p.id,
+                    'profileName': p.profileName,
+                    'profileUrl': p.profileUrl,
+                    'profileDescriptionS3Url': p.profileDescriptionS3Url,
+                    'source': p.source
+                }
+                for p in room_obj.profiles[:PREVIEW_PROFILE_LIMIT]
+            ],
+            'total_profile_count': len(room_obj.profiles)
+        }
         
         # Generate preview data
         preview_data = _generate_preview_for_room(room)
@@ -208,7 +239,8 @@ async def update_preview_for_room(
             description_summary=preview_data['description_summary'],
             source=preview_data['source'],
             total_profile_count=preview_data['total_profile_count'],
-            profiles=preview_data['profiles']
+            profiles=preview_data['profiles'],
+            enterprise_name=enterpriseName
         )
         
         logger.info(f"Successfully updated preview for room {room_id}")

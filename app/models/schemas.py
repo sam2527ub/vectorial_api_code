@@ -53,6 +53,7 @@ class ScrapeRequest(BaseModel):
         None,
         description="If provided, scraped posts will be auto-mapped to this audience room when the job completes",
     )
+    enterpriseName: Optional[str] = Field(None, description="Enterprise name (gamma, app, entelligence, beta). If not provided, uses default audience database.")
 
 
 class AudienceProfilePayload(BaseModel):
@@ -74,17 +75,20 @@ class CreateAudienceRoomRequest(BaseModel):
     query: Optional[str] = Field(None, description="Optional: The parallel search query used to find these profiles")
     search_results: Optional[List[dict]] = Field(None, description="Optional: The full parallel search results/indexes to store")
     source: Optional[str] = Field(None, description="Optional: Source of the audience room creation")
+    enterpriseName: Optional[str] = Field(None, description="Enterprise name (gamma, app, entelligence, beta). If not provided, uses default audience database.")
 
 
 class RunClassifierRequest(BaseModel):
     audienceRoomId: str = Field(..., description="ID of the audience room containing profiles to classify")
     classifierId: str = Field(..., description="ID of the classifier to use for classification")
+    enterpriseName: Optional[str] = Field(None, description="Enterprise name (gamma, app, entelligence, beta). If not provided, uses default audience database.")
 
 
 class RunClassifierForProfilesRequest(BaseModel):
     audienceRoomId: str = Field(..., description="ID of the audience room containing profiles")
     classifierId: str = Field(..., description="ID of the classifier to use for classification")
     profileIds: List[str] = Field(..., min_items=1, max_items=5, description="List of profile IDs to classify (max 5 profiles)")
+    enterpriseName: Optional[str] = Field(None, description="Enterprise name (gamma, app, entelligence, beta). If not provided, uses default audience database.")
 
 
 class ParallelSearchRequest(BaseModel):
