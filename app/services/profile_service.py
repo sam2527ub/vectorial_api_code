@@ -31,22 +31,30 @@ async def process_posts_and_update_profiles(
     """
     from app.config import s3_client, s3_bucket
     
+    logger.info(f"process_posts_and_update_profiles called: job_id={job_id}, audience_room_id={audience_room_id}, enterprise_name={enterprise_name}")
+    
     if not database.is_audience_db_available():
         logger.warning("Audience database not available, skipping profile updates")
         return {"posts_found": 0, "profiles_updated": 0, "profiles_missing": 0}
     
     if not s3_client or not s3_bucket:
-        logger.warning("S3 not configured, skipping profile updates")
+        logger.error(f"S3 not configured! s3_client={s3_client is not None}, s3_bucket={s3_bucket}. Set AUDIENCE_BUCKET_NAME or VECTOR_BUCKET_NAME environment variable.")
         return {"posts_found": 0, "profiles_updated": 0, "profiles_missing": 0}
+    
+    logger.info(f"S3 configured: bucket={s3_bucket}")
     
     # Fetch profiles - either from specific room or all profiles if URLs provided
     if audience_room_id:
+        logger.info(f"Fetching profiles for audience_room_id={audience_room_id}")
         # Get profiles from specific audience room using find_audience_room_by_id which supports enterprise_name
         room = database.find_audience_room_by_id(audience_room_id, include_profiles=True, enterprise_name=enterprise_name)
         profiles = room.profiles if room else []
+        logger.info(f"Found {len(profiles)} profiles in room {audience_room_id}")
     elif linkedin_urls:
+        logger.info(f"Fetching profiles matching {len(linkedin_urls)} LinkedIn URLs")
         # Get all profiles that match any of the scraped URLs
         all_profiles = database.find_audience_profiles(all_profiles=True, enterprise_name=enterprise_name)
+        logger.info(f"Found {len(all_profiles)} total profiles, filtering by URLs...")
         # Normalize scraped URLs for matching
         normalized_scraped_urls = set()
         for url in linkedin_urls:
@@ -60,13 +68,14 @@ async def process_posts_and_update_profiles(
             norm_profile_url = normalize_linkedin_url(p.profileUrl)
             if norm_profile_url and norm_profile_url in normalized_scraped_urls:
                 profiles.append(p)
+        logger.info(f"Found {len(profiles)} matching profiles after filtering")
     else:
         # No room ID and no URLs - can't match profiles
         logger.warning("No audience room ID or LinkedIn URLs provided, cannot match profiles")
         return {"posts_found": 0, "profiles_updated": 0, "profiles_missing": 0}
     
     if not profiles:
-        logger.warning(f"No profiles found to match posts against")
+        logger.warning(f"No profiles found to match posts against (audience_room_id={audience_room_id}, linkedin_urls_count={len(linkedin_urls) if linkedin_urls else 0})")
         return {"posts_found": 0, "profiles_updated": 0, "profiles_missing": 0}
     
     # Build profile lookup by normalized URL
@@ -86,6 +95,7 @@ async def process_posts_and_update_profiles(
     posts_acc: Dict[str, List[Any]] = {p["id"]: [] for p in profile_by_url.values()}
     total_items = 0
     
+    logger.info(f"Iterating through Apify dataset items for {len(profile_by_url)} profiles...")
     for item in dataset_client.iterate_items():
         total_items += 1
         if not isinstance(item, dict):
@@ -96,6 +106,9 @@ async def process_posts_and_update_profiles(
         target = profile_by_url.get(input_url)
         if target:
             posts_acc[target["id"]].append(item)
+    
+    profiles_with_posts = len([p for p in posts_acc.values() if p])
+    logger.info(f"Processed {total_items} items from dataset, grouped into {profiles_with_posts} profiles with posts")
     
     # Upload posts to S3 and update database
     updated = []
@@ -116,18 +129,32 @@ async def process_posts_and_update_profiles(
         # Use the profile's audience room ID for S3 path
         room_id = p["audienceRoomId"]
         posts_key = f"audiences/{room_id}/profiles/{pid}/posts.json"
-        posts_url = upload_json_to_s3(
-            posts_key,
-            {
+        logger.info(f"Uploading {len(posts_for_profile)} posts to S3 for profile {pid}: {posts_key}")
+        
+        try:
+            posts_url = upload_json_to_s3(
+                posts_key,
+                {
+                    "profile_id": pid,
+                    "audience_room_id": room_id,
+                    "linkedin_profile_url": p["linkedinUrl"],
+                    "posts": posts_for_profile,
+                },
+            )
+            logger.info(f"Successfully uploaded posts to S3: {posts_url}")
+        except Exception as s3_error:
+            logger.error(f"Failed to upload posts to S3 for profile {pid}: {s3_error}", exc_info=True)
+            missing.append({
                 "profile_id": pid,
-                "audience_room_id": room_id,
-                "linkedin_profile_url": p["linkedinUrl"],
-                "posts": posts_for_profile,
-            },
-        )
+                "profile_name": p["profileName"],
+                "linkedin_url": p["linkedinUrl"],
+                "reason": f"s3_upload_failed: {str(s3_error)}"
+            })
+            continue
         
         try:
             database.update_audience_profile(pid, {"postsS3Url": posts_url}, enterprise_name=enterprise_name)
+            logger.info(f"Updated profile {pid} with postsS3Url: {posts_url}")
             updated.append({
                 "profile_id": pid,
                 "profile_name": p["profileName"],
@@ -136,7 +163,7 @@ async def process_posts_and_update_profiles(
                 "posts_s3_url": posts_url,
             })
         except Exception as e:
-            logger.error(f"Error updating posts for profile {pid}: {e}")
+            logger.error(f"Error updating posts for profile {pid}: {e}", exc_info=True)
             missing.append({
                 "profile_id": pid,
                 "profile_name": p["profileName"],
@@ -144,6 +171,7 @@ async def process_posts_and_update_profiles(
                 "reason": "db_update_failed"
             })
     
+    logger.info(f"Processing complete: {len(updated)} profiles updated, {len(missing)} profiles with issues, {total_items} total posts found")
     return {
         "posts_found": total_items,
         "profiles_updated": len(updated),
