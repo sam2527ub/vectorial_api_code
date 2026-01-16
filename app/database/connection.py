@@ -350,10 +350,15 @@ def find_scrape_job_by_id(job_id: str, enterprise_name: Optional[str] = None) ->
         enterprise_name: Optional enterprise name (gamma, app, entelligence, beta). 
                         Defaults to AUDIENCE_DATABASE_URL if None.
     """
+    logger.info(f"find_scrape_job_by_id called with job_id={job_id}, enterprise_name={enterprise_name}")
     with get_enterprise_audience_connection(enterprise_name) as conn:
         with conn.cursor(cursor_factory=RealDictCursor) as cur:
             cur.execute('SELECT * FROM "ScrapeJob" WHERE id = %s', (job_id,))
             row = cur.fetchone()
+            if row:
+                logger.info(f"Found ScrapeJob {job_id} in database (enterprise_name={enterprise_name})")
+            else:
+                logger.warning(f"ScrapeJob {job_id} not found in database (enterprise_name={enterprise_name})")
             return ScrapeJob(row) if row else None
 
 
@@ -366,6 +371,8 @@ def update_scrape_job(job_id: str, data: Dict[str, Any], enterprise_name: Option
         enterprise_name: Optional enterprise name (gamma, app, entelligence, beta). 
                         Defaults to AUDIENCE_DATABASE_URL if None.
     """
+    logger.info(f"update_scrape_job called: job_id={job_id}, enterprise_name={enterprise_name}, data_keys={list(data.keys())}")
+    
     if not data:
         return find_scrape_job_by_id(job_id, enterprise_name=enterprise_name)
     
@@ -397,12 +404,21 @@ def update_scrape_job(job_id: str, data: Dict[str, Any], enterprise_name: Option
     # Add job_id for WHERE clause
     values.append(job_id)
     
-    with get_enterprise_audience_connection(enterprise_name) as conn:
-        with conn.cursor(cursor_factory=RealDictCursor) as cur:
-            query = f'UPDATE "ScrapeJob" SET {", ".join(set_clauses)} WHERE id = %s RETURNING *'
-            cur.execute(query, values)
-            row = cur.fetchone()
-            return ScrapeJob(row) if row else None
+    try:
+        with get_enterprise_audience_connection(enterprise_name) as conn:
+            with conn.cursor(cursor_factory=RealDictCursor) as cur:
+                query = f'UPDATE "ScrapeJob" SET {", ".join(set_clauses)} WHERE id = %s RETURNING *'
+                logger.info(f"Executing update query for job {job_id} (enterprise_name={enterprise_name}): UPDATE ScrapeJob SET {', '.join([f.split('=')[0].strip() for f in set_clauses])} WHERE id = ...")
+                cur.execute(query, values)
+                row = cur.fetchone()
+                if row:
+                    logger.info(f"Successfully updated job {job_id} in database (enterprise_name={enterprise_name})")
+                else:
+                    logger.warning(f"UPDATE query returned no rows for job {job_id} - job may not exist in database (enterprise_name={enterprise_name})")
+                return ScrapeJob(row) if row else None
+    except Exception as e:
+        logger.error(f"Exception in update_scrape_job for job {job_id} (enterprise_name={enterprise_name}): {e}", exc_info=True)
+        raise
 
 
 # ============================================

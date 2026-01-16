@@ -58,6 +58,9 @@ async def trigger_scraping(payload: ScrapeRequest):
     # Check if database is available
     ensure_db_available("audience")
     
+    # Log enterpriseName for debugging
+    logger.info(f"trigger_scraping called with enterpriseName={payload.enterpriseName}, audience_room_id={payload.audience_room_id}")
+    
     try:
         # Create job record in database
         job = database.create_scrape_job(
@@ -68,7 +71,7 @@ async def trigger_scraping(payload: ScrapeRequest):
         )
         job_id = job.id
         
-        logger.info(f"Created job {job_id} for {len(payload.linkedin_urls)} URLs")
+        logger.info(f"Created job {job_id} for {len(payload.linkedin_urls)} URLs in database (enterpriseName={payload.enterpriseName})")
         
         # Start Apify actor without waiting (async)
         try:
@@ -182,12 +185,18 @@ async def get_scrape_status(
     # Check if database is available
     ensure_db_available("audience")
     
+    # Log enterpriseName for debugging
+    logger.info(f"get_scrape_status called with job_id={job_id}, enterpriseName={enterpriseName}")
+    
     try:
         # Get job from database
         job = database.find_scrape_job_by_id(job_id, enterprise_name=enterpriseName)
         
         if not job:
+            logger.warning(f"Job {job_id} not found in database (enterpriseName={enterpriseName})")
             raise HTTPException(status_code=404, detail=f"Job {job_id} not found")
+        
+        logger.info(f"Found job {job_id} with status={job.status} (enterpriseName={enterpriseName})")
         
         # If already completed, attempt audience post backfill if dataset is available; otherwise return cached results
         if job.status == "COMPLETED":
@@ -255,7 +264,9 @@ async def get_scrape_status(
                         "updated_at": datetime.now().isoformat(),
                     }
                 except Exception as backfill_error:
-                    logger.error(f"Audience backfill on completed job failed: {backfill_error}")
+                    logger.error(f"Audience backfill on completed job failed: {backfill_error}", exc_info=True)
+                    # Don't fail the request, just return the existing completed status
+                    # The job is already marked as COMPLETED, so we can return it
 
             return {
                 "job_id": job_id,
@@ -292,6 +303,8 @@ async def get_scrape_status(
             
             # If Apify didn't return a status but we already have a dataset, treat it as success
             if run_status == 'SUCCEEDED' or (not run_status and dataset_id):
+                logger.info(f"Apify run succeeded for job {job_id}, dataset_id={dataset_id}, run_status={run_status} (enterpriseName={enterpriseName})")
+                
                 if not dataset_id:
                     return {
                         "job_id": job_id,
@@ -315,21 +328,53 @@ async def get_scrape_status(
                             linkedin_urls_list = []
 
                 # Process posts and update profiles (works with or without audienceRoomId)
-                processing_result = await process_posts_and_update_profiles(
-                    dataset_client=dataset_client,
-                    job_id=job_id,
-                    audience_room_id=job.audienceRoomId,
-                    linkedin_urls=linkedin_urls_list if linkedin_urls_list else None,
-                    enterprise_name=enterpriseName,
-                )
+                # Wrap in try-except to ensure job status is ALWAYS updated even if processing fails
+                processing_result = {"posts_found": 0, "profiles_updated": 0, "profiles_missing": 0, "updated": [], "missing": []}
+                processing_error = None
+                try:
+                    processing_result = await process_posts_and_update_profiles(
+                        dataset_client=dataset_client,
+                        job_id=job_id,
+                        audience_room_id=job.audienceRoomId,
+                        linkedin_urls=linkedin_urls_list if linkedin_urls_list else None,
+                        enterprise_name=enterpriseName,
+                    )
+                    logger.info(f"Successfully processed posts for job {job_id}: {processing_result.get('posts_found', 0)} posts found")
+                except Exception as e:
+                    processing_error = str(e)
+                    logger.error(f"Error processing posts for job {job_id}: {e}", exc_info=True)
+                    # Continue - we'll still update job status to COMPLETED
 
-                database.update_scrape_job(job_id, {
-                    "status": "COMPLETED",
-                    "result": {
+                # ALWAYS update job status to COMPLETED when Apify succeeds, even if processing had errors
+                try:
+                    result_data = {
                         "dataset_id": dataset_id,
                         **processing_result,
-                    },
-                }, enterprise_name=enterpriseName)
+                    }
+                    if processing_error:
+                        result_data["processing_error"] = processing_error
+                    
+                    logger.info(f"Updating job {job_id} to COMPLETED status (enterpriseName={enterpriseName})")
+                    updated_job = database.update_scrape_job(job_id, {
+                        "status": "COMPLETED",
+                        "result": result_data,
+                    }, enterprise_name=enterpriseName)
+                    
+                    if not updated_job:
+                        logger.error(f"Failed to update job {job_id} - update_scrape_job returned None (enterpriseName={enterpriseName})")
+                    else:
+                        logger.info(f"Successfully updated job {job_id} to COMPLETED (enterpriseName={enterpriseName})")
+                        
+                except Exception as update_error:
+                    logger.error(f"Error updating job {job_id} status to COMPLETED: {update_error}", exc_info=True)
+                    # If we can't update the status, return error info
+                    return {
+                        "job_id": job_id,
+                        "status": "PROCESSING",
+                        "message": f"Apify run completed but failed to update job status: {str(update_error)}",
+                        "apify_status": run_status,
+                        "error": str(update_error)
+                    }
 
                 return {
                     "job_id": job_id,
@@ -342,6 +387,7 @@ async def get_scrape_status(
                     "missing": processing_result.get("missing", []),
                     "created_at": job.createdAt.isoformat() if job.createdAt else datetime.now().isoformat(),
                     "updated_at": datetime.now().isoformat(),
+                    "processing_error": processing_error if processing_error else None,
                 }
             elif run_status == 'FAILED':
                 error_msg = run.get('data', {}).get('statusMessage', 'Unknown error')
