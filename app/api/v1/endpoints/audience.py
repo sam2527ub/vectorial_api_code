@@ -7,7 +7,7 @@ from fastapi import APIRouter, HTTPException, Path, Query
 from app.models.schemas import CreateAudienceRoomRequest, UpdateAudienceRoomNameRequest
 from app.config import s3_client, s3_bucket, logger
 from app.utils.helpers import ensure_db_available
-from app.utils.s3_utils import upload_json_to_s3, extract_s3_key_from_url, fetch_json_from_s3
+from app.utils.s3_utils import upload_json_to_s3, extract_s3_key_from_url, fetch_json_from_s3, get_s3_key_for_audience
 from app.services.summary_service import process_profile_summary
 from app import database
 
@@ -18,9 +18,9 @@ router = APIRouter()
 async def create_audience_room(payload: CreateAudienceRoomRequest):
     """
     Create an audience room, store its description and profile payloads in S3, and persist metadata in Postgres.
-    - Stores audience description at: audiences/{audience_room_id}/description.json
-    - Stores each profile payload (with summary=null) at: audiences/{audience_room_id}/profiles/{profile_id}/profile.json
-    - If query and search_results provided: stores search results at: audiences/{audience_room_id}/indexes.json
+    - Stores audience description at: linkedin-audience/{enterpriseName}/{audience_room_id}/description.json
+    - Stores each profile payload (with summary=null) at: linkedin-audience/{enterpriseName}/{audience_room_id}/profiles/{profile_id}/profile.json
+    - If query and search_results provided: stores search results at: linkedin-audience/{enterpriseName}/{audience_room_id}/indexes.json
     
     Request Body:
     - enterpriseName (optional): Enterprise name to determine which database to use:
@@ -37,7 +37,7 @@ async def create_audience_room(payload: CreateAudienceRoomRequest):
     room_id = str(uuid.uuid4())
 
     # Upload audience description to S3
-    description_key = f"audiences/{room_id}/description.json"
+    description_key = get_s3_key_for_audience(room_id, "description.json", payload.enterpriseName)
     description_url = upload_json_to_s3(
         description_key,
         {
@@ -61,7 +61,7 @@ async def create_audience_room(payload: CreateAudienceRoomRequest):
             }
             
             # Upload indexes to S3
-            indexes_key = f"audiences/{room_id}/indexes.json"
+            indexes_key = get_s3_key_for_audience(room_id, "indexes.json", payload.enterpriseName)
             indexes_s3_url = upload_json_to_s3(indexes_key, indexes_data)
             logger.info(f"Uploaded search results/indexes to S3 for audience room {room_id}")
         except Exception as e:
@@ -72,7 +72,7 @@ async def create_audience_room(payload: CreateAudienceRoomRequest):
     profile_creates = []
     for profile in payload.profiles:
         profile_id = str(uuid.uuid4())
-        profile_key = f"audiences/{room_id}/profiles/{profile_id}/profile.json"
+        profile_key = get_s3_key_for_audience(room_id, f"profiles/{profile_id}/profile.json", payload.enterpriseName)
         profile_payload = {
             "profile_id": profile_id,
             "audience_room_id": room_id,
@@ -230,7 +230,9 @@ async def delete_audience_room(
         profile_count = len(profiles)
         
         # Delete all S3 files associated with this audience room
-        s3_prefix = f"audiences/{audience_room_id}/"
+        # Use the enterprise-based prefix
+        normalized_enterprise = enterpriseName.lower().strip() if enterpriseName else "default"
+        s3_prefix = f"linkedin-audience/{normalized_enterprise}/{audience_room_id}/"
         deleted_s3_files = []
         
         try:

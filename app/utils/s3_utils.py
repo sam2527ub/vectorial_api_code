@@ -8,6 +8,30 @@ from app.config import s3_client, s3_bucket, s3_region
 logger = logging.getLogger(__name__)
 
 
+def get_s3_key_for_audience(room_id: str, path: str, enterprise_name: Optional[str] = None) -> str:
+    """
+    Generate S3 key with enterprise-based folder structure.
+    
+    Structure: linkedin-audience/{enterpriseName}/{room_id}/{path}
+    
+    Args:
+        room_id: Audience room ID
+        path: Path within the room folder (e.g., "description.json", "profiles/{profile_id}/profile.json")
+        enterprise_name: Enterprise name (gamma, app, entelligence, beta). If None, uses "default"
+    
+    Returns:
+        S3 key string
+    """
+    # Normalize enterprise name (lowercase, strip whitespace)
+    if enterprise_name:
+        normalized_enterprise = enterprise_name.lower().strip()
+    else:
+        normalized_enterprise = "default"
+    
+    # Build the S3 key: linkedin-audience/{enterpriseName}/{room_id}/{path}
+    return f"linkedin-audience/{normalized_enterprise}/{room_id}/{path}"
+
+
 def upload_json_to_s3(key: str, data: Dict[str, Any]) -> str:
     """Upload JSON payload to S3 and return a public URL."""
     if not s3_client or not s3_bucket:

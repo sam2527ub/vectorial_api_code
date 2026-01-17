@@ -3,7 +3,7 @@ import logging
 from typing import List, Optional, Dict, Any
 from app import database
 from app.utils.helpers import normalize_linkedin_url
-from app.utils.s3_utils import upload_json_to_s3, extract_s3_key_from_url, fetch_json_from_s3
+from app.utils.s3_utils import upload_json_to_s3, extract_s3_key_from_url, fetch_json_from_s3, get_s3_key_for_audience
 
 logger = logging.getLogger(__name__)
 
@@ -128,7 +128,7 @@ async def process_posts_and_update_profiles(
         
         # Use the profile's audience room ID for S3 path
         room_id = p["audienceRoomId"]
-        posts_key = f"audiences/{room_id}/profiles/{pid}/posts.json"
+        posts_key = get_s3_key_for_audience(room_id, f"profiles/{pid}/posts.json", enterprise_name)
         logger.info(f"Uploading {len(posts_for_profile)} posts to S3 for profile {pid}: {posts_key}")
         
         try:
