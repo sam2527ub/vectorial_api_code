@@ -31,17 +31,30 @@ async def run_classifier(payload: RunClassifierRequest):
         - "beta" -> uses BETA_DATABASE_URL
         - If not provided, uses AUDIENCE_DATABASE_URL
     """
+    logger.info(f"=== RUN CLASSIFIER REQUEST START ===")
+    logger.info(f"Request: classifier_id={payload.classifierId}, room_id={payload.audienceRoomId}, enterprise={payload.enterpriseName}")
+    
     ensure_db_available("audience")
+    logger.info("Database availability check passed")
+    
     if not groq_client:
+        logger.error("Groq client not initialized")
         raise HTTPException(status_code=503, detail="Groq client not initialized. Please set GROQ_API_KEY.")
     if not s3_client or not s3_bucket:
+        logger.error("S3 not configured")
         raise HTTPException(status_code=503, detail="S3 is not configured; set AUDIENCE_BUCKET_NAME or VECTOR_BUCKET_NAME.")
+    
+    logger.info("Groq client and S3 checks passed")
     
     try:
         # 1. Fetch Classifier details
+        logger.info(f"Fetching classifier {payload.classifierId} from database")
         classifier = database.find_post_classifier_by_id(payload.classifierId)
         if not classifier:
+            logger.warning(f"Classifier {payload.classifierId} not found")
             raise HTTPException(status_code=404, detail=f"Classifier {payload.classifierId} not found")
+        
+        logger.info(f"Found classifier: id={classifier.id}, name={classifier.name}")
         
         # Extract classifier fields
         classifier_name = classifier.name
@@ -78,11 +91,15 @@ async def run_classifier(payload: RunClassifierRequest):
         classifier_labels = [str(label) for label in classifier_labels if label]
         
         if not classifier_labels:
+            logger.error(f"Classifier {payload.classifierId} has no labels defined")
             raise HTTPException(status_code=400, detail="Classifier has no labels defined")
+        
+        logger.info(f"Classifier labels parsed: {len(classifier_labels)} labels - {classifier_labels}")
         
         # Handle examples (JSON field)
         classifier_examples = None
         if classifier.examples:
+            logger.info("Parsing classifier examples")
             try:
                 examples_raw = classifier.examples
                 if isinstance(examples_raw, dict):
@@ -94,24 +111,35 @@ async def run_classifier(payload: RunClassifierRequest):
                         classifier_examples = None
                 elif isinstance(examples_raw, list):
                     classifier_examples = examples_raw
+                logger.info(f"Classifier examples parsed successfully: {type(classifier_examples)}")
             except Exception as e:
-                logger.warning(f"Error parsing classifier examples: {e}")
+                logger.warning(f"Error parsing classifier examples: {e}", exc_info=True)
                 classifier_examples = None
+        else:
+            logger.info("No classifier examples provided")
         
         # 2. Fetch AudienceRoom and Profiles
+        logger.info(f"Fetching audience room {payload.audienceRoomId} with profiles (enterprise={payload.enterpriseName})")
         audience_room = database.find_audience_room_by_id(payload.audienceRoomId, include_profiles=True, enterprise_name=payload.enterpriseName)
         if not audience_room:
+            logger.warning(f"Audience room {payload.audienceRoomId} not found (enterprise={payload.enterpriseName})")
             raise HTTPException(status_code=404, detail=f"Audience room {payload.audienceRoomId} not found")
         
+        logger.info(f"Found audience room: id={audience_room.id}, name={audience_room.name}")
         profiles = audience_room.profiles
         if not profiles:
+            logger.warning(f"No profiles found in audience room {payload.audienceRoomId}")
             raise HTTPException(status_code=404, detail=f"No profiles found in audience room {payload.audienceRoomId}")
+        
+        logger.info(f"Found {len(profiles)} profiles to process")
         
         # 3. Process each profile's posts
         processed_profiles = []
         total_posts_classified = 0
         
-        for profile in profiles:
+        logger.info(f"Starting to process {len(profiles)} profiles")
+        for idx, profile in enumerate(profiles):
+            logger.info(f"Processing profile {idx+1}/{len(profiles)}: id={profile.id}, name={profile.profileName}")
             profile_id = profile.id
             profile_name = profile.profileName
             
@@ -208,7 +236,7 @@ async def run_classifier(payload: RunClassifierRequest):
                 })
                 
             except Exception as e:
-                logger.error(f"Error processing profile {profile_id}: {e}")
+                logger.error(f"Error processing profile {profile_id}: {e}", exc_info=True)
                 processed_profiles.append({
                     "profile_id": profile_id,
                     "profile_name": profile_name,
@@ -216,6 +244,9 @@ async def run_classifier(payload: RunClassifierRequest):
                     "reason": str(e),
                     "posts_classified": 0
                 })
+        
+        logger.info(f"=== RUN CLASSIFIER REQUEST SUCCESS ===")
+        logger.info(f"Summary: classifier_id={payload.classifierId}, room_id={payload.audienceRoomId}, profiles_processed={len(profiles)}, posts_classified={total_posts_classified}")
         
         return {
             "classifier_id": payload.classifierId,
@@ -229,7 +260,8 @@ async def run_classifier(payload: RunClassifierRequest):
     except HTTPException:
         raise
     except Exception as e:
-        logger.error(f"Error running classifier: {e}")
+        logger.error(f"=== ERROR in run_classifier ===")
+        logger.error(f"Error running classifier: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=f"Failed to run classifier: {str(e)}")
 
 
@@ -248,11 +280,20 @@ async def run_classifier_for_profiles(payload: RunClassifierForProfilesRequest):
         - "beta" -> uses BETA_DATABASE_URL
         - If not provided, uses AUDIENCE_DATABASE_URL
     """
+    logger.info(f"=== RUN CLASSIFIER FOR PROFILES REQUEST START ===")
+    logger.info(f"Request: classifier_id={payload.classifierId}, room_id={payload.audienceRoomId}, profile_ids={payload.profileIds}, enterprise={payload.enterpriseName}")
+    
     ensure_db_available("audience")
+    logger.info("Database availability check passed")
+    
     if not groq_client:
+        logger.error("Groq client not initialized")
         raise HTTPException(status_code=503, detail="Groq client not initialized. Please set GROQ_API_KEY.")
     if not s3_client or not s3_bucket:
+        logger.error("S3 not configured")
         raise HTTPException(status_code=503, detail="S3 is not configured; set AUDIENCE_BUCKET_NAME or VECTOR_BUCKET_NAME.")
+    
+    logger.info("Groq client and S3 checks passed")
     
     try:
         # 1. Fetch Classifier details

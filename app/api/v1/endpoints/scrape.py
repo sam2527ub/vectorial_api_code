@@ -27,11 +27,16 @@ async def trigger_scraping(payload: ScrapeRequest):
         - "beta" -> uses BETA_DATABASE_URL
         - If not provided, uses AUDIENCE_DATABASE_URL
     """
+    logger.info(f"=== TRIGGER SCRAPING REQUEST START ===")
+    logger.info(f"Request: enterprise={payload.enterpriseName}, audience_room_id={payload.audience_room_id}, urls_count={len(payload.linkedin_urls)}, max_posts={payload.max_posts}")
+    
     # Convert Cookie Pydantic models to dictionaries for Apify
     cookies_dict = [cookie.dict(exclude_none=True) for cookie in payload.cookies]
+    logger.info(f"Converted {len(cookies_dict)} cookies for Apify")
 
     # Normalize LinkedIn URLs for database storage (for matching later)
     normalized_urls = [u for u in (normalize_linkedin_url(u) for u in payload.linkedin_urls) if u]
+    logger.info(f"Normalized {len(normalized_urls)} URLs from {len(payload.linkedin_urls)} input URLs")
     
     # Prepare URLs for Apify - ensure they have full https://www.linkedin.com format
     apify_urls = []
@@ -57,12 +62,17 @@ async def trigger_scraping(payload: ScrapeRequest):
 
     # Check if database is available
     ensure_db_available("audience")
+    logger.info("Database availability check passed")
     
-    # Log enterpriseName for debugging
-    logger.info(f"trigger_scraping called with enterpriseName={payload.enterpriseName}, audience_room_id={payload.audience_room_id}")
+    if not apify_client:
+        logger.error("Apify client not initialized")
+        raise HTTPException(status_code=503, detail="Apify client not initialized. Please set APIFY_API_TOKEN.")
+    
+    logger.info(f"Apify client available, actor_id={POST_SCRAPER_ACTOR_ID}")
     
     try:
         # Create job record in database
+        logger.info(f"Creating scrape job in database (enterprise={payload.enterpriseName})")
         job = database.create_scrape_job(
             linkedin_urls=normalized_urls,
             max_posts=payload.max_posts,
@@ -71,28 +81,37 @@ async def trigger_scraping(payload: ScrapeRequest):
         )
         job_id = job.id
         
-        logger.info(f"Created job {job_id} for {len(payload.linkedin_urls)} URLs in database (enterpriseName={payload.enterpriseName})")
+        logger.info(f"Successfully created job {job_id} for {len(payload.linkedin_urls)} URLs in database (enterprise={payload.enterpriseName})")
         
         # Start Apify actor without waiting (async)
+        logger.info(f"Starting Apify actor {POST_SCRAPER_ACTOR_ID} with {len(apify_urls)} URLs")
         try:
             run = apify_client.actor(POST_SCRAPER_ACTOR_ID).start(run_input=run_input)
+            logger.info(f"Apify actor start() returned: type={type(run)}")
+            
             run_data = None
             # Apify client may return {"data": {...}} or the payload directly; handle both
             if isinstance(run, dict):
                 run_data = run.get("data", run)
             if not run_data or not isinstance(run_data, dict):
+                logger.error(f"Apify start returned unexpected structure: {run}")
                 raise HTTPException(status_code=502, detail="Apify start returned unexpected response structure")
             apify_run_id = run_data.get('id')
             if not apify_run_id:
+                logger.error(f"Apify start did not return run id: {run_data}")
                 raise HTTPException(status_code=502, detail="Apify start did not return a run id")
             
+            logger.info(f"Apify run started: run_id={apify_run_id}")
+            
             # Update job with Apify run ID and set status to PROCESSING
+            logger.info(f"Updating job {job_id} with Apify run_id={apify_run_id} and status=PROCESSING")
             database.update_scrape_job(job_id, {
                 "status": "PROCESSING",
                 "apifyRunId": apify_run_id
             }, enterprise_name=payload.enterpriseName)
             
-            logger.info(f"Started Apify run {apify_run_id} for job {job_id}")
+            logger.info(f"Successfully started Apify run {apify_run_id} for job {job_id}")
+            logger.info(f"=== TRIGGER SCRAPING REQUEST SUCCESS ===")
             
             return {
                 "job_id": job_id,
@@ -182,24 +201,27 @@ async def get_scrape_status(
         - "beta" -> uses BETA_DATABASE_URL
         - If not provided, uses AUDIENCE_DATABASE_URL
     """
+    logger.info(f"=== GET SCRAPE STATUS REQUEST START ===")
+    logger.info(f"Request: job_id={job_id}, enterprise={enterpriseName}")
+    
     # Check if database is available
     ensure_db_available("audience")
-    
-    # Log enterpriseName for debugging
-    logger.info(f"get_scrape_status called with job_id={job_id}, enterpriseName={enterpriseName}")
+    logger.info("Database availability check passed")
     
     try:
         # Get job from database
+        logger.info(f"Fetching job {job_id} from database (enterprise={enterpriseName})")
         job = database.find_scrape_job_by_id(job_id, enterprise_name=enterpriseName)
         
         if not job:
-            logger.warning(f"Job {job_id} not found in database (enterpriseName={enterpriseName})")
+            logger.warning(f"Job {job_id} not found in database (enterprise={enterpriseName})")
             raise HTTPException(status_code=404, detail=f"Job {job_id} not found")
         
-        logger.info(f"Found job {job_id} with status={job.status} (enterpriseName={enterpriseName})")
+        logger.info(f"Found job {job_id}: status={job.status}, apify_run_id={job.apifyRunId}, audience_room_id={job.audienceRoomId}")
         
         # If already completed, attempt audience post backfill if dataset is available; otherwise return cached results
         if job.status == "COMPLETED":
+            logger.info(f"Job {job_id} is already COMPLETED, checking for backfill opportunity")
             result_data = job.result if isinstance(job.result, dict) else {}
             dataset_id = None
             if result_data:
@@ -208,19 +230,22 @@ async def get_scrape_status(
                     or result_data.get("defaultDatasetId")
                     or result_data.get("datasetId")
                 )
+                logger.info(f"Found dataset_id in result: {dataset_id}")
             
             # If dataset_id not in result, try to fetch it from Apify using the stored run ID
             if not dataset_id and job.apifyRunId:
+                logger.info(f"Dataset ID not in result, fetching from Apify using run_id={job.apifyRunId}")
                 try:
                     run = apify_client.run(job.apifyRunId).get()
                     run_data = run.get("data", run) if isinstance(run, dict) else {}
                     dataset_id = run_data.get("defaultDatasetId") if isinstance(run_data, dict) else None
                     logger.info(f"Fetched dataset_id {dataset_id} from Apify for completed job {job_id}")
                 except Exception as apify_fetch_error:
-                    logger.warning(f"Could not fetch dataset_id from Apify for job {job_id}: {apify_fetch_error}")
+                    logger.warning(f"Could not fetch dataset_id from Apify for job {job_id}: {apify_fetch_error}", exc_info=True)
 
             # Try to process posts and update profiles if dataset is available
             if dataset_id and database.is_audience_db_available():
+                logger.info(f"Processing posts and updating profiles for completed job {job_id}, dataset_id={dataset_id}")
                 try:
                     # Get LinkedIn URLs from job (handle different storage formats)
                     linkedin_urls_list = []
@@ -235,7 +260,10 @@ async def get_scrape_status(
                             except (TypeError, ValueError):
                                 linkedin_urls_list = []
                     
+                    logger.info(f"LinkedIn URLs for matching: {len(linkedin_urls_list)} URLs")
                     dataset_client = apify_client.dataset(dataset_id)
+                    logger.info(f"Created dataset client for dataset_id={dataset_id}")
+                    
                     processing_result = await process_posts_and_update_profiles(
                         dataset_client=dataset_client,
                         job_id=job_id,
@@ -244,12 +272,16 @@ async def get_scrape_status(
                         enterprise_name=enterpriseName,
                     )
                     
+                    logger.info(f"Processing complete: posts_found={processing_result.get('posts_found')}, profiles_updated={processing_result.get('profiles_updated')}")
+                    
                     # Update job result with processing info
                     new_result = {
                         "dataset_id": dataset_id,
                         **processing_result,
                     }
+                    logger.info(f"Updating job {job_id} result with processing info")
                     database.update_scrape_job(job_id, {"result": new_result}, enterprise_name=enterpriseName)
+                    logger.info(f"Job {job_id} result updated successfully")
                     
                     return {
                         "job_id": job_id,
@@ -278,6 +310,7 @@ async def get_scrape_status(
         
         # If failed, return error
         if job.status == "FAILED":
+            logger.info(f"Job {job_id} status is FAILED, returning error")
             return {
                 "job_id": job_id,
                 "status": "FAILED",
@@ -288,18 +321,22 @@ async def get_scrape_status(
         
         # If PENDING or PROCESSING, check Apify status
         if not job.apifyRunId:
+            logger.info(f"Job {job_id} has no apifyRunId, status={job.status}")
             return {
                 "job_id": job_id,
                 "status": job.status,
                 "message": "Waiting for Apify run to start..."
             }
         
+        logger.info(f"Job {job_id} status is {job.status}, checking Apify run status for run_id={job.apifyRunId}")
         try:
             # Check Apify run status
+            logger.info(f"Fetching Apify run status for run_id={job.apifyRunId}")
             run = apify_client.run(job.apifyRunId).get()
             run_data = run.get("data", run) if isinstance(run, dict) else {}
             run_status = run_data.get("status") if isinstance(run_data, dict) else None
             dataset_id = run_data.get("defaultDatasetId") if isinstance(run_data, dict) else None
+            logger.info(f"Apify run status: run_status={run_status}, dataset_id={dataset_id}")
             
             # If Apify didn't return a status but we already have a dataset, treat it as success
             if run_status == 'SUCCEEDED' or (not run_status and dataset_id):
@@ -329,6 +366,7 @@ async def get_scrape_status(
 
                 # Process posts and update profiles (works with or without audienceRoomId)
                 # Wrap in try-except to ensure job status is ALWAYS updated even if processing fails
+                logger.info(f"Starting post processing for job {job_id}, dataset_id={dataset_id}, audience_room_id={job.audienceRoomId}")
                 processing_result = {"posts_found": 0, "profiles_updated": 0, "profiles_missing": 0, "updated": [], "missing": []}
                 processing_error = None
                 try:
@@ -339,7 +377,7 @@ async def get_scrape_status(
                         linkedin_urls=linkedin_urls_list if linkedin_urls_list else None,
                         enterprise_name=enterpriseName,
                     )
-                    logger.info(f"Successfully processed posts for job {job_id}: {processing_result.get('posts_found', 0)} posts found")
+                    logger.info(f"Successfully processed posts for job {job_id}: posts_found={processing_result.get('posts_found', 0)}, profiles_updated={processing_result.get('profiles_updated', 0)}")
                 except Exception as e:
                     processing_error = str(e)
                     logger.error(f"Error processing posts for job {job_id}: {e}", exc_info=True)

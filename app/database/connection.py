@@ -71,14 +71,21 @@ def get_gamma_pool() -> Optional[ThreadedConnectionPool]:
 def get_app_pool() -> Optional[ThreadedConnectionPool]:
     """Get or create the app database connection pool."""
     global _app_pool
+    logger.info(f"get_app_pool called: _app_pool is {'None' if _app_pool is None else 'already initialized'}")
     if _app_pool is None:
         database_url = os.getenv("APP_DATABASE_URL")
+        logger.info(f"APP_DATABASE_URL is {'set' if database_url else 'NOT SET'}")
         if database_url:
             try:
+                logger.info("Initializing App database connection pool...")
                 _app_pool = ThreadedConnectionPool(1, 10, database_url)
                 logger.info("App database pool initialized successfully")
             except Exception as e:
-                logger.error(f"Failed to initialize app database pool: {e}")
+                logger.error(f"Failed to initialize app database pool: {e}", exc_info=True)
+        else:
+            logger.warning("APP_DATABASE_URL environment variable is not set")
+    else:
+        logger.info("App database pool already exists, returning existing pool")
     return _app_pool
 
 
@@ -163,38 +170,61 @@ def get_enterprise_audience_connection(enterprise_name: Optional[str] = None):
     logger.info(f"get_enterprise_audience_connection called with enterprise_name='{enterprise_name}', normalized='{normalized_enterprise}'")
     
     if normalized_enterprise == "gamma":
+        logger.info("Getting GAMMA database pool")
         pool = get_gamma_pool()
         if not pool:
+            logger.error("Gamma database pool is None - GAMMA_DATABASE_URL may not be set")
             raise Exception("Gamma database pool not available. Please set GAMMA_DATABASE_URL.")
+        logger.info("Gamma database pool retrieved successfully")
     elif normalized_enterprise == "app":
+        logger.info("Getting APP database pool")
         pool = get_app_pool()
         if not pool:
+            logger.error("App database pool is None - APP_DATABASE_URL may not be set")
             raise Exception("App database pool not available. Please set APP_DATABASE_URL.")
+        logger.info("App database pool retrieved successfully")
     elif normalized_enterprise == "entelligence":
+        logger.info("Getting ENTELLIGENCE database pool")
         pool = get_entelligence_pool()
         if not pool:
+            logger.error("Entelligence database pool is None - ENTELLIGENCE_DATABASE_URL may not be set")
             raise Exception("Entelligence database pool not available. Please set ENTELLIGENCE_DATABASE_URL.")
+        logger.info("Entelligence database pool retrieved successfully")
     elif normalized_enterprise == "beta":
-        logger.info("Using BETA database connection")
+        logger.info("Getting BETA database pool")
         pool = get_beta_pool()
         if not pool:
+            logger.error("Beta database pool is None - BETA_DATABASE_URL may not be set")
             raise Exception("Beta database pool not available. Please set BETA_DATABASE_URL.")
+        logger.info("Beta database pool retrieved successfully")
     else:
         # Default to audience database
         logger.info(f"Using default AUDIENCE database connection (enterprise_name was '{enterprise_name}', normalized='{normalized_enterprise}')")
         pool = get_audience_pool()
         if not pool:
+            logger.error("Audience database pool is None - AUDIENCE_DATABASE_URL may not be set")
             raise Exception("Audience database pool not available. Please set AUDIENCE_DATABASE_URL.")
+        logger.info("Audience database pool retrieved successfully")
     
+    logger.info(f"Getting connection from pool for enterprise='{normalized_enterprise}'")
     conn = pool.getconn()
+    logger.info(f"Connection acquired from pool for enterprise='{normalized_enterprise}'")
     try:
+        logger.info(f"Yielding connection for enterprise='{normalized_enterprise}'")
         yield conn
+        logger.info(f"Committing transaction for enterprise='{normalized_enterprise}'")
         conn.commit()
+        logger.info(f"Transaction committed successfully for enterprise='{normalized_enterprise}'")
     except Exception as e:
+        logger.error(f"Exception occurred in transaction for enterprise='{normalized_enterprise}': {e}", exc_info=True)
+        logger.info(f"Rolling back transaction for enterprise='{normalized_enterprise}'")
         conn.rollback()
+        logger.info(f"Transaction rolled back for enterprise='{normalized_enterprise}'")
         raise e
     finally:
+        logger.info(f"Returning connection to pool for enterprise='{normalized_enterprise}'")
         pool.putconn(conn)
+        logger.info(f"Connection returned to pool for enterprise='{normalized_enterprise}'")
 
 
 def close_pools():
@@ -442,50 +472,107 @@ def create_audience_room(
         enterprise_name: Optional enterprise name (gamma, app, entelligence, beta). 
                         Defaults to AUDIENCE_DATABASE_URL if None.
     """
-    now = datetime.utcnow()
+    logger.info(f"create_audience_room called: room_id={room_id}, enterprise_name={enterprise_name}, name={name}, user_id={user_id}")
+    logger.info(f"create_audience_room params: source={source}, query={query}, indexes_s3_url={indexes_s3_url}")
+    logger.info(f"create_audience_room profiles_data count: {len(profiles_data) if profiles_data else 0}")
     
-    with get_enterprise_audience_connection(enterprise_name) as conn:
-        with conn.cursor(cursor_factory=RealDictCursor) as cur:
-            # Create the room
-            cur.execute(
-                """
-                INSERT INTO "AudienceRoom" (id, name, "descriptionS3Url", "userId", "source", "query", "indexesS3Url", "createdAt", "updatedAt")
-                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
-                RETURNING *
-                """,
-                (room_id, name, description_s3_url, user_id, source, query, indexes_s3_url, now, now)
-            )
-            room_row = cur.fetchone()
-            room = AudienceRoom(room_row)
+    now = datetime.utcnow()
+    logger.info(f"Opening database connection for enterprise='{enterprise_name}'")
+    
+    try:
+        with get_enterprise_audience_connection(enterprise_name) as conn:
+            logger.info(f"Database connection opened successfully for enterprise='{enterprise_name}'")
             
-            # Create profiles if provided
-            if profiles_data:
-                for profile_data in profiles_data:
-                    profile_id = profile_data.get('id', str(uuid.uuid4()))
+            with conn.cursor(cursor_factory=RealDictCursor) as cur:
+                logger.info(f"Cursor created for enterprise='{enterprise_name}'")
+                
+                # Create the room
+                logger.info(f"Executing INSERT INTO AudienceRoom: room_id={room_id}, name={name}, enterprise={enterprise_name}")
+                logger.info(f"INSERT values: description_s3_url={description_s3_url}, user_id={user_id}, source={source}, query={query}")
+                
+                try:
                     cur.execute(
                         """
-                        INSERT INTO "AudienceProfile" 
-                        (id, "audienceRoomId", "profileName", "profileUrl", "profileDescriptionS3Url", "postsS3Url", "commentsS3Url", "source", "createdAt", "updatedAt")
-                        VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+                        INSERT INTO "AudienceRoom" (id, name, "descriptionS3Url", "userId", "source", "query", "indexesS3Url", "createdAt", "updatedAt")
+                        VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
                         RETURNING *
                         """,
-                        (
-                            profile_id,
-                            room_id,
-                            profile_data.get('profileName'),
-                            profile_data.get('profileUrl') or profile_data.get('linkedinUrl'),  # Support both old and new field names
-                            profile_data.get('profileDescriptionS3Url'),
-                            profile_data.get('postsS3Url'),
-                            profile_data.get('commentsS3Url'),
-                            profile_data.get('source'),
-                            now,
-                            now
-                        )
+                        (room_id, name, description_s3_url, user_id, source, query, indexes_s3_url, now, now)
                     )
-                    profile_row = cur.fetchone()
-                    room.profiles.append(AudienceProfile(profile_row))
+                    logger.info(f"INSERT INTO AudienceRoom executed successfully for room_id={room_id}")
+                    
+                    room_row = cur.fetchone()
+                    if not room_row:
+                        logger.error(f"INSERT INTO AudienceRoom FAILED: No row returned for room_id={room_id}, enterprise={enterprise_name}")
+                        raise Exception(f"Failed to create AudienceRoom {room_id}: INSERT returned no row")
+                    
+                    logger.info(f"INSERT INTO AudienceRoom SUCCESS: Row fetched for room_id={room_id}, enterprise={enterprise_name}")
+                    logger.info(f"Room row data: {dict(room_row)}")
+                    
+                    room = AudienceRoom(room_row)
+                    logger.info(f"AudienceRoom object created: id={room.id}, name={room.name}, enterprise={enterprise_name}")
+                    
+                except Exception as insert_error:
+                    logger.error(f"ERROR during INSERT INTO AudienceRoom for room_id={room_id}, enterprise={enterprise_name}: {insert_error}", exc_info=True)
+                    raise
+                
+                # Create profiles if provided
+                if profiles_data:
+                    logger.info(f"Creating {len(profiles_data)} profiles for room_id={room_id}, enterprise={enterprise_name}")
+                    for idx, profile_data in enumerate(profiles_data):
+                        profile_id = profile_data.get('id', str(uuid.uuid4()))
+                        logger.info(f"Creating profile {idx+1}/{len(profiles_data)}: profile_id={profile_id}, room_id={room_id}")
+                        logger.info(f"Profile data: name={profile_data.get('profileName')}, url={profile_data.get('profileUrl')}")
+                        
+                        try:
+                            cur.execute(
+                                """
+                                INSERT INTO "AudienceProfile" 
+                                (id, "audienceRoomId", "profileName", "profileUrl", "profileDescriptionS3Url", "postsS3Url", "commentsS3Url", "source", "createdAt", "updatedAt")
+                                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+                                RETURNING *
+                                """,
+                                (
+                                    profile_id,
+                                    room_id,
+                                    profile_data.get('profileName'),
+                                    profile_data.get('profileUrl') or profile_data.get('linkedinUrl'),  # Support both old and new field names
+                                    profile_data.get('profileDescriptionS3Url'),
+                                    profile_data.get('postsS3Url'),
+                                    profile_data.get('commentsS3Url'),
+                                    profile_data.get('source'),
+                                    now,
+                                    now
+                                )
+                            )
+                            logger.info(f"INSERT INTO AudienceProfile executed successfully for profile_id={profile_id}")
+                            
+                            profile_row = cur.fetchone()
+                            if not profile_row:
+                                logger.error(f"INSERT INTO AudienceProfile FAILED: No row returned for profile_id={profile_id}, room_id={room_id}")
+                                raise Exception(f"Failed to create AudienceProfile {profile_id}: INSERT returned no row")
+                            
+                            logger.info(f"INSERT INTO AudienceProfile SUCCESS: Row fetched for profile_id={profile_id}")
+                            room.profiles.append(AudienceProfile(profile_row))
+                            logger.info(f"Profile {idx+1}/{len(profiles_data)} added to room object")
+                            
+                        except Exception as profile_error:
+                            logger.error(f"ERROR during INSERT INTO AudienceProfile for profile_id={profile_id}, room_id={room_id}: {profile_error}", exc_info=True)
+                            raise
+                    
+                    logger.info(f"Successfully created {len(profiles_data)} profiles for room_id={room_id}, enterprise={enterprise_name}")
+                else:
+                    logger.info(f"No profiles to create for room_id={room_id}, enterprise={enterprise_name}")
             
-            return room
+            logger.info(f"About to exit database connection context for enterprise='{enterprise_name}' (transaction will commit)")
+        
+        logger.info(f"Database connection context exited successfully for enterprise='{enterprise_name}'")
+        logger.info(f"create_audience_room SUCCESS: Returning room object with id={room.id}, enterprise={enterprise_name}")
+        return room
+        
+    except Exception as e:
+        logger.error(f"FATAL ERROR in create_audience_room for room_id={room_id}, enterprise={enterprise_name}: {e}", exc_info=True)
+        raise
 
 
 def find_audience_room_by_id(room_id: str, include_profiles: bool = False, enterprise_name: Optional[str] = None) -> Optional[AudienceRoom]:

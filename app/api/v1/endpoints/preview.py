@@ -146,10 +146,18 @@ async def get_previews(
         - created_at: Timestamp when preview was created
         - updated_at: Timestamp when preview was last updated
     """
+    logger.info(f"=== GET PREVIEWS REQUEST START ===")
+    logger.info(f"Request: user_id={userId}, enterprise={enterpriseName}")
+    
     ensure_db_available("audience")
+    logger.info("Database availability check passed")
     
     try:
+        logger.info(f"Fetching previews from database (user_id={userId}, enterprise={enterpriseName})")
         previews = database.find_all_previews(user_id=userId, enterprise_name=enterpriseName)
+        
+        logger.info(f"Found {len(previews)} previews")
+        logger.info(f"=== GET PREVIEWS REQUEST SUCCESS ===")
         
         return {
             "count": len(previews),
@@ -158,7 +166,8 @@ async def get_previews(
             "previews": previews
         }
     except Exception as e:
-        logger.error(f"Error fetching previews: {e}")
+        logger.error(f"=== ERROR in get_previews ===")
+        logger.error(f"Error fetching previews: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=f"Failed to fetch previews: {str(e)}")
 
 
@@ -191,22 +200,34 @@ async def update_preview_for_room(
     
     WARNING: This only modifies the previews table, no other tables are touched.
     """
+    logger.info(f"=== UPDATE PREVIEW FOR ROOM REQUEST START ===")
+    logger.info(f"Request: room_id={room_id}, enterprise={enterpriseName}")
+    
     ensure_db_available("audience")
+    logger.info("Database availability check passed")
     
     if not s3_client or not s3_bucket:
+        logger.error("S3 not configured")
         raise HTTPException(status_code=503, detail="S3 is not configured")
+    
+    logger.info("S3 check passed")
     
     try:
         # Ensure preview table exists with proper schema
+        logger.info(f"Ensuring preview table exists (enterprise={enterpriseName})")
         database.ensure_preview_table_exists(enterprise_name=enterpriseName)
         
         # Fetch room with profiles from database (READ-ONLY)
         # Use find_audience_room_by_id instead of find_audience_room_with_profiles_for_preview
         # since it supports enterprise_name
+        logger.info(f"Fetching audience room {room_id} with profiles (enterprise={enterpriseName})")
         room_obj = database.find_audience_room_by_id(room_id, include_profiles=True, enterprise_name=enterpriseName)
         
         if not room_obj:
+            logger.warning(f"Audience room {room_id} not found (enterprise={enterpriseName})")
             raise HTTPException(status_code=404, detail=f"Audience room {room_id} not found")
+        
+        logger.info(f"Found audience room: id={room_obj.id}, name={room_obj.name}, profiles_count={len(room_obj.profiles)}")
         
         # Convert room object to dict format for _generate_preview_for_room
         room = {
@@ -229,9 +250,12 @@ async def update_preview_for_room(
         }
         
         # Generate preview data
+        logger.info(f"Generating preview data for room {room_id}")
         preview_data = _generate_preview_for_room(room)
+        logger.info(f"Preview data generated: profiles_count={len(preview_data.get('profiles', []))}, total_profiles={preview_data.get('total_profile_count', 0)}")
         
         # Upsert preview (only touches previews table)
+        logger.info(f"Upserting preview to database (enterprise={enterpriseName})")
         result = database.upsert_preview(
             room_id=preview_data['room_id'],
             name=preview_data['name'],
@@ -244,6 +268,7 @@ async def update_preview_for_room(
         )
         
         logger.info(f"Successfully updated preview for room {room_id}")
+        logger.info(f"=== UPDATE PREVIEW FOR ROOM REQUEST SUCCESS ===")
         
         return {
             "status": "success",
@@ -409,9 +434,14 @@ async def update_preview_name_endpoint(request: UpdatePreviewNameRequest):
     
     WARNING: This only modifies the previews table, no other tables are touched.
     """
+    logger.info(f"=== UPDATE PREVIEW NAME REQUEST START ===")
+    logger.info(f"Request: room_id={request.audienceRoomId}, new_name={request.newName}, enterprise={request.enterpriseName}")
+    
     ensure_db_available("audience")
+    logger.info("Database availability check passed")
     
     try:
+        logger.info(f"Updating preview name for room {request.audienceRoomId} (enterprise={request.enterpriseName})")
         updated_preview = database.update_preview_name(
             room_id=request.audienceRoomId,
             new_name=request.newName,
@@ -419,10 +449,14 @@ async def update_preview_name_endpoint(request: UpdatePreviewNameRequest):
         )
         
         if not updated_preview:
+            logger.warning(f"Preview not found for room {request.audienceRoomId} (enterprise={request.enterpriseName})")
             raise HTTPException(
                 status_code=404,
                 detail=f"Preview not found for room {request.audienceRoomId}"
             )
+        
+        logger.info(f"Successfully updated preview name for room {request.audienceRoomId}")
+        logger.info(f"=== UPDATE PREVIEW NAME REQUEST SUCCESS ===")
         
         return {
             "status": "success",
@@ -434,7 +468,8 @@ async def update_preview_name_endpoint(request: UpdatePreviewNameRequest):
     except HTTPException:
         raise
     except Exception as e:
-        logger.error(f"Error updating preview name for room {request.audienceRoomId}: {e}")
+        logger.error(f"=== ERROR in update_preview_name ===")
+        logger.error(f"Error updating preview name for room {request.audienceRoomId}: {e}", exc_info=True)
         raise HTTPException(
             status_code=500,
             detail=f"Failed to update preview name: {str(e)}"
@@ -444,8 +479,11 @@ async def update_preview_name_endpoint(request: UpdatePreviewNameRequest):
 @router.delete("/api/v1/previews/{room_id}")
 async def delete_preview(
     room_id: str = Path(..., description="The room ID to delete preview for"),
-    user_id: Optional[str] = Query(None, description="Optional user ID to scope deletion")
+    user_id: Optional[str] = Query(None, description="Optional user ID to scope deletion"),
+    enterpriseName: Optional[str] = Query(None, description="Enterprise name (gamma, app, entelligence, beta). If not provided, uses default audience database.")
 ):
+    logger.info(f"=== DELETE PREVIEW REQUEST START ===")
+    logger.info(f"Request: room_id={room_id}, user_id={user_id}, enterprise={enterpriseName}")
     """
     Delete a preview record.
     

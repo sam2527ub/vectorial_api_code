@@ -24,12 +24,18 @@ async def search_parallel_stream(payload: ParallelSearchRequest):
     4. For each LinkedIn URL found, fetches profile info from Apify scraper in parallel
     5. Streams profile info back in real-time via SSE
     """
+    logger.info(f"=== PARALLEL SEARCH STREAM REQUEST START ===")
+    logger.info(f"Request: query={payload.query}, model={payload.model}, match_limit={payload.match_limit}")
+    
     parallel_api_key = os.getenv("PARALLEL_API_KEY")
     if not parallel_api_key:
+        logger.error("PARALLEL_API_KEY not configured")
         raise HTTPException(
             status_code=503,
             detail="PARALLEL_API_KEY not configured. Please set the environment variable."
         )
+    
+    logger.info("PARALLEL_API_KEY check passed")
     
     parallel_base_url = "https://api.parallel.ai/v1beta/findall"
     

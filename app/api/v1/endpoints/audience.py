@@ -30,14 +30,26 @@ async def create_audience_room(payload: CreateAudienceRoomRequest):
         - "beta" -> uses BETA_DATABASE_URL
         - If not provided, uses AUDIENCE_DATABASE_URL
     """
+    logger.info(f"=== CREATE AUDIENCE ROOM REQUEST START ===")
+    logger.info(f"Request payload: enterpriseName={payload.enterpriseName}, room_name={payload.audience_room_name}, user_id={payload.userId}")
+    logger.info(f"Request payload: profiles_count={len(payload.profiles)}, query={payload.query}, source={payload.source}")
+    
     ensure_db_available("audience")
+    logger.info("Database availability check passed")
+    
     if not s3_client or not s3_bucket:
+        logger.error("S3 not configured - missing s3_client or s3_bucket")
         raise HTTPException(status_code=503, detail="S3 is not configured; set AUDIENCE_BUCKET_NAME or VECTOR_BUCKET_NAME.")
+    
+    logger.info(f"S3 configured: bucket={s3_bucket}, client={'available' if s3_client else 'missing'}")
 
     room_id = str(uuid.uuid4())
+    logger.info(f"Generated room_id: {room_id}")
 
     # Upload audience description to S3
+    logger.info(f"Uploading audience description to S3 for room_id={room_id}, enterprise={payload.enterpriseName}")
     description_key = get_s3_key_for_audience(room_id, "description.json", payload.enterpriseName)
+    logger.info(f"Generated S3 key for description: {description_key}")
     description_url = upload_json_to_s3(
         description_key,
         {
@@ -46,10 +58,12 @@ async def create_audience_room(payload: CreateAudienceRoomRequest):
             "description": payload.audience_description,
         },
     )
+    logger.info(f"Successfully uploaded description to S3: {description_url}")
 
     # Handle search results/indexes if provided
     indexes_s3_url = None
     if payload.query and payload.search_results:
+        logger.info(f"Uploading indexes/search results to S3 for room_id={room_id}, enterprise={payload.enterpriseName}")
         try:
             # Prepare the indexes/search results JSON
             indexes_data = {
@@ -62,17 +76,23 @@ async def create_audience_room(payload: CreateAudienceRoomRequest):
             
             # Upload indexes to S3
             indexes_key = get_s3_key_for_audience(room_id, "indexes.json", payload.enterpriseName)
+            logger.info(f"Generated S3 key for indexes: {indexes_key}")
             indexes_s3_url = upload_json_to_s3(indexes_key, indexes_data)
-            logger.info(f"Uploaded search results/indexes to S3 for audience room {room_id}")
+            logger.info(f"Successfully uploaded search results/indexes to S3 for audience room {room_id}: {indexes_s3_url}")
         except Exception as e:
-            logger.error(f"Failed to upload search results to S3: {e}")
+            logger.error(f"Failed to upload search results to S3 for room_id={room_id}: {e}", exc_info=True)
             # Continue with room creation even if indexes upload fails
+    else:
+        logger.info(f"No indexes to upload (query={payload.query}, search_results={'present' if payload.search_results else 'missing'})")
 
     # Build profile records and upload payloads to S3 (summary starts as null)
+    logger.info(f"Processing {len(payload.profiles)} profiles for S3 upload and database creation")
     profile_creates = []
-    for profile in payload.profiles:
+    for idx, profile in enumerate(payload.profiles):
         profile_id = str(uuid.uuid4())
+        logger.info(f"Processing profile {idx+1}/{len(payload.profiles)}: profile_id={profile_id}, name={profile.name}")
         profile_key = get_s3_key_for_audience(room_id, f"profiles/{profile_id}/profile.json", payload.enterpriseName)
+        logger.info(f"Generated S3 key for profile: {profile_key}")
         profile_payload = {
             "profile_id": profile_id,
             "audience_room_id": room_id,
@@ -86,7 +106,9 @@ async def create_audience_room(payload: CreateAudienceRoomRequest):
             "linkedin_profile_url": profile.linkedin_profile_url,
             "summary": None,
         }
+        logger.info(f"Uploading profile {idx+1} to S3: profile_id={profile_id}")
         profile_url = upload_json_to_s3(profile_key, profile_payload)
+        logger.info(f"Successfully uploaded profile {idx+1} to S3: {profile_url}")
 
         profile_creates.append(
             {
@@ -97,10 +119,18 @@ async def create_audience_room(payload: CreateAudienceRoomRequest):
                 "postsS3Url": None,
             }
         )
+        logger.info(f"Added profile {idx+1} to profile_creates list")
+    
+    logger.info(f"Completed S3 uploads: {len(profile_creates)} profiles ready for database insertion")
 
     try:
         # Log enterprise name for debugging
-        logger.info(f"Creating audience room with enterpriseName: {payload.enterpriseName}")
+        logger.info(f"=== CALLING database.create_audience_room ===")
+        logger.info(f"Parameters: room_id={room_id}, enterpriseName={payload.enterpriseName}")
+        logger.info(f"Parameters: name={payload.audience_room_name}, user_id={payload.userId}")
+        logger.info(f"Parameters: description_s3_url={description_url}")
+        logger.info(f"Parameters: indexes_s3_url={indexes_s3_url}")
+        logger.info(f"Parameters: profiles_data count={len(profile_creates)}")
         
         room = database.create_audience_room(
             room_id=room_id,
@@ -113,8 +143,13 @@ async def create_audience_room(payload: CreateAudienceRoomRequest):
             profiles_data=profile_creates,
             enterprise_name=payload.enterpriseName,
         )
+        
+        logger.info(f"=== database.create_audience_room RETURNED SUCCESSFULLY ===")
+        logger.info(f"Returned room: id={room.id}, name={room.name}, profiles_count={len(room.profiles)}")
+        logger.info(f"Returned room: descriptionS3Url={room.descriptionS3Url}")
+        logger.info(f"Returned room: userId={room.userId}, query={room.query}")
 
-        return {
+        response_data = {
             "audience_room_id": room.id,
             "audience_room_name": room.name,
             "description_s3_url": room.descriptionS3Url,
@@ -133,11 +168,19 @@ async def create_audience_room(payload: CreateAudienceRoomRequest):
                 for p in room.profiles
             ],
         }
-    except HTTPException:
+        
+        logger.info(f"=== CREATE AUDIENCE ROOM REQUEST SUCCESS ===")
+        logger.info(f"Response: room_id={room.id}, enterprise={payload.enterpriseName}, profiles={len(room.profiles)}")
+        return response_data
+        
+    except HTTPException as http_ex:
+        logger.error(f"HTTPException in create_audience_room: {http_ex.detail}")
         raise
     except Exception as e:
-        logger.error(f"Error creating audience room: {e}")
-        raise HTTPException(status_code=500, detail="Failed to create audience room")
+        logger.error(f"=== FATAL ERROR in create_audience_room ===")
+        logger.error(f"Error creating audience room: {e}", exc_info=True)
+        logger.error(f"Error details: room_id={room_id}, enterprise={payload.enterpriseName}")
+        raise HTTPException(status_code=500, detail=f"Failed to create audience room: {str(e)}")
 
 
 @router.patch("/api/v1/audience-rooms/update-name")
@@ -165,9 +208,14 @@ async def update_audience_room_name_endpoint(request: UpdateAudienceRoomNameRequ
     
     WARNING: This only modifies the AudienceRoom table, no other tables are touched.
     """
+    logger.info(f"=== UPDATE AUDIENCE ROOM NAME REQUEST START ===")
+    logger.info(f"Request: room_id={request.audienceRoomId}, new_name={request.newName}, enterprise={request.enterpriseName}")
+    
     ensure_db_available("audience")
+    logger.info("Database availability check passed")
     
     try:
+        logger.info(f"Calling database.update_audience_room: room_id={request.audienceRoomId}, enterprise={request.enterpriseName}")
         updated_room = database.update_audience_room(
             room_id=request.audienceRoomId,
             data={"name": request.newName},
@@ -175,10 +223,14 @@ async def update_audience_room_name_endpoint(request: UpdateAudienceRoomNameRequ
         )
         
         if not updated_room:
+            logger.warning(f"Audience room {request.audienceRoomId} not found in database (enterprise={request.enterpriseName})")
             raise HTTPException(
                 status_code=404,
                 detail=f"Audience room {request.audienceRoomId} not found"
             )
+        
+        logger.info(f"Successfully updated audience room {request.audienceRoomId}: new_name={updated_room.name}")
+        logger.info(f"=== UPDATE AUDIENCE ROOM NAME REQUEST SUCCESS ===")
         
         return {
             "status": "success",
@@ -190,7 +242,8 @@ async def update_audience_room_name_endpoint(request: UpdateAudienceRoomNameRequ
     except HTTPException:
         raise
     except Exception as e:
-        logger.error(f"Error updating audience room name for room {request.audienceRoomId}: {e}")
+        logger.error(f"=== ERROR in update_audience_room_name ===")
+        logger.error(f"Error updating audience room name for room {request.audienceRoomId}: {e}", exc_info=True)
         raise HTTPException(
             status_code=500,
             detail=f"Failed to update audience room name: {str(e)}"
@@ -215,28 +268,42 @@ async def delete_audience_room(
         enterpriseName: Optional enterprise name (gamma, app, entelligence, beta). 
                        If not provided, uses AUDIENCE_DATABASE_URL.
     """
+    logger.info(f"=== DELETE AUDIENCE ROOM REQUEST START ===")
+    logger.info(f"Request: room_id={audience_room_id}, enterprise={enterpriseName}")
+    
     ensure_db_available("audience")
+    logger.info("Database availability check passed")
+    
     if not s3_client or not s3_bucket:
+        logger.error("S3 not configured - missing s3_client or s3_bucket")
         raise HTTPException(status_code=503, detail="S3 is not configured; set AUDIENCE_BUCKET_NAME or VECTOR_BUCKET_NAME.")
+    
+    logger.info(f"S3 configured: bucket={s3_bucket}")
 
     try:
         # Fetch audience room with all profiles using enterprise-specific database if provided
+        logger.info(f"Fetching audience room {audience_room_id} from database (enterprise={enterpriseName})")
         audience_room = database.find_audience_room_by_id(audience_room_id, include_profiles=True, enterprise_name=enterpriseName)
         
         if not audience_room:
+            logger.warning(f"Audience room {audience_room_id} not found in database (enterprise={enterpriseName})")
             raise HTTPException(status_code=404, detail=f"Audience room {audience_room_id} not found")
         
+        logger.info(f"Found audience room: id={audience_room.id}, name={audience_room.name}")
         profiles = audience_room.profiles
         profile_count = len(profiles)
+        logger.info(f"Room has {profile_count} profiles to delete")
         
         # Delete all S3 files associated with this audience room
         # Use the enterprise-based prefix
         normalized_enterprise = enterpriseName.lower().strip() if enterpriseName else "default"
         s3_prefix = f"linkedin-audience/{normalized_enterprise}/{audience_room_id}/"
+        logger.info(f"Deleting S3 files with prefix: {s3_prefix}")
         deleted_s3_files = []
         
         try:
             # List all objects with the prefix
+            logger.info(f"Listing S3 objects with prefix: {s3_prefix}")
             paginator = s3_client.get_paginator('list_objects_v2')
             pages = paginator.paginate(Bucket=s3_bucket, Prefix=s3_prefix)
             
@@ -248,10 +315,16 @@ async def delete_audience_room(
                         objects_to_delete.append({'Key': obj['Key']})
                         deleted_s3_files.append(obj['Key'])
             
+            logger.info(f"Found {len(objects_to_delete)} S3 objects to delete")
+            
             # Delete all objects in batch (max 1000 objects per request)
             if objects_to_delete:
+                batch_count = (len(objects_to_delete) + 999) // 1000
+                logger.info(f"Deleting {len(objects_to_delete)} objects in {batch_count} batch(es)")
                 for i in range(0, len(objects_to_delete), 1000):
                     batch = objects_to_delete[i:i+1000]
+                    batch_num = (i // 1000) + 1
+                    logger.info(f"Deleting batch {batch_num}/{batch_count} ({len(batch)} objects)")
                     s3_client.delete_objects(
                         Bucket=s3_bucket,
                         Delete={
@@ -259,30 +332,37 @@ async def delete_audience_room(
                             'Quiet': True
                         }
                     )
-                logger.info(f"Deleted {len(objects_to_delete)} S3 objects for audience room {audience_room_id}")
+                logger.info(f"Successfully deleted {len(objects_to_delete)} S3 objects for audience room {audience_room_id}")
             else:
-                logger.warning(f"No S3 objects found for audience room {audience_room_id}")
+                logger.warning(f"No S3 objects found for audience room {audience_room_id} with prefix {s3_prefix}")
                 
         except Exception as e:
-            logger.error(f"Error deleting S3 files for audience room {audience_room_id}: {e}")
+            logger.error(f"Error deleting S3 files for audience room {audience_room_id}: {e}", exc_info=True)
             # Continue with database deletion even if S3 deletion fails
         
         # Delete all profiles from database first using enterprise-specific database if provided
         if profiles:
+            logger.info(f"Deleting {profile_count} profiles from database (enterprise={enterpriseName})")
             try:
                 deleted_count = database.delete_audience_profiles_by_room(audience_room_id, enterprise_name=enterpriseName)
-                logger.info(f"Deleted {deleted_count} profiles for audience room {audience_room_id}")
+                logger.info(f"Successfully deleted {deleted_count} profiles for audience room {audience_room_id}")
             except Exception as e:
-                logger.error(f"Error deleting profiles for audience room {audience_room_id}: {e}")
+                logger.error(f"Error deleting profiles for audience room {audience_room_id}: {e}", exc_info=True)
                 raise HTTPException(status_code=500, detail=f"Failed to delete profiles: {str(e)}")
+        else:
+            logger.info(f"No profiles to delete for audience room {audience_room_id}")
         
         # Delete the audience room from database using enterprise-specific database if provided
+        logger.info(f"Deleting audience room {audience_room_id} from database (enterprise={enterpriseName})")
         try:
             database.delete_audience_room(audience_room_id, enterprise_name=enterpriseName)
-            logger.info(f"Deleted audience room {audience_room_id}")
+            logger.info(f"Successfully deleted audience room {audience_room_id}")
         except Exception as e:
-            logger.error(f"Error deleting audience room {audience_room_id}: {e}")
+            logger.error(f"Error deleting audience room {audience_room_id}: {e}", exc_info=True)
             raise HTTPException(status_code=500, detail=f"Failed to delete audience room: {str(e)}")
+        
+        logger.info(f"=== DELETE AUDIENCE ROOM REQUEST SUCCESS ===")
+        logger.info(f"Deleted: room_id={audience_room_id}, profiles={profile_count}, s3_files={len(deleted_s3_files)}")
         
         return {
             "message": f"Successfully deleted audience room {audience_room_id}",
@@ -296,7 +376,8 @@ async def delete_audience_room(
     except HTTPException:
         raise
     except Exception as e:
-        logger.error(f"Error deleting audience room {audience_room_id}: {e}")
+        logger.error(f"=== ERROR in delete_audience_room ===")
+        logger.error(f"Error deleting audience room {audience_room_id}: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=f"Failed to delete audience room: {str(e)}")
 
 
@@ -312,31 +393,48 @@ async def get_audience_room_description(
         enterpriseName: Optional enterprise name (gamma, app, entelligence, beta). 
                        If not provided, uses AUDIENCE_DATABASE_URL.
     """
+    logger.info(f"=== GET AUDIENCE ROOM DESCRIPTION REQUEST START ===")
+    logger.info(f"Request: room_id={audience_room_id}, enterprise={enterpriseName}")
+    
     ensure_db_available("audience")
     if not s3_client or not s3_bucket:
+        logger.error("S3 not configured")
         raise HTTPException(status_code=503, detail="S3 is not configured; set AUDIENCE_BUCKET_NAME or VECTOR_BUCKET_NAME.")
     
     try:
         # Verify room exists using enterprise-specific database if provided
+        logger.info(f"Fetching audience room {audience_room_id} from database (enterprise={enterpriseName})")
         room = database.find_audience_room_by_id(audience_room_id, enterprise_name=enterpriseName)
         if not room:
+            logger.warning(f"Audience room {audience_room_id} not found (enterprise={enterpriseName})")
             raise HTTPException(status_code=404, detail=f"Audience room {audience_room_id} not found")
         
+        logger.info(f"Found audience room: id={room.id}, name={room.name}")
+        
         if not room.descriptionS3Url:
+            logger.warning(f"Description S3 URL not found for room {audience_room_id}")
             raise HTTPException(status_code=404, detail="Description not found for this audience room")
         
         # Extract S3 key from URL
+        logger.info(f"Extracting S3 key from URL: {room.descriptionS3Url}")
         description_key = extract_s3_key_from_url(room.descriptionS3Url)
         if not description_key:
+            logger.error(f"Failed to extract S3 key from URL: {room.descriptionS3Url}")
             raise HTTPException(status_code=500, detail="Invalid S3 URL format")
         
+        logger.info(f"Extracted S3 key: {description_key}")
+        
         # Fetch JSON from S3
+        logger.info(f"Fetching description JSON from S3: {description_key}")
         description_data = fetch_json_from_s3(description_key)
+        logger.info(f"Successfully fetched description from S3 for room {audience_room_id}")
+        logger.info(f"=== GET AUDIENCE ROOM DESCRIPTION REQUEST SUCCESS ===")
         return description_data
     except HTTPException:
         raise
     except Exception as e:
-        logger.error(f"Error fetching description for audience room {audience_room_id}: {e}")
+        logger.error(f"=== ERROR in get_audience_room_description ===")
+        logger.error(f"Error fetching description for audience room {audience_room_id}: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail="Failed to fetch description")
 
 
@@ -354,34 +452,52 @@ async def get_profile_description(
         enterpriseName: Optional enterprise name (gamma, app, entelligence, beta). 
                        If not provided, uses AUDIENCE_DATABASE_URL.
     """
+    logger.info(f"=== GET PROFILE DESCRIPTION REQUEST START ===")
+    logger.info(f"Request: room_id={audience_room_id}, profile_id={profile_id}, enterprise={enterpriseName}")
+    
     ensure_db_available("audience")
     if not s3_client or not s3_bucket:
+        logger.error("S3 not configured")
         raise HTTPException(status_code=503, detail="S3 is not configured; set AUDIENCE_BUCKET_NAME or VECTOR_BUCKET_NAME.")
     
     try:
         # Verify profile exists and belongs to the room using enterprise-specific database if provided
+        logger.info(f"Fetching profile {profile_id} from database (enterprise={enterpriseName})")
         profile = database.find_audience_profile_by_id(profile_id, include_room=True, enterprise_name=enterpriseName)
         if not profile:
+            logger.warning(f"Profile {profile_id} not found (enterprise={enterpriseName})")
             raise HTTPException(status_code=404, detail=f"Profile {profile_id} not found")
         
+        logger.info(f"Found profile: id={profile.id}, name={profile.profileName}, room_id={profile.audienceRoomId}")
+        
         if profile.audienceRoomId != audience_room_id:
+            logger.warning(f"Profile {profile_id} belongs to room {profile.audienceRoomId}, not {audience_room_id}")
             raise HTTPException(status_code=404, detail=f"Profile {profile_id} does not belong to audience room {audience_room_id}")
         
         if not profile.profileDescriptionS3Url:
+            logger.warning(f"Profile description S3 URL not found for profile {profile_id}")
             raise HTTPException(status_code=404, detail="Profile description not found")
         
         # Extract S3 key from URL
+        logger.info(f"Extracting S3 key from URL: {profile.profileDescriptionS3Url}")
         profile_key = extract_s3_key_from_url(profile.profileDescriptionS3Url)
         if not profile_key:
+            logger.error(f"Failed to extract S3 key from URL: {profile.profileDescriptionS3Url}")
             raise HTTPException(status_code=500, detail="Invalid S3 URL format")
         
+        logger.info(f"Extracted S3 key: {profile_key}")
+        
         # Fetch JSON from S3
+        logger.info(f"Fetching profile description JSON from S3: {profile_key}")
         profile_data = fetch_json_from_s3(profile_key)
+        logger.info(f"Successfully fetched profile description from S3 for profile {profile_id}")
+        logger.info(f"=== GET PROFILE DESCRIPTION REQUEST SUCCESS ===")
         return profile_data
     except HTTPException:
         raise
     except Exception as e:
-        logger.error(f"Error fetching profile description for {profile_id}: {e}")
+        logger.error(f"=== ERROR in get_profile_description ===")
+        logger.error(f"Error fetching profile description for {profile_id}: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail="Failed to fetch profile description")
 
 
@@ -399,34 +515,52 @@ async def get_profile_posts(
         enterpriseName: Optional enterprise name (gamma, app, entelligence, beta). 
                        If not provided, uses AUDIENCE_DATABASE_URL.
     """
+    logger.info(f"=== GET PROFILE POSTS REQUEST START ===")
+    logger.info(f"Request: room_id={audience_room_id}, profile_id={profile_id}, enterprise={enterpriseName}")
+    
     ensure_db_available("audience")
     if not s3_client or not s3_bucket:
+        logger.error("S3 not configured")
         raise HTTPException(status_code=503, detail="S3 is not configured; set AUDIENCE_BUCKET_NAME or VECTOR_BUCKET_NAME.")
     
     try:
         # Verify profile exists and belongs to the room using enterprise-specific database if provided
+        logger.info(f"Fetching profile {profile_id} from database (enterprise={enterpriseName})")
         profile = database.find_audience_profile_by_id(profile_id, include_room=True, enterprise_name=enterpriseName)
         if not profile:
+            logger.warning(f"Profile {profile_id} not found (enterprise={enterpriseName})")
             raise HTTPException(status_code=404, detail=f"Profile {profile_id} not found")
         
+        logger.info(f"Found profile: id={profile.id}, name={profile.profileName}")
+        
         if profile.audienceRoomId != audience_room_id:
+            logger.warning(f"Profile {profile_id} belongs to room {profile.audienceRoomId}, not {audience_room_id}")
             raise HTTPException(status_code=404, detail=f"Profile {profile_id} does not belong to audience room {audience_room_id}")
         
         if not profile.postsS3Url:
+            logger.warning(f"Posts S3 URL not found for profile {profile_id}")
             raise HTTPException(status_code=404, detail="Posts not found for this profile")
         
         # Extract S3 key from URL
+        logger.info(f"Extracting S3 key from URL: {profile.postsS3Url}")
         posts_key = extract_s3_key_from_url(profile.postsS3Url)
         if not posts_key:
+            logger.error(f"Failed to extract S3 key from URL: {profile.postsS3Url}")
             raise HTTPException(status_code=500, detail="Invalid S3 URL format")
         
+        logger.info(f"Extracted S3 key: {posts_key}")
+        
         # Fetch JSON from S3
+        logger.info(f"Fetching posts JSON from S3: {posts_key}")
         posts_data = fetch_json_from_s3(posts_key)
+        logger.info(f"Successfully fetched posts from S3 for profile {profile_id}")
+        logger.info(f"=== GET PROFILE POSTS REQUEST SUCCESS ===")
         return posts_data
     except HTTPException:
         raise
     except Exception as e:
-        logger.error(f"Error fetching posts for profile {profile_id}: {e}")
+        logger.error(f"=== ERROR in get_profile_posts ===")
+        logger.error(f"Error fetching posts for profile {profile_id}: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail="Failed to fetch posts")
 
 
@@ -442,31 +576,48 @@ async def get_audience_room_indexes(
         enterpriseName: Optional enterprise name (gamma, app, entelligence, beta). 
                        If not provided, uses AUDIENCE_DATABASE_URL.
     """
+    logger.info(f"=== GET AUDIENCE ROOM INDEXES REQUEST START ===")
+    logger.info(f"Request: room_id={audience_room_id}, enterprise={enterpriseName}")
+    
     ensure_db_available("audience")
     if not s3_client or not s3_bucket:
+        logger.error("S3 not configured")
         raise HTTPException(status_code=503, detail="S3 is not configured; set AUDIENCE_BUCKET_NAME or VECTOR_BUCKET_NAME.")
     
     try:
         # Verify room exists using enterprise-specific database if provided
+        logger.info(f"Fetching audience room {audience_room_id} from database (enterprise={enterpriseName})")
         room = database.find_audience_room_by_id(audience_room_id, enterprise_name=enterpriseName)
         if not room:
+            logger.warning(f"Audience room {audience_room_id} not found (enterprise={enterpriseName})")
             raise HTTPException(status_code=404, detail=f"Audience room {audience_room_id} not found")
         
+        logger.info(f"Found audience room: id={room.id}, name={room.name}")
+        
         if not room.indexesS3Url:
+            logger.warning(f"Indexes S3 URL not found for room {audience_room_id}")
             raise HTTPException(status_code=404, detail="Indexes not found for this audience room")
         
         # Extract S3 key from URL
+        logger.info(f"Extracting S3 key from URL: {room.indexesS3Url}")
         indexes_key = extract_s3_key_from_url(room.indexesS3Url)
         if not indexes_key:
+            logger.error(f"Failed to extract S3 key from URL: {room.indexesS3Url}")
             raise HTTPException(status_code=500, detail="Invalid S3 URL format")
         
+        logger.info(f"Extracted S3 key: {indexes_key}")
+        
         # Fetch JSON from S3
+        logger.info(f"Fetching indexes JSON from S3: {indexes_key}")
         indexes_data = fetch_json_from_s3(indexes_key)
+        logger.info(f"Successfully fetched indexes from S3 for room {audience_room_id}")
+        logger.info(f"=== GET AUDIENCE ROOM INDEXES REQUEST SUCCESS ===")
         return indexes_data
     except HTTPException:
         raise
     except Exception as e:
-        logger.error(f"Error fetching indexes for audience room {audience_room_id}: {e}")
+        logger.error(f"=== ERROR in get_audience_room_indexes ===")
+        logger.error(f"Error fetching indexes for audience room {audience_room_id}: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail="Failed to fetch indexes")
 
 
@@ -484,34 +635,52 @@ async def get_profile_comments(
         enterpriseName: Optional enterprise name (gamma, app, entelligence, beta). 
                        If not provided, uses AUDIENCE_DATABASE_URL.
     """
+    logger.info(f"=== GET PROFILE COMMENTS REQUEST START ===")
+    logger.info(f"Request: room_id={audience_room_id}, profile_id={profile_id}, enterprise={enterpriseName}")
+    
     ensure_db_available("audience")
     if not s3_client or not s3_bucket:
+        logger.error("S3 not configured")
         raise HTTPException(status_code=503, detail="S3 is not configured; set AUDIENCE_BUCKET_NAME or VECTOR_BUCKET_NAME.")
     
     try:
         # Verify profile exists and belongs to the room using enterprise-specific database if provided
+        logger.info(f"Fetching profile {profile_id} from database (enterprise={enterpriseName})")
         profile = database.find_audience_profile_by_id(profile_id, include_room=True, enterprise_name=enterpriseName)
         if not profile:
+            logger.warning(f"Profile {profile_id} not found (enterprise={enterpriseName})")
             raise HTTPException(status_code=404, detail=f"Profile {profile_id} not found")
         
+        logger.info(f"Found profile: id={profile.id}, name={profile.profileName}")
+        
         if profile.audienceRoomId != audience_room_id:
+            logger.warning(f"Profile {profile_id} belongs to room {profile.audienceRoomId}, not {audience_room_id}")
             raise HTTPException(status_code=404, detail=f"Profile {profile_id} does not belong to audience room {audience_room_id}")
         
         if not profile.commentsS3Url:
+            logger.warning(f"Comments S3 URL not found for profile {profile_id}")
             raise HTTPException(status_code=404, detail="Comments not found for this profile")
         
         # Extract S3 key from URL
+        logger.info(f"Extracting S3 key from URL: {profile.commentsS3Url}")
         comments_key = extract_s3_key_from_url(profile.commentsS3Url)
         if not comments_key:
+            logger.error(f"Failed to extract S3 key from URL: {profile.commentsS3Url}")
             raise HTTPException(status_code=500, detail="Invalid S3 URL format")
         
+        logger.info(f"Extracted S3 key: {comments_key}")
+        
         # Fetch JSON from S3
+        logger.info(f"Fetching comments JSON from S3: {comments_key}")
         comments_data = fetch_json_from_s3(comments_key)
+        logger.info(f"Successfully fetched comments from S3 for profile {profile_id}")
+        logger.info(f"=== GET PROFILE COMMENTS REQUEST SUCCESS ===")
         return comments_data
     except HTTPException:
         raise
     except Exception as e:
-        logger.error(f"Error fetching comments for profile {profile_id}: {e}")
+        logger.error(f"=== ERROR in get_profile_comments ===")
+        logger.error(f"Error fetching comments for profile {profile_id}: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail="Failed to fetch comments")
 
 
@@ -550,29 +719,42 @@ async def generate_profile_summaries(
         - "beta" -> uses BETA_DATABASE_URL
         - If not provided, uses AUDIENCE_DATABASE_URL
     """
+    logger.info(f"=== GENERATE PROFILE SUMMARIES REQUEST START ===")
+    logger.info(f"Request: room_id={audience_room_id}, offset={offset}, limit={limit}, enterprise={enterpriseName}")
+    
     ensure_db_available("audience")
     from app.config import openai_client
     if not openai_client:
+        logger.error("OpenAI client not initialized")
         raise HTTPException(status_code=503, detail="OpenAI client not initialized. Please set OPENAI_API_KEY.")
     if not s3_client or not s3_bucket:
+        logger.error("S3 not configured")
         raise HTTPException(status_code=503, detail="S3 is not configured; set AUDIENCE_BUCKET_NAME or VECTOR_BUCKET_NAME.")
+    
+    logger.info("Database, OpenAI, and S3 checks passed")
     
     try:
         # Fetch audience room and profiles
+        logger.info(f"Fetching audience room {audience_room_id} with profiles (enterprise={enterpriseName})")
         audience_room = database.find_audience_room_by_id(audience_room_id, include_profiles=True, enterprise_name=enterpriseName)
         if not audience_room:
+            logger.warning(f"Audience room {audience_room_id} not found (enterprise={enterpriseName})")
             raise HTTPException(status_code=404, detail=f"Audience room {audience_room_id} not found")
         
+        logger.info(f"Found audience room: id={audience_room.id}, name={audience_room.name}")
         all_profiles = audience_room.profiles
         if not all_profiles:
+            logger.warning(f"No profiles found in audience room {audience_room_id}")
             raise HTTPException(status_code=404, detail=f"No profiles found in audience room {audience_room_id}")
         
         total_profiles = len(all_profiles)
+        logger.info(f"Total profiles in room: {total_profiles}")
         
         # Calculate chunk boundaries
         chunk_start = offset
         chunk_end = min(offset + limit, total_profiles)
         profiles_chunk = all_profiles[chunk_start:chunk_end]
+        logger.info(f"Processing chunk: offset={offset}, limit={limit}, chunk_start={chunk_start}, chunk_end={chunk_end}, profiles_in_chunk={len(profiles_chunk)}")
         
         if not profiles_chunk:
             return {
@@ -605,8 +787,10 @@ async def generate_profile_summaries(
                 await asyncio.sleep(1.0)  # Delay to spread out API requests
                 return result
         
+        logger.info(f"Starting async processing of {len(profiles_chunk)} profiles with MAX_CONCURRENT={MAX_CONCURRENT}")
         tasks = [rate_limited_process(profile) for profile in profiles_chunk]
         results = await asyncio.gather(*tasks, return_exceptions=True)
+        logger.info(f"Completed async processing of {len(results)} profiles")
         
         # Process results and handle exceptions
         processed_results = []
@@ -614,9 +798,10 @@ async def generate_profile_summaries(
         error_count = 0
         skipped_count = 0
         
+        logger.info(f"Processing {len(results)} results")
         for idx, result in enumerate(results):
             if isinstance(result, Exception):
-                logger.error(f"Error processing profile {profiles_chunk[idx].id}: {result}")
+                logger.error(f"Error processing profile {profiles_chunk[idx].id}: {result}", exc_info=True)
                 processed_results.append({
                     "profile_id": profiles_chunk[idx].id,
                     "profile_name": profiles_chunk[idx].profileName,
@@ -634,9 +819,12 @@ async def generate_profile_summaries(
                 else:
                     error_count += 1
         
+        logger.info(f"Results summary: success={success_count}, skipped={skipped_count}, error={error_count}")
+        
         # Calculate if there are more chunks
         has_more = chunk_end < total_profiles
         next_offset = chunk_end if has_more else None
+        logger.info(f"Chunk processing complete: has_more={has_more}, next_offset={next_offset}")
         
         return {
             "audience_room_id": audience_room_id,

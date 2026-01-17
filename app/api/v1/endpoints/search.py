@@ -29,8 +29,15 @@ async def search_profiles(payload: SearchFilters):
     results may include engineers working in non-tech industries (retail, real estate, etc.).
     To get more relevant results, add industry filter: ["Technology", "Computer Software", "Internet"]
     """
+    logger.info(f"=== SEARCH PROFILES REQUEST START ===")
+    logger.info(f"Request: limit={payload.limit}, titles={len(payload.titles)}, skills={len(payload.skills)}, locations={len(payload.locations)}")
+    
+    if not pdl_client:
+        logger.error("PDL client not initialized")
+        raise HTTPException(status_code=503, detail="PDL client not initialized")
+    
     sql_query = build_pdl_sql(payload)
-    logger.info(f"Executing Search SQL: {sql_query}")
+    logger.info(f"Generated SQL query: {sql_query}")
 
     params = {
         'sql': sql_query,
@@ -40,12 +47,17 @@ async def search_profiles(payload: SearchFilters):
     }
 
     try:
+        logger.info(f"Calling PDL API with limit={payload.limit}")
         response = pdl_client.person.search(**params).json()
         data = response.get('data', [])
+        logger.info(f"PDL API returned {len(data)} profiles")
         
         # Post-processing: Calculate Experience Years and filter to only required fields
+        logger.info(f"Processing {len(data)} profiles")
         processed_profiles = []
-        for person in data:
+        for idx, person in enumerate(data):
+            if idx % 10 == 0:
+                logger.info(f"Processing profile {idx+1}/{len(data)}")
             # Calculate experience years
             years = calculate_experience_years(person.get('experience', []))
             
@@ -179,12 +191,18 @@ async def search_profiles(payload: SearchFilters):
             
             processed_profiles.append(profile)
 
+        logger.info(f"Successfully processed {len(processed_profiles)} profiles")
+        logger.info(f"=== SEARCH PROFILES REQUEST SUCCESS ===")
+        
         return {
             "count": len(processed_profiles),
             "sql_generated": sql_query,
             "profiles": processed_profiles
         }
+    except HTTPException:
+        raise
     except Exception as e:
-        logger.error(f"Search error: {e}")
+        logger.error(f"=== ERROR in search_profiles ===")
+        logger.error(f"Search error: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))
 
