@@ -1,14 +1,13 @@
-"""Parallel AI search endpoints with SSE streaming."""
+"""Parallel AI search endpoints with async trigger/polling pattern."""
 import os
 import json
 import asyncio
 import httpx
-from typing import Optional
+from typing import Optional, List, Dict, Any
 from fastapi import APIRouter, HTTPException, Path, Query
 from fastapi.responses import StreamingResponse
 from app.models.schemas import ParallelSearchRequest, ParallelSearchPreviewRequest
 from app.config import logger
-from app.services.apify_service import fetch_linkedin_profile_info, extract_apify_profile_fields
 from app import database
 from app.utils.helpers import ensure_db_available
 from datetime import datetime
@@ -563,15 +562,12 @@ async def get_parallel_search_status(
     """
     Check the status of an async parallel search job.
     If job is PENDING or PROCESSING, checks Parallel API for completion.
-    If completed, fetches results and updates database.
+    If completed, fetches LinkedIn URLs from Parallel (NO Apify enrichment here).
+    
+    Apify enrichment is handled separately in a different step.
     
     Query Parameters:
-    - enterpriseName (optional): Enterprise name to determine which database to use:
-        - "gamma" -> uses GAMMA_DATABASE_URL
-        - "app" -> uses APP_DATABASE_URL
-        - "entelligence" -> uses ENTELLIGENCE_DATABASE_URL
-        - "beta" -> uses BETA_DATABASE_URL
-        - If not provided, uses AUDIENCE_DATABASE_URL
+    - enterpriseName (optional): Enterprise name to determine which database to use
     """
     logger.info(f"=== GET PARALLEL SEARCH STATUS REQUEST START ===")
     logger.info(f"Request: job_id={job_id}, enterprise={enterpriseName}")
@@ -595,14 +591,12 @@ async def get_parallel_search_status(
         if job.status == "COMPLETED":
             logger.info(f"Job {job_id} is already COMPLETED")
             profiles = job.profiles if isinstance(job.profiles, list) else []
-            raw_results = job.result if isinstance(job.result, dict) else {}
             
             return {
                 "job_id": job_id,
                 "status": "COMPLETED",
                 "profiles": profiles,
                 "total_found": len(profiles) if profiles else 0,
-                "raw_results": raw_results,
                 "query": job.query,
                 "model": job.model,
                 "created_at": job.createdAt.isoformat() if job.createdAt else None,
@@ -665,15 +659,13 @@ async def get_parallel_search_status(
                 run_response.raise_for_status()
                 run_data = run_response.json()
                 
-                logger.info(f"Parallel API response: {json.dumps(run_data)}")  # Debug log
+                logger.info(f"Parallel API response: {json.dumps(run_data)}")
                 
                 # Determine status from Parallel API response
-                # Handle both string and dict status responses from Parallel API
                 status_value = run_data.get("status", "")
                 
                 # If status is a dict, extract the actual status string
                 if isinstance(status_value, dict):
-                    # Try common keys that might contain the status
                     run_status = (
                         status_value.get("status") or 
                         status_value.get("state") or 
@@ -685,123 +677,59 @@ async def get_parallel_search_status(
                 elif isinstance(status_value, str):
                     run_status = status_value.upper()
                 else:
-                    # Fallback: try to convert to string
                     run_status = str(status_value).upper() if status_value else ""
                     logger.warning(f"Status was unexpected type {type(status_value)}, converted to: {run_status}")
                 
-                logger.info(f"Determined Parallel API run status: {run_status} (original value type: {type(status_value)})")
+                logger.info(f"Determined Parallel API run status: {run_status}")
                 
                 if run_status in ["SUCCEEDED", "COMPLETED"]:
                     logger.info(f"Parallel run succeeded for job {job_id}")
                     
-                    # Fetch results from Parallel API SSE endpoint
+                    # Fetch results from Parallel API result endpoint (NOT SSE, no Apify)
                     profiles = []
-                    raw_results = []
                     
                     try:
-                        sse_headers = {
-                            "x-api-key": parallel_api_key,
-                            "Accept": "text/event-stream",
-                            "parallel-beta": "findall-2025-09-15"
-                        }
+                        # Use the /result endpoint to get matched candidates
+                        result_url = f"{parallel_base_url}/runs/{job.parallelRunId}/result"
+                        logger.info(f"Fetching results from: {result_url}")
                         
-                        sse_url = f"{parallel_base_url}/runs/{job.parallelRunId}/events"
-                        logger.info(f"Fetching results from SSE stream: {sse_url}")
+                        result_response = await client.get(result_url, headers=headers)
                         
-                        async with client.stream("GET", sse_url, headers=sse_headers, timeout=None) as sse_response:
-                            if sse_response.status_code != 200:
-                                raise Exception(f"Failed to connect to SSE stream: {sse_response.status_code}")
+                        if result_response.status_code == 200:
+                            result_data = result_response.json()
+                            candidates = result_data.get("candidates", [])
                             
-                            buffer = ""
-                            async for chunk in sse_response.aiter_bytes():
-                                if not chunk:
+                            for candidate in candidates:
+                                # Only include matched candidates
+                                match_status = candidate.get("match_status", "")
+                                if match_status != "matched":
                                     continue
                                 
-                                try:
-                                    buffer += chunk.decode('utf-8', errors='replace')
+                                linkedin_url = candidate.get("url", "")
+                                
+                                if linkedin_url and "linkedin.com" in linkedin_url:
+                                    # Extract basic info from Parallel (NO Apify here)
+                                    profile = {
+                                        "linkedin_url": linkedin_url,
+                                        "name": candidate.get("name", ""),
+                                        "description": candidate.get("description", ""),
+                                        "match_status": "matched",
+                                        "output": candidate.get("output", {}),
+                                        "basis": candidate.get("basis", [])
+                                    }
+                                    profiles.append(profile)
+                                    logger.info(f"Collected LinkedIn URL: {linkedin_url}")
+                        else:
+                            logger.warning(f"Failed to fetch results: {result_response.status_code}")
+                            # Fallback: try SSE endpoint but don't do Apify enrichment
+                            profiles = await _fetch_profiles_from_sse(client, parallel_base_url, job.parallelRunId, headers, parallel_api_key)
                                     
-                                    while '\n' in buffer:
-                                        line, buffer = buffer.split('\n', 1)
-                                        line = line.strip()
-                                        
-                                        if not line or line.startswith('event:') or line.startswith('id:') or line.startswith('retry:'):
-                                            continue
-                                        
-                                        if line.startswith('data: '):
-                                            event_json = line[6:]
-                                        else:
-                                            event_json = line
-                                        
-                                        if not event_json:
-                                            continue
-                                        
-                                        try:
-                                            event_data = json.loads(event_json)
-                                            event_type = (event_data.get("type") or event_data.get("event") or "").lower()
-                                            
-                                            # Handle profile/candidate events
-                                            if "candidate" in event_type or "profile" in event_type:
-                                                candidate = event_data.get("data", {})
-                                                if "candidate" in candidate:
-                                                    candidate = candidate.get("candidate", {})
-                                                
-                                                linkedin_url = (
-                                                    candidate.get("linkedin_url") or 
-                                                    candidate.get("url") or 
-                                                    candidate.get("profile_url") or
-                                                    ""
-                                                )
-                                                
-                                                if linkedin_url and "linkedin.com" in linkedin_url:
-                                                    # Fetch profile info from Apify
-                                                    try:
-                                                        profile_info = await fetch_linkedin_profile_info(linkedin_url)
-                                                        extracted_profile = extract_apify_profile_fields(profile_info) if profile_info else {}
-                                                        
-                                                        profile = {
-                                                            "linkedin_url": linkedin_url,
-                                                            "profile_info": extracted_profile,
-                                                            "match_status": "matched" if "matched" in event_type else "unmatched",
-                                                            "summary": candidate.get("summary", ""),
-                                                            "reasoning": candidate.get("reasoning", "")
-                                                        }
-                                                        profiles.append(profile)
-                                                        raw_results.append(event_data)
-                                                        logger.info(f"Collected profile: {linkedin_url}")
-                                                    except Exception as profile_error:
-                                                        logger.warning(f"Failed to fetch profile info for {linkedin_url}: {profile_error}")
-                                                        # Still add the profile without Apify data
-                                                        profile = {
-                                                            "linkedin_url": linkedin_url,
-                                                            "profile_info": {},
-                                                            "match_status": "matched" if "matched" in event_type else "unmatched",
-                                                            "summary": candidate.get("summary", ""),
-                                                            "reasoning": candidate.get("reasoning", "")
-                                                        }
-                                                        profiles.append(profile)
-                                                        raw_results.append(event_data)
-                                            
-                                            # Handle completion
-                                            elif "completed" in event_type or "run_completed" in event_type:
-                                                logger.info("Parallel run completed")
-                                                break
-                                                
-                                        except json.JSONDecodeError as e:
-                                            logger.warning(f"Failed to parse SSE event JSON: {e}")
-                                            continue
-                                            
-                                    if "completed" in buffer.lower() or "run_completed" in buffer.lower():
-                                        break
-                                        
-                                except Exception as chunk_error:
-                                    logger.warning(f"Error processing SSE chunk: {chunk_error}")
-                                    continue
-                                    
-                    except Exception as sse_error:
-                        logger.error(f"Error fetching results from SSE stream: {sse_error}", exc_info=True)
-                        # Continue - we'll update job status even without full results
+                    except Exception as result_error:
+                        logger.error(f"Error fetching results: {result_error}", exc_info=True)
+                        # Fallback to SSE
+                        profiles = await _fetch_profiles_from_sse(client, parallel_base_url, job.parallelRunId, headers, parallel_api_key)
                     
-                    # Update job with results
+                    # Update job with results (NO Apify data, just LinkedIn URLs)
                     logger.info(f"Updating job {job_id} to COMPLETED with {len(profiles)} profiles")
                     database.update_parallel_search_job(job_id, {
                         "status": "COMPLETED",
@@ -809,8 +737,7 @@ async def get_parallel_search_status(
                         "result": {
                             "total_found": len(profiles),
                             "query": job.query,
-                            "model": job.model,
-                            "raw_results": raw_results
+                            "model": job.model
                         }
                     }, enterprise_name=enterpriseName)
                     
@@ -819,7 +746,6 @@ async def get_parallel_search_status(
                         "status": "COMPLETED",
                         "profiles": profiles,
                         "total_found": len(profiles),
-                        "raw_results": raw_results,
                         "query": job.query,
                         "model": job.model,
                         "created_at": job.createdAt.isoformat() if job.createdAt else None,
@@ -839,11 +765,17 @@ async def get_parallel_search_status(
                         "error": error_msg
                     }
                     
-                elif run_status in ["RUNNING", "PENDING", "PROCESSING"]:
+                elif run_status in ["RUNNING", "PENDING", "PROCESSING", "QUEUED"]:
+                    # Get metrics if available
+                    metrics = {}
+                    if isinstance(status_value, dict):
+                        metrics = status_value.get("metrics", {})
+                    
                     return {
                         "job_id": job_id,
                         "status": "PROCESSING",
                         "parallel_status": run_status,
+                        "metrics": metrics,
                         "message": "Parallel search in progress..."
                     }
                 else:
@@ -874,4 +806,99 @@ async def get_parallel_search_status(
     except Exception as e:
         logger.error(f"Error getting job status: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))
+
+
+async def _fetch_profiles_from_sse(client, parallel_base_url: str, parallel_run_id: str, headers: dict, parallel_api_key: str) -> list:
+    """
+    Fallback function to fetch profiles from SSE endpoint (without Apify enrichment).
+    """
+    profiles = []
+    try:
+        sse_headers = {
+            "x-api-key": parallel_api_key,
+            "Accept": "text/event-stream",
+            "parallel-beta": "findall-2025-09-15"
+        }
+        
+        sse_url = f"{parallel_base_url}/runs/{parallel_run_id}/events"
+        logger.info(f"Fetching results from SSE stream: {sse_url}")
+        
+        async with client.stream("GET", sse_url, headers=sse_headers, timeout=60.0) as sse_response:
+            if sse_response.status_code != 200:
+                logger.error(f"Failed to connect to SSE stream: {sse_response.status_code}")
+                return profiles
+            
+            buffer = ""
+            async for chunk in sse_response.aiter_bytes():
+                if not chunk:
+                    continue
+                
+                try:
+                    buffer += chunk.decode('utf-8', errors='replace')
+                    
+                    while '\n' in buffer:
+                        line, buffer = buffer.split('\n', 1)
+                        line = line.strip()
+                        
+                        if not line or line.startswith('event:') or line.startswith('id:') or line.startswith('retry:'):
+                            continue
+                        
+                        if line.startswith('data: '):
+                            event_json = line[6:]
+                        else:
+                            event_json = line
+                        
+                        if not event_json:
+                            continue
+                        
+                        try:
+                            event_data = json.loads(event_json)
+                            event_type = (event_data.get("type") or event_data.get("event") or "").lower()
+                            
+                            # Handle profile/candidate events
+                            if "candidate" in event_type and "matched" in event_type:
+                                candidate = event_data.get("data", {})
+                                if "candidate" in candidate:
+                                    candidate = candidate.get("candidate", {})
+                                
+                                linkedin_url = (
+                                    candidate.get("linkedin_url") or 
+                                    candidate.get("url") or 
+                                    candidate.get("profile_url") or
+                                    ""
+                                )
+                                
+                                if linkedin_url and "linkedin.com" in linkedin_url:
+                                    # NO Apify enrichment - just collect LinkedIn URLs
+                                    profile = {
+                                        "linkedin_url": linkedin_url,
+                                        "name": candidate.get("name", ""),
+                                        "description": candidate.get("description", ""),
+                                        "match_status": "matched",
+                                        "output": candidate.get("output", {}),
+                                        "basis": candidate.get("basis", [])
+                                    }
+                                    profiles.append(profile)
+                                    logger.info(f"Collected LinkedIn URL from SSE: {linkedin_url}")
+                            
+                            # Handle completion
+                            elif "completed" in event_type or "run_completed" in event_type:
+                                logger.info("Parallel run completed (from SSE)")
+                                break
+                                
+                        except json.JSONDecodeError as e:
+                            logger.warning(f"Failed to parse SSE event JSON: {e}")
+                            continue
+                            
+                    if "completed" in buffer.lower() or "run_completed" in buffer.lower():
+                        break
+                        
+                except Exception as chunk_error:
+                    logger.warning(f"Error processing SSE chunk: {chunk_error}")
+                    continue
+                    
+    except Exception as sse_error:
+        logger.error(f"Error fetching results from SSE stream: {sse_error}", exc_info=True)
+    
+    return profiles
 
