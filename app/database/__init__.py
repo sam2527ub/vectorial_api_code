@@ -18,6 +18,7 @@ from app.database.connection import (
     
     # Data models
     ScrapeJob,
+    ParallelSearchJob,
     AudienceRoom,
     AudienceProfile,
     PostClassifier,
@@ -26,6 +27,11 @@ from app.database.connection import (
     create_scrape_job,
     find_scrape_job_by_id,
     update_scrape_job,
+    
+    # ParallelSearchJob operations (audience database)
+    create_parallel_search_job,
+    find_parallel_search_job_by_id,
+    update_parallel_search_job,
     
     # AudienceRoom operations (audience database)
     create_audience_room,
@@ -68,12 +74,16 @@ __all__ = [
     "is_main_db_available",
     "is_audience_db_available",
     "ScrapeJob",
+    "ParallelSearchJob",
     "AudienceRoom",
     "AudienceProfile",
     "PostClassifier",
     "create_scrape_job",
     "find_scrape_job_by_id",
     "update_scrape_job",
+    "create_parallel_search_job",
+    "find_parallel_search_job_by_id",
+    "update_parallel_search_job",
     "create_audience_room",
     "find_audience_room_by_id",
     "update_audience_room",
@@ -94,4 +104,3 @@ __all__ = [
     "find_audience_room_with_profiles_for_preview",
     "query_first",
 ]
-

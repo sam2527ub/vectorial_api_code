@@ -275,6 +275,23 @@ class ScrapeJob:
         self.updatedAt = row.get('updatedAt') or row.get('updatedat')
 
 
+class ParallelSearchJob:
+    """Represents a ParallelSearchJob record."""
+    def __init__(self, row: Dict[str, Any]):
+        self.id = row.get('id')
+        self.status = row.get('status', 'PENDING')
+        self.query = row.get('query')
+        self.model = row.get('model', 'core')
+        self.matchLimit = row.get('matchLimit') or row.get('matchlimit')
+        self.parallelRunId = row.get('parallelRunId') or row.get('parallelrunid')
+        self.profiles = row.get('profiles')
+        self.result = row.get('result')
+        self.error = row.get('error')
+        self.enterpriseName = row.get('enterpriseName') or row.get('enterprisename')
+        self.createdAt = row.get('createdAt') or row.get('createdat')
+        self.updatedAt = row.get('updatedAt') or row.get('updatedat')
+
+
 class AudienceRoom:
     """Represents an AudienceRoom record."""
     def __init__(self, row: Dict[str, Any]):
@@ -448,6 +465,157 @@ def update_scrape_job(job_id: str, data: Dict[str, Any], enterprise_name: Option
                 return ScrapeJob(row) if row else None
     except Exception as e:
         logger.error(f"Exception in update_scrape_job for job {job_id} (enterprise_name={enterprise_name}): {e}", exc_info=True)
+        raise
+
+
+# ============================================
+# ParallelSearchJob Operations (Audience Database)
+# ============================================
+
+def create_parallel_search_job(
+    query: str,
+    model: str = 'core',
+    match_limit: int = 100,
+    enterprise_name: Optional[str] = None
+) -> ParallelSearchJob:
+    """Create a new ParallelSearchJob record.
+    
+    Args:
+        query: Search query string
+        model: Model to use ('core' or 'base')
+        match_limit: Maximum number of matches
+        enterprise_name: Optional enterprise name (gamma, app, entelligence, beta). 
+                        Defaults to AUDIENCE_DATABASE_URL if None.
+    """
+    job_id = str(uuid.uuid4())
+    now = datetime.utcnow()
+    
+    # Ensure the ParallelSearchJob table exists
+    with get_enterprise_audience_connection(enterprise_name) as conn:
+        with conn.cursor() as cur:
+            # Create table if it doesn't exist
+            cur.execute("""
+                CREATE TABLE IF NOT EXISTS "ParallelSearchJob" (
+                    id VARCHAR(255) PRIMARY KEY,
+                    status VARCHAR(50) DEFAULT 'PENDING',
+                    query TEXT NOT NULL,
+                    model VARCHAR(50) DEFAULT 'core',
+                    "matchLimit" INTEGER DEFAULT 100,
+                    "parallelRunId" VARCHAR(255),
+                    profiles JSONB,
+                    result JSONB,
+                    error TEXT,
+                    "enterpriseName" VARCHAR(50),
+                    "createdAt" TIMESTAMP DEFAULT NOW(),
+                    "updatedAt" TIMESTAMP DEFAULT NOW()
+                )
+            """)
+            
+            # Create indexes
+            cur.execute("""
+                CREATE INDEX IF NOT EXISTS idx_parallel_search_job_status 
+                ON "ParallelSearchJob" (status)
+            """)
+            cur.execute("""
+                CREATE INDEX IF NOT EXISTS idx_parallel_search_job_created 
+                ON "ParallelSearchJob" ("createdAt")
+            """)
+            cur.execute("""
+                CREATE INDEX IF NOT EXISTS idx_parallel_search_job_enterprise 
+                ON "ParallelSearchJob" ("enterpriseName")
+            """)
+    
+    with get_enterprise_audience_connection(enterprise_name) as conn:
+        with conn.cursor(cursor_factory=RealDictCursor) as cur:
+            cur.execute(
+                """
+                INSERT INTO "ParallelSearchJob" 
+                (id, status, query, model, "matchLimit", "enterpriseName", "createdAt", "updatedAt")
+                VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
+                RETURNING *
+                """,
+                (job_id, 'PENDING', query, model, match_limit, enterprise_name, now, now)
+            )
+            row = cur.fetchone()
+            return ParallelSearchJob(row)
+
+
+def find_parallel_search_job_by_id(job_id: str, enterprise_name: Optional[str] = None) -> Optional[ParallelSearchJob]:
+    """Find a ParallelSearchJob by ID.
+    
+    Args:
+        job_id: The parallel search job ID
+        enterprise_name: Optional enterprise name (gamma, app, entelligence, beta). 
+                        Defaults to AUDIENCE_DATABASE_URL if None.
+    """
+    logger.info(f"find_parallel_search_job_by_id called with job_id={job_id}, enterprise_name={enterprise_name}")
+    with get_enterprise_audience_connection(enterprise_name) as conn:
+        with conn.cursor(cursor_factory=RealDictCursor) as cur:
+            cur.execute('SELECT * FROM "ParallelSearchJob" WHERE id = %s', (job_id,))
+            row = cur.fetchone()
+            if row:
+                logger.info(f"Found ParallelSearchJob {job_id} in database (enterprise_name={enterprise_name})")
+            else:
+                logger.warning(f"ParallelSearchJob {job_id} not found in database (enterprise_name={enterprise_name})")
+            return ParallelSearchJob(row) if row else None
+
+
+def update_parallel_search_job(job_id: str, data: Dict[str, Any], enterprise_name: Optional[str] = None) -> Optional[ParallelSearchJob]:
+    """Update a ParallelSearchJob record.
+    
+    Args:
+        job_id: The parallel search job ID to update
+        data: Dictionary of fields to update
+        enterprise_name: Optional enterprise name (gamma, app, entelligence, beta). 
+                        Defaults to AUDIENCE_DATABASE_URL if None.
+    """
+    logger.info(f"update_parallel_search_job called: job_id={job_id}, enterprise_name={enterprise_name}, data_keys={list(data.keys())}")
+    
+    if not data:
+        return find_parallel_search_job_by_id(job_id, enterprise_name=enterprise_name)
+    
+    # Build update query dynamically
+    set_clauses = []
+    values = []
+    
+    field_mapping = {
+        'status': '"status"',
+        'parallelRunId': '"parallelRunId"',
+        'profiles': '"profiles"',
+        'result': '"result"',
+        'error': '"error"',
+    }
+    
+    for key, value in data.items():
+        if key in field_mapping:
+            set_clauses.append(f'{field_mapping[key]} = %s')
+            # Handle JSON fields
+            if key in ['profiles', 'result']:
+                values.append(Json(value) if value is not None else None)
+            else:
+                values.append(value)
+    
+    # Always update updatedAt
+    set_clauses.append('"updatedAt" = %s')
+    values.append(datetime.utcnow())
+    
+    # Add job_id for WHERE clause
+    values.append(job_id)
+    
+    try:
+        with get_enterprise_audience_connection(enterprise_name) as conn:
+            with conn.cursor(cursor_factory=RealDictCursor) as cur:
+                query = f'UPDATE "ParallelSearchJob" SET {", ".join(set_clauses)} WHERE id = %s RETURNING *'
+                logger.info(f"Executing update query for job {job_id} (enterprise_name={enterprise_name})")
+                cur.execute(query, values)
+                row = cur.fetchone()
+                if row:
+                    logger.info(f"Successfully updated job {job_id} in database (enterprise_name={enterprise_name})")
+                else:
+                    logger.warning(f"UPDATE query returned no rows for job {job_id} - job may not exist in database (enterprise_name={enterprise_name})")
+                return ParallelSearchJob(row) if row else None
+    except Exception as e:
+        logger.error(f"Exception in update_parallel_search_job for job {job_id} (enterprise_name={enterprise_name}): {e}", exc_info=True)
         raise
 
 
