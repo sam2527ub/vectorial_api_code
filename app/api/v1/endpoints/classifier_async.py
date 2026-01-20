@@ -1,4 +1,8 @@
-"""Async Classifier endpoints for long-running classification jobs."""
+"""Async Classifier endpoints for long-running classification jobs.
+
+Uses database (ClassifierJob table) for job tracking instead of in-memory storage.
+This ensures job state persists across Vercel cold starts.
+"""
 import json
 import uuid
 import asyncio
@@ -11,6 +15,7 @@ from app.utils.helpers import ensure_db_available
 from app.utils.s3_utils import extract_s3_key_from_url, fetch_json_from_s3, upload_json_to_s3
 from app.services.classifier_service import classify_posts_batch
 from app import database
+from app.database.connection import get_db_connection
 
 router = APIRouter()
 
@@ -21,24 +26,186 @@ class AsyncClassifierRequest(BaseModel):
     classifierId: str
     enterpriseName: Optional[str] = None
     batchSize: int = 10  # Number of profiles per batch
+    taskToken: Optional[str] = None  # Step Functions callback token
 
 
-class ClassifierJobStatus(BaseModel):
-    """Status model for classifier job."""
-    job_id: str
-    status: str  # PENDING, PROCESSING, COMPLETED, FAILED
-    classifier_id: str
-    audience_room_id: str
-    total_profiles: int = 0
-    processed_profiles: int = 0
-    total_posts_classified: int = 0
-    error: Optional[str] = None
-    created_at: str
-    updated_at: str
+# Database operations for ClassifierJob
+
+def ensure_classifier_job_table_exists(conn) -> None:
+    """Create ClassifierJob table if it doesn't exist. Safe - won't affect existing data."""
+    with conn.cursor() as cur:
+        cur.execute("""
+            CREATE TABLE IF NOT EXISTS "ClassifierJob" (
+                "id" TEXT NOT NULL,
+                "status" TEXT NOT NULL DEFAULT 'PENDING',
+                "classifierId" TEXT NOT NULL,
+                "audienceRoomId" TEXT NOT NULL,
+                "totalProfiles" INTEGER NOT NULL DEFAULT 0,
+                "processedProfiles" INTEGER NOT NULL DEFAULT 0,
+                "totalPostsClassified" INTEGER NOT NULL DEFAULT 0,
+                "error" TEXT,
+                "taskToken" TEXT,
+                "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                "updatedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                CONSTRAINT "ClassifierJob_pkey" PRIMARY KEY ("id")
+            );
+            CREATE INDEX IF NOT EXISTS "ClassifierJob_status_idx" ON "ClassifierJob"("status");
+            CREATE INDEX IF NOT EXISTS "ClassifierJob_audienceRoomId_idx" ON "ClassifierJob"("audienceRoomId");
+            CREATE INDEX IF NOT EXISTS "ClassifierJob_classifierId_idx" ON "ClassifierJob"("classifierId");
+        """)
+        conn.commit()
+    logger.info("ClassifierJob table ensured to exist")
 
 
-# In-memory job storage (in production, use database or Redis)
-_classifier_jobs: Dict[str, Dict[str, Any]] = {}
+def create_classifier_job(
+    job_id: str,
+    classifier_id: str,
+    audience_room_id: str,
+    task_token: Optional[str] = None,
+    enterprise_name: Optional[str] = None
+) -> Dict[str, Any]:
+    """Create a new classifier job in the database."""
+    conn = get_db_connection(enterprise_name)
+    try:
+        # Auto-create table if it doesn't exist
+        ensure_classifier_job_table_exists(conn)
+        
+        with conn.cursor() as cur:
+            cur.execute("""
+                INSERT INTO "ClassifierJob" 
+                (id, status, "classifierId", "audienceRoomId", "taskToken", "createdAt", "updatedAt")
+                VALUES (%s, %s, %s, %s, %s, NOW(), NOW())
+                RETURNING id, status, "classifierId", "audienceRoomId", "totalProfiles", 
+                          "processedProfiles", "totalPostsClassified", error, "taskToken",
+                          "createdAt", "updatedAt"
+            """, (job_id, 'PENDING', classifier_id, audience_room_id, task_token))
+            row = cur.fetchone()
+            conn.commit()
+            return {
+                "job_id": row[0],
+                "status": row[1],
+                "classifier_id": row[2],
+                "audience_room_id": row[3],
+                "total_profiles": row[4],
+                "processed_profiles": row[5],
+                "total_posts_classified": row[6],
+                "error": row[7],
+                "task_token": row[8],
+                "created_at": row[9].isoformat() if row[9] else None,
+                "updated_at": row[10].isoformat() if row[10] else None
+            }
+    finally:
+        conn.close()
+
+
+def get_classifier_job(job_id: str, enterprise_name: Optional[str] = None) -> Optional[Dict[str, Any]]:
+    """Get a classifier job from the database."""
+    conn = get_db_connection(enterprise_name)
+    try:
+        # Auto-create table if it doesn't exist
+        ensure_classifier_job_table_exists(conn)
+        
+        with conn.cursor() as cur:
+            cur.execute("""
+                SELECT id, status, "classifierId", "audienceRoomId", "totalProfiles", 
+                       "processedProfiles", "totalPostsClassified", error, "taskToken",
+                       "createdAt", "updatedAt"
+                FROM "ClassifierJob"
+                WHERE id = %s
+            """, (job_id,))
+            row = cur.fetchone()
+            if not row:
+                return None
+            return {
+                "job_id": row[0],
+                "status": row[1],
+                "classifier_id": row[2],
+                "audience_room_id": row[3],
+                "total_profiles": row[4],
+                "processed_profiles": row[5],
+                "total_posts_classified": row[6],
+                "error": row[7],
+                "task_token": row[8],
+                "created_at": row[9].isoformat() if row[9] else None,
+                "updated_at": row[10].isoformat() if row[10] else None
+            }
+    finally:
+        conn.close()
+
+
+def update_classifier_job(
+    job_id: str,
+    enterprise_name: Optional[str] = None,
+    **kwargs
+) -> None:
+    """Update a classifier job in the database."""
+    conn = get_db_connection(enterprise_name)
+    try:
+        # Auto-create table if it doesn't exist
+        ensure_classifier_job_table_exists(conn)
+        
+        # Build dynamic update query
+        set_clauses = ['"updatedAt" = NOW()']
+        values = []
+        
+        field_mapping = {
+            'status': 'status',
+            'total_profiles': '"totalProfiles"',
+            'processed_profiles': '"processedProfiles"',
+            'total_posts_classified': '"totalPostsClassified"',
+            'error': 'error'
+        }
+        
+        for key, db_field in field_mapping.items():
+            if key in kwargs:
+                set_clauses.append(f"{db_field} = %s")
+                values.append(kwargs[key])
+        
+        values.append(job_id)
+        
+        with conn.cursor() as cur:
+            cur.execute(f"""
+                UPDATE "ClassifierJob"
+                SET {', '.join(set_clauses)}
+                WHERE id = %s
+            """, values)
+            conn.commit()
+    finally:
+        conn.close()
+
+
+def get_pending_classifier_jobs(enterprise_name: Optional[str] = None) -> List[Dict[str, Any]]:
+    """Get all pending/processing classifier jobs."""
+    conn = get_db_connection(enterprise_name)
+    try:
+        # Auto-create table if it doesn't exist
+        ensure_classifier_job_table_exists(conn)
+        
+        with conn.cursor() as cur:
+            cur.execute("""
+                SELECT id, status, "classifierId", "audienceRoomId", "totalProfiles", 
+                       "processedProfiles", "totalPostsClassified", error, "taskToken",
+                       "createdAt", "updatedAt"
+                FROM "ClassifierJob"
+                WHERE status IN ('PENDING', 'PROCESSING')
+                ORDER BY "createdAt" DESC
+            """)
+            rows = cur.fetchall()
+            return [{
+                "job_id": row[0],
+                "status": row[1],
+                "classifier_id": row[2],
+                "audience_room_id": row[3],
+                "total_profiles": row[4],
+                "processed_profiles": row[5],
+                "total_posts_classified": row[6],
+                "error": row[7],
+                "task_token": row[8],
+                "created_at": row[9].isoformat() if row[9] else None,
+                "updated_at": row[10].isoformat() if row[10] else None
+            } for row in rows]
+    finally:
+        conn.close()
 
 
 async def process_classifier_job(
@@ -50,19 +217,15 @@ async def process_classifier_job(
 ):
     """
     Background task to process classifier job in batches.
-    This runs asynchronously and updates job status as it progresses.
+    This runs asynchronously and updates job status in the DATABASE.
     """
-    global _classifier_jobs
-    
     try:
         logger.info(f"[ClassifierJob {job_id}] Starting classifier processing")
         
         # Fetch classifier details
         classifier = database.find_post_classifier_by_id(classifier_id)
         if not classifier:
-            _classifier_jobs[job_id]["status"] = "FAILED"
-            _classifier_jobs[job_id]["error"] = f"Classifier {classifier_id} not found"
-            _classifier_jobs[job_id]["updated_at"] = datetime.utcnow().isoformat()
+            update_classifier_job(job_id, enterprise_name, status="FAILED", error=f"Classifier {classifier_id} not found")
             return
         
         # Extract classifier fields
@@ -94,9 +257,7 @@ async def process_classifier_job(
         classifier_labels = [str(label) for label in classifier_labels if label]
         
         if not classifier_labels:
-            _classifier_jobs[job_id]["status"] = "FAILED"
-            _classifier_jobs[job_id]["error"] = "Classifier has no labels defined"
-            _classifier_jobs[job_id]["updated_at"] = datetime.utcnow().isoformat()
+            update_classifier_job(job_id, enterprise_name, status="FAILED", error="Classifier has no labels defined")
             return
         
         # Parse examples
@@ -120,17 +281,13 @@ async def process_classifier_job(
             enterprise_name=enterprise_name
         )
         if not audience_room:
-            _classifier_jobs[job_id]["status"] = "FAILED"
-            _classifier_jobs[job_id]["error"] = f"Audience room {audience_room_id} not found"
-            _classifier_jobs[job_id]["updated_at"] = datetime.utcnow().isoformat()
+            update_classifier_job(job_id, enterprise_name, status="FAILED", error=f"Audience room {audience_room_id} not found")
             return
         
         profiles = audience_room.profiles or []
         total_profiles = len(profiles)
         
-        _classifier_jobs[job_id]["total_profiles"] = total_profiles
-        _classifier_jobs[job_id]["status"] = "PROCESSING"
-        _classifier_jobs[job_id]["updated_at"] = datetime.utcnow().isoformat()
+        update_classifier_job(job_id, enterprise_name, status="PROCESSING", total_profiles=total_profiles)
         
         logger.info(f"[ClassifierJob {job_id}] Processing {total_profiles} profiles in batches of {batch_size}")
         
@@ -217,27 +374,29 @@ async def process_classifier_job(
                 
                 processed_profiles += 1
             
-            # Update job progress after each batch
-            _classifier_jobs[job_id]["processed_profiles"] = processed_profiles
-            _classifier_jobs[job_id]["total_posts_classified"] = total_posts_classified
-            _classifier_jobs[job_id]["updated_at"] = datetime.utcnow().isoformat()
+            # Update job progress in DATABASE after each batch
+            update_classifier_job(
+                job_id, enterprise_name,
+                processed_profiles=processed_profiles,
+                total_posts_classified=total_posts_classified
+            )
             
             # Small delay between batches to avoid rate limits
             await asyncio.sleep(0.5)
         
-        # Mark job as completed
-        _classifier_jobs[job_id]["status"] = "COMPLETED"
-        _classifier_jobs[job_id]["processed_profiles"] = processed_profiles
-        _classifier_jobs[job_id]["total_posts_classified"] = total_posts_classified
-        _classifier_jobs[job_id]["updated_at"] = datetime.utcnow().isoformat()
+        # Mark job as completed in DATABASE
+        update_classifier_job(
+            job_id, enterprise_name,
+            status="COMPLETED",
+            processed_profiles=processed_profiles,
+            total_posts_classified=total_posts_classified
+        )
         
         logger.info(f"[ClassifierJob {job_id}] Completed: {total_posts_classified} posts classified")
         
     except Exception as e:
         logger.error(f"[ClassifierJob {job_id}] Failed: {str(e)}", exc_info=True)
-        _classifier_jobs[job_id]["status"] = "FAILED"
-        _classifier_jobs[job_id]["error"] = str(e)
-        _classifier_jobs[job_id]["updated_at"] = datetime.utcnow().isoformat()
+        update_classifier_job(job_id, enterprise_name, status="FAILED", error=str(e))
 
 
 @router.post("/api/classifier/async/run")
@@ -249,14 +408,14 @@ async def trigger_async_classifier(
     Trigger async classifier job that runs in the background.
     Returns immediately with a job_id for polling status.
     
-    This endpoint is designed for long-running classification jobs
-    that would otherwise timeout with the synchronous endpoint.
+    Job state is stored in DATABASE (ClassifierJob table) - survives Vercel cold starts.
     
     Request Body:
     - audienceRoomId: UUID of the audience room
     - classifierId: UUID of the classifier to use
     - enterpriseName (optional): Enterprise name for database selection
     - batchSize (optional): Number of profiles per batch (default: 10)
+    - taskToken (optional): Step Functions callback token
     """
     logger.info(f"=== ASYNC CLASSIFIER TRIGGER START ===")
     logger.info(f"Request: classifier_id={payload.classifierId}, room_id={payload.audienceRoomId}, enterprise={payload.enterpriseName}")
@@ -268,23 +427,22 @@ async def trigger_async_classifier(
     if not s3_client or not s3_bucket:
         raise HTTPException(status_code=503, detail="S3 is not configured.")
     
+    # Verify classifier exists
+    classifier = database.find_post_classifier_by_id(payload.classifierId)
+    if not classifier:
+        raise HTTPException(status_code=404, detail=f"Classifier {payload.classifierId} not found")
+    
     # Generate job ID
     job_id = str(uuid.uuid4())
     
-    # Create job record
-    _classifier_jobs[job_id] = {
-        "job_id": job_id,
-        "status": "PENDING",
-        "classifier_id": payload.classifierId,
-        "audience_room_id": payload.audienceRoomId,
-        "enterprise_name": payload.enterpriseName,
-        "total_profiles": 0,
-        "processed_profiles": 0,
-        "total_posts_classified": 0,
-        "error": None,
-        "created_at": datetime.utcnow().isoformat(),
-        "updated_at": datetime.utcnow().isoformat()
-    }
+    # Create job record in DATABASE
+    job = create_classifier_job(
+        job_id=job_id,
+        classifier_id=payload.classifierId,
+        audience_room_id=payload.audienceRoomId,
+        task_token=payload.taskToken,
+        enterprise_name=payload.enterpriseName
+    )
     
     # Add background task
     background_tasks.add_task(
@@ -301,6 +459,8 @@ async def trigger_async_classifier(
     return {
         "job_id": job_id,
         "status": "PENDING",
+        "classifier_id": payload.classifierId,
+        "audience_room_id": payload.audienceRoomId,
         "message": "Classifier job started. Use /api/classifier/async/status/{job_id} to check progress."
     }
 
@@ -311,7 +471,7 @@ async def get_async_classifier_status(
     enterpriseName: Optional[str] = Query(None, description="Enterprise name")
 ):
     """
-    Check the status of an async classifier job.
+    Check the status of an async classifier job from DATABASE.
     
     Returns current progress including:
     - status: PENDING, PROCESSING, COMPLETED, FAILED
@@ -321,10 +481,10 @@ async def get_async_classifier_status(
     """
     logger.info(f"Checking async classifier status for job_id={job_id}")
     
-    if job_id not in _classifier_jobs:
-        raise HTTPException(status_code=404, detail=f"Job {job_id} not found")
+    job = get_classifier_job(job_id, enterpriseName)
     
-    job = _classifier_jobs[job_id]
+    if not job:
+        raise HTTPException(status_code=404, detail=f"Job {job_id} not found")
     
     return {
         "job_id": job["job_id"],
@@ -338,3 +498,15 @@ async def get_async_classifier_status(
         "created_at": job["created_at"],
         "updated_at": job["updated_at"]
     }
+
+
+@router.get("/api/classifier/async/pending")
+async def get_pending_classifier_jobs_endpoint(
+    enterpriseName: Optional[str] = Query(None, description="Enterprise name")
+):
+    """
+    Get all pending/processing classifier jobs.
+    Useful for the poller Lambda to find jobs to monitor.
+    """
+    jobs = get_pending_classifier_jobs(enterpriseName)
+    return {"jobs": jobs, "count": len(jobs)}

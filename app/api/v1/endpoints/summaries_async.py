@@ -1,4 +1,8 @@
-"""Async Profile Summaries endpoints for long-running summary generation jobs."""
+"""Async Profile Summaries endpoints for long-running summary generation jobs.
+
+Uses database (SummariesJob table) for job tracking instead of in-memory storage.
+This ensures job state persists across Vercel cold starts.
+"""
 import asyncio
 import uuid
 from datetime import datetime
@@ -9,6 +13,7 @@ from app.config import s3_client, s3_bucket, logger
 from app.utils.helpers import ensure_db_available
 from app.services.summary_service import process_profile_summary
 from app import database
+from app.database.connection import get_db_connection
 
 router = APIRouter()
 
@@ -22,27 +27,203 @@ class AsyncSummariesRequest(BaseModel):
     audienceRoomId: str
     enterpriseName: Optional[str] = None
     chunkSize: int = CHUNK_SIZE
+    taskToken: Optional[str] = None  # Step Functions callback token
 
 
-class SummariesJobStatus(BaseModel):
-    """Status model for summaries job."""
-    job_id: str
-    status: str  # PENDING, PROCESSING, COMPLETED, FAILED
-    audience_room_id: str
-    total_profiles: int = 0
-    processed_profiles: int = 0
-    success_count: int = 0
-    skipped_count: int = 0
-    error_count: int = 0
-    current_chunk: int = 0
-    total_chunks: int = 0
-    error: Optional[str] = None
-    created_at: str
-    updated_at: str
+# Database operations for SummariesJob
+
+def ensure_summaries_job_table_exists(conn) -> None:
+    """Create SummariesJob table if it doesn't exist. Safe - won't affect existing data."""
+    with conn.cursor() as cur:
+        cur.execute("""
+            CREATE TABLE IF NOT EXISTS "SummariesJob" (
+                "id" TEXT NOT NULL,
+                "status" TEXT NOT NULL DEFAULT 'PENDING',
+                "audienceRoomId" TEXT NOT NULL,
+                "totalProfiles" INTEGER NOT NULL DEFAULT 0,
+                "processedProfiles" INTEGER NOT NULL DEFAULT 0,
+                "successCount" INTEGER NOT NULL DEFAULT 0,
+                "skippedCount" INTEGER NOT NULL DEFAULT 0,
+                "errorCount" INTEGER NOT NULL DEFAULT 0,
+                "currentChunk" INTEGER NOT NULL DEFAULT 0,
+                "totalChunks" INTEGER NOT NULL DEFAULT 0,
+                "error" TEXT,
+                "taskToken" TEXT,
+                "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                "updatedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                CONSTRAINT "SummariesJob_pkey" PRIMARY KEY ("id")
+            );
+            CREATE INDEX IF NOT EXISTS "SummariesJob_status_idx" ON "SummariesJob"("status");
+            CREATE INDEX IF NOT EXISTS "SummariesJob_audienceRoomId_idx" ON "SummariesJob"("audienceRoomId");
+        """)
+        conn.commit()
+    logger.info("SummariesJob table ensured to exist")
 
 
-# In-memory job storage (in production, use database or Redis)
-_summaries_jobs: Dict[str, Dict[str, Any]] = {}
+def create_summaries_job(
+    job_id: str,
+    audience_room_id: str,
+    task_token: Optional[str] = None,
+    enterprise_name: Optional[str] = None
+) -> Dict[str, Any]:
+    """Create a new summaries job in the database."""
+    conn = get_db_connection(enterprise_name)
+    try:
+        # Auto-create table if it doesn't exist
+        ensure_summaries_job_table_exists(conn)
+        
+        with conn.cursor() as cur:
+            cur.execute("""
+                INSERT INTO "SummariesJob" 
+                (id, status, "audienceRoomId", "taskToken", "createdAt", "updatedAt")
+                VALUES (%s, %s, %s, %s, NOW(), NOW())
+                RETURNING id, status, "audienceRoomId", "totalProfiles", 
+                          "processedProfiles", "successCount", "skippedCount", "errorCount",
+                          "currentChunk", "totalChunks", error, "taskToken",
+                          "createdAt", "updatedAt"
+            """, (job_id, 'PENDING', audience_room_id, task_token))
+            row = cur.fetchone()
+            conn.commit()
+            return {
+                "job_id": row[0],
+                "status": row[1],
+                "audience_room_id": row[2],
+                "total_profiles": row[3],
+                "processed_profiles": row[4],
+                "success_count": row[5],
+                "skipped_count": row[6],
+                "error_count": row[7],
+                "current_chunk": row[8],
+                "total_chunks": row[9],
+                "error": row[10],
+                "task_token": row[11],
+                "created_at": row[12].isoformat() if row[12] else None,
+                "updated_at": row[13].isoformat() if row[13] else None
+            }
+    finally:
+        conn.close()
+
+
+def get_summaries_job(job_id: str, enterprise_name: Optional[str] = None) -> Optional[Dict[str, Any]]:
+    """Get a summaries job from the database."""
+    conn = get_db_connection(enterprise_name)
+    try:
+        # Auto-create table if it doesn't exist
+        ensure_summaries_job_table_exists(conn)
+        
+        with conn.cursor() as cur:
+            cur.execute("""
+                SELECT id, status, "audienceRoomId", "totalProfiles", 
+                       "processedProfiles", "successCount", "skippedCount", "errorCount",
+                       "currentChunk", "totalChunks", error, "taskToken",
+                       "createdAt", "updatedAt"
+                FROM "SummariesJob"
+                WHERE id = %s
+            """, (job_id,))
+            row = cur.fetchone()
+            if not row:
+                return None
+            return {
+                "job_id": row[0],
+                "status": row[1],
+                "audience_room_id": row[2],
+                "total_profiles": row[3],
+                "processed_profiles": row[4],
+                "success_count": row[5],
+                "skipped_count": row[6],
+                "error_count": row[7],
+                "current_chunk": row[8],
+                "total_chunks": row[9],
+                "error": row[10],
+                "task_token": row[11],
+                "created_at": row[12].isoformat() if row[12] else None,
+                "updated_at": row[13].isoformat() if row[13] else None
+            }
+    finally:
+        conn.close()
+
+
+def update_summaries_job(
+    job_id: str,
+    enterprise_name: Optional[str] = None,
+    **kwargs
+) -> None:
+    """Update a summaries job in the database."""
+    conn = get_db_connection(enterprise_name)
+    try:
+        # Auto-create table if it doesn't exist
+        ensure_summaries_job_table_exists(conn)
+        
+        # Build dynamic update query
+        set_clauses = ['"updatedAt" = NOW()']
+        values = []
+        
+        field_mapping = {
+            'status': 'status',
+            'total_profiles': '"totalProfiles"',
+            'processed_profiles': '"processedProfiles"',
+            'success_count': '"successCount"',
+            'skipped_count': '"skippedCount"',
+            'error_count': '"errorCount"',
+            'current_chunk': '"currentChunk"',
+            'total_chunks': '"totalChunks"',
+            'error': 'error'
+        }
+        
+        for key, db_field in field_mapping.items():
+            if key in kwargs:
+                set_clauses.append(f"{db_field} = %s")
+                values.append(kwargs[key])
+        
+        values.append(job_id)
+        
+        with conn.cursor() as cur:
+            cur.execute(f"""
+                UPDATE "SummariesJob"
+                SET {', '.join(set_clauses)}
+                WHERE id = %s
+            """, values)
+            conn.commit()
+    finally:
+        conn.close()
+
+
+def get_pending_summaries_jobs(enterprise_name: Optional[str] = None) -> List[Dict[str, Any]]:
+    """Get all pending/processing summaries jobs."""
+    conn = get_db_connection(enterprise_name)
+    try:
+        # Auto-create table if it doesn't exist
+        ensure_summaries_job_table_exists(conn)
+        
+        with conn.cursor() as cur:
+            cur.execute("""
+                SELECT id, status, "audienceRoomId", "totalProfiles", 
+                       "processedProfiles", "successCount", "skippedCount", "errorCount",
+                       "currentChunk", "totalChunks", error, "taskToken",
+                       "createdAt", "updatedAt"
+                FROM "SummariesJob"
+                WHERE status IN ('PENDING', 'PROCESSING')
+                ORDER BY "createdAt" DESC
+            """)
+            rows = cur.fetchall()
+            return [{
+                "job_id": row[0],
+                "status": row[1],
+                "audience_room_id": row[2],
+                "total_profiles": row[3],
+                "processed_profiles": row[4],
+                "success_count": row[5],
+                "skipped_count": row[6],
+                "error_count": row[7],
+                "current_chunk": row[8],
+                "total_chunks": row[9],
+                "error": row[10],
+                "task_token": row[11],
+                "created_at": row[12].isoformat() if row[12] else None,
+                "updated_at": row[13].isoformat() if row[13] else None
+            } for row in rows]
+    finally:
+        conn.close()
 
 
 async def process_summaries_job(
@@ -53,10 +234,8 @@ async def process_summaries_job(
 ):
     """
     Background task to process profile summaries in chunks.
-    This runs asynchronously and updates job status as it progresses.
+    This runs asynchronously and updates job status in the DATABASE.
     """
-    global _summaries_jobs
-    
     try:
         logger.info(f"[SummariesJob {job_id}] Starting profile summaries processing")
         
@@ -68,9 +247,7 @@ async def process_summaries_job(
         )
         
         if not audience_room:
-            _summaries_jobs[job_id]["status"] = "FAILED"
-            _summaries_jobs[job_id]["error"] = f"Audience room {audience_room_id} not found"
-            _summaries_jobs[job_id]["updated_at"] = datetime.utcnow().isoformat()
+            update_summaries_job(job_id, enterprise_name, status="FAILED", error=f"Audience room {audience_room_id} not found")
             return
         
         all_profiles = audience_room.profiles or []
@@ -78,15 +255,15 @@ async def process_summaries_job(
         total_chunks = (total_profiles + chunk_size - 1) // chunk_size
         
         if total_profiles == 0:
-            _summaries_jobs[job_id]["status"] = "COMPLETED"
-            _summaries_jobs[job_id]["total_profiles"] = 0
-            _summaries_jobs[job_id]["updated_at"] = datetime.utcnow().isoformat()
+            update_summaries_job(job_id, enterprise_name, status="COMPLETED", total_profiles=0)
             return
         
-        _summaries_jobs[job_id]["total_profiles"] = total_profiles
-        _summaries_jobs[job_id]["total_chunks"] = total_chunks
-        _summaries_jobs[job_id]["status"] = "PROCESSING"
-        _summaries_jobs[job_id]["updated_at"] = datetime.utcnow().isoformat()
+        update_summaries_job(
+            job_id, enterprise_name,
+            total_profiles=total_profiles,
+            total_chunks=total_chunks,
+            status="PROCESSING"
+        )
         
         logger.info(f"[SummariesJob {job_id}] Processing {total_profiles} profiles in {total_chunks} chunks")
         
@@ -103,9 +280,8 @@ async def process_summaries_job(
             
             logger.info(f"[SummariesJob {job_id}] Processing chunk {chunk_num + 1}/{total_chunks} ({len(profiles_chunk)} profiles)")
             
-            # Update current chunk
-            _summaries_jobs[job_id]["current_chunk"] = chunk_num + 1
-            _summaries_jobs[job_id]["updated_at"] = datetime.utcnow().isoformat()
+            # Update current chunk in DATABASE
+            update_summaries_job(job_id, enterprise_name, current_chunk=chunk_num + 1)
             
             # Process chunk with rate limiting
             semaphore = asyncio.Semaphore(MAX_CONCURRENT)
@@ -133,29 +309,35 @@ async def process_summaries_job(
                 
                 processed += 1
             
-            # Update progress after each chunk
-            _summaries_jobs[job_id]["processed_profiles"] = processed
-            _summaries_jobs[job_id]["success_count"] = total_success
-            _summaries_jobs[job_id]["skipped_count"] = total_skipped
-            _summaries_jobs[job_id]["error_count"] = total_errors
-            _summaries_jobs[job_id]["updated_at"] = datetime.utcnow().isoformat()
+            # Update progress in DATABASE after each chunk
+            update_summaries_job(
+                job_id, enterprise_name,
+                processed_profiles=processed,
+                success_count=total_success,
+                skipped_count=total_skipped,
+                error_count=total_errors
+            )
             
             logger.info(f"[SummariesJob {job_id}] Chunk {chunk_num + 1} complete: {total_success} success, {total_skipped} skipped, {total_errors} errors")
             
             # Small delay between chunks
             await asyncio.sleep(0.5)
         
-        # Mark job as completed
-        _summaries_jobs[job_id]["status"] = "COMPLETED"
-        _summaries_jobs[job_id]["updated_at"] = datetime.utcnow().isoformat()
+        # Mark job as completed in DATABASE
+        update_summaries_job(
+            job_id, enterprise_name,
+            status="COMPLETED",
+            processed_profiles=processed,
+            success_count=total_success,
+            skipped_count=total_skipped,
+            error_count=total_errors
+        )
         
         logger.info(f"[SummariesJob {job_id}] Completed: {total_success} success, {total_skipped} skipped, {total_errors} errors")
         
     except Exception as e:
         logger.error(f"[SummariesJob {job_id}] Failed: {str(e)}", exc_info=True)
-        _summaries_jobs[job_id]["status"] = "FAILED"
-        _summaries_jobs[job_id]["error"] = str(e)
-        _summaries_jobs[job_id]["updated_at"] = datetime.utcnow().isoformat()
+        update_summaries_job(job_id, enterprise_name, status="FAILED", error=str(e))
 
 
 @router.post("/api/v1/audience-rooms/{audience_room_id}/generate-summaries/async")
@@ -163,14 +345,14 @@ async def trigger_async_summaries(
     audience_room_id: str = Path(...),
     enterpriseName: Optional[str] = Query(None),
     chunkSize: int = Query(CHUNK_SIZE, ge=1, le=20),
+    taskToken: Optional[str] = Query(None),
     background_tasks: BackgroundTasks = None
 ):
     """
     Trigger async profile summaries generation that runs in the background.
     Returns immediately with a job_id for polling status.
     
-    This endpoint is designed for large audience rooms (100+ profiles)
-    that would otherwise timeout with the synchronous endpoint.
+    Job state is stored in DATABASE (SummariesJob table) - survives Vercel cold starts.
     
     Path Parameters:
     - audience_room_id: UUID of the audience room
@@ -178,6 +360,7 @@ async def trigger_async_summaries(
     Query Parameters:
     - enterpriseName (optional): Enterprise name for database selection
     - chunkSize (optional): Profiles per chunk (default: 10, max: 20)
+    - taskToken (optional): Step Functions callback token
     """
     logger.info(f"=== ASYNC SUMMARIES TRIGGER START ===")
     logger.info(f"Request: room_id={audience_room_id}, enterprise={enterpriseName}, chunkSize={chunkSize}")
@@ -198,23 +381,13 @@ async def trigger_async_summaries(
     # Generate job ID
     job_id = str(uuid.uuid4())
     
-    # Create job record
-    _summaries_jobs[job_id] = {
-        "job_id": job_id,
-        "status": "PENDING",
-        "audience_room_id": audience_room_id,
-        "enterprise_name": enterpriseName,
-        "total_profiles": 0,
-        "processed_profiles": 0,
-        "success_count": 0,
-        "skipped_count": 0,
-        "error_count": 0,
-        "current_chunk": 0,
-        "total_chunks": 0,
-        "error": None,
-        "created_at": datetime.utcnow().isoformat(),
-        "updated_at": datetime.utcnow().isoformat()
-    }
+    # Create job record in DATABASE
+    job = create_summaries_job(
+        job_id=job_id,
+        audience_room_id=audience_room_id,
+        task_token=taskToken,
+        enterprise_name=enterpriseName
+    )
     
     # Add background task
     background_tasks.add_task(
@@ -242,7 +415,7 @@ async def get_async_summaries_status(
     enterpriseName: Optional[str] = Query(None)
 ):
     """
-    Check the status of an async profile summaries job.
+    Check the status of an async profile summaries job from DATABASE.
     
     Returns current progress including:
     - status: PENDING, PROCESSING, COMPLETED, FAILED
@@ -253,10 +426,10 @@ async def get_async_summaries_status(
     """
     logger.info(f"Checking async summaries status for job_id={job_id}")
     
-    if job_id not in _summaries_jobs:
-        raise HTTPException(status_code=404, detail=f"Job {job_id} not found")
+    job = get_summaries_job(job_id, enterpriseName)
     
-    job = _summaries_jobs[job_id]
+    if not job:
+        raise HTTPException(status_code=404, detail=f"Job {job_id} not found")
     
     # Verify audience room matches
     if job["audience_room_id"] != audience_room_id:
@@ -277,3 +450,15 @@ async def get_async_summaries_status(
         "created_at": job["created_at"],
         "updated_at": job["updated_at"]
     }
+
+
+@router.get("/api/v1/summaries/async/pending")
+async def get_pending_summaries_jobs_endpoint(
+    enterpriseName: Optional[str] = Query(None, description="Enterprise name")
+):
+    """
+    Get all pending/processing summaries jobs.
+    Useful for the poller Lambda to find jobs to monitor.
+    """
+    jobs = get_pending_summaries_jobs(enterpriseName)
+    return {"jobs": jobs, "count": len(jobs)}

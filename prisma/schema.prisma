@@ -40,3 +40,64 @@ model SearchQuery {
 
   @@index([createdAt])
 }
+
+// Async Profile Summaries Job tracking
+model SummariesJob {
+  id                 String   @id @default(uuid())
+  status             String   @default("PENDING") // PENDING, PROCESSING, COMPLETED, FAILED
+  audienceRoomId     String
+  totalProfiles      Int      @default(0)
+  processedProfiles  Int      @default(0)
+  successCount       Int      @default(0)
+  skippedCount       Int      @default(0)
+  errorCount         Int      @default(0)
+  currentChunk       Int      @default(0)
+  totalChunks        Int      @default(0)
+  error              String?  // Error message if failed
+  taskToken          String?  // Step Functions callback token
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+
+  @@index([status])
+  @@index([audienceRoomId])
+  @@index([createdAt])
+}
+
+// Async Classifier Job tracking
+model ClassifierJob {
+  id                   String   @id @default(uuid())
+  status               String   @default("PENDING") // PENDING, PROCESSING, COMPLETED, FAILED
+  classifierId         String
+  audienceRoomId       String
+  totalProfiles        Int      @default(0)
+  processedProfiles    Int      @default(0)
+  totalPostsClassified Int      @default(0)
+  error                String?  // Error message if failed
+  taskToken            String?  // Step Functions callback token
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
+
+  @@index([status])
+  @@index([audienceRoomId])
+  @@index([classifierId])
+  @@index([createdAt])
+}
+
+// Async Parallel Scraping Job tracking (for batched parallel runs)
+model ParallelScrapeJob {
+  id             String   @id @default(uuid())
+  status         String   @default("PENDING") // PENDING, PROCESSING, COMPLETED, FAILED
+  audienceRoomId String?
+  totalBatches   Int      @default(0)
+  completedBatches Int    @default(0)
+  totalUrls      Int      @default(0)
+  processedUrls  Int      @default(0)
+  batchRunIds    Json?    // Array of Apify run IDs for each batch
+  error          String?  // Error message if failed
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  @@index([status])
+  @@index([audienceRoomId])
+  @@index([createdAt])
+}
