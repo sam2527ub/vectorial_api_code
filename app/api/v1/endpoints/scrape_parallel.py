@@ -1,4 +1,8 @@
-"""Parallel/Batched Scraping endpoints for faster processing."""
+"""Parallel/Batched Scraping endpoints for faster processing.
+
+Uses database (ScrapeJob table) for job tracking instead of in-memory storage.
+This ensures job state persists across Vercel cold starts.
+"""
 import logging
 import asyncio
 import uuid
@@ -50,10 +54,6 @@ class ParallelScrapeStatus(BaseModel):
     batches: List[BatchStatus]
     created_at: str
     updated_at: str
-
-
-# In-memory storage for parallel scrape jobs (in production, use database)
-_parallel_scrape_jobs: Dict[str, Dict[str, Any]] = {}
 
 
 def split_into_batches(urls: List[str], batch_size: int) -> List[List[str]]:
@@ -205,36 +205,32 @@ async def trigger_parallel_scraping(payload: ParallelScrapeRequest):
         max_posts=payload.max_posts
     )
     
-    # Create job status record
-    _parallel_scrape_jobs[job_id] = {
-        "job_id": job_id,
-        "status": "PROCESSING",
+    # Store all parallel job state in ScrapeJob.result JSON
+    apify_run_ids = [b["apify_run_id"] for b in batch_results if b["apify_run_id"]]
+    parallel_result = {
+        "parallel_mode": True,
         "total_urls": len(payload.linkedin_urls),
         "total_batches": len(batches),
         "completed_batches": 0,
         "failed_batches": sum(1 for b in batch_results if b["status"] == "FAILED"),
-        "batches": batch_results,
+        "batch_run_ids": apify_run_ids,
+        "batches": batch_results,  # Store all batch details
         "audience_room_id": payload.audience_room_id,
         "enterprise_name": payload.enterpriseName,
-        "linkedin_urls": normalized_urls,
-        "created_at": datetime.utcnow().isoformat(),
-        "updated_at": datetime.utcnow().isoformat()
+        "linkedin_urls": normalized_urls
     }
     
-    # Update database job with batch info
+    # Update database job with all parallel info
     try:
-        apify_run_ids = [b["apify_run_id"] for b in batch_results if b["apify_run_id"]]
         database.update_scrape_job(job_id, {
             "status": "PROCESSING",
-            "apifyRunId": apify_run_ids[0] if apify_run_ids else None,  # Store first run ID
-            "result": {
-                "parallel_mode": True,
-                "total_batches": len(batches),
-                "batch_run_ids": apify_run_ids
-            }
+            "apifyRunId": apify_run_ids[0] if apify_run_ids else None,  # Store first run ID for compatibility
+            "result": parallel_result
         }, enterprise_name=payload.enterpriseName)
+        logger.info(f"Stored parallel scrape job state in database for job {job_id}")
     except Exception as e:
-        logger.warning(f"Failed to update scrape job: {e}")
+        logger.error(f"Failed to update scrape job in database: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=f"Failed to store job state: {str(e)}")
     
     running_count = sum(1 for b in batch_results if b["status"] == "RUNNING")
     failed_count = sum(1 for b in batch_results if b["status"] == "FAILED")
@@ -258,31 +254,42 @@ async def get_parallel_scrape_status(
     enterpriseName: Optional[str] = Query(None, description="Enterprise name")
 ):
     """
-    Check status of a parallel scraping job.
+    Check status of a parallel scraping job from DATABASE.
     
     Polls all batch Apify runs and aggregates results.
     When all batches complete, processes posts and updates profiles.
     """
     logger.info(f"Checking parallel scrape status for job_id={job_id}")
     
-    if job_id not in _parallel_scrape_jobs:
-        # Check if it's a regular scrape job
-        raise HTTPException(status_code=404, detail=f"Parallel scrape job {job_id} not found")
+    # Fetch job from database
+    job = database.find_scrape_job_by_id(job_id, enterprise_name=enterpriseName)
+    if not job:
+        raise HTTPException(status_code=404, detail=f"Scrape job {job_id} not found")
     
-    job = _parallel_scrape_jobs[job_id]
+    # Check if it's a parallel job
+    result = job.result or {}
+    if not result.get("parallel_mode"):
+        raise HTTPException(
+            status_code=400, 
+            detail=f"Job {job_id} is not a parallel scrape job. Use /api/v1/scrape/status/{job_id} instead."
+        )
     
-    # If already completed or failed, return cached result
-    if job["status"] in ["COMPLETED", "FAILED"]:
+    # Extract parallel job state from result JSON
+    parallel_state = result
+    batches = parallel_state.get("batches", [])
+    
+    # If already completed or failed, return current status
+    if job.status in ["COMPLETED", "FAILED"]:
         return {
-            "job_id": job["job_id"],
-            "status": job["status"],
-            "total_urls": job["total_urls"],
-            "total_batches": job["total_batches"],
-            "completed_batches": job["completed_batches"],
-            "failed_batches": job["failed_batches"],
-            "result": job.get("result"),
-            "created_at": job["created_at"],
-            "updated_at": job["updated_at"]
+            "job_id": job_id,
+            "status": job.status,
+            "total_urls": parallel_state.get("total_urls", 0),
+            "total_batches": parallel_state.get("total_batches", 0),
+            "completed_batches": parallel_state.get("completed_batches", 0),
+            "failed_batches": parallel_state.get("failed_batches", 0),
+            "result": result.get("result") if isinstance(result.get("result"), dict) else result,
+            "created_at": job.createdAt.isoformat() if job.createdAt else None,
+            "updated_at": job.updatedAt.isoformat() if job.updatedAt else None
         }
     
     # Poll each batch status
@@ -290,15 +297,16 @@ async def get_parallel_scrape_status(
     failed = 0
     still_running = 0
     all_dataset_ids = []
+    batches_updated = False
     
-    for batch in job["batches"]:
-        if batch["status"] in ["SUCCEEDED", "COMPLETED"]:
+    for batch in batches:
+        if batch.get("status") in ["SUCCEEDED", "COMPLETED"]:
             completed += 1
             if batch.get("dataset_id"):
                 all_dataset_ids.append(batch["dataset_id"])
-        elif batch["status"] == "FAILED":
+        elif batch.get("status") == "FAILED":
             failed += 1
-        elif batch["apify_run_id"]:
+        elif batch.get("apify_run_id"):
             # Check Apify status
             try:
                 run = apify_client.run(batch["apify_run_id"]).get()
@@ -308,29 +316,45 @@ async def get_parallel_scrape_status(
                 if run_status == "SUCCEEDED":
                     batch["status"] = "SUCCEEDED"
                     batch["dataset_id"] = run_data.get("defaultDatasetId")
+                    batches_updated = True
                     completed += 1
                     if batch["dataset_id"]:
                         all_dataset_ids.append(batch["dataset_id"])
                 elif run_status == "FAILED":
                     batch["status"] = "FAILED"
                     batch["error"] = run_data.get("statusMessage", "Unknown error")
+                    batches_updated = True
                     failed += 1
                 else:
                     still_running += 1
             except Exception as e:
-                logger.warning(f"Error checking batch {batch['batch_id']}: {e}")
+                logger.warning(f"Error checking batch {batch.get('batch_id')}: {e}")
                 still_running += 1
     
-    job["completed_batches"] = completed
-    job["failed_batches"] = failed
-    job["updated_at"] = datetime.utcnow().isoformat()
+    # Update parallel state with current counts
+    parallel_state["completed_batches"] = completed
+    parallel_state["failed_batches"] = failed
+    parallel_state["batches"] = batches
+    
+    # Update database if batches were updated
+    if batches_updated:
+        try:
+            database.update_scrape_job(job_id, {
+                "result": parallel_state
+            }, enterprise_name=enterpriseName)
+        except Exception as e:
+            logger.warning(f"Failed to update batch status in database: {e}")
+    
+    # Initialize variables for return
+    current_status = job.status
+    current_result = parallel_state.get("result")
     
     # Check if all batches are done
     if still_running == 0:
         # All batches completed
-        if failed == len(job["batches"]):
-            job["status"] = "FAILED"
-            job["result"] = {"error": "All batches failed"}
+        if failed == len(batches):
+            current_status = "FAILED"
+            current_result = {"error": "All batches failed"}
         else:
             # Process posts from all successful batches
             total_posts = 0
@@ -343,9 +367,9 @@ async def get_parallel_scrape_status(
                     processing_result = await process_posts_and_update_profiles(
                         dataset_client=dataset_client,
                         job_id=job_id,
-                        audience_room_id=job.get("audience_room_id"),
-                        linkedin_urls=job.get("linkedin_urls"),
-                        enterprise_name=job.get("enterprise_name"),
+                        audience_room_id=parallel_state.get("audience_room_id"),
+                        linkedin_urls=parallel_state.get("linkedin_urls", []),
+                        enterprise_name=parallel_state.get("enterprise_name") or enterpriseName,
                     )
                     
                     total_posts += processing_result.get("posts_found", 0)
@@ -353,31 +377,34 @@ async def get_parallel_scrape_status(
                 except Exception as e:
                     logger.error(f"Error processing dataset {dataset_id}: {e}")
             
-            job["status"] = "COMPLETED"
-            job["result"] = {
+            current_status = "COMPLETED"
+            current_result = {
                 "posts_found": total_posts,
                 "profiles_updated": total_profiles_updated,
                 "datasets_processed": len(all_dataset_ids)
             }
-            
-            # Update database
-            try:
-                database.update_scrape_job(job_id, {
-                    "status": "COMPLETED",
-                    "result": job["result"]
-                }, enterprise_name=job.get("enterprise_name"))
-            except Exception as e:
-                logger.warning(f"Failed to update job status in database: {e}")
+        
+        # Update database with final status
+        parallel_state["result"] = current_result
+        try:
+            database.update_scrape_job(job_id, {
+                "status": current_status,
+                "result": parallel_state
+            }, enterprise_name=enterpriseName)
+            logger.info(f"Updated parallel scrape job {job_id} to {current_status}")
+        except Exception as e:
+            logger.error(f"Failed to update job status in database: {e}", exc_info=True)
     
+    # Return current status
     return {
-        "job_id": job["job_id"],
-        "status": job["status"],
-        "total_urls": job["total_urls"],
-        "total_batches": job["total_batches"],
+        "job_id": job_id,
+        "status": current_status,
+        "total_urls": parallel_state.get("total_urls", 0),
+        "total_batches": parallel_state.get("total_batches", 0),
         "completed_batches": completed,
         "failed_batches": failed,
         "still_running": still_running,
-        "result": job.get("result"),
-        "created_at": job["created_at"],
-        "updated_at": job["updated_at"]
+        "result": current_result,
+        "created_at": job.createdAt.isoformat() if job.createdAt else None,
+        "updated_at": job.updatedAt.isoformat() if job.updatedAt else None
     }

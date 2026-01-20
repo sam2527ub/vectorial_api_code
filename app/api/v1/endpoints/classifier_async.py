@@ -15,7 +15,7 @@ from app.utils.helpers import ensure_db_available
 from app.utils.s3_utils import extract_s3_key_from_url, fetch_json_from_s3, upload_json_to_s3
 from app.services.classifier_service import classify_posts_batch
 from app import database
-from app.database.connection import get_db_connection
+from app.database.connection import get_enterprise_audience_connection
 
 router = APIRouter()
 
@@ -31,29 +31,32 @@ class AsyncClassifierRequest(BaseModel):
 
 # Database operations for ClassifierJob
 
-def ensure_classifier_job_table_exists(conn) -> None:
+def ensure_classifier_job_table_exists(enterprise_name: Optional[str] = None) -> None:
     """Create ClassifierJob table if it doesn't exist. Safe - won't affect existing data."""
-    with conn.cursor() as cur:
-        cur.execute("""
-            CREATE TABLE IF NOT EXISTS "ClassifierJob" (
-                "id" TEXT NOT NULL,
-                "status" TEXT NOT NULL DEFAULT 'PENDING',
-                "classifierId" TEXT NOT NULL,
-                "audienceRoomId" TEXT NOT NULL,
-                "totalProfiles" INTEGER NOT NULL DEFAULT 0,
-                "processedProfiles" INTEGER NOT NULL DEFAULT 0,
-                "totalPostsClassified" INTEGER NOT NULL DEFAULT 0,
-                "error" TEXT,
-                "taskToken" TEXT,
-                "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-                "updatedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-                CONSTRAINT "ClassifierJob_pkey" PRIMARY KEY ("id")
-            );
-            CREATE INDEX IF NOT EXISTS "ClassifierJob_status_idx" ON "ClassifierJob"("status");
-            CREATE INDEX IF NOT EXISTS "ClassifierJob_audienceRoomId_idx" ON "ClassifierJob"("audienceRoomId");
-            CREATE INDEX IF NOT EXISTS "ClassifierJob_classifierId_idx" ON "ClassifierJob"("classifierId");
-        """)
-        conn.commit()
+    with get_enterprise_audience_connection(enterprise_name) as conn:
+        with conn.cursor() as cur:
+            cur.execute("""
+                CREATE TABLE IF NOT EXISTS "ClassifierJob" (
+                    "id" TEXT NOT NULL,
+                    "status" TEXT NOT NULL DEFAULT 'PENDING',
+                    "classifierId" TEXT NOT NULL,
+                    "audienceRoomId" TEXT NOT NULL,
+                    "totalProfiles" INTEGER NOT NULL DEFAULT 0,
+                    "processedProfiles" INTEGER NOT NULL DEFAULT 0,
+                    "totalPostsClassified" INTEGER NOT NULL DEFAULT 0,
+                    "error" TEXT,
+                    "taskToken" TEXT,
+                    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                    "updatedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                    CONSTRAINT "ClassifierJob_pkey" PRIMARY KEY ("id")
+                )
+            """)
+        with conn.cursor() as cur:
+            cur.execute('CREATE INDEX IF NOT EXISTS "ClassifierJob_status_idx" ON "ClassifierJob"("status")')
+        with conn.cursor() as cur:
+            cur.execute('CREATE INDEX IF NOT EXISTS "ClassifierJob_audienceRoomId_idx" ON "ClassifierJob"("audienceRoomId")')
+        with conn.cursor() as cur:
+            cur.execute('CREATE INDEX IF NOT EXISTS "ClassifierJob_classifierId_idx" ON "ClassifierJob"("classifierId")')
     logger.info("ClassifierJob table ensured to exist")
 
 
@@ -65,11 +68,10 @@ def create_classifier_job(
     enterprise_name: Optional[str] = None
 ) -> Dict[str, Any]:
     """Create a new classifier job in the database."""
-    conn = get_db_connection(enterprise_name)
-    try:
-        # Auto-create table if it doesn't exist
-        ensure_classifier_job_table_exists(conn)
-        
+    # Auto-create table if it doesn't exist
+    ensure_classifier_job_table_exists(enterprise_name)
+    
+    with get_enterprise_audience_connection(enterprise_name) as conn:
         with conn.cursor() as cur:
             cur.execute("""
                 INSERT INTO "ClassifierJob" 
@@ -80,7 +82,6 @@ def create_classifier_job(
                           "createdAt", "updatedAt"
             """, (job_id, 'PENDING', classifier_id, audience_room_id, task_token))
             row = cur.fetchone()
-            conn.commit()
             return {
                 "job_id": row[0],
                 "status": row[1],
@@ -94,17 +95,14 @@ def create_classifier_job(
                 "created_at": row[9].isoformat() if row[9] else None,
                 "updated_at": row[10].isoformat() if row[10] else None
             }
-    finally:
-        conn.close()
 
 
 def get_classifier_job(job_id: str, enterprise_name: Optional[str] = None) -> Optional[Dict[str, Any]]:
     """Get a classifier job from the database."""
-    conn = get_db_connection(enterprise_name)
-    try:
-        # Auto-create table if it doesn't exist
-        ensure_classifier_job_table_exists(conn)
-        
+    # Auto-create table if it doesn't exist
+    ensure_classifier_job_table_exists(enterprise_name)
+    
+    with get_enterprise_audience_connection(enterprise_name) as conn:
         with conn.cursor() as cur:
             cur.execute("""
                 SELECT id, status, "classifierId", "audienceRoomId", "totalProfiles", 
@@ -129,8 +127,6 @@ def get_classifier_job(job_id: str, enterprise_name: Optional[str] = None) -> Op
                 "created_at": row[9].isoformat() if row[9] else None,
                 "updated_at": row[10].isoformat() if row[10] else None
             }
-    finally:
-        conn.close()
 
 
 def update_classifier_job(
@@ -139,48 +135,43 @@ def update_classifier_job(
     **kwargs
 ) -> None:
     """Update a classifier job in the database."""
-    conn = get_db_connection(enterprise_name)
-    try:
-        # Auto-create table if it doesn't exist
-        ensure_classifier_job_table_exists(conn)
-        
-        # Build dynamic update query
-        set_clauses = ['"updatedAt" = NOW()']
-        values = []
-        
-        field_mapping = {
-            'status': 'status',
-            'total_profiles': '"totalProfiles"',
-            'processed_profiles': '"processedProfiles"',
-            'total_posts_classified': '"totalPostsClassified"',
-            'error': 'error'
-        }
-        
-        for key, db_field in field_mapping.items():
-            if key in kwargs:
-                set_clauses.append(f"{db_field} = %s")
-                values.append(kwargs[key])
-        
-        values.append(job_id)
-        
+    # Auto-create table if it doesn't exist
+    ensure_classifier_job_table_exists(enterprise_name)
+    
+    # Build dynamic update query
+    set_clauses = ['"updatedAt" = NOW()']
+    values = []
+    
+    field_mapping = {
+        'status': 'status',
+        'total_profiles': '"totalProfiles"',
+        'processed_profiles': '"processedProfiles"',
+        'total_posts_classified': '"totalPostsClassified"',
+        'error': 'error'
+    }
+    
+    for key, db_field in field_mapping.items():
+        if key in kwargs:
+            set_clauses.append(f"{db_field} = %s")
+            values.append(kwargs[key])
+    
+    values.append(job_id)
+    
+    with get_enterprise_audience_connection(enterprise_name) as conn:
         with conn.cursor() as cur:
             cur.execute(f"""
                 UPDATE "ClassifierJob"
                 SET {', '.join(set_clauses)}
                 WHERE id = %s
             """, values)
-            conn.commit()
-    finally:
-        conn.close()
 
 
 def get_pending_classifier_jobs(enterprise_name: Optional[str] = None) -> List[Dict[str, Any]]:
     """Get all pending/processing classifier jobs."""
-    conn = get_db_connection(enterprise_name)
-    try:
-        # Auto-create table if it doesn't exist
-        ensure_classifier_job_table_exists(conn)
-        
+    # Auto-create table if it doesn't exist
+    ensure_classifier_job_table_exists(enterprise_name)
+    
+    with get_enterprise_audience_connection(enterprise_name) as conn:
         with conn.cursor() as cur:
             cur.execute("""
                 SELECT id, status, "classifierId", "audienceRoomId", "totalProfiles", 
@@ -204,8 +195,6 @@ def get_pending_classifier_jobs(enterprise_name: Optional[str] = None) -> List[D
                 "created_at": row[9].isoformat() if row[9] else None,
                 "updated_at": row[10].isoformat() if row[10] else None
             } for row in rows]
-    finally:
-        conn.close()
 
 
 async def process_classifier_job(

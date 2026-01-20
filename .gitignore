@@ -15,3 +15,5 @@ deploy-aws.sh
 Dockerfile
 
 node_modules/
+.vercel
+.env*.local
