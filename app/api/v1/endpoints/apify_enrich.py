@@ -19,6 +19,11 @@ APIFY_JOB_PREFIX = "apify-enrichment-jobs"
 MAX_PROFILES_PER_BATCH = 50  # Apify recommends batching for large requests
 
 
+def chunk_list(lst: List, chunk_size: int) -> List[List]:
+    """Split a list into chunks of specified size."""
+    return [lst[i:i + chunk_size] for i in range(0, len(lst), chunk_size)]
+
+
 class ApifyEnrichRequest(BaseModel):
     """Request schema for Apify enrichment."""
     profiles: List[Dict[str, Any]]  # List of profiles with linkedin_url
@@ -163,6 +168,8 @@ async def trigger_async_apify_enrichment(payload: ApifyEnrichRequest):
     Takes a list of profiles with linkedin_url and starts batch Apify enrichment.
     Returns job_id immediately for polling status.
     
+    Profiles are automatically split into batches of 50 to avoid rate limits.
+    
     The profiles should contain at minimum:
     - linkedin_url: The LinkedIn profile URL to enrich
     
@@ -196,17 +203,49 @@ async def trigger_async_apify_enrichment(payload: ApifyEnrichRequest):
     # Generate job ID
     job_id = str(uuid.uuid4())
     
-    # Start Apify batch run
-    apify_run_id = start_apify_batch_run(linkedin_urls)
+    # Split URLs into batches to avoid rate limits
+    url_batches = chunk_list(linkedin_urls, MAX_PROFILES_PER_BATCH)
+    logger.info(f"Split {len(linkedin_urls)} profiles into {len(url_batches)} batches of max {MAX_PROFILES_PER_BATCH}")
     
-    if not apify_run_id:
-        raise HTTPException(status_code=500, detail="Failed to start Apify batch run")
+    # Start Apify batch runs for each chunk
+    apify_run_ids = []
+    batch_info = []
+    
+    for batch_idx, url_batch in enumerate(url_batches):
+        logger.info(f"Starting Apify batch {batch_idx + 1}/{len(url_batches)} with {len(url_batch)} profiles")
+        apify_run_id = start_apify_batch_run(url_batch)
+        
+        if apify_run_id:
+            apify_run_ids.append(apify_run_id)
+            batch_info.append({
+                "batch_idx": batch_idx,
+                "apify_run_id": apify_run_id,
+                "urls": url_batch,
+                "status": "PROCESSING"
+            })
+            logger.info(f"Batch {batch_idx + 1} started: {apify_run_id}")
+        else:
+            logger.error(f"Failed to start Apify batch {batch_idx + 1}")
+            batch_info.append({
+                "batch_idx": batch_idx,
+                "apify_run_id": None,
+                "urls": url_batch,
+                "status": "FAILED",
+                "error": "Failed to start Apify run"
+            })
+    
+    if not apify_run_ids:
+        raise HTTPException(status_code=500, detail="Failed to start any Apify batch runs")
     
     # Save job state to S3
     job_state = {
         "job_id": job_id,
         "status": "PROCESSING",
-        "apify_run_id": apify_run_id,
+        "apify_run_ids": apify_run_ids,  # List of all batch run IDs
+        "apify_run_id": apify_run_ids[0] if len(apify_run_ids) == 1 else None,  # For backward compatibility
+        "batches": batch_info,
+        "total_batches": len(url_batches),
+        "completed_batches": 0,
         "total_profiles": len(linkedin_urls),
         "linkedin_urls": linkedin_urls,
         "url_to_profile_map": url_to_profile_map,
@@ -223,14 +262,41 @@ async def trigger_async_apify_enrichment(payload: ApifyEnrichRequest):
         raise HTTPException(status_code=500, detail=f"Failed to save job state: {str(e)}")
     
     logger.info(f"=== TRIGGER ASYNC APIFY ENRICHMENT REQUEST SUCCESS ===")
-    logger.info(f"Job {job_id} started with Apify run {apify_run_id}")
+    logger.info(f"Job {job_id} started with {len(apify_run_ids)} Apify batches")
     
     return {
         "job_id": job_id,
         "status": "PROCESSING",
-        "message": f"Apify enrichment started for {len(linkedin_urls)} profiles. Use /api/apify/enrich/status/{job_id} to check progress.",
-        "total_profiles": len(linkedin_urls)
+        "message": f"Apify enrichment started for {len(linkedin_urls)} profiles in {len(apify_run_ids)} batches. Use /api/apify/enrich/status/{job_id} to check progress.",
+        "total_profiles": len(linkedin_urls),
+        "total_batches": len(apify_run_ids)
     }
+
+
+def is_valid_enriched_profile(profile: Dict[str, Any]) -> bool:
+    """
+    Check if a profile was successfully enriched by Apify.
+    
+    Returns False for profiles that:
+    - Were not enriched (apify_enriched: false)
+    - Have no valid profile_info data
+    - Are clearly invalid LinkedIn profiles (Apify couldn't find them)
+    """
+    if not profile.get("apify_enriched", False):
+        return False
+    
+    profile_info = profile.get("profile_info", {})
+    if not profile_info:
+        return False
+    
+    # Must have at least a name or headline to be considered valid
+    has_name = bool(profile_info.get("fullName"))
+    has_headline = bool(profile_info.get("headline"))
+    has_job = bool(profile_info.get("jobTitle"))
+    has_company = bool(profile_info.get("currentCompany"))
+    
+    # Profile is valid if it has a name and at least one other field
+    return has_name and (has_headline or has_job or has_company)
 
 
 @router.get("/api/apify/enrich/status/{job_id}")
@@ -242,7 +308,7 @@ async def get_apify_enrichment_status(
     Check the status of an async Apify enrichment job.
     
     If job is still processing, returns current status.
-    If completed, returns enriched profiles.
+    If completed, returns ONLY successfully enriched profiles (invalid/non-existent profiles are filtered out).
     """
     logger.info(f"=== GET APIFY ENRICHMENT STATUS REQUEST START ===")
     logger.info(f"Request: job_id={job_id}")
@@ -269,6 +335,7 @@ async def get_apify_enrichment_status(
                 "status": "COMPLETED",
                 "profiles": results_data.get("profiles", []),
                 "total_found": results_data.get("total", 0),
+                "filtered_count": results_data.get("filtered_count", 0),
                 "created_at": job_state.get("created_at"),
                 "updated_at": job_state.get("updated_at")
             }
@@ -294,47 +361,116 @@ async def get_apify_enrichment_status(
             "updated_at": job_state.get("updated_at")
         }
     
-    # Check Apify run status
-    apify_run_id = job_state.get("apify_run_id")
-    if not apify_run_id:
+    # Handle multi-batch jobs
+    batches = job_state.get("batches", [])
+    apify_run_ids = job_state.get("apify_run_ids", [])
+    
+    # Fall back to single run ID for backward compatibility
+    if not apify_run_ids and job_state.get("apify_run_id"):
+        apify_run_ids = [job_state.get("apify_run_id")]
+        batches = [{
+            "batch_idx": 0,
+            "apify_run_id": job_state.get("apify_run_id"),
+            "urls": job_state.get("linkedin_urls", []),
+            "status": "PROCESSING"
+        }]
+    
+    if not apify_run_ids:
         return {
             "job_id": job_id,
             "status": job_state.get("status", "PENDING"),
-            "message": "Waiting for Apify run to start..."
+            "message": "Waiting for Apify runs to start..."
         }
     
-    # Check Apify status
-    apify_status = check_apify_run_status(apify_run_id)
-    status = apify_status.get("status", "")
+    # Check status of all batches
+    all_completed = True
+    any_failed = False
+    all_apify_results = []
+    completed_batches = 0
     
-    logger.info(f"Apify run {apify_run_id} status: {status}")
-    
-    if status == "SUCCEEDED":
-        logger.info(f"Apify run succeeded for job {job_id}")
+    for batch in batches:
+        apify_run_id = batch.get("apify_run_id")
         
-        # Get results from Apify
-        dataset_id = apify_status.get("dataset_id")
-        apify_results = get_apify_run_results(dataset_id) if dataset_id else []
+        if not apify_run_id:
+            # Batch failed to start
+            continue
+        
+        if batch.get("status") == "COMPLETED":
+            # Already processed this batch
+            completed_batches += 1
+            continue
+        
+        if batch.get("status") == "FAILED":
+            continue
+        
+        # Check Apify status for this batch
+        apify_status = check_apify_run_status(apify_run_id)
+        status = apify_status.get("status", "")
+        
+        logger.info(f"Batch {batch.get('batch_idx', 0)} Apify run {apify_run_id} status: {status}")
+        
+        if status == "SUCCEEDED":
+            batch["status"] = "COMPLETED"
+            completed_batches += 1
+            
+            # Get results from this batch
+            dataset_id = apify_status.get("dataset_id")
+            if dataset_id:
+                batch_results = get_apify_run_results(dataset_id)
+                all_apify_results.extend(batch_results)
+                batch["results_count"] = len(batch_results)
+                logger.info(f"Batch {batch.get('batch_idx', 0)} returned {len(batch_results)} results")
+        
+        elif status in ["FAILED", "ABORTED", "TIMED-OUT", "ERROR"]:
+            batch["status"] = "FAILED"
+            batch["error"] = apify_status.get("error", "Unknown error")
+            any_failed = True
+            logger.warning(f"Batch {batch.get('batch_idx', 0)} failed: {batch['error']}")
+        
+        else:
+            # Still processing
+            all_completed = False
+    
+    # Update job state with batch progress
+    job_state["batches"] = batches
+    job_state["completed_batches"] = completed_batches
+    job_state["updated_at"] = datetime.utcnow().isoformat()
+    
+    if all_completed or completed_batches == len(batches):
+        # All batches completed (or failed)
+        logger.info(f"All {len(batches)} batches completed for job {job_id}")
         
         # Map results back to original profiles and extract fields
         url_to_profile_map = job_state.get("url_to_profile_map", {})
         enriched_profiles = []
+        filtered_profiles = []
         
         # Create a map of apify results by URL
         apify_url_map = {}
-        for apify_profile in apify_results:
+        for apify_profile in all_apify_results:
             profile_url = apify_profile.get("url", "") or apify_profile.get("linkedinUrl", "")
             if profile_url:
-                apify_url_map[profile_url] = apify_profile
+                # Normalize URL for matching
+                normalized_url = profile_url.lower().rstrip('/')
+                apify_url_map[normalized_url] = apify_profile
+        
+        logger.info(f"Got {len(apify_url_map)} unique Apify results to match against {len(url_to_profile_map)} profiles")
         
         # Enrich original profiles with Apify data
         for linkedin_url, original_profile in url_to_profile_map.items():
             # Find matching Apify result (try different URL formats)
             apify_data = None
-            for apify_url, apify_profile in apify_url_map.items():
-                if linkedin_url in apify_url or apify_url in linkedin_url:
-                    apify_data = apify_profile
-                    break
+            normalized_linkedin_url = linkedin_url.lower().rstrip('/')
+            
+            # Try exact match first
+            if normalized_linkedin_url in apify_url_map:
+                apify_data = apify_url_map[normalized_linkedin_url]
+            else:
+                # Try partial matching
+                for apify_url, apify_profile in apify_url_map.items():
+                    if normalized_linkedin_url in apify_url or apify_url in normalized_linkedin_url:
+                        apify_data = apify_profile
+                        break
             
             # Extract fields from Apify data
             extracted_profile = extract_apify_profile_fields(apify_data) if apify_data else {}
@@ -343,51 +479,60 @@ async def get_apify_enrichment_status(
             enriched_profile = {
                 **original_profile,
                 "profile_info": extracted_profile,
-                "apify_enriched": True if extracted_profile else False
+                "apify_enriched": True if extracted_profile and extracted_profile.get("fullName") else False
             }
-            enriched_profiles.append(enriched_profile)
+            
+            # Filter: Only include successfully enriched profiles
+            if is_valid_enriched_profile(enriched_profile):
+                enriched_profiles.append(enriched_profile)
+            else:
+                filtered_profiles.append({
+                    "linkedin_url": linkedin_url,
+                    "reason": "Profile not found or invalid on LinkedIn"
+                })
         
-        logger.info(f"Enriched {len(enriched_profiles)} profiles for job {job_id}")
+        logger.info(f"Enriched {len(enriched_profiles)} profiles, filtered out {len(filtered_profiles)} invalid profiles for job {job_id}")
+        
+        # Log filtered profiles for debugging
+        if filtered_profiles:
+            logger.info(f"Filtered profiles: {[fp['linkedin_url'] for fp in filtered_profiles[:5]]}{'...' if len(filtered_profiles) > 5 else ''}")
         
         # Update job state
         job_state["status"] = "COMPLETED"
-        job_state["updated_at"] = datetime.utcnow().isoformat()
+        job_state["total_enriched"] = len(enriched_profiles)
+        job_state["total_filtered"] = len(filtered_profiles)
         await save_job_state_to_s3(job_id, job_state)
         
-        # Save results to S3
-        await save_results_to_s3(job_id, enriched_profiles)
+        # Save results to S3 (only valid enriched profiles)
+        results_data = {
+            "profiles": enriched_profiles,
+            "total": len(enriched_profiles),
+            "filtered_count": len(filtered_profiles),
+            "filtered_profiles": filtered_profiles
+        }
+        results_key = get_apify_results_s3_key(job_id)
+        upload_json_to_s3(results_key, results_data)
         
         return {
             "job_id": job_id,
             "status": "COMPLETED",
             "profiles": enriched_profiles,
             "total_found": len(enriched_profiles),
+            "filtered_count": len(filtered_profiles),
+            "message": f"Successfully enriched {len(enriched_profiles)} profiles. {len(filtered_profiles)} invalid profiles were filtered out.",
             "created_at": job_state.get("created_at"),
             "updated_at": job_state.get("updated_at")
         }
     
-    elif status in ["FAILED", "ABORTED", "TIMED-OUT", "ERROR"]:
-        error_msg = apify_status.get("error", "Unknown error")
-        logger.error(f"Apify run failed for job {job_id}: {error_msg}")
-        
-        # Update job state
-        job_state["status"] = "FAILED"
-        job_state["error"] = error_msg
-        job_state["updated_at"] = datetime.utcnow().isoformat()
+    else:
+        # Still processing
         await save_job_state_to_s3(job_id, job_state)
         
         return {
             "job_id": job_id,
-            "status": "FAILED",
-            "error": error_msg
-        }
-    
-    else:
-        # Still processing
-        return {
-            "job_id": job_id,
             "status": "PROCESSING",
-            "apify_status": status,
             "total_profiles": job_state.get("total_profiles", 0),
-            "message": "Apify enrichment in progress..."
+            "total_batches": len(batches),
+            "completed_batches": completed_batches,
+            "message": f"Apify enrichment in progress... ({completed_batches}/{len(batches)} batches completed)"
         }
