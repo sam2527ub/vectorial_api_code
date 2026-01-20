@@ -127,8 +127,21 @@ async def process_posts_and_update_profiles(
             continue
         
         # Use the profile's audience room ID for S3 path
+        # Need to get the room to find the source
         room_id = p["audienceRoomId"]
-        posts_key = get_s3_key_for_audience(room_id, f"profiles/{pid}/posts.json", enterprise_name)
+        room_source = None
+        
+        # Try to get source from the room we already fetched
+        if room and room.id == room_id:
+            room_source = room.source
+        else:
+            # Need to fetch the room to get source
+            profile_room = database.find_audience_room_by_id(room_id, enterprise_name=enterprise_name)
+            if profile_room:
+                room_source = profile_room.source
+        
+        logger.info(f"Using source={room_source} for room_id={room_id} when generating S3 key for posts")
+        posts_key = get_s3_key_for_audience(room_id, f"profiles/{pid}/posts.json", enterprise_name, room_source)
         logger.info(f"Uploading {len(posts_for_profile)} posts to S3 for profile {pid}: {posts_key}")
         
         try:

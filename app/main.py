@@ -7,6 +7,7 @@ from contextlib import asynccontextmanager
 from app import database
 from app.config import logger
 from app.api.v1.router import api_router
+from app.utils.s3_utils import initialize_all_enterprise_audience_folders
 
 
 @asynccontextmanager
@@ -28,6 +29,14 @@ async def lifespan(app: FastAPI):
             logger.warning("Audience database connection check failed")
     else:
         logger.warning("Audience database not configured - audience endpoints will be disabled")
+    
+    # Initialize enterprise and audience type folders in S3
+    try:
+        logger.info("Initializing enterprise and audience folders in S3")
+        initialize_all_enterprise_audience_folders()
+    except Exception as e:
+        logger.warning(f"Failed to initialize enterprise and audience folders on startup: {e}")
+        # Don't fail startup if this fails - folders will be created on-demand
     
     yield
     
