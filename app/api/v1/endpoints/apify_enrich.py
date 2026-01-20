@@ -94,7 +94,7 @@ def start_apify_batch_run(linkedin_urls: List[str]) -> Optional[str]:
     
     run_input = {
         "profileUrls": normalized_urls,
-        "proxy": {"useApifyProxy": True}
+        "proxy": {"useApifyProxy": True, "apifyProxyGroups": []}
     }
     
     logger.info(f"Starting Apify batch run for {len(normalized_urls)} profiles")

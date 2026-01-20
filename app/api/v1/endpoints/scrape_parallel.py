@@ -87,7 +87,7 @@ async def process_batch(
         "limitPerSource": max_posts,
         "cookie": cookies_dict,
         "userAgent": user_agent,
-        "proxy": {"useApifyProxy": True}
+        "proxy": {"useApifyProxy": True, "apifyProxyGroups": []}
     }
     
     try:

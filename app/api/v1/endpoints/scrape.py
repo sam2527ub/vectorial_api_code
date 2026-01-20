@@ -57,7 +57,7 @@ async def trigger_scraping(payload: ScrapeRequest):
         "limitPerSource": payload.max_posts,
         "cookie": cookies_dict,
         "userAgent": payload.user_agent,
-        "proxy": {"useApifyProxy": True}
+        "proxy": {"useApifyProxy": True, "apifyProxyGroups": []}
     }
 
     # Check if database is available
