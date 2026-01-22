@@ -1388,9 +1388,6 @@ async def copy_audience_room_to_client(
         # ---------------------------------------------------------------------
         # Step 3: Get userId from target enterprise
         # ---------------------------------------------------------------------
-        # ---------------------------------------------------------------------
-        # Step 3: Get userId from target enterprise
-        # ---------------------------------------------------------------------
         if payload.targetUserId:
             target_user_id = payload.targetUserId
             logger.info("Using provided target userId: %s", target_user_id)
@@ -1602,9 +1599,53 @@ async def copy_audience_room_to_client(
             len(upserted_profiles),
             len(failed_profiles),
         )
+        # ---------------------------------------------------------------------
+        # Step 8: Copy preview record to target enterprise
+        # ---------------------------------------------------------------------
+        logger.info(
+            "Fetching preview record for room %s from source enterprise=%s",
+            audience_room_id,
+            source_enterprise,
+        )
+        
+        source_preview = database.find_preview_by_room_id(
+            room_id=audience_room_id,
+            enterprise_name=source_enterprise
+        )
+        
+        preview_copied = False
+        if source_preview:
+            logger.info(
+                "Found preview record: room_id=%s, name=%s",
+                source_preview.get('room_id'),
+                source_preview.get('name'),
+            )
+            
+            target_preview = database.upsert_preview(
+                room_id=audience_room_id,  
+                name=source_preview.get('name'),
+                user_id=target_user_id, 
+                description_summary=source_preview.get('description_summary'),
+                source=source_preview.get('source'),
+                total_profile_count=source_preview.get('total_profile_count', 0),
+                profiles=source_preview.get('profiles'),
+                enterprise_name=target_enterprise,
+            )
+            
+            preview_copied = True
+            logger.info(
+                "Upserted preview record in target enterprise: room_id=%s, user_id=%s",
+                target_preview.get('room_id'),
+                target_preview.get('user_id'),
+            )
+        else:
+            logger.warning(
+                "No preview record found for room %s in source enterprise=%s",
+                audience_room_id,
+                source_enterprise,
+            )
 
         logger.info("=== COPY AUDIENCE ROOM TO CLIENT REQUEST SUCCESS ===")
-
         return {
             "status": "success",
             "message": (
@@ -1630,8 +1671,12 @@ async def copy_audience_room_to_client(
                 "upserted_profiles": upserted_profiles,
                 "failed_profiles": failed_profiles,
             },
+            "preview": {
+                "copied": preview_copied,
+                "room_id": audience_room_id,
+                "target_user_id": target_user_id,
+            },
         }
-
     except HTTPException:
         raise
     except Exception as e:
