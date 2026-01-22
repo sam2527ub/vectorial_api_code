@@ -1379,6 +1379,39 @@ async def copy_audience_room_to_client(
             len(source_room.profiles),
         )
 
+        logger.info(
+            "Checking if audience room %s already exists in target enterprise=%s",
+            audience_room_id,
+            target_enterprise,
+        )
+        
+        existing_target_room = database.find_audience_room_by_id(
+            audience_room_id,
+            include_profiles=False,
+            enterprise_name=target_enterprise,
+        )
+        
+        if existing_target_room:
+            logger.warning(
+                "Audience room %s already exists in target enterprise=%s",
+                audience_room_id,
+                target_enterprise,
+            )
+            raise HTTPException(
+                status_code=409,
+                detail=(
+                    f"Audience room '{source_room.name}' (ID: {audience_room_id}) "
+                    f"has already been copied to enterprise '{target_enterprise}'. "
+                    "This room already exists in the target enterprise."
+                ),
+            )
+        
+        logger.info(
+            "Audience room %s does not exist in target enterprise=%s, proceeding with copy",
+            audience_room_id,
+            target_enterprise,
+        )
+
         # ---------------------------------------------------------------------
         # Step 2: Resolve source audience path
         # ---------------------------------------------------------------------

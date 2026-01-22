@@ -210,9 +210,9 @@ def get_enterprise_audience_connection(enterprise_name: Optional[str] = None):
     conn = pool.getconn()
     logger.info(f"Connection acquired from pool for enterprise='{normalized_enterprise}'")
     try:
-        logger.info(f"Yielding connection for enterprise='{normalized_enterprise}'")
+        logger.debug(f"Yielding connection for enterprise='{normalized_enterprise}'")
         yield conn
-        logger.info(f"Committing transaction for enterprise='{normalized_enterprise}'")
+        logger.debug(f"Committing transaction for enterprise='{normalized_enterprise}'")
         conn.commit()
         logger.info(f"Transaction committed successfully for enterprise='{normalized_enterprise}'")
     except Exception as e:
