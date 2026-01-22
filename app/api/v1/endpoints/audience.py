@@ -1,11 +1,12 @@
 """Audience room endpoints."""
 import uuid
 import asyncio
-from datetime import datetime
+import copy
+from datetime import datetime, timezone
 from typing import Optional
 from fastapi import APIRouter, HTTPException, Path, Query
 from app.models.schemas import CreateAudienceRoomRequest, UpdateAudienceRoomNameRequest, CopyAudienceRoomToClientRequest
-from app.config import s3_client, s3_bucket, logger
+from app.config import s3_client, s3_bucket, logger, dynamodb_resource
 from app.utils.helpers import ensure_db_available
 from app.utils.s3_utils import (
     upload_json_to_s3, 
@@ -1379,6 +1380,16 @@ async def copy_audience_room_to_client(
             len(source_room.profiles),
         )
 
+        # Get source userId from source room
+        source_user_id = source_room.userId
+        if not source_user_id:
+            logger.warning(
+                "Source audience room %s has no userId, DynamoDB replication will be skipped",
+                audience_room_id
+            )
+        else:
+            logger.info("Source userId resolved: %s", source_user_id)
+
         # ---------------------------------------------------------------------
         # Step 2: Resolve source audience path
         # ---------------------------------------------------------------------
@@ -1603,6 +1614,95 @@ async def copy_audience_room_to_client(
             len(failed_profiles),
         )
 
+        # ---------------------------------------------------------------------
+        # Step 8: Replicate DynamoDB Clones table entry
+        # ---------------------------------------------------------------------
+        dynamodb_replication_status = None
+        if source_user_id and dynamodb_resource:
+            try:
+                logger.info(
+                    "Replicating DynamoDB entry: source_user_id=%s, target_user_id=%s, clone_id=%s",
+                    source_user_id,
+                    target_user_id,
+                    audience_room_id,
+                )
+                
+                table = dynamodb_resource.Table("Clones")
+                
+                # Get the source item from DynamoDB
+                try:
+                    source_item = table.get_item(
+                        Key={
+                            'user_id': source_user_id,
+                            'clone_id': audience_room_id
+                        }
+                    )
+                    
+                    if 'Item' not in source_item:
+                        logger.warning(
+                            "DynamoDB entry not found for user_id=%s, clone_id=%s. Skipping replication.",
+                            source_user_id,
+                            audience_room_id
+                        )
+                        dynamodb_replication_status = {
+                            "status": "skipped",
+                            "reason": "Source entry not found in DynamoDB"
+                        }
+                    else:
+                        # Create replica with new user_id
+                        replica_item = copy.deepcopy(source_item['Item'])
+                        replica_item['user_id'] = target_user_id
+                        
+                        # Update updated_at timestamp to current time
+                        current_time = datetime.now(timezone.utc).isoformat()
+                        replica_item['updated_at'] = current_time
+                        
+                        # Put the replica item
+                        table.put_item(Item=replica_item)
+                        
+                        logger.info(
+                            "Successfully replicated DynamoDB entry: user_id=%s, clone_id=%s",
+                            target_user_id,
+                            audience_room_id
+                        )
+                        dynamodb_replication_status = {
+                            "status": "success",
+                            "source_user_id": source_user_id,
+                            "target_user_id": target_user_id,
+                            "clone_id": audience_room_id
+                        }
+                        
+                except Exception as e:
+                    logger.error(
+                        "Failed to replicate DynamoDB entry: %s",
+                        e,
+                        exc_info=True
+                    )
+                    dynamodb_replication_status = {
+                        "status": "failed",
+                        "error": str(e)
+                    }
+                    
+            except Exception as e:
+                logger.error(
+                    "Error accessing DynamoDB: %s",
+                    e,
+                    exc_info=True
+                )
+                dynamodb_replication_status = {
+                    "status": "error",
+                    "error": f"DynamoDB access error: {str(e)}"
+                }
+        else:
+            if not source_user_id:
+                logger.warning("Skipping DynamoDB replication: source_user_id not available")
+            if not dynamodb_resource:
+                logger.warning("Skipping DynamoDB replication: DynamoDB resource not initialized")
+            dynamodb_replication_status = {
+                "status": "skipped",
+                "reason": "source_user_id or dynamodb_resource not available"
+            }
+
         logger.info("=== COPY AUDIENCE ROOM TO CLIENT REQUEST SUCCESS ===")
 
         return {
@@ -1630,6 +1730,7 @@ async def copy_audience_room_to_client(
                 "upserted_profiles": upserted_profiles,
                 "failed_profiles": failed_profiles,
             },
+            "dynamodb_replication": dynamodb_replication_status,
         }
 
     except HTTPException:
