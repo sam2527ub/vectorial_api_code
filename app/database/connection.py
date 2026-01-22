@@ -949,6 +949,25 @@ def delete_audience_profiles_by_room(room_id: str, enterprise_name: Optional[str
             return cur.rowcount
 
 
+def delete_audience_profile(profile_id: str, enterprise_name: Optional[str] = None) -> bool:
+    """Delete a single audience profile by ID.
+    
+    Args:
+        profile_id: The profile ID to delete
+        enterprise_name: Optional enterprise name (gamma, app, entelligence, beta). Defaults to AUDIENCE_DATABASE_URL if None.
+    
+    Returns:
+        True if a profile was deleted, False otherwise
+    """
+    with get_enterprise_audience_connection(enterprise_name) as conn:
+        with conn.cursor() as cur:
+            cur.execute(
+                'DELETE FROM "AudienceProfile" WHERE id = %s',
+                (profile_id,)
+            )
+            return cur.rowcount > 0
+
+
 # ============================================
 # PostClassifier Operations (Audience Database)
 # ============================================

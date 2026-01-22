@@ -94,52 +94,61 @@ def get_new_key_from_old_key(old_key: str, room_id: str, source: Optional[str]) 
     return f"{ENTERPRISE_NAME}/{audience_type}/{room_id}/{relative_path}"
 
 
-def migrate_room_files_from_urls(room: Any) -> Dict[str, Any]:
-    """Migrate files for a room based on URLs in database."""
+def migrate_all_room_files(room: Any) -> Dict[str, Any]:
+    """Migrate ALL files for a room from old locations to new location."""
     room_id = room.id
     room_source = room.source
-    new_prefix = f"{ENTERPRISE_NAME}/{get_audience_type_from_source(room_source)}/{room_id}/"
+    audience_type = get_audience_type_from_source(room_source)
+    new_prefix = f"{ENTERPRISE_NAME}/{audience_type}/{room_id}/"
     
     files_copied = 0
-    files_to_copy = []
+    files_skipped = 0
+    errors = 0
     
-    # Collect all S3 keys from room URLs
-    if room.descriptionS3Url:
-        old_key = extract_s3_key_from_url(room.descriptionS3Url)
-        if old_key and new_prefix not in room.descriptionS3Url:
-            files_to_copy.append(('description', old_key))
+    # Old prefixes to check
+    old_prefixes = [
+        f"audiences/{room_id}/",
+        f"linkedin-audience/{ENTERPRISE_NAME}/{room_id}/",
+        f"reddit-audience/{room_id}/",
+    ]
     
-    if room.indexesS3Url:
-        old_key = extract_s3_key_from_url(room.indexesS3Url)
-        if old_key and new_prefix not in room.indexesS3Url:
-            files_to_copy.append(('indexes', old_key))
+    # Collect all files from old locations
+    all_old_files = []
+    for old_prefix in old_prefixes:
+        try:
+            paginator = s3_client.get_paginator('list_objects_v2')
+            for page in paginator.paginate(Bucket=s3_bucket, Prefix=old_prefix):
+                if 'Contents' in page:
+                    for obj in page['Contents']:
+                        # Skip folder markers (empty objects with trailing slash)
+                        if not (obj['Key'].endswith('/') and obj['Size'] == 0):
+                            all_old_files.append(obj['Key'])
+        except Exception as e:
+            logger.debug(f"Error listing files in {old_prefix}: {e}")
     
-    # Collect all S3 keys from profile URLs
-    profile_files = []
-    if hasattr(room, 'profiles') and room.profiles:
-        for profile in room.profiles:
-            for field in ['profileDescriptionS3Url', 'postsS3Url', 'commentsS3Url']:
-                url = getattr(profile, field, None)
-                if url and new_prefix not in url:
-                    old_key = extract_s3_key_from_url(url)
-                    if old_key:
-                        profile_files.append((profile.id, field, old_key))
+    logger.info(f"  Found {len(all_old_files)} files in old locations")
     
-    # Copy room files
-    for file_type, old_key in files_to_copy:
-        new_key = get_new_key_from_old_key(old_key, room_id, room_source)
-        if new_key and copy_single_file(old_key, new_key):
-            files_copied += 1
-    
-    # Copy profile files
-    for profile_id, field, old_key in profile_files:
-        new_key = get_new_key_from_old_key(old_key, room_id, room_source)
-        if new_key and copy_single_file(old_key, new_key):
-            files_copied += 1
+    # Copy each file
+    for old_key in all_old_files:
+        try:
+            new_key = get_new_key_from_old_key(old_key, room_id, room_source)
+            if new_key:
+                if copy_single_file(old_key, new_key):
+                    files_copied += 1
+                else:
+                    files_skipped += 1
+            else:
+                logger.warning(f"  Could not determine new key for: {old_key}")
+                errors += 1
+        except Exception as e:
+            logger.error(f"  Error processing {old_key}: {e}")
+            errors += 1
     
     return {
         'files_copied': files_copied,
-        'files_to_copy': len(files_to_copy) + len(profile_files)
+        'files_skipped': files_skipped,
+        'errors': errors,
+        'total_found': len(all_old_files)
     }
 
 
@@ -182,14 +191,22 @@ def main():
         total_profiles_updated = 0
         
         for idx, room in enumerate(rooms, 1):
-            logger.info(f"\n[{idx}/{len(rooms)}] Processing room: {room.id} ({room.name})")
-            
-            # Migrate files
-            result = migrate_room_files_from_urls(room)
-            total_files_copied += result['files_copied']
-            
-            if result['files_copied'] > 0:
-                logger.info(f"  Copied {result['files_copied']} files")
+            try:
+                logger.info(f"\n[{idx}/{len(rooms)}] Processing room: {room.id} ({room.name})")
+                
+                # Migrate ALL files from old locations
+                result = migrate_all_room_files(room)
+                total_files_copied += result['files_copied']
+                
+                if result['files_copied'] > 0:
+                    logger.info(f"  ✓ Copied {result['files_copied']} files")
+                if result['files_skipped'] > 0:
+                    logger.info(f"  - Skipped {result['files_skipped']} files (already exist)")
+                if result['errors'] > 0:
+                    logger.warning(f"  ⚠ {result['errors']} errors")
+            except Exception as e:
+                logger.error(f"  ✗ Error processing room {room.id}: {e}")
+                continue
             
             # Update database URLs
             room_source = room.source

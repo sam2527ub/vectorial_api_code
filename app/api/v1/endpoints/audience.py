@@ -481,27 +481,26 @@ async def delete_audience_room_v2(
             # Continue with database deletion even if S3 deletion fails
         
         # Delete all profiles from database first using enterprise-specific database if provided
-        if profiles:
-            logger.info(f"Deleting {profile_count} profiles from database (enterprise={enterpriseName})")
-            for idx, profile in enumerate(profiles):
-                logger.info(f"Deleting profile {idx+1}/{profile_count}: id={profile.id}, name={profile.profileName}")
-                database.delete_audience_profile(profile.id, enterprise_name=enterpriseName)
-            logger.info(f"Successfully deleted {profile_count} profiles from database")
-        else:
-            logger.info("No profiles to delete")
+        # Use bulk delete for efficiency
+        logger.info(f"Deleting all profiles for room {audience_room_id} from database (enterprise={enterpriseName})")
+        deleted_profile_count = database.delete_audience_profiles_by_room(audience_room_id, enterprise_name=enterpriseName)
+        logger.info(f"Successfully deleted {deleted_profile_count} profiles from database")
         
         # Delete the audience room from database using enterprise-specific database if provided
         logger.info(f"Deleting audience room {audience_room_id} from database (enterprise={enterpriseName})")
-        database.delete_audience_room(audience_room_id, enterprise_name=enterpriseName)
+        room_deleted = database.delete_audience_room(audience_room_id, enterprise_name=enterpriseName)
+        if not room_deleted:
+            logger.warning(f"Audience room {audience_room_id} was not found or could not be deleted")
+            raise HTTPException(status_code=404, detail=f"Audience room {audience_room_id} not found or could not be deleted")
         logger.info(f"Successfully deleted audience room {audience_room_id} from database")
         
         logger.info(f"=== DELETE AUDIENCE ROOM V2 REQUEST SUCCESS ===")
-        logger.info(f"Deleted: room_id={audience_room_id}, profiles={profile_count}, s3_files={len(deleted_s3_files)}")
+        logger.info(f"Deleted: room_id={audience_room_id}, profiles={deleted_profile_count}, s3_files={len(deleted_s3_files)}")
         
         return {
             "message": f"Audience room {audience_room_id} deleted successfully",
             "deleted_room_id": audience_room_id,
-            "deleted_profiles": profile_count,
+            "deleted_profiles": deleted_profile_count,
             "deleted_s3_files": len(deleted_s3_files),
             "s3_prefix_used": s3_prefix
         }
@@ -1120,7 +1119,7 @@ async def generate_group_summary(
         # Generate group summary using OpenAI
         try:
             completion = openai_client.chat.completions.create(
-                model="gpt-4o-mini",
+                model="o3-mini",
                 messages=[
                     {"role": "system", "content": system_message},
                     {"role": "user", "content": user_prompt}
@@ -1152,7 +1151,7 @@ async def generate_group_summary(
             
             try:
                 traits_completion = openai_client.chat.completions.create(
-                    model="gpt-4o-mini",
+                    model="o3-mini",
                     messages=[
                         {"role": "system", "content": traits_system_message},
                         {"role": "user", "content": traits_prompt}
