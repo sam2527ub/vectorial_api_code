@@ -8,7 +8,7 @@ echo "Project root: $PROJECT_ROOT"
 echo "========================================="
 echo "Installing Python dependencies..."
 echo "========================================="
-pip install -r requirements.txt
+pip install --break-system-packages -r requirements.txt
 
 echo "========================================="
 echo "Creating Prisma generator wrapper..."
