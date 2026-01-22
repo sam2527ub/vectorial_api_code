@@ -1,13 +1,26 @@
 """S3 utility functions."""
 import json
 import logging
-from typing import Dict, Any, Optional
+from typing import Dict, Any, Optional, List
 from fastapi import HTTPException
 from app.config import s3_client, s3_bucket, s3_region
 
 logger = logging.getLogger(__name__)
 
 
+def get_source_audience_path(source: Optional[str] = None) -> str:
+    """
+    Convert source value to audience path.
+    """
+    if not source:
+        return "linkedin-audience"  # Default to linkedin-audience
+    
+    source_lower = source.lower().strip()
+    if source_lower == "reddit":
+        return "reddit-audience"
+    else:
+        # Default to linkedin-audience for "LinkedIn", "Linkedin", or any other value
+        return "linkedin-audience"
 def get_audience_type_from_source(source: Optional[str] = None) -> str:
     """
     Determine audience type (linkedin-audience or reddit-audience) from source field.
@@ -104,15 +117,13 @@ def get_s3_key_for_audience(room_id: str, path: str, enterprise_name: Optional[s
     """
     Generate S3 key with enterprise-based folder structure.
     
-    New Structure: {enterpriseName}/{audienceType}/{room_id}/{path}
-    - {enterpriseName}/linkedin-audience/{room_id}/{path} for LinkedIn
-    - {enterpriseName}/reddit-audience/{room_id}/{path} for Reddit
+    Structure: {enterpriseName}/{source}-audience/{room_id}/{path}
     
     Args:
         room_id: Audience room ID
         path: Path within the room folder (e.g., "description.json", "profiles/{profile_id}/profile.json")
         enterprise_name: Enterprise name (gamma, app, entelligence, beta). If None, uses "default"
-        source: Source string to determine audience type (linkedin/reddit). If None, defaults to "linkedin-audience"
+        source: Source value ("LinkedIn", "Reddit") to determine audience path. If None, defaults to "linkedin-audience"
     
     Returns:
         S3 key string
@@ -180,4 +191,123 @@ def fetch_json_from_s3(key: str) -> Dict[str, Any]:
     except Exception as e:
         logger.error(f"Failed to fetch JSON from S3 for key {key}: {e}")
         raise HTTPException(status_code=500, detail=f"Failed to fetch data from S3: {str(e)}")
+
+
+from typing import List
+
+
+def list_s3_objects_with_prefix(prefix: str) -> List[str]:
+    if not s3_client or not s3_bucket:
+        raise HTTPException(
+            status_code=503,
+            detail=(
+                "S3 is not configured; set AUDIENCE_BUCKET_NAME "
+                "or VECTOR_BUCKET_NAME."
+            ),
+        )
+
+    object_keys: List[str] = []
+
+    try:
+        paginator = s3_client.get_paginator("list_objects_v2")
+        pages = paginator.paginate(Bucket=s3_bucket, Prefix=prefix)
+
+        for page in pages:
+            contents = page.get("Contents", [])
+            for obj in contents:
+                object_keys.append(obj["Key"])
+
+        logger.info(
+            "Found %d S3 objects with prefix: %s",
+            len(object_keys),
+            prefix,
+        )
+        return object_keys
+
+    except Exception as e:
+        logger.error(
+            "Failed to list S3 objects with prefix %s: %s",
+            prefix,
+            e,
+        )
+        raise HTTPException(
+            status_code=500,
+            detail=f"Failed to list S3 objects: {str(e)}",
+        )
+
+
+def copy_s3_object(source_key: str, destination_key: str) -> str:
+    """
+    Copy an S3 object from source_key to destination_key.
+    """
+    if not s3_client or not s3_bucket:
+        raise HTTPException(
+            status_code=503,
+            detail=(
+                "S3 is not configured; set AUDIENCE_BUCKET_NAME "
+                "or VECTOR_BUCKET_NAME."
+            ),
+        )
+
+    try:
+        copy_source = {
+            "Bucket": s3_bucket,
+            "Key": source_key,
+        }
+
+        s3_client.copy_object(
+            CopySource=copy_source,
+            Bucket=s3_bucket,
+            Key=destination_key,
+        )
+
+        logger.info(
+            "Copied S3 object from %s to %s",
+            source_key,
+            destination_key,
+        )
+
+        return (
+            f"https://{s3_bucket}.s3.{s3_region}.amazonaws.com/"
+            f"{destination_key}"
+        )
+
+    except s3_client.exceptions.NoSuchKey:
+        raise HTTPException(
+            status_code=404,
+            detail=f"Source S3 object not found: {source_key}",
+        )
+
+    except Exception as e:
+        logger.error(
+            "Failed to copy S3 object from %s to %s: %s",
+            source_key,
+            destination_key,
+            e,
+        )
+        raise HTTPException(
+            status_code=500,
+            detail=f"Failed to copy S3 object: {str(e)}",
+        )
+
+
+def replace_enterprise_in_s3_url(
+    s3_url: str,
+    old_enterprise: str,
+    new_enterprise: str,
+) -> str:
+    """
+    Replace the enterprise name segment in an S3 URL.
+    """
+    if not s3_url:
+        return s3_url
+
+    old_enterprise = old_enterprise.lower().strip()
+    new_enterprise = new_enterprise.lower().strip()
+
+    return s3_url.replace(
+        f"/{old_enterprise}/",
+        f"/{new_enterprise}/",
+    )
+
 

@@ -38,12 +38,15 @@ from app.database.connection import (
     find_audience_room_by_id,
     update_audience_room,
     delete_audience_room,
+    upsert_audience_room,
+    get_user_id_from_enterprise,
     
     # AudienceProfile operations (audience database)
     find_audience_profiles,
     find_audience_profile_by_id,
     update_audience_profile,
     delete_audience_profiles_by_room,
+    upsert_audience_profile,
     
     # PostClassifier operations (audience database)
     find_post_classifier_by_id,
@@ -88,10 +91,13 @@ __all__ = [
     "find_audience_room_by_id",
     "update_audience_room",
     "delete_audience_room",
+    "upsert_audience_room",
+    "get_user_id_from_enterprise",
     "find_audience_profiles",
     "find_audience_profile_by_id",
     "update_audience_profile",
     "delete_audience_profiles_by_room",
+    "upsert_audience_profile",
     "find_post_classifier_by_id",
     "find_all_previews",
     "find_preview_by_room_id",

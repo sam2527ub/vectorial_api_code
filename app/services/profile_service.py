@@ -44,12 +44,14 @@ async def process_posts_and_update_profiles(
     logger.info(f"S3 configured: bucket={s3_bucket}")
     
     # Fetch profiles - either from specific room or all profiles if URLs provided
+    room_source = None
     if audience_room_id:
         logger.info(f"Fetching profiles for audience_room_id={audience_room_id}")
         # Get profiles from specific audience room using find_audience_room_by_id which supports enterprise_name
         room = database.find_audience_room_by_id(audience_room_id, include_profiles=True, enterprise_name=enterprise_name)
         profiles = room.profiles if room else []
-        logger.info(f"Found {len(profiles)} profiles in room {audience_room_id}")
+        room_source = room.source if room else None
+        logger.info(f"Found {len(profiles)} profiles in room {audience_room_id}, source={room_source}")
     elif linkedin_urls:
         logger.info(f"Fetching profiles matching {len(linkedin_urls)} LinkedIn URLs")
         # Get all profiles that match any of the scraped URLs
@@ -129,6 +131,23 @@ async def process_posts_and_update_profiles(
         # Use the profile's audience room ID for S3 path
         # Need to get the room to find the source
         room_id = p["audienceRoomId"]
+        source_to_use = room_source
+
+        if not source_to_use and room_id:
+            room = database.find_audience_room_by_id(
+                room_id,
+                include_profiles=False,
+                enterprise_name=enterprise_name,
+            )
+            if room:
+                source_to_use = room.source
+
+        posts_key = get_s3_key_for_audience(
+            room_id,
+            f"profiles/{pid}/posts.json",
+            enterprise_name,
+            source_to_use,
+        )
         room_source = None
         
         # Try to get source from the room we already fetched

@@ -210,9 +210,9 @@ def get_enterprise_audience_connection(enterprise_name: Optional[str] = None):
     conn = pool.getconn()
     logger.info(f"Connection acquired from pool for enterprise='{normalized_enterprise}'")
     try:
-        logger.info(f"Yielding connection for enterprise='{normalized_enterprise}'")
+        logger.debug(f"Yielding connection for enterprise='{normalized_enterprise}'")
         yield conn
-        logger.info(f"Committing transaction for enterprise='{normalized_enterprise}'")
+        logger.debug(f"Committing transaction for enterprise='{normalized_enterprise}'")
         conn.commit()
         logger.info(f"Transaction committed successfully for enterprise='{normalized_enterprise}'")
     except Exception as e:
@@ -771,6 +771,31 @@ def find_audience_room_by_id(room_id: str, include_profiles: bool = False, enter
             return room
 
 
+def get_user_id_from_enterprise(
+    enterprise_name: Optional[str] = None,
+) -> Optional[str]:
+    """
+    Return the userId from any AudienceRoom in the given enterprise.
+    """
+    sql = """
+        SELECT "userId"
+        FROM "AudienceRoom"
+        WHERE "userId" IS NOT NULL
+        LIMIT 1
+    """
+
+    with get_enterprise_audience_connection(enterprise_name) as conn:
+        with conn.cursor(cursor_factory=RealDictCursor) as cur:
+            cur.execute(sql)
+            row = cur.fetchone()
+
+    if not row:
+        return None
+
+    # Defensive fallback in case of inconsistent key casing
+    return row.get("userId") or row.get("userid")
+
+
 def update_audience_room(room_id: str, data: Dict[str, Any], enterprise_name: Optional[str] = None) -> Optional[AudienceRoom]:
     """Update an AudienceRoom record.
     
@@ -823,6 +848,134 @@ def delete_audience_room(room_id: str, enterprise_name: Optional[str] = None) ->
         with conn.cursor() as cur:
             cur.execute('DELETE FROM "AudienceRoom" WHERE id = %s', (room_id,))
             return cur.rowcount > 0
+
+
+def upsert_audience_room(
+    room_id: str,
+    name: str,
+    description_s3_url: str,
+    user_id: Optional[str] = None,
+    source: Optional[str] = None,
+    query: Optional[str] = None,
+    indexes_s3_url: Optional[str] = None,
+    enterprise_name: Optional[str] = None,
+) -> AudienceRoom:
+    """
+    Create or update an AudienceRoom.
+    """
+    now = datetime.utcnow()
+
+    sql = """
+        INSERT INTO "AudienceRoom" (
+            id,
+            name,
+            "descriptionS3Url",
+            "userId",
+            "source",
+            "query",
+            "indexesS3Url",
+            "createdAt",
+            "updatedAt"
+        )
+        VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
+        ON CONFLICT (id) DO UPDATE SET
+            name = EXCLUDED.name,
+            "descriptionS3Url" = EXCLUDED."descriptionS3Url",
+            "userId" = EXCLUDED."userId",
+            "source" = EXCLUDED."source",
+            "query" = EXCLUDED."query",
+            "indexesS3Url" = EXCLUDED."indexesS3Url",
+            "updatedAt" = EXCLUDED."updatedAt"
+        RETURNING *
+    """
+
+    params = (
+        room_id,
+        name,
+        description_s3_url,
+        user_id,
+        source,
+        query,
+        indexes_s3_url,
+        now,
+        now,
+    )
+
+    with get_enterprise_audience_connection(enterprise_name) as conn:
+        with conn.cursor(cursor_factory=RealDictCursor) as cur:
+            cur.execute(sql, params)
+            row = cur.fetchone()
+
+    if not row:
+        raise RuntimeError(f"AudienceRoom upsert failed (id={room_id})")
+
+    return AudienceRoom(row)
+
+
+def upsert_audience_profile(
+    profile_id: str,
+    audience_room_id: str,
+    profile_name: str,
+    profile_url: str,
+    profile_description_s3_url: Optional[str] = None,
+    posts_s3_url: Optional[str] = None,
+    comments_s3_url: Optional[str] = None,
+    source: Optional[str] = None,
+    enterprise_name: Optional[str] = None,
+) -> AudienceProfile:
+    """
+    Create or update an AudienceProfile.
+    """
+    now = datetime.utcnow()
+
+    sql = """
+        INSERT INTO "AudienceProfile" (
+            id,
+            "audienceRoomId",
+            "profileName",
+            "profileUrl",
+            "profileDescriptionS3Url",
+            "postsS3Url",
+            "commentsS3Url",
+            "source",
+            "createdAt",
+            "updatedAt"
+        )
+        VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+        ON CONFLICT (id) DO UPDATE SET
+            "audienceRoomId" = EXCLUDED."audienceRoomId",
+            "profileName" = EXCLUDED."profileName",
+            "profileUrl" = EXCLUDED."profileUrl",
+            "profileDescriptionS3Url" = EXCLUDED."profileDescriptionS3Url",
+            "postsS3Url" = EXCLUDED."postsS3Url",
+            "commentsS3Url" = EXCLUDED."commentsS3Url",
+            "source" = EXCLUDED."source",
+            "updatedAt" = EXCLUDED."updatedAt"
+        RETURNING *
+    """
+
+    params = (
+        profile_id,
+        audience_room_id,
+        profile_name,
+        profile_url,
+        profile_description_s3_url,
+        posts_s3_url,
+        comments_s3_url,
+        source,
+        now,
+        now,
+    )
+
+    with get_enterprise_audience_connection(enterprise_name) as conn:
+        with conn.cursor(cursor_factory=RealDictCursor) as cur:
+            cur.execute(sql, params)
+            row = cur.fetchone()
+
+    if not row:
+        raise RuntimeError(f"AudienceProfile upsert failed (id={profile_id})")
+
+    return AudienceProfile(row)
 
 
 # ============================================

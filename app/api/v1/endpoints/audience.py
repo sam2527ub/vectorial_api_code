@@ -1,13 +1,14 @@
 """Audience room endpoints."""
 import uuid
 import asyncio
-from datetime import datetime
+import copy
+from datetime import datetime, timezone
 from typing import Optional
 from fastapi import APIRouter, HTTPException, Path, Query
-from app.models.schemas import CreateAudienceRoomRequest, UpdateAudienceRoomNameRequest
-from app.config import s3_client, s3_bucket, logger
+from app.models.schemas import CreateAudienceRoomRequest, UpdateAudienceRoomNameRequest, CopyAudienceRoomToClientRequest
+from app.config import s3_client, s3_bucket, logger, dynamodb_resource
 from app.utils.helpers import ensure_db_available
-from app.utils.s3_utils import upload_json_to_s3, extract_s3_key_from_url, fetch_json_from_s3, get_s3_key_for_audience, ensure_enterprise_audience_folders_exist
+from app.utils.s3_utils import upload_json_to_s3, extract_s3_key_from_url, fetch_json_from_s3, get_s3_key_for_audience, ensure_enterprise_audience_folders_exist, get_source_audience_path, list_s3_objects_with_prefix, copy_s3_object, replace_enterprise_in_s3_url
 from app.services.summary_service import process_profile_summary
 from app import database
 
@@ -1416,4 +1417,534 @@ async def remove_labels_from_posts(
     except Exception as e:
         logger.error(f"Error removing labels from posts: {e}")
         raise HTTPException(status_code=500, detail=f"Failed to remove labels from posts: {str(e)}")
+
+
+@router.post("/api/v1/audience-rooms/{audience_room_id}/copy-to-client")
+async def copy_audience_room_to_client(
+    audience_room_id: str = Path(..., description="The audience room ID to copy"),
+    payload: CopyAudienceRoomToClientRequest = ...,
+):
+    """
+    Copy an audience room and its profiles from a source enterprise
+    to a target enterprise, including all related S3 assets.
+    """
+    logger.info("=== COPY AUDIENCE ROOM TO CLIENT REQUEST START ===")
+    logger.info(
+        "Request: room_id=%s, source=%s, target=%s",
+        audience_room_id,
+        payload.sourceEnterpriseName,
+        payload.targetEnterpriseName,
+    )
+
+    ensure_db_available("audience")
+    logger.info("Database availability check passed")
+
+    if not s3_client or not s3_bucket:
+        logger.error("S3 not configured")
+        raise HTTPException(
+            status_code=503,
+            detail="S3 is not configured; set AUDIENCE_BUCKET_NAME or VECTOR_BUCKET_NAME.",
+        )
+
+    # Normalize enterprise names
+    source_enterprise = (
+        payload.sourceEnterpriseName.lower().strip()
+        if payload.sourceEnterpriseName
+        else "gamma"
+    )
+    target_enterprise = payload.targetEnterpriseName.lower().strip()
+
+    valid_enterprises = {"gamma", "app", "entelligence", "beta"}
+
+    if target_enterprise not in valid_enterprises:
+        raise HTTPException(
+            status_code=400,
+            detail=(
+                f"Invalid target enterprise: {target_enterprise}. "
+                f"Must be one of: {', '.join(valid_enterprises)}"
+            ),
+        )
+
+    if source_enterprise == target_enterprise:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Source and target enterprises cannot be the same: {source_enterprise}",
+        )
+
+    try:
+        # ---------------------------------------------------------------------
+        # Step 1: Fetch room + profiles from source DB
+        # ---------------------------------------------------------------------
+        logger.info(
+            "Fetching audience room %s from source enterprise=%s",
+            audience_room_id,
+            source_enterprise,
+        )
+
+        source_room = database.find_audience_room_by_id(
+            audience_room_id,
+            include_profiles=True,
+            enterprise_name=source_enterprise,
+        )
+
+        if not source_room:
+            raise HTTPException(
+                status_code=404,
+                detail=(
+                    f"Audience room {audience_room_id} not found "
+                    f"in source enterprise '{source_enterprise}'"
+                ),
+            )
+
+        logger.info(
+            "Found audience room id=%s name=%s profiles=%d",
+            source_room.id,
+            source_room.name,
+            len(source_room.profiles),
+        )
+
+        # Get source userId from source room
+        source_user_id = source_room.userId
+        if not source_user_id:
+            logger.warning(
+                "Source audience room %s has no userId, DynamoDB replication will be skipped",
+                audience_room_id
+            )
+        else:
+            logger.info("Source userId resolved: %s", source_user_id)
+        logger.info(
+            "Checking if audience room %s already exists in target enterprise=%s",
+            audience_room_id,
+            target_enterprise,
+        )
+        
+        existing_target_room = database.find_audience_room_by_id(
+            audience_room_id,
+            include_profiles=False,
+            enterprise_name=target_enterprise,
+        )
+        
+        if existing_target_room:
+            logger.warning(
+                "Audience room %s already exists in target enterprise=%s",
+                audience_room_id,
+                target_enterprise,
+            )
+            raise HTTPException(
+                status_code=409,
+                detail=(
+                    f"Audience room '{source_room.name}' (ID: {audience_room_id}) "
+                    f"has already been copied to enterprise '{target_enterprise}'. "
+                    "This room already exists in the target enterprise."
+                ),
+            )
+        
+        logger.info(
+            "Audience room %s does not exist in target enterprise=%s, proceeding with copy",
+            audience_room_id,
+            target_enterprise,
+        )
+
+        # ---------------------------------------------------------------------
+        # Step 2: Resolve source audience path
+        # ---------------------------------------------------------------------
+        source_audience_path = get_source_audience_path(source_room.source)
+        logger.info("Source audience path: %s", source_audience_path)
+
+        # ---------------------------------------------------------------------
+        # Step 3: Get userId from target enterprise
+        # ---------------------------------------------------------------------
+        if payload.targetUserId:
+            target_user_id = payload.targetUserId
+            logger.info("Using provided target userId: %s", target_user_id)
+        else:
+            logger.info(
+                "Fetching userId from target enterprise=%s",
+                target_enterprise,
+            )
+            target_user_id = database.get_user_id_from_enterprise(
+                enterprise_name=target_enterprise
+            )
+            if not target_user_id:
+                raise HTTPException(
+                    status_code=404,
+                    detail=(
+                        f"No userId found in target enterprise '{target_enterprise}'. "
+                        "Ensure at least one AudienceRoom exists or provide targetUserId."
+                    ),
+                )
+            logger.info("Target userId resolved from database: %s", target_user_id)
+        # ---------------------------------------------------------------------
+        # Step 4: List source S3 objects
+        # ---------------------------------------------------------------------
+        source_prefix = (
+            f"{source_enterprise}/{source_audience_path}/{audience_room_id}/"
+        )
+        logger.info("Listing S3 objects with prefix: %s", source_prefix)
+
+        source_s3_keys = list_s3_objects_with_prefix(source_prefix)
+
+        if not source_s3_keys:
+            raise HTTPException(
+                status_code=404,
+                detail=(
+                    f"No S3 files found for audience room {audience_room_id} "
+                    f"in source enterprise '{source_enterprise}'"
+                ),
+            )
+
+        logger.info("Found %d S3 objects to copy", len(source_s3_keys))
+
+        # ---------------------------------------------------------------------
+        # Step 5: Copy S3 objects to target enterprise
+        # ---------------------------------------------------------------------
+        copied_files = []
+        failed_files = []
+
+        target_prefix = (
+            f"{target_enterprise}/{source_audience_path}/{audience_room_id}/"
+        )
+        logger.info("Copying S3 objects to prefix: %s", target_prefix)
+
+        for source_key in source_s3_keys:
+            try:
+                destination_key = source_key.replace(
+                    f"{source_enterprise}/{source_audience_path}/",
+                    f"{target_enterprise}/{source_audience_path}/",
+                )
+
+                copy_s3_object(source_key, destination_key)
+
+                copied_files.append(
+                    {
+                        "source": source_key,
+                        "destination": destination_key,
+                        "status": "success",
+                    }
+                )
+            except Exception as e:
+                logger.error(
+                    "Failed to copy S3 object %s: %s",
+                    source_key,
+                    e,
+                    exc_info=True,
+                )
+                failed_files.append(
+                    {
+                        "source": source_key,
+                        "error": str(e),
+                        "status": "failed",
+                    }
+                )
+
+        logger.info(
+            "S3 copy complete: %d succeeded, %d failed",
+            len(copied_files),
+            len(failed_files),
+        )
+
+        # ---------------------------------------------------------------------
+        # Step 6: Upsert audience room in target DB
+        # ---------------------------------------------------------------------
+        updated_description_url = (
+            replace_enterprise_in_s3_url(
+                source_room.descriptionS3Url,
+                source_enterprise,
+                target_enterprise,
+            )
+            if source_room.descriptionS3Url
+            else None
+        )
+
+        updated_indexes_url = (
+            replace_enterprise_in_s3_url(
+                source_room.indexesS3Url,
+                source_enterprise,
+                target_enterprise,
+            )
+            if source_room.indexesS3Url
+            else None
+        )
+
+        target_room = database.upsert_audience_room(
+            room_id=source_room.id,
+            name=source_room.name,
+            description_s3_url=updated_description_url,
+            user_id=target_user_id,
+            source=source_room.source,
+            query=source_room.query,
+            indexes_s3_url=updated_indexes_url,
+            enterprise_name=target_enterprise,
+        )
+
+        logger.info(
+            "Upserted audience room %s in target enterprise",
+            target_room.id,
+        )
+
+        # ---------------------------------------------------------------------
+        # Step 7: Upsert profiles
+        # ---------------------------------------------------------------------
+        upserted_profiles = []
+        failed_profiles = []
+
+        logger.info(
+            "Upserting %d profiles in target database",
+            len(source_room.profiles),
+        )
+
+        for profile in source_room.profiles:
+            try:
+                updated_profile_desc_url = (
+                    replace_enterprise_in_s3_url(
+                        profile.profileDescriptionS3Url,
+                        source_enterprise,
+                        target_enterprise,
+                    )
+                    if profile.profileDescriptionS3Url
+                    else None
+                )
+
+                updated_posts_url = (
+                    replace_enterprise_in_s3_url(
+                        profile.postsS3Url,
+                        source_enterprise,
+                        target_enterprise,
+                    )
+                    if profile.postsS3Url
+                    else None
+                )
+
+                updated_comments_url = (
+                    replace_enterprise_in_s3_url(
+                        profile.commentsS3Url,
+                        source_enterprise,
+                        target_enterprise,
+                    )
+                    if profile.commentsS3Url
+                    else None
+                )
+
+                target_profile = database.upsert_audience_profile(
+                    profile_id=profile.id,
+                    audience_room_id=profile.audienceRoomId,
+                    profile_name=profile.profileName,
+                    profile_url=profile.profileUrl,
+                    profile_description_s3_url=updated_profile_desc_url,
+                    posts_s3_url=updated_posts_url,
+                    comments_s3_url=updated_comments_url,
+                    source=profile.source,
+                    enterprise_name=target_enterprise,
+                )
+
+                upserted_profiles.append(
+                    {
+                        "profile_id": target_profile.id,
+                        "profile_name": target_profile.profileName,
+                        "status": "success",
+                    }
+                )
+            except Exception as e:
+                logger.error(
+                    "Failed to upsert profile %s: %s",
+                    profile.id,
+                    e,
+                    exc_info=True,
+                )
+                failed_profiles.append(
+                    {
+                        "profile_id": profile.id,
+                        "profile_name": profile.profileName,
+                        "error": str(e),
+                        "status": "failed",
+                    }
+                )
+
+        logger.info(
+            "Profile upsert complete: %d succeeded, %d failed",
+            len(upserted_profiles),
+            len(failed_profiles),
+        )
+        # ---------------------------------------------------------------------
+        # Step 8: Copy preview record to target enterprise
+        # ---------------------------------------------------------------------
+        logger.info(
+            "Fetching preview record for room %s from source enterprise=%s",
+            audience_room_id,
+            source_enterprise,
+        )
+        
+        source_preview = database.find_preview_by_room_id(
+            room_id=audience_room_id,
+            enterprise_name=source_enterprise
+        )
+        
+        preview_copied = False
+        if source_preview:
+            logger.info(
+                "Found preview record: room_id=%s, name=%s",
+                source_preview.get('room_id'),
+                source_preview.get('name'),
+            )
+            
+            target_preview = database.upsert_preview(
+                room_id=audience_room_id,  
+                name=source_preview.get('name'),
+                user_id=target_user_id, 
+                description_summary=source_preview.get('description_summary'),
+                source=source_preview.get('source'),
+                total_profile_count=source_preview.get('total_profile_count', 0),
+                profiles=source_preview.get('profiles'),
+                enterprise_name=target_enterprise,
+            )
+            
+            preview_copied = True
+            logger.info(
+                "Upserted preview record in target enterprise: room_id=%s, user_id=%s",
+                target_preview.get('room_id'),
+                target_preview.get('user_id'),
+            )
+        else:
+            logger.warning(
+                "No preview record found for room %s in source enterprise=%s",
+                audience_room_id,
+                source_enterprise,
+            )
+
+        # ---------------------------------------------------------------------
+        # Step 9: Replicate DynamoDB Clones table entry
+        # ---------------------------------------------------------------------
+        dynamodb_replication_status = None
+        if source_user_id and dynamodb_resource:
+            try:
+                logger.info(
+                    "Replicating DynamoDB entry: source_user_id=%s, target_user_id=%s, clone_id=%s",
+                    source_user_id,
+                    target_user_id,
+                    audience_room_id,
+                )
+                
+                table = dynamodb_resource.Table("Clones")
+                
+                # Get the source item from DynamoDB
+                try:
+                    source_item = table.get_item(
+                        Key={
+                            'user_id': source_user_id,
+                            'clone_id': audience_room_id
+                        }
+                    )
+                    
+                    if 'Item' not in source_item:
+                        logger.warning(
+                            "DynamoDB entry not found for user_id=%s, clone_id=%s. Skipping replication.",
+                            source_user_id,
+                            audience_room_id
+                        )
+                        dynamodb_replication_status = {
+                            "status": "skipped",
+                            "reason": "Source entry not found in DynamoDB"
+                        }
+                    else:
+                        # Create replica with new user_id
+                        replica_item = copy.deepcopy(source_item['Item'])
+                        replica_item['user_id'] = target_user_id
+                        
+                        # Update updated_at timestamp to current time
+                        current_time = datetime.now(timezone.utc).isoformat()
+                        replica_item['updated_at'] = current_time
+                        
+                        # Put the replica item
+                        table.put_item(Item=replica_item)
+                        
+                        logger.info(
+                            "Successfully replicated DynamoDB entry: user_id=%s, clone_id=%s",
+                            target_user_id,
+                            audience_room_id
+                        )
+                        dynamodb_replication_status = {
+                            "status": "success",
+                            "source_user_id": source_user_id,
+                            "target_user_id": target_user_id,
+                            "clone_id": audience_room_id
+                        }
+                        
+                except Exception as e:
+                    logger.error(
+                        "Failed to replicate DynamoDB entry: %s",
+                        e,
+                        exc_info=True
+                    )
+                    dynamodb_replication_status = {
+                        "status": "failed",
+                        "error": str(e)
+                    }
+                    
+            except Exception as e:
+                logger.error(
+                    "Error accessing DynamoDB: %s",
+                    e,
+                    exc_info=True
+                )
+                dynamodb_replication_status = {
+                    "status": "error",
+                    "error": f"DynamoDB access error: {str(e)}"
+                }
+        else:
+            if not source_user_id:
+                logger.warning("Skipping DynamoDB replication: source_user_id not available")
+            if not dynamodb_resource:
+                logger.warning("Skipping DynamoDB replication: DynamoDB resource not initialized")
+            dynamodb_replication_status = {
+                "status": "skipped",
+                "reason": "source_user_id or dynamodb_resource not available"
+            }
+
+        logger.info("=== COPY AUDIENCE ROOM TO CLIENT REQUEST SUCCESS ===")
+        return {
+            "status": "success",
+            "message": (
+                f"Successfully copied audience room {audience_room_id} "
+                f"from '{source_enterprise}' to '{target_enterprise}'"
+            ),
+            "audience_room_id": audience_room_id,
+            "audience_room_name": source_room.name,
+            "source_enterprise": source_enterprise,
+            "target_enterprise": target_enterprise,
+            "s3_files": {
+                "total": len(source_s3_keys),
+                "copied": len(copied_files),
+                "failed": len(failed_files),
+                "copied_files": copied_files,
+                "failed_files": failed_files,
+            },
+            "database_records": {
+                "room_upserted": True,
+                "profiles_total": len(source_room.profiles),
+                "profiles_upserted": len(upserted_profiles),
+                "profiles_failed": len(failed_profiles),
+                "upserted_profiles": upserted_profiles,
+                "failed_profiles": failed_profiles,
+            },
+            "dynamodb_replication": dynamodb_replication_status,
+            "preview": {
+                "copied": preview_copied,
+                "room_id": audience_room_id,
+                "target_user_id": target_user_id,
+            },
+        }
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error("=== ERROR in copy_audience_room_to_client ===")
+        logger.error(
+            "Error copying audience room %s: %s",
+            audience_room_id,
+            e,
+            exc_info=True,
+        )
+        raise HTTPException(
+            status_code=500,
+            detail=f"Failed to copy audience room: {str(e)}",
+        )
 
