@@ -1389,6 +1389,38 @@ async def copy_audience_room_to_client(
             )
         else:
             logger.info("Source userId resolved: %s", source_user_id)
+        logger.info(
+            "Checking if audience room %s already exists in target enterprise=%s",
+            audience_room_id,
+            target_enterprise,
+        )
+        
+        existing_target_room = database.find_audience_room_by_id(
+            audience_room_id,
+            include_profiles=False,
+            enterprise_name=target_enterprise,
+        )
+        
+        if existing_target_room:
+            logger.warning(
+                "Audience room %s already exists in target enterprise=%s",
+                audience_room_id,
+                target_enterprise,
+            )
+            raise HTTPException(
+                status_code=409,
+                detail=(
+                    f"Audience room '{source_room.name}' (ID: {audience_room_id}) "
+                    f"has already been copied to enterprise '{target_enterprise}'. "
+                    "This room already exists in the target enterprise."
+                ),
+            )
+        
+        logger.info(
+            "Audience room %s does not exist in target enterprise=%s, proceeding with copy",
+            audience_room_id,
+            target_enterprise,
+        )
 
         # ---------------------------------------------------------------------
         # Step 2: Resolve source audience path
@@ -1396,9 +1428,6 @@ async def copy_audience_room_to_client(
         source_audience_path = get_source_audience_path(source_room.source)
         logger.info("Source audience path: %s", source_audience_path)
 
-        # ---------------------------------------------------------------------
-        # Step 3: Get userId from target enterprise
-        # ---------------------------------------------------------------------
         # ---------------------------------------------------------------------
         # Step 3: Get userId from target enterprise
         # ---------------------------------------------------------------------
@@ -1613,9 +1642,54 @@ async def copy_audience_room_to_client(
             len(upserted_profiles),
             len(failed_profiles),
         )
+        # ---------------------------------------------------------------------
+        # Step 8: Copy preview record to target enterprise
+        # ---------------------------------------------------------------------
+        logger.info(
+            "Fetching preview record for room %s from source enterprise=%s",
+            audience_room_id,
+            source_enterprise,
+        )
+        
+        source_preview = database.find_preview_by_room_id(
+            room_id=audience_room_id,
+            enterprise_name=source_enterprise
+        )
+        
+        preview_copied = False
+        if source_preview:
+            logger.info(
+                "Found preview record: room_id=%s, name=%s",
+                source_preview.get('room_id'),
+                source_preview.get('name'),
+            )
+            
+            target_preview = database.upsert_preview(
+                room_id=audience_room_id,  
+                name=source_preview.get('name'),
+                user_id=target_user_id, 
+                description_summary=source_preview.get('description_summary'),
+                source=source_preview.get('source'),
+                total_profile_count=source_preview.get('total_profile_count', 0),
+                profiles=source_preview.get('profiles'),
+                enterprise_name=target_enterprise,
+            )
+            
+            preview_copied = True
+            logger.info(
+                "Upserted preview record in target enterprise: room_id=%s, user_id=%s",
+                target_preview.get('room_id'),
+                target_preview.get('user_id'),
+            )
+        else:
+            logger.warning(
+                "No preview record found for room %s in source enterprise=%s",
+                audience_room_id,
+                source_enterprise,
+            )
 
         # ---------------------------------------------------------------------
-        # Step 8: Replicate DynamoDB Clones table entry
+        # Step 9: Replicate DynamoDB Clones table entry
         # ---------------------------------------------------------------------
         dynamodb_replication_status = None
         if source_user_id and dynamodb_resource:
@@ -1704,7 +1778,6 @@ async def copy_audience_room_to_client(
             }
 
         logger.info("=== COPY AUDIENCE ROOM TO CLIENT REQUEST SUCCESS ===")
-
         return {
             "status": "success",
             "message": (
@@ -1731,8 +1804,12 @@ async def copy_audience_room_to_client(
                 "failed_profiles": failed_profiles,
             },
             "dynamodb_replication": dynamodb_replication_status,
+            "preview": {
+                "copied": preview_copied,
+                "room_id": audience_room_id,
+                "target_user_id": target_user_id,
+            },
         }
-
     except HTTPException:
         raise
     except Exception as e:
