@@ -21,6 +21,96 @@ def get_source_audience_path(source: Optional[str] = None) -> str:
     else:
         # Default to linkedin-audience for "LinkedIn", "Linkedin", or any other value
         return "linkedin-audience"
+def get_audience_type_from_source(source: Optional[str] = None) -> str:
+    """
+    Determine audience type (linkedin-audience or reddit-audience) from source field.
+    
+    Args:
+        source: Source string (e.g., "linkedin", "reddit", etc.)
+    
+    Returns:
+        "linkedin-audience" or "reddit-audience"
+    """
+    if source:
+        source_lower = source.lower().strip()
+        if "reddit" in source_lower:
+            return "reddit-audience"
+    # Default to linkedin-audience
+    return "linkedin-audience"
+
+
+def ensure_enterprise_audience_folders_exist(enterprise_name: Optional[str] = None) -> None:
+    """
+    Ensure both linkedin-audience and reddit-audience folders exist for an enterprise.
+    Creates empty folder markers if they don't exist.
+    
+    Args:
+        enterprise_name: Enterprise name (gamma, app, entelligence, beta). If None, uses "default"
+    """
+    if not s3_client or not s3_bucket:
+        logger.warning("S3 not configured, skipping folder creation")
+        return
+    
+    # Normalize enterprise name
+    if enterprise_name:
+        normalized_enterprise = enterprise_name.lower().strip()
+    else:
+        normalized_enterprise = "default"
+    
+    # Create both folder types
+    for audience_type in ["linkedin-audience", "reddit-audience"]:
+        folder_key = f"{normalized_enterprise}/{audience_type}/"
+        
+        try:
+            # Check if folder marker already exists
+            try:
+                s3_client.head_object(Bucket=s3_bucket, Key=folder_key)
+                logger.info(f"Enterprise folder already exists: {folder_key}")
+            except s3_client.exceptions.ClientError as e:
+                if e.response['Error']['Code'] == '404':
+                    # Folder doesn't exist, create it
+                    logger.info(f"Creating enterprise folder marker: {folder_key}")
+                    s3_client.put_object(
+                        Bucket=s3_bucket,
+                        Key=folder_key,
+                        Body=b'',  # Empty body
+                        ContentType="application/x-directory"
+                    )
+                    logger.info(f"Successfully created enterprise folder: {folder_key}")
+                else:
+                    raise
+        except Exception as e:
+            logger.error(f"Failed to ensure folder exists for {folder_key}: {e}")
+            # Don't fail the request if folder creation fails
+
+
+def initialize_all_enterprise_audience_folders():
+    """
+    Initialize all enterprise and audience type folders in S3.
+    Creates empty folder markers for:
+    - app/linkedin-audience/
+    - app/reddit-audience/
+    - gamma/linkedin-audience/
+    - gamma/reddit-audience/
+    - entelligence/linkedin-audience/
+    - entelligence/reddit-audience/
+    - beta/linkedin-audience/
+    - beta/reddit-audience/
+    - default/linkedin-audience/
+    - default/reddit-audience/
+    
+    This can be called once at startup or manually to ensure all folders exist.
+    """
+    enterprises = ["app", "gamma", "entelligence", "beta", "default"]
+    logger.info(f"Initializing enterprise and audience folders in S3 ({len(enterprises)} enterprises × 2 audience types)")
+    
+    for enterprise in enterprises:
+        try:
+            ensure_enterprise_audience_folders_exist(enterprise)
+        except Exception as e:
+            logger.error(f"Failed to initialize folders for enterprise {enterprise}: {e}")
+    
+    logger.info("Enterprise and audience folder initialization complete")
 
 
 def get_s3_key_for_audience(room_id: str, path: str, enterprise_name: Optional[str] = None, source: Optional[str] = None) -> str:
@@ -44,11 +134,11 @@ def get_s3_key_for_audience(room_id: str, path: str, enterprise_name: Optional[s
     else:
         normalized_enterprise = "default"
     
-    # Get source-based audience path
-    audience_path = get_source_audience_path(source)
+    # Determine audience type from source
+    audience_type = get_audience_type_from_source(source)
     
-    # Build the S3 key: {enterpriseName}/{source}-audience/{room_id}/{path}
-    return f"{normalized_enterprise}/{audience_path}/{room_id}/{path}"
+    # Build the S3 key: {enterpriseName}/{audienceType}/{room_id}/{path}
+    return f"{normalized_enterprise}/{audience_type}/{room_id}/{path}"
 
 
 def upload_json_to_s3(key: str, data: Dict[str, Any]) -> str:

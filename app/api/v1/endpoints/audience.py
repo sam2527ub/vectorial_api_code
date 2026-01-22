@@ -8,16 +8,7 @@ from fastapi import APIRouter, HTTPException, Path, Query
 from app.models.schemas import CreateAudienceRoomRequest, UpdateAudienceRoomNameRequest, CopyAudienceRoomToClientRequest
 from app.config import s3_client, s3_bucket, logger, dynamodb_resource
 from app.utils.helpers import ensure_db_available
-from app.utils.s3_utils import (
-    upload_json_to_s3, 
-    extract_s3_key_from_url, 
-    fetch_json_from_s3, 
-    get_s3_key_for_audience,
-    get_source_audience_path,
-    list_s3_objects_with_prefix,
-    copy_s3_object,
-    replace_enterprise_in_s3_url
-)
+from app.utils.s3_utils import upload_json_to_s3, extract_s3_key_from_url, fetch_json_from_s3, get_s3_key_for_audience, ensure_enterprise_audience_folders_exist, get_source_audience_path, list_s3_objects_with_prefix, copy_s3_object, replace_enterprise_in_s3_url
 from app.services.summary_service import process_profile_summary
 from app import database
 
@@ -55,6 +46,10 @@ async def create_audience_room(payload: CreateAudienceRoomRequest):
 
     room_id = str(uuid.uuid4())
     logger.info(f"Generated room_id: {room_id}")
+
+    # Ensure enterprise and audience type folders exist before uploading files
+    logger.info(f"Ensuring enterprise and audience folders exist for enterprise={payload.enterpriseName}, source={payload.source}")
+    ensure_enterprise_audience_folders_exist(payload.enterpriseName)
 
     # Upload audience description to S3
     logger.info(f"Uploading audience description to S3 for room_id={room_id}, enterprise={payload.enterpriseName}, source={payload.source}")
@@ -153,7 +148,7 @@ async def create_audience_room(payload: CreateAudienceRoomRequest):
             profiles_data=profile_creates,
             enterprise_name=payload.enterpriseName,
         )
-        
+
         logger.info(f"=== database.create_audience_room RETURNED SUCCESSFULLY ===")
         logger.info(f"Returned room: id={room.id}, name={room.name}, profiles_count={len(room.profiles)}")
         logger.info(f"Returned room: descriptionS3Url={room.descriptionS3Url}")
@@ -305,10 +300,10 @@ async def delete_audience_room(
         logger.info(f"Room has {profile_count} profiles to delete")
         
         # Delete all S3 files associated with this audience room
-        # Use the enterprise-based prefix
+        # Use the old folder structure: linkedin-audience/{enterpriseName}/{room_id}/
         normalized_enterprise = enterpriseName.lower().strip() if enterpriseName else "default"
         s3_prefix = f"linkedin-audience/{normalized_enterprise}/{audience_room_id}/"
-        logger.info(f"Deleting S3 files with prefix: {s3_prefix}")
+        logger.info(f"Deleting S3 files with prefix: {s3_prefix} (enterprise={normalized_enterprise})")
         deleted_s3_files = []
         
         try:
@@ -387,6 +382,134 @@ async def delete_audience_room(
         raise
     except Exception as e:
         logger.error(f"=== ERROR in delete_audience_room ===")
+        logger.error(f"Error deleting audience room {audience_room_id}: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=f"Failed to delete audience room: {str(e)}")
+
+
+@router.delete("/api/v1/audience-rooms/{audience_room_id}/v2")
+async def delete_audience_room_v2(
+    audience_room_id: str = Path(...),
+    enterpriseName: Optional[str] = Query(None, description="Enterprise name (gamma, app, entelligence, beta). If not provided, uses default audience database.")
+):
+    """
+    Delete an audience room and all associated data (V2 - uses new folder structure).
+    
+    This endpoint uses the new folder structure: {enterpriseName}/{audienceType}/{room_id}/
+    
+    This endpoint:
+    1. Deletes all S3 files associated with the audience room
+    2. Deletes all profiles from the AudienceProfile table (cascade delete)
+    3. Deletes the audience room from the AudienceRoom table
+    
+    Args:
+        audience_room_id: The audience room ID
+        enterpriseName: Optional enterprise name (gamma, app, entelligence, beta). 
+                       If not provided, uses AUDIENCE_DATABASE_URL.
+    """
+    logger.info(f"=== DELETE AUDIENCE ROOM V2 REQUEST START ===")
+    logger.info(f"Request: room_id={audience_room_id}, enterprise={enterpriseName}")
+    
+    ensure_db_available("audience")
+    logger.info("Database availability check passed")
+    
+    if not s3_client or not s3_bucket:
+        logger.error("S3 not configured - missing s3_client or s3_bucket")
+        raise HTTPException(status_code=503, detail="S3 is not configured; set AUDIENCE_BUCKET_NAME or VECTOR_BUCKET_NAME.")
+    
+    logger.info(f"S3 configured: bucket={s3_bucket}")
+
+    try:
+        # Fetch audience room with all profiles using enterprise-specific database if provided
+        logger.info(f"Fetching audience room {audience_room_id} from database (enterprise={enterpriseName})")
+        audience_room = database.find_audience_room_by_id(audience_room_id, include_profiles=True, enterprise_name=enterpriseName)
+        
+        if not audience_room:
+            logger.warning(f"Audience room {audience_room_id} not found in database (enterprise={enterpriseName})")
+            raise HTTPException(status_code=404, detail=f"Audience room {audience_room_id} not found")
+        
+        logger.info(f"Found audience room: id={audience_room.id}, name={audience_room.name}")
+        profiles = audience_room.profiles
+        profile_count = len(profiles)
+        logger.info(f"Room has {profile_count} profiles to delete")
+        
+        # Delete all S3 files associated with this audience room
+        # Use the new folder structure: {enterpriseName}/{audienceType}/{room_id}/
+        normalized_enterprise = enterpriseName.lower().strip() if enterpriseName else "default"
+        # Determine audience type from room source
+        from app.utils.s3_utils import get_audience_type_from_source
+        audience_type = get_audience_type_from_source(audience_room.source)
+        s3_prefix = f"{normalized_enterprise}/{audience_type}/{audience_room_id}/"
+        logger.info(f"Deleting S3 files with prefix: {s3_prefix} (enterprise={normalized_enterprise}, audience_type={audience_type}, source={audience_room.source})")
+        deleted_s3_files = []
+        
+        try:
+            # List all objects with the prefix
+            logger.info(f"Listing S3 objects with prefix: {s3_prefix}")
+            paginator = s3_client.get_paginator('list_objects_v2')
+            pages = paginator.paginate(Bucket=s3_bucket, Prefix=s3_prefix)
+            
+            # Collect all object keys to delete
+            objects_to_delete = []
+            for page in pages:
+                if 'Contents' in page:
+                    for obj in page['Contents']:
+                        objects_to_delete.append({'Key': obj['Key']})
+                        deleted_s3_files.append(obj['Key'])
+            
+            logger.info(f"Found {len(objects_to_delete)} S3 objects to delete")
+            
+            # Delete all objects in batch (max 1000 objects per request)
+            if objects_to_delete:
+                batch_count = (len(objects_to_delete) + 999) // 1000
+                logger.info(f"Deleting {len(objects_to_delete)} objects in {batch_count} batch(es)")
+                for i in range(0, len(objects_to_delete), 1000):
+                    batch = objects_to_delete[i:i+1000]
+                    batch_num = (i // 1000) + 1
+                    logger.info(f"Deleting batch {batch_num}/{batch_count} ({len(batch)} objects)")
+                    s3_client.delete_objects(
+                        Bucket=s3_bucket,
+                        Delete={
+                            'Objects': batch,
+                            'Quiet': True
+                        }
+                    )
+                logger.info(f"Successfully deleted {len(objects_to_delete)} S3 objects for audience room {audience_room_id}")
+            else:
+                logger.warning(f"No S3 objects found for audience room {audience_room_id} with prefix {s3_prefix}")
+                
+        except Exception as e:
+            logger.error(f"Error deleting S3 files for audience room {audience_room_id}: {e}", exc_info=True)
+            # Continue with database deletion even if S3 deletion fails
+        
+        # Delete all profiles from database first using enterprise-specific database if provided
+        # Use bulk delete for efficiency
+        logger.info(f"Deleting all profiles for room {audience_room_id} from database (enterprise={enterpriseName})")
+        deleted_profile_count = database.delete_audience_profiles_by_room(audience_room_id, enterprise_name=enterpriseName)
+        logger.info(f"Successfully deleted {deleted_profile_count} profiles from database")
+        
+        # Delete the audience room from database using enterprise-specific database if provided
+        logger.info(f"Deleting audience room {audience_room_id} from database (enterprise={enterpriseName})")
+        room_deleted = database.delete_audience_room(audience_room_id, enterprise_name=enterpriseName)
+        if not room_deleted:
+            logger.warning(f"Audience room {audience_room_id} was not found or could not be deleted")
+            raise HTTPException(status_code=404, detail=f"Audience room {audience_room_id} not found or could not be deleted")
+        logger.info(f"Successfully deleted audience room {audience_room_id} from database")
+        
+        logger.info(f"=== DELETE AUDIENCE ROOM V2 REQUEST SUCCESS ===")
+        logger.info(f"Deleted: room_id={audience_room_id}, profiles={deleted_profile_count}, s3_files={len(deleted_s3_files)}")
+        
+        return {
+            "message": f"Audience room {audience_room_id} deleted successfully",
+            "deleted_room_id": audience_room_id,
+            "deleted_profiles": deleted_profile_count,
+            "deleted_s3_files": len(deleted_s3_files),
+            "s3_prefix_used": s3_prefix
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"=== ERROR in delete_audience_room_v2 ===")
         logger.error(f"Error deleting audience room {audience_room_id}: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=f"Failed to delete audience room: {str(e)}")
 
@@ -997,7 +1120,7 @@ async def generate_group_summary(
         # Generate group summary using OpenAI
         try:
             completion = openai_client.chat.completions.create(
-                model="gpt-4o-mini",
+                model="o3-mini",
                 messages=[
                     {"role": "system", "content": system_message},
                     {"role": "user", "content": user_prompt}
@@ -1029,7 +1152,7 @@ async def generate_group_summary(
             
             try:
                 traits_completion = openai_client.chat.completions.create(
-                    model="gpt-4o-mini",
+                    model="o3-mini",
                     messages=[
                         {"role": "system", "content": traits_system_message},
                         {"role": "user", "content": traits_prompt}

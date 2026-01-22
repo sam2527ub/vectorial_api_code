@@ -492,7 +492,7 @@ async def delete_preview(
     ensure_db_available("audience")
     
     try:
-        deleted = database.delete_preview(room_id, user_id)
+        deleted = database.delete_preview(room_id, user_id, enterprise_name=enterpriseName)
         
         if not deleted:
             raise HTTPException(status_code=404, detail=f"Preview not found for room {room_id}")

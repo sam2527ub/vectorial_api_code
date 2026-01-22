@@ -32,7 +32,7 @@ async def fetch_linkedin_profile_info(linkedin_url: str) -> Optional[Dict[str, A
         # Prepare input for Apify actor
         run_input = {
             "profileUrls": [url],
-            "proxy": {"useApifyProxy": True}
+            "proxy": {"useApifyProxy": True, "apifyProxyGroups": []}
         }
         
         logger.info(f"Starting Apify profile scraper for: {url}")
