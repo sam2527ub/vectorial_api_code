@@ -1,6 +1,7 @@
 __pycache__/
 *.pyc
 .env
+venv/
 
 # Generated Prisma clients (regenerated from schemas)
 prisma_client/
@@ -15,3 +16,14 @@ deploy-aws.sh
 Dockerfile
 
 node_modules/
+
+
+
+
+
+
+
+
+
+
+

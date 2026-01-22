@@ -4,10 +4,19 @@ import asyncio
 from datetime import datetime
 from typing import Optional
 from fastapi import APIRouter, HTTPException, Path, Query
-from app.models.schemas import CreateAudienceRoomRequest, UpdateAudienceRoomNameRequest
+from app.models.schemas import CreateAudienceRoomRequest, UpdateAudienceRoomNameRequest, CopyAudienceRoomToClientRequest
 from app.config import s3_client, s3_bucket, logger
 from app.utils.helpers import ensure_db_available
-from app.utils.s3_utils import upload_json_to_s3, extract_s3_key_from_url, fetch_json_from_s3, get_s3_key_for_audience
+from app.utils.s3_utils import (
+    upload_json_to_s3, 
+    extract_s3_key_from_url, 
+    fetch_json_from_s3, 
+    get_s3_key_for_audience,
+    get_source_audience_path,
+    list_s3_objects_with_prefix,
+    copy_s3_object,
+    replace_enterprise_in_s3_url
+)
 from app.services.summary_service import process_profile_summary
 from app import database
 
@@ -47,8 +56,8 @@ async def create_audience_room(payload: CreateAudienceRoomRequest):
     logger.info(f"Generated room_id: {room_id}")
 
     # Upload audience description to S3
-    logger.info(f"Uploading audience description to S3 for room_id={room_id}, enterprise={payload.enterpriseName}")
-    description_key = get_s3_key_for_audience(room_id, "description.json", payload.enterpriseName)
+    logger.info(f"Uploading audience description to S3 for room_id={room_id}, enterprise={payload.enterpriseName}, source={payload.source}")
+    description_key = get_s3_key_for_audience(room_id, "description.json", payload.enterpriseName, payload.source)
     logger.info(f"Generated S3 key for description: {description_key}")
     description_url = upload_json_to_s3(
         description_key,
@@ -75,7 +84,7 @@ async def create_audience_room(payload: CreateAudienceRoomRequest):
             }
             
             # Upload indexes to S3
-            indexes_key = get_s3_key_for_audience(room_id, "indexes.json", payload.enterpriseName)
+            indexes_key = get_s3_key_for_audience(room_id, "indexes.json", payload.enterpriseName, payload.source)
             logger.info(f"Generated S3 key for indexes: {indexes_key}")
             indexes_s3_url = upload_json_to_s3(indexes_key, indexes_data)
             logger.info(f"Successfully uploaded search results/indexes to S3 for audience room {room_id}: {indexes_s3_url}")
@@ -91,7 +100,7 @@ async def create_audience_room(payload: CreateAudienceRoomRequest):
     for idx, profile in enumerate(payload.profiles):
         profile_id = str(uuid.uuid4())
         logger.info(f"Processing profile {idx+1}/{len(payload.profiles)}: profile_id={profile_id}, name={profile.name}")
-        profile_key = get_s3_key_for_audience(room_id, f"profiles/{profile_id}/profile.json", payload.enterpriseName)
+        profile_key = get_s3_key_for_audience(room_id, f"profiles/{profile_id}/profile.json", payload.enterpriseName, payload.source)
         logger.info(f"Generated S3 key for profile: {profile_key}")
         profile_payload = {
             "profile_id": profile_id,
@@ -1284,4 +1293,357 @@ async def remove_labels_from_posts(
     except Exception as e:
         logger.error(f"Error removing labels from posts: {e}")
         raise HTTPException(status_code=500, detail=f"Failed to remove labels from posts: {str(e)}")
+
+
+@router.post("/api/v1/audience-rooms/{audience_room_id}/copy-to-client")
+async def copy_audience_room_to_client(
+    audience_room_id: str = Path(..., description="The audience room ID to copy"),
+    payload: CopyAudienceRoomToClientRequest = ...,
+):
+    """
+    Copy an audience room and its profiles from a source enterprise
+    to a target enterprise, including all related S3 assets.
+    """
+    logger.info("=== COPY AUDIENCE ROOM TO CLIENT REQUEST START ===")
+    logger.info(
+        "Request: room_id=%s, source=%s, target=%s",
+        audience_room_id,
+        payload.sourceEnterpriseName,
+        payload.targetEnterpriseName,
+    )
+
+    ensure_db_available("audience")
+    logger.info("Database availability check passed")
+
+    if not s3_client or not s3_bucket:
+        logger.error("S3 not configured")
+        raise HTTPException(
+            status_code=503,
+            detail="S3 is not configured; set AUDIENCE_BUCKET_NAME or VECTOR_BUCKET_NAME.",
+        )
+
+    # Normalize enterprise names
+    source_enterprise = (
+        payload.sourceEnterpriseName.lower().strip()
+        if payload.sourceEnterpriseName
+        else "gamma"
+    )
+    target_enterprise = payload.targetEnterpriseName.lower().strip()
+
+    valid_enterprises = {"gamma", "app", "entelligence", "beta"}
+
+    if target_enterprise not in valid_enterprises:
+        raise HTTPException(
+            status_code=400,
+            detail=(
+                f"Invalid target enterprise: {target_enterprise}. "
+                f"Must be one of: {', '.join(valid_enterprises)}"
+            ),
+        )
+
+    if source_enterprise == target_enterprise:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Source and target enterprises cannot be the same: {source_enterprise}",
+        )
+
+    try:
+        # ---------------------------------------------------------------------
+        # Step 1: Fetch room + profiles from source DB
+        # ---------------------------------------------------------------------
+        logger.info(
+            "Fetching audience room %s from source enterprise=%s",
+            audience_room_id,
+            source_enterprise,
+        )
+
+        source_room = database.find_audience_room_by_id(
+            audience_room_id,
+            include_profiles=True,
+            enterprise_name=source_enterprise,
+        )
+
+        if not source_room:
+            raise HTTPException(
+                status_code=404,
+                detail=(
+                    f"Audience room {audience_room_id} not found "
+                    f"in source enterprise '{source_enterprise}'"
+                ),
+            )
+
+        logger.info(
+            "Found audience room id=%s name=%s profiles=%d",
+            source_room.id,
+            source_room.name,
+            len(source_room.profiles),
+        )
+
+        # ---------------------------------------------------------------------
+        # Step 2: Resolve source audience path
+        # ---------------------------------------------------------------------
+        source_audience_path = get_source_audience_path(source_room.source)
+        logger.info("Source audience path: %s", source_audience_path)
+
+        # ---------------------------------------------------------------------
+        # Step 3: Get userId from target enterprise
+        # ---------------------------------------------------------------------
+        # ---------------------------------------------------------------------
+        # Step 3: Get userId from target enterprise
+        # ---------------------------------------------------------------------
+        if payload.targetUserId:
+            target_user_id = payload.targetUserId
+            logger.info("Using provided target userId: %s", target_user_id)
+        else:
+            logger.info(
+                "Fetching userId from target enterprise=%s",
+                target_enterprise,
+            )
+            target_user_id = database.get_user_id_from_enterprise(
+                enterprise_name=target_enterprise
+            )
+            if not target_user_id:
+                raise HTTPException(
+                    status_code=404,
+                    detail=(
+                        f"No userId found in target enterprise '{target_enterprise}'. "
+                        "Ensure at least one AudienceRoom exists or provide targetUserId."
+                    ),
+                )
+            logger.info("Target userId resolved from database: %s", target_user_id)
+        # ---------------------------------------------------------------------
+        # Step 4: List source S3 objects
+        # ---------------------------------------------------------------------
+        source_prefix = (
+            f"{source_enterprise}/{source_audience_path}/{audience_room_id}/"
+        )
+        logger.info("Listing S3 objects with prefix: %s", source_prefix)
+
+        source_s3_keys = list_s3_objects_with_prefix(source_prefix)
+
+        if not source_s3_keys:
+            raise HTTPException(
+                status_code=404,
+                detail=(
+                    f"No S3 files found for audience room {audience_room_id} "
+                    f"in source enterprise '{source_enterprise}'"
+                ),
+            )
+
+        logger.info("Found %d S3 objects to copy", len(source_s3_keys))
+
+        # ---------------------------------------------------------------------
+        # Step 5: Copy S3 objects to target enterprise
+        # ---------------------------------------------------------------------
+        copied_files = []
+        failed_files = []
+
+        target_prefix = (
+            f"{target_enterprise}/{source_audience_path}/{audience_room_id}/"
+        )
+        logger.info("Copying S3 objects to prefix: %s", target_prefix)
+
+        for source_key in source_s3_keys:
+            try:
+                destination_key = source_key.replace(
+                    f"{source_enterprise}/{source_audience_path}/",
+                    f"{target_enterprise}/{source_audience_path}/",
+                )
+
+                copy_s3_object(source_key, destination_key)
+
+                copied_files.append(
+                    {
+                        "source": source_key,
+                        "destination": destination_key,
+                        "status": "success",
+                    }
+                )
+            except Exception as e:
+                logger.error(
+                    "Failed to copy S3 object %s: %s",
+                    source_key,
+                    e,
+                    exc_info=True,
+                )
+                failed_files.append(
+                    {
+                        "source": source_key,
+                        "error": str(e),
+                        "status": "failed",
+                    }
+                )
+
+        logger.info(
+            "S3 copy complete: %d succeeded, %d failed",
+            len(copied_files),
+            len(failed_files),
+        )
+
+        # ---------------------------------------------------------------------
+        # Step 6: Upsert audience room in target DB
+        # ---------------------------------------------------------------------
+        updated_description_url = (
+            replace_enterprise_in_s3_url(
+                source_room.descriptionS3Url,
+                source_enterprise,
+                target_enterprise,
+            )
+            if source_room.descriptionS3Url
+            else None
+        )
+
+        updated_indexes_url = (
+            replace_enterprise_in_s3_url(
+                source_room.indexesS3Url,
+                source_enterprise,
+                target_enterprise,
+            )
+            if source_room.indexesS3Url
+            else None
+        )
+
+        target_room = database.upsert_audience_room(
+            room_id=source_room.id,
+            name=source_room.name,
+            description_s3_url=updated_description_url,
+            user_id=target_user_id,
+            source=source_room.source,
+            query=source_room.query,
+            indexes_s3_url=updated_indexes_url,
+            enterprise_name=target_enterprise,
+        )
+
+        logger.info(
+            "Upserted audience room %s in target enterprise",
+            target_room.id,
+        )
+
+        # ---------------------------------------------------------------------
+        # Step 7: Upsert profiles
+        # ---------------------------------------------------------------------
+        upserted_profiles = []
+        failed_profiles = []
+
+        logger.info(
+            "Upserting %d profiles in target database",
+            len(source_room.profiles),
+        )
+
+        for profile in source_room.profiles:
+            try:
+                updated_profile_desc_url = (
+                    replace_enterprise_in_s3_url(
+                        profile.profileDescriptionS3Url,
+                        source_enterprise,
+                        target_enterprise,
+                    )
+                    if profile.profileDescriptionS3Url
+                    else None
+                )
+
+                updated_posts_url = (
+                    replace_enterprise_in_s3_url(
+                        profile.postsS3Url,
+                        source_enterprise,
+                        target_enterprise,
+                    )
+                    if profile.postsS3Url
+                    else None
+                )
+
+                updated_comments_url = (
+                    replace_enterprise_in_s3_url(
+                        profile.commentsS3Url,
+                        source_enterprise,
+                        target_enterprise,
+                    )
+                    if profile.commentsS3Url
+                    else None
+                )
+
+                target_profile = database.upsert_audience_profile(
+                    profile_id=profile.id,
+                    audience_room_id=profile.audienceRoomId,
+                    profile_name=profile.profileName,
+                    profile_url=profile.profileUrl,
+                    profile_description_s3_url=updated_profile_desc_url,
+                    posts_s3_url=updated_posts_url,
+                    comments_s3_url=updated_comments_url,
+                    source=profile.source,
+                    enterprise_name=target_enterprise,
+                )
+
+                upserted_profiles.append(
+                    {
+                        "profile_id": target_profile.id,
+                        "profile_name": target_profile.profileName,
+                        "status": "success",
+                    }
+                )
+            except Exception as e:
+                logger.error(
+                    "Failed to upsert profile %s: %s",
+                    profile.id,
+                    e,
+                    exc_info=True,
+                )
+                failed_profiles.append(
+                    {
+                        "profile_id": profile.id,
+                        "profile_name": profile.profileName,
+                        "error": str(e),
+                        "status": "failed",
+                    }
+                )
+
+        logger.info(
+            "Profile upsert complete: %d succeeded, %d failed",
+            len(upserted_profiles),
+            len(failed_profiles),
+        )
+
+        logger.info("=== COPY AUDIENCE ROOM TO CLIENT REQUEST SUCCESS ===")
+
+        return {
+            "status": "success",
+            "message": (
+                f"Successfully copied audience room {audience_room_id} "
+                f"from '{source_enterprise}' to '{target_enterprise}'"
+            ),
+            "audience_room_id": audience_room_id,
+            "audience_room_name": source_room.name,
+            "source_enterprise": source_enterprise,
+            "target_enterprise": target_enterprise,
+            "s3_files": {
+                "total": len(source_s3_keys),
+                "copied": len(copied_files),
+                "failed": len(failed_files),
+                "copied_files": copied_files,
+                "failed_files": failed_files,
+            },
+            "database_records": {
+                "room_upserted": True,
+                "profiles_total": len(source_room.profiles),
+                "profiles_upserted": len(upserted_profiles),
+                "profiles_failed": len(failed_profiles),
+                "upserted_profiles": upserted_profiles,
+                "failed_profiles": failed_profiles,
+            },
+        }
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error("=== ERROR in copy_audience_room_to_client ===")
+        logger.error(
+            "Error copying audience room %s: %s",
+            audience_room_id,
+            e,
+            exc_info=True,
+        )
+        raise HTTPException(
+            status_code=500,
+            detail=f"Failed to copy audience room: {str(e)}",
+        )
 
