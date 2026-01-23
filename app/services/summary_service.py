@@ -90,6 +90,7 @@ async def process_profile_summary(
             }
         
         # Generate summary, keywords, and highlights
+        # Note: Empty summary validation is handled in openai_service.py via validate_summary=True
         summary_result = await generate_profile_summary_from_posts(
             profile_id=profile_id,
             profile_name=profile_name,
@@ -97,18 +98,6 @@ async def process_profile_summary(
             profile_company=profile_company,
             posts=posts,
         )
-        
-        # Validate that summary generation actually succeeded
-        summary_text = summary_result.get("summary")
-        if not summary_text or not summary_text.strip():
-            logger.error(f"Profile {profile_id} ({profile_name}): Summary generation returned empty result")
-            return {
-                "profile_id": profile_id,
-                "profile_name": profile_name,
-                "status": "error",
-                "reason": "empty_summary",
-                "error": "OpenAI API call failed or returned empty summary. Check logs for details."
-            }
         
         # Update profile description JSON
         profile_data["summary"] = summary_result["summary"]

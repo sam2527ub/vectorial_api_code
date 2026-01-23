@@ -10,6 +10,7 @@ from app.config import s3_client, s3_bucket, logger, dynamodb_resource
 from app.utils.helpers import ensure_db_available
 from app.utils.s3_utils import upload_json_to_s3, extract_s3_key_from_url, fetch_json_from_s3, get_s3_key_for_audience, ensure_enterprise_audience_folders_exist, get_source_audience_path, list_s3_objects_with_prefix, copy_s3_object, replace_enterprise_in_s3_url
 from app.services.summary_service import process_profile_summary
+from app.services.openai_service import call_claude_with_retry, split_prompt_into_messages
 from app import database
 
 router = APIRouter()
@@ -263,10 +264,13 @@ async def delete_audience_room(
     """
     Delete an audience room and all associated data.
     
+    This endpoint uses the new folder structure: {enterpriseName}/{audienceType}/{room_id}/
+    
     This endpoint:
-    1. Deletes all S3 files associated with the audience room
-    2. Deletes all profiles from the AudienceProfile table (cascade delete)
-    3. Deletes the audience room from the AudienceRoom table
+    1. Extracts S3 URLs from database records and deletes those specific files
+    2. Deletes all S3 files matching the folder structure prefix (fallback)
+    3. Deletes all profiles from the AudienceProfile table
+    4. Deletes the audience room from the AudienceRoom table
     
     Args:
         audience_room_id: The audience room ID
@@ -299,164 +303,80 @@ async def delete_audience_room(
         profile_count = len(profiles)
         logger.info(f"Room has {profile_count} profiles to delete")
         
-        # Delete all S3 files associated with this audience room
-        # Use the old folder structure: linkedin-audience/{enterpriseName}/{room_id}/
-        normalized_enterprise = enterpriseName.lower().strip() if enterpriseName else "default"
-        s3_prefix = f"linkedin-audience/{normalized_enterprise}/{audience_room_id}/"
-        logger.info(f"Deleting S3 files with prefix: {s3_prefix} (enterprise={normalized_enterprise})")
-        deleted_s3_files = []
-        
-        try:
-            # List all objects with the prefix
-            logger.info(f"Listing S3 objects with prefix: {s3_prefix}")
-            paginator = s3_client.get_paginator('list_objects_v2')
-            pages = paginator.paginate(Bucket=s3_bucket, Prefix=s3_prefix)
-            
-            # Collect all object keys to delete
-            objects_to_delete = []
-            for page in pages:
-                if 'Contents' in page:
-                    for obj in page['Contents']:
-                        objects_to_delete.append({'Key': obj['Key']})
-                        deleted_s3_files.append(obj['Key'])
-            
-            logger.info(f"Found {len(objects_to_delete)} S3 objects to delete")
-            
-            # Delete all objects in batch (max 1000 objects per request)
-            if objects_to_delete:
-                batch_count = (len(objects_to_delete) + 999) // 1000
-                logger.info(f"Deleting {len(objects_to_delete)} objects in {batch_count} batch(es)")
-                for i in range(0, len(objects_to_delete), 1000):
-                    batch = objects_to_delete[i:i+1000]
-                    batch_num = (i // 1000) + 1
-                    logger.info(f"Deleting batch {batch_num}/{batch_count} ({len(batch)} objects)")
-                    s3_client.delete_objects(
-                        Bucket=s3_bucket,
-                        Delete={
-                            'Objects': batch,
-                            'Quiet': True
-                        }
-                    )
-                logger.info(f"Successfully deleted {len(objects_to_delete)} S3 objects for audience room {audience_room_id}")
-            else:
-                logger.warning(f"No S3 objects found for audience room {audience_room_id} with prefix {s3_prefix}")
-                
-        except Exception as e:
-            logger.error(f"Error deleting S3 files for audience room {audience_room_id}: {e}", exc_info=True)
-            # Continue with database deletion even if S3 deletion fails
-        
-        # Delete all profiles from database first using enterprise-specific database if provided
-        if profiles:
-            logger.info(f"Deleting {profile_count} profiles from database (enterprise={enterpriseName})")
-            try:
-                deleted_count = database.delete_audience_profiles_by_room(audience_room_id, enterprise_name=enterpriseName)
-                logger.info(f"Successfully deleted {deleted_count} profiles for audience room {audience_room_id}")
-            except Exception as e:
-                logger.error(f"Error deleting profiles for audience room {audience_room_id}: {e}", exc_info=True)
-                raise HTTPException(status_code=500, detail=f"Failed to delete profiles: {str(e)}")
-        else:
-            logger.info(f"No profiles to delete for audience room {audience_room_id}")
-        
-        # Delete the audience room from database using enterprise-specific database if provided
-        logger.info(f"Deleting audience room {audience_room_id} from database (enterprise={enterpriseName})")
-        try:
-            database.delete_audience_room(audience_room_id, enterprise_name=enterpriseName)
-            logger.info(f"Successfully deleted audience room {audience_room_id}")
-        except Exception as e:
-            logger.error(f"Error deleting audience room {audience_room_id}: {e}", exc_info=True)
-            raise HTTPException(status_code=500, detail=f"Failed to delete audience room: {str(e)}")
-        
-        logger.info(f"=== DELETE AUDIENCE ROOM REQUEST SUCCESS ===")
-        logger.info(f"Deleted: room_id={audience_room_id}, profiles={profile_count}, s3_files={len(deleted_s3_files)}")
-        
-        return {
-            "message": f"Successfully deleted audience room {audience_room_id}",
-            "audience_room_id": audience_room_id,
-            "audience_room_name": audience_room.name,
-            "profiles_deleted": profile_count,
-            "s3_files_deleted": len(deleted_s3_files),
-            "s3_files": deleted_s3_files
-        }
-        
-    except HTTPException:
-        raise
-    except Exception as e:
-        logger.error(f"=== ERROR in delete_audience_room ===")
-        logger.error(f"Error deleting audience room {audience_room_id}: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=f"Failed to delete audience room: {str(e)}")
-
-
-@router.delete("/api/v1/audience-rooms/{audience_room_id}/v2")
-async def delete_audience_room_v2(
-    audience_room_id: str = Path(...),
-    enterpriseName: Optional[str] = Query(None, description="Enterprise name (gamma, app, entelligence, beta). If not provided, uses default audience database.")
-):
-    """
-    Delete an audience room and all associated data (V2 - uses new folder structure).
-    
-    This endpoint uses the new folder structure: {enterpriseName}/{audienceType}/{room_id}/
-    
-    This endpoint:
-    1. Deletes all S3 files associated with the audience room
-    2. Deletes all profiles from the AudienceProfile table (cascade delete)
-    3. Deletes the audience room from the AudienceRoom table
-    
-    Args:
-        audience_room_id: The audience room ID
-        enterpriseName: Optional enterprise name (gamma, app, entelligence, beta). 
-                       If not provided, uses AUDIENCE_DATABASE_URL.
-    """
-    logger.info(f"=== DELETE AUDIENCE ROOM V2 REQUEST START ===")
-    logger.info(f"Request: room_id={audience_room_id}, enterprise={enterpriseName}")
-    
-    ensure_db_available("audience")
-    logger.info("Database availability check passed")
-    
-    if not s3_client or not s3_bucket:
-        logger.error("S3 not configured - missing s3_client or s3_bucket")
-        raise HTTPException(status_code=503, detail="S3 is not configured; set AUDIENCE_BUCKET_NAME or VECTOR_BUCKET_NAME.")
-    
-    logger.info(f"S3 configured: bucket={s3_bucket}")
-
-    try:
-        # Fetch audience room with all profiles using enterprise-specific database if provided
-        logger.info(f"Fetching audience room {audience_room_id} from database (enterprise={enterpriseName})")
-        audience_room = database.find_audience_room_by_id(audience_room_id, include_profiles=True, enterprise_name=enterpriseName)
-        
-        if not audience_room:
-            logger.warning(f"Audience room {audience_room_id} not found in database (enterprise={enterpriseName})")
-            raise HTTPException(status_code=404, detail=f"Audience room {audience_room_id} not found")
-        
-        logger.info(f"Found audience room: id={audience_room.id}, name={audience_room.name}")
-        profiles = audience_room.profiles
-        profile_count = len(profiles)
-        logger.info(f"Room has {profile_count} profiles to delete")
-        
-        # Delete all S3 files associated with this audience room
-        # Use the new folder structure: {enterpriseName}/{audienceType}/{room_id}/
-        normalized_enterprise = enterpriseName.lower().strip() if enterpriseName else "default"
-        # Determine audience type from room source
+        # Collect all S3 keys from database records
         from app.utils.s3_utils import get_audience_type_from_source
+        s3_keys_from_db = set()  # Use set to avoid duplicates
+        
+        # Extract S3 keys from audience room
+        if audience_room.descriptionS3Url:
+            key = extract_s3_key_from_url(audience_room.descriptionS3Url)
+            if key:
+                s3_keys_from_db.add(key)
+                logger.info(f"Found room description S3 URL: {key}")
+        
+        if audience_room.indexesS3Url:
+            key = extract_s3_key_from_url(audience_room.indexesS3Url)
+            if key:
+                s3_keys_from_db.add(key)
+                logger.info(f"Found room indexes S3 URL: {key}")
+        
+        # Extract S3 keys from all profiles
+        for profile in profiles:
+            if profile.profileDescriptionS3Url:
+                key = extract_s3_key_from_url(profile.profileDescriptionS3Url)
+                if key:
+                    s3_keys_from_db.add(key)
+            
+            if profile.postsS3Url:
+                key = extract_s3_key_from_url(profile.postsS3Url)
+                if key:
+                    s3_keys_from_db.add(key)
+            
+            if profile.commentsS3Url:
+                key = extract_s3_key_from_url(profile.commentsS3Url)
+                if key:
+                    s3_keys_from_db.add(key)
+        
+        logger.info(f"Extracted {len(s3_keys_from_db)} unique S3 keys from database records")
+        
+        # Delete S3 files using new folder structure prefix (fallback to catch any orphaned files)
+        normalized_enterprise = enterpriseName.lower().strip() if enterpriseName else "default"
         audience_type = get_audience_type_from_source(audience_room.source)
         s3_prefix = f"{normalized_enterprise}/{audience_type}/{audience_room_id}/"
-        logger.info(f"Deleting S3 files with prefix: {s3_prefix} (enterprise={normalized_enterprise}, audience_type={audience_type}, source={audience_room.source})")
+        logger.info(f"Using S3 prefix for fallback deletion: {s3_prefix} (enterprise={normalized_enterprise}, audience_type={audience_type}, source={audience_room.source})")
+        
         deleted_s3_files = []
+        objects_to_delete = []
+        
+        # Add all keys from database to deletion list
+        for key in s3_keys_from_db:
+            objects_to_delete.append({'Key': key})
+            deleted_s3_files.append(key)
         
         try:
-            # List all objects with the prefix
+            # Also list all objects with the prefix to catch any files not in database
             logger.info(f"Listing S3 objects with prefix: {s3_prefix}")
             paginator = s3_client.get_paginator('list_objects_v2')
             pages = paginator.paginate(Bucket=s3_bucket, Prefix=s3_prefix)
             
-            # Collect all object keys to delete
-            objects_to_delete = []
+            prefix_keys = set()
             for page in pages:
                 if 'Contents' in page:
                     for obj in page['Contents']:
-                        objects_to_delete.append({'Key': obj['Key']})
-                        deleted_s3_files.append(obj['Key'])
+                        prefix_keys.add(obj['Key'])
             
-            logger.info(f"Found {len(objects_to_delete)} S3 objects to delete")
+            logger.info(f"Found {len(prefix_keys)} S3 objects with prefix {s3_prefix}")
+            
+            # Add prefix-based keys that weren't already in database keys
+            additional_keys = prefix_keys - s3_keys_from_db
+            additional_count = len(additional_keys)
+            if additional_keys:
+                logger.info(f"Found {additional_count} additional S3 objects not in database records")
+                for key in additional_keys:
+                    objects_to_delete.append({'Key': key})
+                    deleted_s3_files.append(key)
+            
+            logger.info(f"Total {len(objects_to_delete)} S3 objects to delete ({len(s3_keys_from_db)} from DB, {additional_count} from prefix)")
             
             # Delete all objects in batch (max 1000 objects per request)
             if objects_to_delete:
@@ -475,7 +395,7 @@ async def delete_audience_room_v2(
                     )
                 logger.info(f"Successfully deleted {len(objects_to_delete)} S3 objects for audience room {audience_room_id}")
             else:
-                logger.warning(f"No S3 objects found for audience room {audience_room_id} with prefix {s3_prefix}")
+                logger.warning(f"No S3 objects found for audience room {audience_room_id}")
                 
         except Exception as e:
             logger.error(f"Error deleting S3 files for audience room {audience_room_id}: {e}", exc_info=True)
@@ -495,7 +415,7 @@ async def delete_audience_room_v2(
             raise HTTPException(status_code=404, detail=f"Audience room {audience_room_id} not found or could not be deleted")
         logger.info(f"Successfully deleted audience room {audience_room_id} from database")
         
-        logger.info(f"=== DELETE AUDIENCE ROOM V2 REQUEST SUCCESS ===")
+        logger.info(f"=== DELETE AUDIENCE ROOM REQUEST SUCCESS ===")
         logger.info(f"Deleted: room_id={audience_room_id}, profiles={deleted_profile_count}, s3_files={len(deleted_s3_files)}")
         
         return {
@@ -503,13 +423,14 @@ async def delete_audience_room_v2(
             "deleted_room_id": audience_room_id,
             "deleted_profiles": deleted_profile_count,
             "deleted_s3_files": len(deleted_s3_files),
+            "s3_files_from_db": len(s3_keys_from_db),
             "s3_prefix_used": s3_prefix
         }
         
     except HTTPException:
         raise
     except Exception as e:
-        logger.error(f"=== ERROR in delete_audience_room_v2 ===")
+        logger.error(f"=== ERROR in delete_audience_room ===")
         logger.error(f"Error deleting audience room {audience_room_id}: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=f"Failed to delete audience room: {str(e)}")
 
@@ -1009,9 +930,9 @@ async def generate_group_summary(
         - If not provided, uses AUDIENCE_DATABASE_URL
     """
     ensure_db_available("audience")
-    from app.config import openai_client
-    if not openai_client:
-        raise HTTPException(status_code=503, detail="OpenAI client not initialized. Please set OPENAI_API_KEY.")
+    from app.config import openai_client, anthropic_client
+    if not anthropic_client:
+        raise HTTPException(status_code=503, detail="Anthropic client not initialized. Please set ANTHROPIC_API_KEY.")
     if not s3_client or not s3_bucket:
         raise HTTPException(status_code=503, detail="S3 is not configured; set AUDIENCE_BUCKET_NAME or VECTOR_BUCKET_NAME.")
     
@@ -1108,28 +1029,24 @@ async def generate_group_summary(
         )
         
         # Split the prompt into system and user messages
-        if "\n\n" in full_group_prompt:
-            parts = full_group_prompt.split("\n\n", 1)
-            system_message = parts[0] if parts[0].startswith("You are") else "You are an expert at analyzing groups of LinkedIn profiles and generating comprehensive, insightful high-level summaries. Write detailed, informative summaries that capture collective patterns and insights."
-            user_prompt = parts[1] if len(parts) > 1 else full_group_prompt
-        else:
-            # Fallback if prompt doesn't have clear separation
-            system_message = "You are an expert at analyzing groups of LinkedIn profiles and generating comprehensive, insightful high-level summaries. Write detailed, informative summaries that capture collective patterns and insights."
-            user_prompt = full_group_prompt
+        default_group_system = "You are an expert at analyzing groups of LinkedIn profiles and generating comprehensive, insightful high-level summaries. Write detailed, informative summaries that capture collective patterns and insights."
+        system_message, user_prompt = split_prompt_into_messages(full_group_prompt, default_group_system)
         
-        # Generate group summary using OpenAI
+        # Generate group summary using Claude Sonnet
         try:
-            completion = openai_client.chat.completions.create(
-                model="o3-mini",
+            group_summary = await call_claude_with_retry(
+                context_id=audience_room_id,
                 messages=[
                     {"role": "system", "content": system_message},
                     {"role": "user", "content": user_prompt}
                 ],
                 max_tokens=1200,
-                temperature=0.3,
+                max_retries=3,
+                initial_delay=1.0,
+                model="claude-sonnet-4-5-20250929"  # Specific snapshot for production stability (format: claude-sonnet-4-5-YYYYMMDD)
             )
             
-            group_summary = completion.choices[0].message.content.strip()
+            group_summary = group_summary.strip()
             
             # Generate traits based on profile summaries using LangSmith prompt
             import json
@@ -1141,27 +1058,24 @@ async def generate_group_summary(
             )
             
             # Split the prompt into system and user messages
-            if "\n\n" in full_traits_prompt:
-                parts = full_traits_prompt.split("\n\n", 1)
-                traits_system_message = parts[0] if parts[0].startswith("You are") else "You are an expert at analyzing professional profiles and generating structured trait data. Always return valid JSON only, no additional text."
-                traits_prompt = parts[1] if len(parts) > 1 else full_traits_prompt
-            else:
-                # Fallback if prompt doesn't have clear separation
-                traits_system_message = "You are an expert at analyzing professional profiles and generating structured trait data. Always return valid JSON only, no additional text."
-                traits_prompt = full_traits_prompt
+            default_traits_system = "You are an expert at analyzing professional profiles and generating structured trait data. Always return valid JSON only, no additional text."
+            traits_system_message, traits_prompt = split_prompt_into_messages(full_traits_prompt, default_traits_system)
             
             try:
-                traits_completion = openai_client.chat.completions.create(
-                    model="o3-mini",
+                # Generate traits using Claude Sonnet
+                traits_response = await call_claude_with_retry(
+                    context_id=audience_room_id,
                     messages=[
                         {"role": "system", "content": traits_system_message},
                         {"role": "user", "content": traits_prompt}
                     ],
                     max_tokens=2000,
-                    temperature=0.3,
+                    max_retries=3,
+                    initial_delay=1.0,
+                    model="claude-sonnet-4-5-20250929"  # Specific snapshot for production stability
                 )
                 
-                traits_response = traits_completion.choices[0].message.content.strip()
+                traits_response = traits_response.strip()
                 
                 # Parse the JSON response
                 if "```json" in traits_response:

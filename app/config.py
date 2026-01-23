@@ -11,6 +11,7 @@ from app import database
 
 if TYPE_CHECKING:
     from peopledatalabs import PDLPY
+    from anthropic import Anthropic
 
 # Load environment variables
 load_dotenv()
@@ -28,6 +29,7 @@ pdl_client: Optional["PDLPY"] = None
 apify_client: Optional[ApifyClient] = None
 openai_client: Optional[OpenAI] = None
 groq_client: Optional[Groq] = None
+anthropic_client: Optional["Anthropic"] = None
 dynamodb_resource = None
 s3_client = None
 s3_bucket = os.getenv("AUDIENCE_BUCKET_NAME") or os.getenv("VECTOR_BUCKET_NAME")
@@ -41,7 +43,7 @@ logger.info(f"Main DB available: {main_db_available}, Audience DB available: {au
 
 def initialize_clients():
     """Initialize all third-party clients."""
-    global pdl_client, apify_client, openai_client, groq_client, dynamodb_resource, s3_client
+    global pdl_client, apify_client, openai_client, groq_client, anthropic_client, dynamodb_resource, s3_client
     
     # Initialize PDL client (lazy import to avoid Pydantic compatibility issues)
     try:
@@ -81,6 +83,22 @@ def initialize_clients():
     except Exception as e:
         logger.error(f"Failed to initialize Groq client: {e}")
         groq_client = None
+    
+    # Initialize Anthropic (Claude) client
+    try:
+        from anthropic import Anthropic
+        anthropic_api_key = os.getenv("ANTHROPIC_API_KEY")
+        if anthropic_api_key:
+            anthropic_client = Anthropic(api_key=anthropic_api_key)
+            logger.info("Anthropic (Claude) client initialized successfully")
+        else:
+            logger.warning("ANTHROPIC_API_KEY not set")
+    except ImportError:
+        logger.warning("anthropic package not installed. Install with: pip install anthropic")
+        anthropic_client = None
+    except Exception as e:
+        logger.error(f"Failed to initialize Anthropic client: {e}")
+        anthropic_client = None
     
     # Initialize DynamoDB (optional)
     try:

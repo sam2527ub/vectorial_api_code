@@ -309,5 +309,3 @@ def replace_enterprise_in_s3_url(
         f"/{old_enterprise}/",
         f"/{new_enterprise}/",
     )
-
-
