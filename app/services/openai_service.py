@@ -78,11 +78,11 @@ async def call_openai_with_retry(
     for attempt in range(max_retries):
         try:
             # o3-mini model requires max_completion_tokens instead of max_tokens
+            # o3-mini doesn't support temperature parameter
             completion = openai_client.chat.completions.create(
                 model="o3-mini",
                 messages=messages,
                 max_completion_tokens=max_tokens,  # o3-mini uses max_completion_tokens
-                temperature=0.3,
                 response_format={"type": "json_object"}
             )
             
