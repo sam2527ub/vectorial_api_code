@@ -1,6 +1,5 @@
 """Audience room endpoints."""
 import uuid
-import asyncio
 import copy
 from datetime import datetime, timezone
 from typing import Optional
@@ -736,175 +735,6 @@ async def get_profile_comments(
         logger.error(f"=== ERROR in get_profile_comments ===")
         logger.error(f"Error fetching comments for profile {profile_id}: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail="Failed to fetch comments")
-
-
-@router.post("/api/v1/audience-rooms/{audience_room_id}/generate-summaries")
-async def generate_profile_summaries(
-    audience_room_id: str = Path(...),
-    offset: int = Query(0, ge=0, description="Offset for chunking (start index)"),
-    limit: int = Query(10, ge=1, le=20, description="Number of profiles to process per chunk (max 20)"),
-    enterpriseName: Optional[str] = Query(None, description="Enterprise name (gamma, app, entelligence, beta). If not provided, uses default audience database.")
-):
-    """
-    Generate summaries, keywords, and highlights for profiles in an audience room.
-    
-    Uses chunking to avoid timeouts - processes profiles in smaller batches.
-    Client should call this endpoint multiple times with increasing offsets until has_more is false.
-    
-    Flow:
-    1. Fetch all profiles in the audience room
-    2. Process only the chunk specified by offset/limit
-    3. For each profile in chunk:
-       - Fetch posts JSON from S3
-       - Generate summary, keywords, and highlights using OpenAI
-       - Update profile description JSON in S3 with the new data
-    4. Return results with info about remaining chunks
-    
-    Example usage:
-    - First call: POST /generate-summaries?offset=0&limit=10
-    - Second call: POST /generate-summaries?offset=10&limit=10
-    - Continue until has_more is false
-    
-    Query Parameters:
-    - enterpriseName (optional): Enterprise name to determine which database to use:
-        - "gamma" -> uses GAMMA_DATABASE_URL
-        - "app" -> uses APP_DATABASE_URL
-        - "entelligence" -> uses ENTELLIGENCE_DATABASE_URL
-        - "beta" -> uses BETA_DATABASE_URL
-        - If not provided, uses AUDIENCE_DATABASE_URL
-    """
-    logger.info(f"=== GENERATE PROFILE SUMMARIES REQUEST START ===")
-    logger.info(f"Request: room_id={audience_room_id}, offset={offset}, limit={limit}, enterprise={enterpriseName}")
-    
-    ensure_db_available("audience")
-    from app.config import openai_client
-    if not openai_client:
-        logger.error("OpenAI client not initialized")
-        raise HTTPException(status_code=503, detail="OpenAI client not initialized. Please set OPENAI_API_KEY.")
-    if not s3_client or not s3_bucket:
-        logger.error("S3 not configured")
-        raise HTTPException(status_code=503, detail="S3 is not configured; set AUDIENCE_BUCKET_NAME or VECTOR_BUCKET_NAME.")
-    
-    logger.info("Database, OpenAI, and S3 checks passed")
-    
-    try:
-        # Fetch audience room and profiles
-        logger.info(f"Fetching audience room {audience_room_id} with profiles (enterprise={enterpriseName})")
-        audience_room = database.find_audience_room_by_id(audience_room_id, include_profiles=True, enterprise_name=enterpriseName)
-        if not audience_room:
-            logger.warning(f"Audience room {audience_room_id} not found (enterprise={enterpriseName})")
-            raise HTTPException(status_code=404, detail=f"Audience room {audience_room_id} not found")
-        
-        logger.info(f"Found audience room: id={audience_room.id}, name={audience_room.name}")
-        all_profiles = audience_room.profiles
-        if not all_profiles:
-            logger.warning(f"No profiles found in audience room {audience_room_id}")
-            raise HTTPException(status_code=404, detail=f"No profiles found in audience room {audience_room_id}")
-        
-        total_profiles = len(all_profiles)
-        logger.info(f"Total profiles in room: {total_profiles}")
-        
-        # Calculate chunk boundaries
-        chunk_start = offset
-        chunk_end = min(offset + limit, total_profiles)
-        profiles_chunk = all_profiles[chunk_start:chunk_end]
-        logger.info(f"Processing chunk: offset={offset}, limit={limit}, chunk_start={chunk_start}, chunk_end={chunk_end}, profiles_in_chunk={len(profiles_chunk)}")
-        
-        if not profiles_chunk:
-            return {
-                "audience_room_id": audience_room_id,
-                "total_profiles": total_profiles,
-                "chunk": {
-                    "offset": offset,
-                    "limit": limit,
-                    "processed": 0,
-                    "start_index": chunk_start,
-                    "end_index": chunk_end
-                },
-                "success_count": 0,
-                "skipped_count": 0,
-                "error_count": 0,
-                "has_more": False,
-                "next_offset": None,
-                "profiles": []
-            }
-        
-        logger.info(f"Processing chunk {chunk_start}-{chunk_end} of {total_profiles} profiles for audience room {audience_room_id}")
-        
-        # Rate-limited batching to avoid OpenAI rate limits
-        MAX_CONCURRENT = 2
-        semaphore = asyncio.Semaphore(MAX_CONCURRENT)
-        
-        async def rate_limited_process(profile):
-            async with semaphore:
-                result = await process_profile_summary(profile, audience_room_id, enterprise_name=enterpriseName)
-                await asyncio.sleep(1.0)  # Delay to spread out API requests
-                return result
-        
-        logger.info(f"Starting async processing of {len(profiles_chunk)} profiles with MAX_CONCURRENT={MAX_CONCURRENT}")
-        tasks = [rate_limited_process(profile) for profile in profiles_chunk]
-        results = await asyncio.gather(*tasks, return_exceptions=True)
-        logger.info(f"Completed async processing of {len(results)} profiles")
-        
-        # Process results and handle exceptions
-        processed_results = []
-        success_count = 0
-        error_count = 0
-        skipped_count = 0
-        
-        logger.info(f"Processing {len(results)} results")
-        for idx, result in enumerate(results):
-            if isinstance(result, Exception):
-                logger.error(f"Error processing profile {profiles_chunk[idx].id}: {result}", exc_info=True)
-                processed_results.append({
-                    "profile_id": profiles_chunk[idx].id,
-                    "profile_name": profiles_chunk[idx].profileName,
-                    "status": "error",
-                    "reason": "exception",
-                    "error": str(result)
-                })
-                error_count += 1
-            else:
-                processed_results.append(result)
-                if result["status"] == "success":
-                    success_count += 1
-                elif result["status"] == "skipped":
-                    skipped_count += 1
-                else:
-                    error_count += 1
-        
-        logger.info(f"Results summary: success={success_count}, skipped={skipped_count}, error={error_count}")
-        
-        # Calculate if there are more chunks
-        has_more = chunk_end < total_profiles
-        next_offset = chunk_end if has_more else None
-        logger.info(f"Chunk processing complete: has_more={has_more}, next_offset={next_offset}")
-        
-        return {
-            "audience_room_id": audience_room_id,
-            "total_profiles": total_profiles,
-            "chunk": {
-                "offset": offset,
-                "limit": limit,
-                "processed": len(profiles_chunk),
-                "start_index": chunk_start,
-                "end_index": chunk_end
-            },
-            "success_count": success_count,
-            "skipped_count": skipped_count,
-            "error_count": error_count,
-            "has_more": has_more,
-            "next_offset": next_offset,
-            "profiles": processed_results
-        }
-        
-    except HTTPException:
-        raise
-    except Exception as e:
-        logger.error(f"Error generating profile summaries: {e}")
-        raise HTTPException(status_code=500, detail=f"Failed to generate summaries: {str(e)}")
-
-
 @router.post("/api/v1/audience-rooms/{audience_room_id}/generate-group-summary")
 async def generate_group_summary(
     audience_room_id: str = Path(...),
@@ -1005,7 +835,7 @@ async def generate_group_summary(
         if not profile_summaries:
             raise HTTPException(
                 status_code=400, 
-                detail="No profile summaries found. Please generate profile summaries first using /api/v1/audience-rooms/{audience_room_id}/generate-summaries"
+                detail="No profile summaries found. Please generate profile summaries first using /api/v1/audience-rooms/{audience_room_id}/generate-summaries/async"
             )
         
         # Combine all profile summaries

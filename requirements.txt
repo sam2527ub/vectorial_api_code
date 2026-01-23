@@ -11,7 +11,7 @@ prisma==0.11.0
 psycopg2-binary==2.9.9
 groq>=0.4.0
 httpx>=0.24.0
-langsmith>=0.1.0
+langsmith>=0.1.99
 langchain-core>=0.1.0
 anthropic>=0.18.0
 
