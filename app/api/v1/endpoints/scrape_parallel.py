@@ -168,7 +168,7 @@ async def trigger_parallel_scraping(payload: ParallelScrapeRequest):
         raise HTTPException(status_code=503, detail="Apify client not initialized. Please set APIFY_API_TOKEN.")
     
     # Convert cookies to dict
-    cookies_dict = [cookie.dict(exclude_none=True) for cookie in payload.cookies]
+    cookies_dict = [cookie.model_dump(exclude_none=True) for cookie in payload.cookies]
     
     # Normalize URLs
     normalized_urls = [u for u in (normalize_linkedin_url(u) for u in payload.linkedin_urls) if u]

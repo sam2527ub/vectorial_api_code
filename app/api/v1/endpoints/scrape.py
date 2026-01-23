@@ -31,7 +31,7 @@ async def trigger_scraping(payload: ScrapeRequest):
     logger.info(f"Request: enterprise={payload.enterpriseName}, audience_room_id={payload.audience_room_id}, urls_count={len(payload.linkedin_urls)}, max_posts={payload.max_posts}")
     
     # Convert Cookie Pydantic models to dictionaries for Apify
-    cookies_dict = [cookie.dict(exclude_none=True) for cookie in payload.cookies]
+    cookies_dict = [cookie.model_dump(exclude_none=True) for cookie in payload.cookies]
     logger.info(f"Converted {len(cookies_dict)} cookies for Apify")
 
     # Normalize LinkedIn URLs for database storage (for matching later)
