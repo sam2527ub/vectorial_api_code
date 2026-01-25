@@ -65,6 +65,9 @@ class AudienceProfilePayload(BaseModel):
     industry: Optional[str] = Field(None, description="Industry")
     education: Optional[str] = Field(None, description="Education summary")
     linkedin_profile_url: str = Field(..., description="LinkedIn profile URL")
+    jobTitle: Optional[str] = Field(None, description="Job title from Apify enrichment")
+    headline: Optional[str] = Field(None, description="Headline from Apify enrichment")
+    about: Optional[str] = Field(None, description="About section from Apify enrichment")
 
 
 class CreateAudienceRoomRequest(BaseModel):

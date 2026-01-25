@@ -109,6 +109,9 @@ async def create_audience_room(payload: CreateAudienceRoomRequest):
             "industry": profile.industry,
             "education": profile.education,
             "linkedin_profile_url": profile.linkedin_profile_url,
+            "jobTitle": getattr(profile, 'jobTitle', None),
+            "headline": getattr(profile, 'headline', None),
+            "about": getattr(profile, 'about', None),
             "summary": None,
         }
         logger.info(f"Uploading profile {idx+1} to S3: profile_id={profile_id}")
