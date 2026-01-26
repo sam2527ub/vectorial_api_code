@@ -101,7 +101,7 @@ def initialize_all_enterprise_audience_folders():
     
     This can be called once at startup or manually to ensure all folders exist.
     """
-    enterprises = ["app", "gamma", "entelligence", "beta", "default"]
+    enterprises = ["app", "gamma", "entelligence", "beta", "waypoint", "splitsecure", "agentictrust", "dopplr", "cinesis", "czi", "default"]
     logger.info(f"Initializing enterprise and audience folders in S3 ({len(enterprises)} enterprises × 2 audience types)")
     
     for enterprise in enterprises:

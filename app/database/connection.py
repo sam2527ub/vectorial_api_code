@@ -24,6 +24,12 @@ _gamma_pool: Optional[ThreadedConnectionPool] = None
 _app_pool: Optional[ThreadedConnectionPool] = None
 _entelligence_pool: Optional[ThreadedConnectionPool] = None
 _beta_pool: Optional[ThreadedConnectionPool] = None
+_waypoint_pool: Optional[ThreadedConnectionPool] = None
+_splitsecure_pool: Optional[ThreadedConnectionPool] = None
+_agentictrust_pool: Optional[ThreadedConnectionPool] = None
+_dopplr_pool: Optional[ThreadedConnectionPool] = None
+_cinesis_pool: Optional[ThreadedConnectionPool] = None
+_czi_pool: Optional[ThreadedConnectionPool] = None
 
 
 def get_main_pool() -> Optional[ThreadedConnectionPool]:
@@ -116,6 +122,89 @@ def get_beta_pool() -> Optional[ThreadedConnectionPool]:
                 logger.error(f"Failed to initialize beta database pool: {e}")
     return _beta_pool
 
+def get_waypoint_pool() -> Optional[ThreadedConnectionPool]:
+
+    global _waypoint_pool
+    if _waypoint_pool is None:
+        database_url = os.getenv("WAYPOINT_DATABASE_URL")
+        if database_url:
+            try:
+                _waypoint_pool = ThreadedConnectionPool(1, 10, database_url)
+                logger.info("Waypoint database pool initialized successfully")
+            except Exception as e:
+                logger.error(f"Failed to initialize waypoint database pool: {e}")
+    return _waypoint_pool
+
+
+def get_splitsecure_pool() -> Optional[ThreadedConnectionPool]:
+
+    global _splitsecure_pool
+    if _splitsecure_pool is None:
+        database_url = os.getenv("SPLITSECURE_DATABASE_URL")
+        if database_url:
+            try:
+                _splitsecure_pool = ThreadedConnectionPool(1, 10, database_url)
+                logger.info("Splitsecure database pool initialized successfully")
+            except Exception as e:
+                logger.error(f"Failed to initialize splitsecure database pool: {e}")
+    return _splitsecure_pool
+
+
+def get_agentictrust_pool() -> Optional[ThreadedConnectionPool]:
+
+    global _agentictrust_pool
+    if _agentictrust_pool is None:
+        database_url = os.getenv("AGENTICTRUST_DATABASE_URL")
+        if database_url:
+            try:
+                _agentictrust_pool = ThreadedConnectionPool(1, 10, database_url)
+                logger.info("Agentictrust database pool initialized successfully")
+            except Exception as e:
+                logger.error(f"Failed to initialize agentictrust database pool: {e}")
+    return _agentictrust_pool
+
+
+def get_dopplr_pool() -> Optional[ThreadedConnectionPool]:
+
+    global _dopplr_pool
+    if _dopplr_pool is None:
+        database_url = os.getenv("DOPPLR_DATABASE_URL")
+        if database_url:
+            try:
+                _dopplr_pool = ThreadedConnectionPool(1, 10, database_url)
+                logger.info("Dopplr database pool initialized successfully")
+            except Exception as e:
+                logger.error(f"Failed to initialize dopplr database pool: {e}")
+    return _dopplr_pool
+
+
+def get_cinesis_pool() -> Optional[ThreadedConnectionPool]:
+
+    global _cinesis_pool
+    if _cinesis_pool is None:
+        database_url = os.getenv("CINESIS_DATABASE_URL")
+        if database_url:
+            try:
+                _cinesis_pool = ThreadedConnectionPool(1, 10, database_url)
+                logger.info("Cinesis database pool initialized successfully")
+            except Exception as e:
+                logger.error(f"Failed to initialize cinesis database pool: {e}")
+    return _cinesis_pool
+
+
+def get_czi_pool() -> Optional[ThreadedConnectionPool]:
+
+    global _czi_pool
+    if _czi_pool is None:
+        database_url = os.getenv("CZI_DATABASE_URL")
+        if database_url:
+            try:
+                _czi_pool = ThreadedConnectionPool(1, 10, database_url)
+                logger.info("CZI database pool initialized successfully")
+            except Exception as e:
+                logger.error(f"Failed to initialize czi database pool: {e}")
+    return _czi_pool
+
 
 @contextmanager
 def get_main_connection():
@@ -161,44 +250,42 @@ def get_enterprise_audience_connection(enterprise_name: Optional[str] = None):
             - "app" -> uses APP_DATABASE_URL
             - "entelligence" -> uses ENTELLIGENCE_DATABASE_URL
             - "beta" -> uses BETA_DATABASE_URL
+            - "waypoint" -> uses WAYPOINT_DATABASE_URL
+            - "splitsecure" -> uses SPLITSECURE_DATABASE_URL
+            - "agentictrust" -> uses AGENTICTRUST_DATABASE_URL
+            - "dopplr" -> uses DOPPLR_DATABASE_URL
+            - "cinesis" -> uses CINESIS_DATABASE_URL
+            - "czi" -> uses CZI_DATABASE_URL
         If None or not provided, defaults to AUDIENCE_DATABASE_URL
     """
-    pool = None
+    # Mapping of enterprise names to (pool_getter_function, env_var_name, display_name)
+    enterprise_pools = {
+        "gamma": (get_gamma_pool, "GAMMA_DATABASE_URL", "Gamma"),
+        "app": (get_app_pool, "APP_DATABASE_URL", "App"),
+        "entelligence": (get_entelligence_pool, "ENTELLIGENCE_DATABASE_URL", "Entelligence"),
+        "beta": (get_beta_pool, "BETA_DATABASE_URL", "Beta"),
+        "waypoint": (get_waypoint_pool, "WAYPOINT_DATABASE_URL", "Waypoint"),
+        "splitsecure": (get_splitsecure_pool, "SPLITSECURE_DATABASE_URL", "Splitsecure"),
+        "agentictrust": (get_agentictrust_pool, "AGENTICTRUST_DATABASE_URL", "Agentictrust"),
+        "dopplr": (get_dopplr_pool, "DOPPLR_DATABASE_URL", "Dopplr"),
+        "cinesis": (get_cinesis_pool, "CINESIS_DATABASE_URL", "Cinesis"),
+        "czi": (get_czi_pool, "CZI_DATABASE_URL", "CZI"),
+    }
     
-    # Normalize enterprise name: lowercase and strip whitespace
     normalized_enterprise = enterprise_name.lower().strip() if enterprise_name else None
     logger.info(f"get_enterprise_audience_connection called with enterprise_name='{enterprise_name}', normalized='{normalized_enterprise}'")
     
-    if normalized_enterprise == "gamma":
-        logger.info("Getting GAMMA database pool")
-        pool = get_gamma_pool()
+    pool = None
+    
+    if normalized_enterprise and normalized_enterprise in enterprise_pools:
+        pool_getter, env_var_name, display_name = enterprise_pools[normalized_enterprise]
+        logger.info(f"Getting {display_name.upper()} database pool")
+        pool = pool_getter()
         if not pool:
-            logger.error("Gamma database pool is None - GAMMA_DATABASE_URL may not be set")
-            raise Exception("Gamma database pool not available. Please set GAMMA_DATABASE_URL.")
-        logger.info("Gamma database pool retrieved successfully")
-    elif normalized_enterprise == "app":
-        logger.info("Getting APP database pool")
-        pool = get_app_pool()
-        if not pool:
-            logger.error("App database pool is None - APP_DATABASE_URL may not be set")
-            raise Exception("App database pool not available. Please set APP_DATABASE_URL.")
-        logger.info("App database pool retrieved successfully")
-    elif normalized_enterprise == "entelligence":
-        logger.info("Getting ENTELLIGENCE database pool")
-        pool = get_entelligence_pool()
-        if not pool:
-            logger.error("Entelligence database pool is None - ENTELLIGENCE_DATABASE_URL may not be set")
-            raise Exception("Entelligence database pool not available. Please set ENTELLIGENCE_DATABASE_URL.")
-        logger.info("Entelligence database pool retrieved successfully")
-    elif normalized_enterprise == "beta":
-        logger.info("Getting BETA database pool")
-        pool = get_beta_pool()
-        if not pool:
-            logger.error("Beta database pool is None - BETA_DATABASE_URL may not be set")
-            raise Exception("Beta database pool not available. Please set BETA_DATABASE_URL.")
-        logger.info("Beta database pool retrieved successfully")
+            logger.error(f"{display_name} database pool is None - {env_var_name} may not be set")
+            raise Exception(f"{display_name} database pool not available. Please set {env_var_name}.")
+        logger.info(f"{display_name} database pool retrieved successfully")
     else:
-        # Default to audience database
         logger.info(f"Using default AUDIENCE database connection (enterprise_name was '{enterprise_name}', normalized='{normalized_enterprise}')")
         pool = get_audience_pool()
         if not pool:
@@ -226,10 +313,9 @@ def get_enterprise_audience_connection(enterprise_name: Optional[str] = None):
         pool.putconn(conn)
         logger.info(f"Connection returned to pool for enterprise='{normalized_enterprise}'")
 
-
 def close_pools():
     """Close all connection pools."""
-    global _main_pool, _audience_pool, _gamma_pool, _app_pool, _entelligence_pool, _beta_pool
+    global _main_pool, _audience_pool, _gamma_pool, _app_pool, _entelligence_pool, _beta_pool, _waypoint_pool, _splitsecure_pool, _agentictrust_pool, _dopplr_pool, _cinesis_pool, _czi_pool
     if _main_pool:
         _main_pool.closeall()
         _main_pool = None
@@ -254,6 +340,30 @@ def close_pools():
         _beta_pool.closeall()
         _beta_pool = None
         logger.info("Beta database pool closed")
+    if _waypoint_pool:
+        _waypoint_pool.closeall()
+        _waypoint_pool = None
+        logger.info("Waypoint database pool closed")
+    if _splitsecure_pool:
+        _splitsecure_pool.closeall()
+        _splitsecure_pool = None
+        logger.info("Splitsecure database pool closed")
+    if _agentictrust_pool:
+        _agentictrust_pool.closeall()
+        _agentictrust_pool = None
+        logger.info("Agentictrust database pool closed")
+    if _dopplr_pool:
+        _dopplr_pool.closeall()
+        _dopplr_pool = None
+        logger.info("Dopplr database pool closed")
+    if _cinesis_pool:
+        _cinesis_pool.closeall()
+        _cinesis_pool = None
+        logger.info("Cinesis database pool closed")
+    if _czi_pool:
+        _czi_pool.closeall()
+        _czi_pool = None
+        logger.info("CZI database pool closed")
 
 
 # ============================================

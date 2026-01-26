@@ -117,7 +117,7 @@ class UpdateAudienceRoomNameRequest(BaseModel):
 
 
 class CopyAudienceRoomToClientRequest(BaseModel):
-    targetEnterpriseName: str = Field(..., description="Target enterprise name to copy the audience room to (beta, app, entelligence, gamma)")
-    sourceEnterpriseName: Optional[str] = Field("gamma", description="Source enterprise name (gamma, app, entelligence, beta). Defaults to 'gamma'.")
+    targetEnterpriseName: str = Field(..., description="Target enterprise name to copy the audience room to (gamma, app, entelligence, beta, waypoint, splitsecure, agentictrust, dopplr, cinesis, czi)")
+    sourceEnterpriseName: Optional[str] = Field("gamma", description="Source enterprise name (gamma, app, entelligence, beta, waypoint, splitsecure, agentictrust, dopplr, cinesis, czi). Defaults to 'gamma'.")
     targetUserId: Optional[str] = Field(None, description="Target user ID. If not provided, will be fetched from target enterprise database.")
 
