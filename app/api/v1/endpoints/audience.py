@@ -1201,7 +1201,7 @@ async def copy_audience_room_to_client(
     )
     target_enterprise = payload.targetEnterpriseName.lower().strip()
 
-    valid_enterprises = {"gamma", "app", "entelligence", "beta"}
+    valid_enterprises = {"gamma", "app", "entelligence", "beta","waypoint", "splitsecure", "agentictrust", "dopplr", "cinesis", "czi"}
 
     if target_enterprise not in valid_enterprises:
         raise HTTPException(
