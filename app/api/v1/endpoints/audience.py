@@ -11,6 +11,7 @@ from app.utils.s3_utils import upload_json_to_s3, extract_s3_key_from_url, fetch
 from app.services.summary_service import process_profile_summary
 from app.services.openai_service import call_claude_with_retry, split_prompt_into_messages
 from app import database
+from app.database.enterprise_registry import get_all_enterprises
 
 router = APIRouter()
 
@@ -1201,14 +1202,26 @@ async def copy_audience_room_to_client(
     )
     target_enterprise = payload.targetEnterpriseName.lower().strip()
 
-    valid_enterprises = {"gamma", "app", "entelligence", "beta","waypoint", "splitsecure", "agentictrust", "dopplr", "cinesis", "czi"}
+    # Get valid enterprises dynamically from environment variables
+    valid_enterprises = get_all_enterprises()
 
+    # Validate source enterprise
+    if source_enterprise not in valid_enterprises:
+        raise HTTPException(
+            status_code=400,
+            detail=(
+                f"Invalid source enterprise: {source_enterprise}. "
+                f"Must be one of: {', '.join(sorted(valid_enterprises))}"
+            ),
+        )
+
+    # Validate target enterprise
     if target_enterprise not in valid_enterprises:
         raise HTTPException(
             status_code=400,
             detail=(
                 f"Invalid target enterprise: {target_enterprise}. "
-                f"Must be one of: {', '.join(valid_enterprises)}"
+                f"Must be one of: {', '.join(sorted(valid_enterprises))}"
             ),
         )
 
