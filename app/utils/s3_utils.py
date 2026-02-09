@@ -4,6 +4,7 @@ import logging
 from typing import Dict, Any, Optional, List
 from fastapi import HTTPException
 from app.config import s3_client, s3_bucket, s3_region
+from app.database.enterprise_registry import get_all_enterprises
 
 logger = logging.getLogger(__name__)
 
@@ -45,7 +46,7 @@ def ensure_enterprise_audience_folders_exist(enterprise_name: Optional[str] = No
     Creates empty folder markers if they don't exist.
     
     Args:
-        enterprise_name: Enterprise name (gamma, app, entelligence, beta). If None, uses "default"
+        enterprise_name: Enterprise name (auto-discover from env vars). If None, uses "default"
     """
     if not s3_client or not s3_bucket:
         logger.warning("S3 not configured, skipping folder creation")
@@ -87,21 +88,18 @@ def ensure_enterprise_audience_folders_exist(enterprise_name: Optional[str] = No
 def initialize_all_enterprise_audience_folders():
     """
     Initialize all enterprise and audience type folders in S3.
-    Creates empty folder markers for:
-    - app/linkedin-audience/
-    - app/reddit-audience/
-    - gamma/linkedin-audience/
-    - gamma/reddit-audience/
-    - entelligence/linkedin-audience/
-    - entelligence/reddit-audience/
-    - beta/linkedin-audience/
-    - beta/reddit-audience/
-    - default/linkedin-audience/
-    - default/reddit-audience/
+    Creates empty folder markers for all discovered enterprises plus "default".
+    For each enterprise, creates:
+    - {enterprise}/linkedin-audience/
+    - {enterprise}/reddit-audience/
     
-    This can be called once at startup or manually to ensure all folders exist.
+    Enterprises are auto-discovered from environment variables matching pattern:
+    {NAME}_DATABASE_URL
     """
-    enterprises = ["app", "gamma", "entelligence", "beta", "waypoint", "splitsecure", "agentictrust", "dopplr", "cinesis", "czi", "default"]
+    # Get all discovered enterprises dynamically
+    enterprises = list(get_all_enterprises())
+    enterprises.append("default")
+    
     logger.info(f"Initializing enterprise and audience folders in S3 ({len(enterprises)} enterprises × 2 audience types)")
     
     for enterprise in enterprises:
@@ -122,7 +120,7 @@ def get_s3_key_for_audience(room_id: str, path: str, enterprise_name: Optional[s
     Args:
         room_id: Audience room ID
         path: Path within the room folder (e.g., "description.json", "profiles/{profile_id}/profile.json")
-        enterprise_name: Enterprise name (gamma, app, entelligence, beta). If None, uses "default"
+        enterprise_name: Enterprise name (auto-discovered from env vars). If None, uses "default"
         source: Source value ("LinkedIn", "Reddit") to determine audience path. If None, defaults to "linkedin-audience"
     
     Returns:
