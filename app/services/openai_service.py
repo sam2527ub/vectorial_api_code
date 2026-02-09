@@ -5,11 +5,17 @@ import asyncio
 from typing import List, Dict, Any, Optional, Tuple
 from fastapi import HTTPException
 from app.config import openai_client, anthropic_client, logger
+from app.services.ai_gateway_service import ai_gateway
+from app.services.dynamic_context_window_management_service import context_manager
+from app.services.direct_api_handler import DirectAPIHandler
 from prompts import (
     profile_posts_summary_prompt,
     profile_posts_batch_summary_prompt,
     combine_batch_summaries_prompt
 )
+
+# Initialize direct API handler for fallback
+_direct_handler = DirectAPIHandler()
 
 # Re-export logger for convenience
 __all__ = [
@@ -54,10 +60,12 @@ async def call_openai_with_retry(
     max_tokens: int,
     max_retries: int = 3,
     initial_delay: float = 1.0,
-    validate_summary: bool = False
+    validate_summary: bool = False,
+    model: Optional[str] = None
 ) -> Dict[str, Any]:
     """
     Call OpenAI API with exponential backoff retry logic.
+    Uses AI Gateway if enabled, otherwise falls back to direct API.
     
     Args:
         profile_id: Profile ID for logging
@@ -66,6 +74,7 @@ async def call_openai_with_retry(
         max_retries: Maximum number of retry attempts
         initial_delay: Initial delay in seconds before first retry
         validate_summary: If True, validates that summary is not empty (for final summaries only)
+        model: Optional model name (defaults to profile_summary_default from config)
     
     Returns:
         Parsed JSON result from OpenAI
@@ -73,25 +82,39 @@ async def call_openai_with_retry(
     Raises:
         Exception: If all retries fail
     """
+    # Use AI Gateway if enabled
+    if ai_gateway.enabled:
+        try:
+            effective_model = model or "openai/gpt-5-mini"
+            return await ai_gateway.call_via_gateway(
+                context_id=profile_id,
+                messages=messages,
+                max_tokens=max_tokens,
+                model=effective_model,
+                default_model="openai/gpt-5-mini",
+                fallback_models=["anthropic/claude-sonnet-4.5", "openai/gpt-4o-mini"],
+                config_default_attr='profile_summary_default',
+                config_fallbacks_attr='profile_summary_fallbacks',
+                hardcoded_default="openai/gpt-5-mini",
+                validate_summary=validate_summary,
+                return_text=False,
+                direct_api_fallback_model=effective_model
+            )
+        except Exception as e:
+            logger.warning(f"Profile {profile_id}: Gateway call failed, falling back to direct API: {e}")
+            # Fall through to direct API
+    
+    # Direct API fallback (original logic with retries)
     last_exception = None
     
     for attempt in range(max_retries):
         try:
-            # o3-mini model requires max_completion_tokens instead of max_tokens
-            # o3-mini doesn't support temperature parameter
-            completion = openai_client.chat.completions.create(
-                model="o3-mini",
+            result = await _direct_handler.call_openai_direct(
+                profile_id=profile_id,
                 messages=messages,
-                max_completion_tokens=max_tokens,  # o3-mini uses max_completion_tokens
-                response_format={"type": "json_object"}
+                max_tokens=max_tokens,
+                validate_summary=validate_summary
             )
-            
-            result = json.loads(completion.choices[0].message.content)
-            
-            # Validate that we got a summary (only for final summaries)
-            if validate_summary and (not result.get("summary") or not result.get("summary", "").strip()):
-                raise ValueError("OpenAI returned empty summary")
-            
             return result
             
         except json.JSONDecodeError as e:
@@ -146,6 +169,7 @@ async def call_claude_with_retry(
 ) -> str:
     """
     Call Anthropic Claude API with exponential backoff retry logic.
+    Uses AI Gateway if enabled, otherwise falls back to direct API.
     
     Args:
         context_id: Context ID for logging (e.g., audience_room_id)
@@ -161,6 +185,44 @@ async def call_claude_with_retry(
     Raises:
         Exception: If all retries fail
     """
+    # Use AI Gateway if enabled
+    if ai_gateway.enabled:
+        try:
+            # Handle legacy model format
+            effective_model = None
+            if model and model != "claude-sonnet-4-5-20250929":
+                effective_model = model
+            elif model == "claude-sonnet-4-5-20250929":
+                effective_model = None  # Use default from config
+            
+            def handle_legacy_model(m: Optional[str], default: str) -> Optional[str]:
+                """Handle legacy Claude model name format."""
+                if m == "claude-sonnet-4-5-20250929":
+                    return None
+                return m
+            
+            result = await ai_gateway.call_via_gateway(
+                context_id=context_id,
+                messages=messages,
+                max_tokens=max_tokens,
+                model=effective_model,
+                default_model="anthropic/claude-sonnet-4.5",
+                fallback_models=["openai/gpt-5-mini", "openai/gpt-4o-mini"],
+                config_default_attr='group_summary_default',
+                config_fallbacks_attr='group_summary_fallbacks',
+                hardcoded_default="anthropic/claude-sonnet-4.5",
+                validate_summary=False,
+                return_text=True,
+                legacy_model_handler=handle_legacy_model,
+                direct_api_fallback_model=model
+            )
+            
+            return result if isinstance(result, str) else str(result)
+        except Exception as e:
+            logger.warning(f"Context {context_id}: Gateway call failed, falling back to direct API: {e}")
+            # Fall through to direct API
+    
+    # Direct API fallback (original logic with retries)
     if not anthropic_client:
         raise HTTPException(status_code=503, detail="Anthropic client not initialized. Please check ANTHROPIC_API_KEY.")
     
@@ -182,30 +244,13 @@ async def call_claude_with_retry(
     
     for attempt in range(max_retries):
         try:
-            # Prepare messages for Claude API (only user/assistant roles)
-            claude_messages = []
-            for msg in user_messages:
-                role = msg.get("role")
-                if role in ["user", "assistant"]:
-                    claude_messages.append({
-                        "role": role,
-                        "content": msg.get("content", "")
-                    })
-            
-            # Call Claude API
-            response = anthropic_client.messages.create(
-                model=model,
+            result = await _direct_handler.call_claude_direct(
+                context_id=context_id,
+                messages=messages,
                 max_tokens=max_tokens,
-                system=system_message if system_message else None,
-                messages=claude_messages,
-                temperature=0.3
+                model=model
             )
-            
-            # Extract text content from response
-            if response.content and len(response.content) > 0:
-                return response.content[0].text
-            else:
-                raise ValueError("Claude returned empty response")
+            return result
             
         except Exception as e:
             last_exception = e
@@ -244,11 +289,13 @@ async def generate_summary_for_batch(
     profile_context: str,
     post_texts: List[str],
     total_posts: int,
-    is_final: bool = True
+    is_final: bool = True,
+    model: Optional[str] = None
 ) -> Dict[str, Any]:
     """
     Generate summary for a single batch of posts.
     Helper function for batched summary generation.
+    Uses dynamic context window management to ensure content fits.
     """
     text_for_analysis = "\n\n".join(post_texts)
     
@@ -272,17 +319,36 @@ async def generate_summary_for_batch(
     # Split the prompt into system and user messages
     system_message, user_prompt = split_prompt_into_messages(full_prompt)
     
+    # Use dynamic context window management
+    max_completion_tokens = 1000 if not is_final else 1500
+    effective_model = model or "openai/gpt-5-mini"
+    
+    adjusted_user_prompt, adjust_metadata = context_manager.adjust_content_to_fit_context_window(
+        content=user_prompt,
+        system_message=system_message,
+        model_name=effective_model,
+        max_completion_tokens=max_completion_tokens
+    )
+    
+    if adjust_metadata.get("truncated"):
+        logger.warning(
+            f"Profile {profile_id}: Batch content truncated "
+            f"({adjust_metadata.get('truncation_ratio', 0):.1%} reduction) "
+            f"to fit {effective_model} context window"
+        )
+    
     try:
         result = await call_openai_with_retry(
             profile_id=profile_id,
             messages=[
                 {"role": "system", "content": system_message},
-                {"role": "user", "content": user_prompt}
+                {"role": "user", "content": adjusted_user_prompt}
             ],
-            max_tokens=1000 if not is_final else 1500,
+            max_tokens=max_completion_tokens,
             max_retries=3,
             initial_delay=1.0,
-            validate_summary=is_final  # Only validate summary for final batches
+            validate_summary=is_final,  # Only validate summary for final batches
+            model=effective_model
         )
         
         return {
@@ -353,35 +419,45 @@ async def generate_profile_summary_from_posts(
     else:
         profile_context = profile_name
     
-    # Batch configuration to avoid context limits
-    POSTS_PER_BATCH = 100
-    MAX_CHARS_PER_BATCH = 200000  # ~50k tokens, optimized for Tier 2
+    # Use dynamic context window management for optimal batching
+    model = "openai/gpt-5-mini"  # Default model for profile summaries
+    max_completion_tokens = 1500
     
-    # Split posts into batches
-    batches = []
-    current_batch = []
-    current_chars = 0
+    # Prepare a temporary system message for batch calculation
+    # This is used to estimate token usage
+    temp_system_message = "You are an expert at analyzing LinkedIn posts and generating professional summaries. Always respond with valid JSON only."
     
-    for text in post_texts:
-        # Start new batch if adding this post would exceed limits
-        if len(current_batch) >= POSTS_PER_BATCH or (current_chars + len(text) > MAX_CHARS_PER_BATCH and current_batch):
-            batches.append(current_batch)
-            current_batch = []
-            current_chars = 0
-        
-        current_batch.append(text)
-        current_chars += len(text)
+    # Calculate optimal batches using dynamic context window management
+    batches, batch_metadata = context_manager.calculate_optimal_batch_sizes_for_activities(
+        activity_text_list=post_texts,
+        system_message=temp_system_message,
+        model_name=model,
+        max_completion_tokens=max_completion_tokens,
+        minimum_activities_per_batch=1
+    )
     
-    # Don't forget the last batch
-    if current_batch:
-        batches.append(current_batch)
+    if not batches:
+        logger.error(
+            f"Profile {profile_id}: Failed to create batches - "
+            f"{batch_metadata.get('error', 'unknown error')}"
+        )
+        return {
+            "summary": None,
+            "highlights": [],
+            "keywords": []
+        }
     
-    logger.info(f"Profile {profile_id}: Processing {len(post_texts)} posts in {len(batches)} batch(es)")
+    logger.info(
+        f"Profile {profile_id}: Dynamic batching complete - "
+        f"{len(post_texts)} posts → {len(batches)} batches "
+        f"(model: {batch_metadata.get('model', model)}, "
+        f"context window: {batch_metadata.get('model_context_window', 0)} tokens)"
+    )
     
     # If only one batch, process directly (no need for map-reduce)
     if len(batches) == 1:
         return await generate_summary_for_batch(
-            profile_id, profile_name, profile_context, batches[0], len(post_texts), is_final=True
+            profile_id, profile_name, profile_context, batches[0], len(post_texts), is_final=True, model=model
         )
     
     # Map phase: Generate intermediate summaries for each batch
@@ -393,7 +469,7 @@ async def generate_profile_summary_from_posts(
         logger.info(f"Profile {profile_id}: Processing batch {idx + 1}/{len(batches)} ({len(batch)} posts)")
         
         batch_result = await generate_summary_for_batch(
-            profile_id, profile_name, profile_context, batch, len(batch), is_final=False
+            profile_id, profile_name, profile_context, batch, len(batch), is_final=False, model=model
         )
         
         if batch_result.get("summary"):
@@ -435,17 +511,33 @@ async def generate_profile_summary_from_posts(
     default_combine_system = "You are an expert at synthesizing multiple summaries into one comprehensive analysis. Always respond with valid JSON only."
     system_message, combine_prompt = split_prompt_into_messages(full_combine_prompt, default_combine_system)
     
+    # Use dynamic context window management for combine prompt
+    adjusted_combine_prompt, adjust_metadata = context_manager.adjust_content_to_fit_context_window(
+        content=combine_prompt,
+        system_message=system_message,
+        model_name=model,
+        max_completion_tokens=max_completion_tokens
+    )
+    
+    if adjust_metadata.get("truncated"):
+        logger.warning(
+            f"Profile {profile_id}: Combine prompt truncated "
+            f"({adjust_metadata.get('truncation_ratio', 0):.1%} reduction) "
+            f"to fit {model} context window"
+        )
+    
     try:
         result = await call_openai_with_retry(
             profile_id=profile_id,
             messages=[
                 {"role": "system", "content": system_message},
-                {"role": "user", "content": combine_prompt}
+                {"role": "user", "content": adjusted_combine_prompt}
             ],
-            max_tokens=1500,
+            max_tokens=max_completion_tokens,
             max_retries=3,
             initial_delay=1.0,
-            validate_summary=True  # Always validate for combine phase (final summary)
+            validate_summary=True,  # Always validate for combine phase (final summary)
+            model=model
         )
         
         return {

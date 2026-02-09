@@ -10,6 +10,7 @@ from app.utils.helpers import ensure_db_available
 from app.utils.s3_utils import upload_json_to_s3, extract_s3_key_from_url, fetch_json_from_s3, get_s3_key_for_audience, ensure_enterprise_audience_folders_exist, get_source_audience_path, list_s3_objects_with_prefix, copy_s3_object, replace_enterprise_in_s3_url
 from app.services.summary_service import process_profile_summary
 from app.services.openai_service import call_claude_with_retry, split_prompt_into_messages
+from app.services.dynamic_context_window_management_service import context_manager
 from app import database
 
 router = APIRouter()
@@ -865,15 +866,33 @@ async def generate_group_summary(
         default_group_system = "You are an expert at analyzing groups of LinkedIn profiles and generating comprehensive, insightful high-level summaries. Write detailed, informative summaries that capture collective patterns and insights."
         system_message, user_prompt = split_prompt_into_messages(full_group_prompt, default_group_system)
         
+        # Use dynamic context window management for group summary
+        group_model = "anthropic/claude-sonnet-4.5"
+        max_completion_tokens = 1200
+        
+        adjusted_user_prompt, adjust_metadata = context_manager.adjust_content_to_fit_context_window(
+            content=user_prompt,
+            system_message=system_message,
+            model_name=group_model,
+            max_completion_tokens=max_completion_tokens
+        )
+        
+        if adjust_metadata.get("truncated"):
+            logger.warning(
+                f"Audience room {audience_room_id}: Group summary prompt truncated "
+                f"({adjust_metadata.get('truncation_ratio', 0):.1%} reduction) "
+                f"to fit {group_model} context window"
+            )
+        
         # Generate group summary using Claude Sonnet
         try:
             group_summary = await call_claude_with_retry(
                 context_id=audience_room_id,
                 messages=[
                     {"role": "system", "content": system_message},
-                    {"role": "user", "content": user_prompt}
+                    {"role": "user", "content": adjusted_user_prompt}
                 ],
-                max_tokens=1200,
+                max_tokens=max_completion_tokens,
                 max_retries=3,
                 initial_delay=1.0,
                 model="claude-sonnet-4-5-20250929"  # Specific snapshot for production stability (format: claude-sonnet-4-5-YYYYMMDD)
@@ -894,15 +913,31 @@ async def generate_group_summary(
             default_traits_system = "You are an expert at analyzing professional profiles and generating structured trait data. Always return valid JSON only, no additional text."
             traits_system_message, traits_prompt = split_prompt_into_messages(full_traits_prompt, default_traits_system)
             
+            # Use dynamic context window management for traits generation
+            traits_max_completion_tokens = 2000
+            adjusted_traits_prompt, traits_adjust_metadata = context_manager.adjust_content_to_fit_context_window(
+                content=traits_prompt,
+                system_message=traits_system_message,
+                model_name=group_model,
+                max_completion_tokens=traits_max_completion_tokens
+            )
+            
+            if traits_adjust_metadata.get("truncated"):
+                logger.warning(
+                    f"Audience room {audience_room_id}: Traits prompt truncated "
+                    f"({traits_adjust_metadata.get('truncation_ratio', 0):.1%} reduction) "
+                    f"to fit {group_model} context window"
+                )
+            
             try:
                 # Generate traits using Claude Sonnet
                 traits_response = await call_claude_with_retry(
                     context_id=audience_room_id,
                     messages=[
                         {"role": "system", "content": traits_system_message},
-                        {"role": "user", "content": traits_prompt}
+                        {"role": "user", "content": adjusted_traits_prompt}
                     ],
-                    max_tokens=2000,
+                    max_tokens=traits_max_completion_tokens,
                     max_retries=3,
                     initial_delay=1.0,
                     model="claude-sonnet-4-5-20250929"  # Specific snapshot for production stability

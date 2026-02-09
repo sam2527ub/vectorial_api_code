@@ -1,0 +1,75 @@
+safety_margin: 2000
+
+# Model context window sizes (in tokens)
+model_context_windows:
+  # OpenAI models
+  gpt-5-mini: 400000
+  o3-mini: 200000
+  gpt-4o-mini: 128000
+  gpt-4o: 128000
+  gpt-4: 8192
+  
+  # Anthropic Claude models
+  claude-sonnet-4-5-20250929: 1000000
+  claude-sonnet-4.5: 1000000
+  claude-opus-4: 200000
+  claude-3-5-sonnet: 200000
+  claude-3-opus: 200000
+  claude-3-sonnet: 200000
+  claude-3-haiku: 200000
+  
+  # Groq models
+  llama-3.3-70b-versatile: 131072
+  llama-3.1-70b-versatile: 0
+  
+  # Default fallback
+  default: 128000
+
+# Model to tokenizer encoding mapping
+# Maps model names to tiktoken encoding names
+tokenizer_encodings:
+  gpt-5-mini: o200k_base
+  o3-mini: o200k_base
+  gpt-4o-mini: o200k_base
+  gpt-4o: o200k_base
+  gpt-4: cl100k_base
+  
+  # Claude models use cl100k_base as approximation
+  claude-sonnet-4-5-20250929: cl100k_base
+  claude-sonnet-4.5: cl100k_base
+  claude-opus-4: cl100k_base
+  claude-3-5-sonnet: cl100k_base
+  claude-3-opus: cl100k_base
+  claude-3-sonnet: cl100k_base
+  claude-3-haiku: cl100k_base
+  
+  # Groq/Llama models use cl100k_base as approximation (sentencepiece not supported by tiktoken)
+  llama-3.3-70b-versatile: cl100k_base
+  llama-3.1-70b-versatile: cl100k_base
+  
+  default: o200k_base
+
+# Default model to use when model is not specified
+default_model: gpt-5-mini
+
+# Batch processing configuration
+batching:
+  # Minimum activities per batch (safety limit)
+  min_activities_per_batch: 1
+  
+  # Enable/disable dynamic batching
+  enabled: true
+  
+  # Log batch statistics (for debugging)
+  log_batch_stats: true
+
+# Token counting configuration
+token_counting:
+  # Use tiktoken when available (falls back to character estimation if false)
+  use_tiktoken: true
+  
+  # Character-to-token ratio for fallback estimation
+  chars_per_token: 4
+  
+  # Cache encodings for performance
+  cache_encodings: true
