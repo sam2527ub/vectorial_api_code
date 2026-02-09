@@ -4,6 +4,7 @@ from typing import List, Dict, Any, Optional, Union
 from openai import AsyncOpenAI, APIError, RateLimitError, APIConnectionError, APITimeoutError
 from app.config import logger
 from app.services.ai_gateway_service.utils import gateway_utils as utils
+from app.services.direct_api_handler import parse_json_response
 
 
 class UnifiedGatewayHandler:
@@ -82,16 +83,8 @@ class UnifiedGatewayHandler:
                 return content
             
             # Handle JSON responses (for OpenAI/Groq models)
-            # Remove markdown code blocks if present
-            if content.startswith("```"):
-                lines = content.split("\n")
-                if lines[0].startswith("```"):
-                    lines = lines[1:]
-                if lines[-1].strip() == "```":
-                    lines = lines[:-1]
-                content = "\n".join(lines)
-            
-            result = json.loads(content)
+            # Use robust JSON parsing to handle malformed responses
+            result = parse_json_response(content)
             
             # Validate summary if requested
             if validate_summary and not result.get("summary", "").strip():
