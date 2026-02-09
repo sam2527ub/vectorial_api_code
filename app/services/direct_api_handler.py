@@ -1,6 +1,7 @@
 """Direct API handlers for OpenAI and Claude (fallback when gateway disabled)."""
 import json
-from typing import List, Dict, Any
+import re
+from typing import List, Dict, Any, Optional
 from fastapi import HTTPException
 from app.config import openai_client, anthropic_client, logger
 
@@ -8,6 +9,7 @@ from app.config import openai_client, anthropic_client, logger
 def clean_json_content(content: str) -> str:
     """
     Clean JSON content by removing markdown code blocks and fixing formatting.
+    Enhanced to handle malformed JSON from OpenAI.
     
     Args:
         content: Raw content string that may contain markdown or formatting issues
@@ -42,18 +44,115 @@ def clean_json_content(content: str) -> str:
     return content
 
 
-def parse_json_response(content: str) -> Dict[str, Any]:
+def fix_malformed_json(content: str) -> str:
     """
-    Parse JSON response from string, with cleaning.
+    Attempt to fix common JSON malformation issues.
+    
+    Handles:
+    - Unterminated strings
+    - Invalid escape sequences
+    - Truncated JSON
+    - Unescaped newlines in strings
     
     Args:
-        content: JSON string (may contain markdown)
+        content: Potentially malformed JSON string
+        
+    Returns:
+        Fixed JSON string (best effort)
+    """
+    if not content or not content.strip():
+        return content
+    
+    # Try to find the last complete JSON object by matching braces
+    brace_count = 0
+    last_valid_pos = -1
+    for i, char in enumerate(content):
+        if char == '{':
+            brace_count += 1
+        elif char == '}':
+            brace_count -= 1
+            if brace_count == 0:
+                last_valid_pos = i
+        elif brace_count < 0:
+            # More closing than opening - invalid
+            break
+    
+    if last_valid_pos > 0:
+        potential_json = content[:last_valid_pos + 1]
+        
+        # Try to fix common string issues
+        # Fix unescaped newlines, carriage returns, and tabs in string values
+        # This regex finds string values and fixes escape sequences
+        def fix_string_escapes(text):
+            # Find all string values (between quotes)
+            result = []
+            i = 0
+            in_string = False
+            escape_next = False
+            
+            while i < len(text):
+                char = text[i]
+                
+                if escape_next:
+                    result.append(char)
+                    escape_next = False
+                elif char == '\\':
+                    result.append('\\')
+                    escape_next = True
+                elif char == '"' and not escape_next:
+                    in_string = not in_string
+                    result.append('"')
+                elif in_string:
+                    # Inside a string - escape special characters
+                    if char == '\n':
+                        result.append('\\n')
+                    elif char == '\r':
+                        result.append('\\r')
+                    elif char == '\t':
+                        result.append('\\t')
+                    elif char == '\b':
+                        result.append('\\b')
+                    elif char == '\f':
+                        result.append('\\f')
+                    else:
+                        result.append(char)
+                else:
+                    result.append(char)
+                
+                i += 1
+            
+            return ''.join(result)
+        
+        try:
+            # Try parsing first
+            json.loads(potential_json)
+            return potential_json
+        except json.JSONDecodeError:
+            # Try with fixed escapes
+            fixed = fix_string_escapes(potential_json)
+            try:
+                json.loads(fixed)
+                return fixed
+            except json.JSONDecodeError:
+                pass
+        
+        return potential_json
+    
+    return content
+
+
+def parse_json_response(content: str) -> Dict[str, Any]:
+    """
+    Parse JSON response from string, with robust error handling and multiple strategies.
+    
+    Args:
+        content: JSON string (may contain markdown or be malformed)
         
     Returns:
         Parsed JSON dictionary
         
     Raises:
-        ValueError: If JSON is invalid
+        ValueError: If JSON cannot be parsed after all attempts
     """
     cleaned_content = clean_json_content(content)
     
@@ -63,10 +162,98 @@ def parse_json_response(content: str) -> Dict[str, Any]:
             f"but got: {cleaned_content[:100]}"
         )
     
+    # Strategy 1: Try parsing as-is
     try:
         return json.loads(cleaned_content)
     except json.JSONDecodeError as e:
-        raise ValueError(f"Invalid JSON format: {e}") from e
+        logger.debug(f"Initial JSON parse failed: {e}")
+    
+    # Strategy 2: Try to fix malformed JSON
+    fixed_content = fix_malformed_json(cleaned_content)
+    try:
+        return json.loads(fixed_content)
+    except json.JSONDecodeError as e:
+        logger.debug(f"Fixed JSON parse failed: {e}")
+    
+    # Strategy 3: Try to extract JSON from truncated response
+    # Find the last complete object by matching braces
+    brace_count = 0
+    last_valid_pos = -1
+    for i, char in enumerate(cleaned_content):
+        if char == '{':
+            brace_count += 1
+        elif char == '}':
+            brace_count -= 1
+            if brace_count == 0:
+                last_valid_pos = i
+        elif brace_count < 0:
+            # More closing than opening - invalid
+            break
+    
+    if last_valid_pos > 0:
+        truncated_json = cleaned_content[:last_valid_pos + 1]
+        try:
+            return json.loads(truncated_json)
+        except json.JSONDecodeError as e:
+            logger.debug(f"Truncated JSON parse failed: {e}")
+    
+    # Strategy 4: Try using regex to extract key fields as fallback
+    try:
+        result = {}
+        # Look for "summary" field - handle multiline strings and unterminated strings
+        # First try normal pattern
+        summary_pattern = r'"summary"\s*:\s*"((?:[^"\\]|\\.)*)"'
+        summary_match = re.search(summary_pattern, cleaned_content, re.DOTALL)
+        
+        # If that fails, try to find unterminated string (no closing quote)
+        if not summary_match:
+            unterminated_pattern = r'"summary"\s*:\s*"([^"]*)'
+            summary_match = re.search(unterminated_pattern, cleaned_content, re.DOTALL)
+        
+        if summary_match:
+            # Unescape the string
+            summary_text = summary_match.group(1)
+            # Replace escaped sequences
+            summary_text = summary_text.replace('\\n', '\n').replace('\\r', '\r').replace('\\t', '\t')
+            summary_text = summary_text.replace('\\"', '"').replace('\\\\', '\\')
+            result['summary'] = summary_text
+        
+        # Look for "highlights" array - handle nested quotes
+        highlights_pattern = r'"highlights"\s*:\s*\[(.*?)\]'
+        highlights_match = re.search(highlights_pattern, cleaned_content, re.DOTALL)
+        if highlights_match:
+            highlights_str = highlights_match.group(1)
+            # Extract quoted strings from the array
+            highlight_items = re.findall(r'"((?:[^"\\]|\\.)*)"', highlights_str)
+            result['highlights'] = [item.replace('\\"', '"').replace('\\\\', '\\') for item in highlight_items]
+        
+        # Look for "keywords" array
+        keywords_pattern = r'"keywords"\s*:\s*\[(.*?)\]'
+        keywords_match = re.search(keywords_pattern, cleaned_content, re.DOTALL)
+        if keywords_match:
+            keywords_str = keywords_match.group(1)
+            # Extract quoted strings from the array
+            keyword_items = re.findall(r'"((?:[^"\\]|\\.)*)"', keywords_str)
+            result['keywords'] = [item.replace('\\"', '"').replace('\\\\', '\\') for item in keyword_items]
+        
+        if result:
+            logger.warning(f"Extracted partial JSON using regex fallback: {list(result.keys())}")
+            # Ensure all expected fields exist
+            if 'summary' not in result:
+                result['summary'] = ''
+            if 'highlights' not in result:
+                result['highlights'] = []
+            if 'keywords' not in result:
+                result['keywords'] = []
+            return result
+    except Exception as e:
+        logger.debug(f"Regex extraction failed: {e}")
+    
+    # All strategies failed
+    raise ValueError(
+        f"Invalid JSON format after multiple parsing attempts. "
+        f"Content preview: {cleaned_content[:200]}..."
+    )
 
 
 class DirectAPIHandler:
