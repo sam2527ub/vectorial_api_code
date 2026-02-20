@@ -81,19 +81,6 @@ class CreateAudienceRoomRequest(BaseModel):
     enterpriseName: Optional[str] = Field(None, description="Enterprise name (gamma, app, entelligence, beta). If not provided, uses default audience database.")
 
 
-class RunClassifierRequest(BaseModel):
-    audienceRoomId: str = Field(..., description="ID of the audience room containing profiles to classify")
-    classifierId: str = Field(..., description="ID of the classifier to use for classification")
-    enterpriseName: Optional[str] = Field(None, description="Enterprise name (gamma, app, entelligence, beta). If not provided, uses default audience database.")
-
-
-class RunClassifierForProfilesRequest(BaseModel):
-    audienceRoomId: str = Field(..., description="ID of the audience room containing profiles")
-    classifierId: str = Field(..., description="ID of the classifier to use for classification")
-    profileIds: List[str] = Field(..., min_items=1, max_items=5, description="List of profile IDs to classify (max 5 profiles)")
-    enterpriseName: Optional[str] = Field(None, description="Enterprise name (gamma, app, entelligence, beta). If not provided, uses default audience database.")
-
-
 class ParallelSearchRequest(BaseModel):
     query: str = Field(..., description="Search query string for Parallel FindAll")
     model: str = Field("core", description="Model to use: 'core' or 'base'")

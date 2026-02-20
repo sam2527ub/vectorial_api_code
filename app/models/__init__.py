@@ -7,8 +7,6 @@ from .schemas import (
     ScrapeRequest,
     AudienceProfilePayload,
     CreateAudienceRoomRequest,
-    RunClassifierRequest,
-    RunClassifierForProfilesRequest,
     ParallelSearchRequest,
     ParallelSearchPreviewRequest,
 )
@@ -21,8 +19,6 @@ __all__ = [
     "ScrapeRequest",
     "AudienceProfilePayload",
     "CreateAudienceRoomRequest",
-    "RunClassifierRequest",
-    "RunClassifierForProfilesRequest",
     "ParallelSearchRequest",
     "ParallelSearchPreviewRequest",
 ]
