@@ -7,7 +7,7 @@ from fastapi import HTTPException
 from app.config import openai_client, anthropic_client, logger
 from app.services.ai_gateway_service import ai_gateway
 from app.services.dynamic_context_window_management_service import context_manager
-from app.services.direct_api_handler import DirectAPIHandler
+from .direct_api import DirectAPIHandler
 from prompts import (
     profile_posts_summary_prompt,
     profile_posts_batch_summary_prompt,

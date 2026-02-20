@@ -6,10 +6,14 @@ import httpx
 from typing import Optional, List, Dict, Any
 from fastapi import APIRouter, HTTPException, Path, Query
 from fastapi.responses import StreamingResponse
-from app.models.schemas import ParallelSearchRequest, ParallelSearchPreviewRequest
+from app.models.schemas import ParallelSearchRequest
 from app.config import logger
 from app import database
 from app.services.web_indexing_service import request_handler as web_indexing_handler
+from app.services.user_profile_fetch_service.apify_profile_service import (
+    fetch_linkedin_profile_info,
+    extract_apify_profile_fields,
+)
 from datetime import datetime
 
 router = APIRouter()
@@ -384,33 +388,6 @@ async def search_parallel_stream(payload: ParallelSearchRequest):
             "X-Accel-Buffering": "no"
         }
     )
-
-
-@router.post("/api/search/parallel/preview")
-async def search_parallel_preview_stream(payload: ParallelSearchPreviewRequest):
-    """
-    Preview search for LinkedIn profiles using Parallel AI FindAll API with real-time SSE streaming.
-    
-    This endpoint is identical to /api/search/parallel but with fixed parameters:
-    - model: "core" (fixed)
-    - match_limit: 5 (fixed)
-    """
-    parallel_api_key = os.getenv("PARALLEL_API_KEY")
-    if not parallel_api_key:
-        raise HTTPException(
-            status_code=503,
-            detail="PARALLEL_API_KEY not configured. Please set the environment variable."
-        )
-    
-    # Create a ParallelSearchRequest with fixed values
-    fixed_payload = ParallelSearchRequest(
-        query=payload.query,
-        model="core",
-        match_limit=5
-    )
-    
-    # Reuse the main search function
-    return await search_parallel_stream(fixed_payload)
 
 
 @router.post("/api/search/parallel/async")

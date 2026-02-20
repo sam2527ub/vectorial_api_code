@@ -3,7 +3,7 @@ from datetime import datetime
 from typing import Any, Dict, List, Optional
 
 from app.config import apify_client, logger
-from app.services.profile_service import process_posts_and_update_profiles
+from app.services.user_observation_fetch_service.profile_processor import process_posts_and_update_profiles
 from app.services.user_observation_fetch_service.clients.scraping.factory import get_post_scraper_client
 from app.services.user_observation_fetch_service.repositories import find_job_by_id, update_job
 

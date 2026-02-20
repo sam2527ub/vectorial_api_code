@@ -9,7 +9,7 @@ from fastapi import HTTPException
 from app.config import logger
 from app.utils.helpers import ensure_db_available
 from app import database
-from app.services.summary_service import process_profile_summary
+from app.services.user_profile_summarization_service.profile_summary_processor import process_profile_summary
 from app.services.user_profile_summarization_service.config import (
     UserProfileSummarizationConfig,
     CHUNK_SIZE,

@@ -2,13 +2,13 @@
 from fastapi import APIRouter
 
 # Import endpoint routers
-from .endpoints import enrich, search, scrape, preview, audience, parallel_search, apify_enrich, classifier_async, scrape_parallel, summaries_async
+from .endpoints import scrape, preview, audience, parallel_search, apify_enrich, classifier_async, scrape_parallel, summaries_async
+from extra_endpoints import router as extra_endpoints_router
 
 api_router = APIRouter()
 
 # Register endpoint routers
-api_router.include_router(enrich.router)
-api_router.include_router(search.router)
+api_router.include_router(extra_endpoints_router)  # remove-labels, enrich, extract-filters, search, parallel/preview
 api_router.include_router(scrape.router)
 api_router.include_router(scrape_parallel.router)  # Parallel/batched scraping for faster processing
 api_router.include_router(preview.router)

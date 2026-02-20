@@ -6,7 +6,7 @@ from fastapi import APIRouter, HTTPException, Path, Query
 from app.models.schemas import ScrapeRequest
 from app.config import apify_client, POST_SCRAPER_ACTOR_ID, logger
 from app.utils.helpers import normalize_linkedin_url, ensure_db_available
-from app.services.profile_service import process_posts_and_update_profiles
+from app.services.user_observation_fetch_service.profile_processor import process_posts_and_update_profiles
 from app import database
 
 router = APIRouter()

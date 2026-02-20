@@ -1,7 +1,7 @@
 """Map Apify results back to original profiles and validate enriched profiles."""
 from typing import Any, Dict, List, Optional, Tuple
 
-from app.services.apify_service import extract_apify_profile_fields
+from app.services.user_profile_fetch_service.apify_profile_service import extract_apify_profile_fields
 
 
 def build_url_to_original_profile_map(profiles: List[Dict[str, Any]]) -> Tuple[List[str], Dict[str, Dict[str, Any]]]:

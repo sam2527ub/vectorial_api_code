@@ -16,9 +16,13 @@ app/
 │   ├── __init__.py
 │   ├── helpers.py       # General helper functions
 │   └── s3_utils.py      # S3 operations
-├── services/            # Business logic services
+├── services/            # Business logic (one folder per feature)
 │   ├── __init__.py
-│   └── apify_service.py # Apify scraping service
+│   ├── user_profile_fetch_service/   # Profile fetch (Apify, enrichment)
+│   ├── user_observation_fetch_service/  # Posts scrape, profile processor
+│   ├── user_profile_summarization_service/
+│   ├── openai_service/  # OpenAI/Claude calls, direct API fallback
+│   └── ...
 └── api/                 # API endpoints
     ├── __init__.py
     └── v1/              # API v1 routes
@@ -35,7 +39,7 @@ app/
 - ✅ Configuration extracted to `app/config.py`
 - ✅ Pydantic models extracted to `app/models/schemas.py`
 - ✅ Utility functions extracted to `app/utils/`
-- ✅ Apify service extracted to `app/services/apify_service.py`
+- ✅ One service folder per feature (e.g. user_profile_fetch_service, openai_service)
 - ✅ Directory structure created
 
 **Next Steps** (Incremental Migration):

@@ -4,7 +4,7 @@ from typing import List, Dict, Any, Optional, Union
 from openai import AsyncOpenAI, APIError, RateLimitError, APIConnectionError, APITimeoutError
 from app.config import logger
 from app.services.ai_gateway_service.utils import gateway_utils as utils
-from app.services.direct_api_handler import parse_json_response
+from app.services.openai_service.direct_api import parse_json_response
 
 
 class UnifiedGatewayHandler:
