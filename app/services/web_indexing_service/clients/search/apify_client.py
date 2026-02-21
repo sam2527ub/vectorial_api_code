@@ -70,7 +70,7 @@ class ApifySearchClient(SearchClientInterface):
         return {"findall_id": run_id, "data": run_data}
 
     async def get_job_status(self, job_id: str) -> Dict[str, Any]:
-        """Get run status from Apify. job_id is the Apify run id."""
+        """Get run status from Apify. job_id is the Apify run id. Unwraps 'data' so status is at top level."""
         url = f"{self.config.apify_api_base_url}/actor-runs/{job_id}"
         headers = self.config.get_apify_headers()
         async with self._get_http_client() as client:
@@ -79,7 +79,9 @@ class ApifySearchClient(SearchClientInterface):
                 logger.warning(f"Apify run {job_id} not found (404)")
                 return {"status": "not_found", "findall_id": job_id}
             response.raise_for_status()
-            return response.json()
+            body = response.json()
+            # Apify API wraps the run in "data"; unwrap so status handler sees status at top level
+            return body.get("data", body) if isinstance(body.get("data"), dict) else body
 
     async def fetch_job_results(self, job_id: str) -> List[Dict[str, Any]]:
         """Fetch dataset items for completed run and normalize to common profile shape."""
