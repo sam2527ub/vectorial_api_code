@@ -22,7 +22,7 @@ class WebIndexingConfig:
         self.min_match_limit = 1
 
         # Apify (LinkedIn Company Employees Scraper)
-        self.apify_token = os.getenv("APIFY_TOKEN")
+        self.apify_token = os.getenv("APIFY_TOKEN") or os.getenv("APIFY_API_TOKEN")
         self.apify_actor_id = os.getenv(
             "APIFY_ACTOR_ID",
             "harvestapi/linkedin-company-employees",
