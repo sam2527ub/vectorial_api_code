@@ -120,7 +120,7 @@ class ApifySearchRequest(BaseModel):
         ge=0,
         description="Max profiles to scrape; 0 = all (up to 2500 per query)",
     )
-    start_page: Optional[int] = Field(None, ge=1, description="Start from this search results page")
+    start_page: Optional[int] = Field(None, ge=0, description="Start from this search results page (0 = first page)")
     recently_changed_jobs: Optional[bool] = Field(None, description="Filter by recently changed jobs")
     general_search_query: Optional[str] = Field(None, description="Fuzzy search query")
     industry_ids: Optional[List[int]] = Field(None, description="LinkedIn industry IDs")
