@@ -1,10 +1,10 @@
-"""Interface for search client (Parallel API)."""
+"""Interface for search clients (Parallel API, Apify, etc.)."""
 from abc import ABC, abstractmethod
 from typing import Any, Dict, List
 
 
 class SearchClientInterface(ABC):
-    """Interface for Parallel API search client (people/LinkedIn)."""
+    """Interface for web indexing search clients (people/LinkedIn)."""
 
     @abstractmethod
     def is_configured(self) -> bool:
@@ -17,22 +17,19 @@ class SearchClientInterface(ABC):
         pass
 
     @abstractmethod
-    async def start_scraping_job(
-        self,
-        query: str,
-        model: str,
-        match_limit: int,
-        entity_type: str = "people",
-    ) -> Dict[str, Any]:
-        """Start a parallel search job and return run identifier (findall_id)."""
+    async def start_scraping_job(self, params: Dict[str, Any]) -> Dict[str, Any]:
+        """
+        Start a scraping job. Returns dict with job identifier (e.g. findall_id or run_id).
+        params: provider-specific (Parallel: query, model, match_limit, entity_type; Apify: companies, jobTitles, etc.).
+        """
         pass
 
     @abstractmethod
     async def get_job_status(self, job_id: str) -> Dict[str, Any]:
-        """Get status of a parallel search run from the API."""
+        """Get status of a run from the provider API."""
         pass
 
     @abstractmethod
     async def fetch_job_results(self, job_id: str) -> List[Dict[str, Any]]:
-        """Fetch profile results from a completed run (LinkedIn profiles)."""
+        """Fetch profile results from a completed run (normalized to common shape)."""
         pass

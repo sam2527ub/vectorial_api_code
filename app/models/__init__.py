@@ -9,6 +9,7 @@ from .schemas import (
     CreateAudienceRoomRequest,
     ParallelSearchRequest,
     ParallelSearchPreviewRequest,
+    ApifySearchRequest,
 )
 
 __all__ = [
@@ -21,5 +22,6 @@ __all__ = [
     "CreateAudienceRoomRequest",
     "ParallelSearchRequest",
     "ParallelSearchPreviewRequest",
+    "ApifySearchRequest",
 ]
 

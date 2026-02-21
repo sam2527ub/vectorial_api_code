@@ -20,10 +20,14 @@ async def trigger_async_parallel_search(payload: ParallelSearchRequest, enterpri
     logger.info(f"Request: query={payload.query}, model={payload.model}, match_limit={payload.match_limit}, enterprise={enterpriseName}")
 
     try:
+        params = {
+            "query": payload.query,
+            "model": payload.model,
+            "match_limit": payload.match_limit,
+        }
         response = await web_indexing_handler.start_async_job(
-            query=payload.query,
-            model=payload.model,
-            match_limit=payload.match_limit,
+            provider="parallel",
+            params=params,
             enterprise_name=enterpriseName,
         )
         logger.info(f"=== TRIGGER ASYNC PARALLEL SEARCH REQUEST SUCCESS ===")
@@ -63,7 +67,11 @@ async def get_parallel_search_status(
     logger.info(f"Request: job_id={job_id}, enterprise={enterpriseName}")
 
     try:
-        return await web_indexing_handler.get_job_status(job_id, enterprise_name=enterpriseName)
+        return await web_indexing_handler.get_job_status(
+            provider="parallel",
+            job_id=job_id,
+            enterprise_name=enterpriseName,
+        )
     except HTTPException:
         raise
     except Exception as e:

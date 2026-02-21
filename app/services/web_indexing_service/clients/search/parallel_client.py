@@ -30,14 +30,12 @@ class ParallelSearchClient(SearchClientInterface):
     def get_raw_client(self) -> Any:
         return self
 
-    async def start_scraping_job(
-        self,
-        query: str,
-        model: str,
-        match_limit: int,
-        entity_type: str = "people",
-    ) -> Dict[str, Any]:
-        """Start a parallel search run (people). Returns findall_id and full response."""
+    async def start_scraping_job(self, params: Dict[str, Any]) -> Dict[str, Any]:
+        """Start a parallel search run (people). params: query, model, match_limit, entity_type (optional)."""
+        query = params.get("query", "")
+        model = params.get("model", self.config.default_model)
+        match_limit = params.get("match_limit", self.config.default_match_limit)
+        entity_type = params.get("entity_type", self.config.default_entity_type)
         run_payload = {
             "objective": query,
             "entity_type": entity_type,
