@@ -92,41 +92,28 @@ class ParallelSearchPreviewRequest(BaseModel):
 
 
 class ApifySearchRequest(BaseModel):
-    """Request for Apify LinkedIn Company Employees Scraper (filter-based)."""
+    """Request for Apify LinkedIn Company Employees Scraper. camelCase to match Apify actor input."""
 
     companies: List[str] = Field(
         ...,
         min_length=1,
         description="List of LinkedIn company URLs or company names (required)",
     )
-    company_batch_mode: Optional[str] = Field(
-        "one_by_one",
+    maxItems: int = Field(
+        100,
+        ge=0,
+        description="Max profiles to scrape (default 100); 0 = all (up to 2500 per query)",
+    )
+    companyBatchMode: Optional[str] = Field(
+        None,
         description="'one_by_one' (up to 1000 companies) or 'all_at_once' (max 10)",
     )
-    job_titles: Optional[List[str]] = Field(
-        None,
-        description="List of job titles to filter (strict search)",
-    )
-    locations: Optional[List[str]] = Field(
-        None,
-        description="List of locations (e.g. New York, London)",
-    )
-    profile_scraper_mode: Optional[str] = Field(
-        "Short ($4 per 1k)",
-        description="'Short ($4 per 1k)' | 'Full ($8 per 1k)' | 'Full + email search ($12 per 1k)'",
-    )
-    max_items: Optional[int] = Field(
-        250,
-        ge=0,
-        description="Max profiles to scrape; 0 = all (up to 2500 per query)",
-    )
-    start_page: Optional[int] = Field(None, ge=0, description="Start from this search results page (0 = first page)")
-    recently_changed_jobs: Optional[bool] = Field(None, description="Filter by recently changed jobs")
-    general_search_query: Optional[str] = Field(None, description="Fuzzy search query")
-    industry_ids: Optional[List[int]] = Field(None, description="LinkedIn industry IDs")
-    years_at_company: Optional[List[int]] = Field(None, description="Years at company filter")
+    jobTitles: Optional[List[str]] = Field(None, description="List of job titles to filter (strict search)")
+    locations: Optional[List[str]] = Field(None, description="List of locations (e.g. New York, London)")
+    startPage: Optional[int] = Field(None, ge=0, description="Start from this search results page (0 = first page)")
+    generalSearchQuery: Optional[str] = Field(None, description="Fuzzy search query")
+    industryIds: Optional[List[int]] = Field(None, description="LinkedIn industry IDs")
+    yearsAtCompany: Optional[List[int]] = Field(None, description="Years at company filter")
 
-    class Config:
-        # Allow Apify actor input field names (snake_case in API, camelCase when sending to Apify)
-        extra = "allow"
+    model_config = {"extra": "allow"}
 

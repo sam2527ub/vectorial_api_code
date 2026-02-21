@@ -44,34 +44,27 @@ def _normalize_companies(companies: List[str]) -> List[str]:
 
 
 def _apify_request_to_params(payload: ApifySearchRequest) -> Dict[str, Any]:
-    """Build Apify actor input (camelCase). Only include keys with real values (no empty lists, no 0/placeholder)."""
-    out: Dict[str, Any] = {}
-
-    # Required – normalize so company names become LinkedIn URLs
-    out["companies"] = _normalize_companies(payload.companies)
-
-    # Optional – only include when explicitly set / non-empty
-    if payload.company_batch_mode is not None:
-        out["companyBatchMode"] = payload.company_batch_mode
-    if payload.job_titles:
-        out["jobTitles"] = payload.job_titles
+    """Build Apify actor input from camelCase payload. No conversion – pass through + normalize companies + hardcode two fields."""
+    out: Dict[str, Any] = {
+        "companies": _normalize_companies(payload.companies),
+        "maxItems": payload.maxItems,
+        "profileScraperMode": "Short ($4 per 1k)",
+        "recentlyChangedJobs": False,
+    }
+    if payload.companyBatchMode is not None:
+        out["companyBatchMode"] = payload.companyBatchMode
+    if payload.jobTitles:
+        out["jobTitles"] = payload.jobTitles
     if payload.locations:
         out["locations"] = payload.locations
-    if payload.profile_scraper_mode is not None:
-        out["profileScraperMode"] = payload.profile_scraper_mode
-    if payload.max_items is not None:
-        out["maxItems"] = payload.max_items
-    if payload.start_page is not None and payload.start_page >= 1:
-        out["startPage"] = payload.start_page
-    if payload.recently_changed_jobs is not None:
-        out["recentlyChangedJobs"] = payload.recently_changed_jobs
-    if payload.general_search_query and payload.general_search_query.strip():
-        out["generalSearchQuery"] = payload.general_search_query.strip()
-    if payload.industry_ids:
-        out["industryIds"] = payload.industry_ids
-    if payload.years_at_company:
-        out["yearsAtCompany"] = payload.years_at_company
-
+    if payload.startPage is not None and payload.startPage >= 1:
+        out["startPage"] = payload.startPage
+    if payload.generalSearchQuery and payload.generalSearchQuery.strip():
+        out["generalSearchQuery"] = payload.generalSearchQuery.strip()
+    if payload.industryIds:
+        out["industryIds"] = payload.industryIds
+    if payload.yearsAtCompany:
+        out["yearsAtCompany"] = payload.yearsAtCompany
     return out
 
 
