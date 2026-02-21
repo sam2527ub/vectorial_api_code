@@ -1,5 +1,6 @@
 """Apify LinkedIn Company Employees search endpoints (async trigger + status polling)."""
-from typing import Any, Dict, Optional
+import re
+from typing import Any, Dict, List, Optional
 from fastapi import APIRouter, HTTPException, Path, Query
 
 from app.config import logger
@@ -9,22 +10,69 @@ from app.services.web_indexing_service import request_handler as web_indexing_ha
 router = APIRouter()
 
 
+def _company_to_linkedin_url(company: str) -> str:
+    """If input is not already a LinkedIn company URL, convert company name to linkedin.com/company/<slug>/."""
+    s = (company or "").strip()
+    if not s:
+        return s
+    s_lower = s.lower()
+    if s_lower.startswith("http://") or s_lower.startswith("https://") or "linkedin.com/company" in s_lower:
+        return s
+    # Build slug: lowercase, spaces to hyphens, keep alphanumeric and hyphens
+    slug = s.lower().replace(" ", "-")
+    slug = re.sub(r"[^a-z0-9\-]", "", slug)
+    slug = re.sub(r"-+", "-", slug).strip("-")
+    if not slug:
+        slug = s.lower().replace(" ", "-").replace("&", "and")
+        slug = re.sub(r"[^a-z0-9\-]", "", slug).strip("-") or "company"
+    return f"https://www.linkedin.com/company/{slug}/"
+
+
+def _normalize_companies(companies: List[str]) -> List[str]:
+    """Return list with each item as a LinkedIn company URL (convert names to URLs when needed)."""
+    seen: set = set()
+    out: List[str] = []
+    for c in companies:
+        c = (c or "").strip()
+        if not c:
+            continue
+        url = _company_to_linkedin_url(c)
+        if url and url not in seen:
+            seen.add(url)
+            out.append(url)
+    return out
+
+
 def _apify_request_to_params(payload: ApifySearchRequest) -> Dict[str, Any]:
-    """Build Apify actor input (camelCase) from API request."""
-    params = {
-        "companies": payload.companies,
-        "companyBatchMode": payload.company_batch_mode or "one_by_one",
-        "jobTitles": payload.job_titles,
-        "locations": payload.locations,
-        "profileScraperMode": payload.profile_scraper_mode or "Short ($4 per 1k)",
-        "maxItems": payload.max_items if payload.max_items is not None else 250,
-        "startPage": payload.start_page,
-        "recentlyChangedJobs": payload.recently_changed_jobs,
-        "generalSearchQuery": payload.general_search_query,
-        "industryIds": payload.industry_ids,
-        "yearsAtCompany": payload.years_at_company,
-    }
-    return {k: v for k, v in params.items() if v is not None}
+    """Build Apify actor input (camelCase). Only include keys with real values (no empty lists, no 0/placeholder)."""
+    out: Dict[str, Any] = {}
+
+    # Required – normalize so company names become LinkedIn URLs
+    out["companies"] = _normalize_companies(payload.companies)
+
+    # Optional – only include when explicitly set / non-empty
+    if payload.company_batch_mode is not None:
+        out["companyBatchMode"] = payload.company_batch_mode
+    if payload.job_titles:
+        out["jobTitles"] = payload.job_titles
+    if payload.locations:
+        out["locations"] = payload.locations
+    if payload.profile_scraper_mode is not None:
+        out["profileScraperMode"] = payload.profile_scraper_mode
+    if payload.max_items is not None:
+        out["maxItems"] = payload.max_items
+    if payload.start_page is not None and payload.start_page >= 1:
+        out["startPage"] = payload.start_page
+    if payload.recently_changed_jobs is not None:
+        out["recentlyChangedJobs"] = payload.recently_changed_jobs
+    if payload.general_search_query and payload.general_search_query.strip():
+        out["generalSearchQuery"] = payload.general_search_query.strip()
+    if payload.industry_ids:
+        out["industryIds"] = payload.industry_ids
+    if payload.years_at_company:
+        out["yearsAtCompany"] = payload.years_at_company
+
+    return out
 
 
 @router.post("/api/search/apify/async")
