@@ -2,7 +2,7 @@
 from typing import Any, Dict, Optional
 
 from app.config import logger
-from app.utils.s3_utils import extract_s3_key_from_url, fetch_json_from_s3
+from app.utils.s3_utils import extract_s3_key_from_url, fetch_json_from_s3, upload_json_to_s3
 
 
 def fetch_s3_json_safe(s3_url: Optional[str]) -> Dict[str, Any]:
@@ -17,6 +17,64 @@ def fetch_s3_json_safe(s3_url: Optional[str]) -> Dict[str, Any]:
     except Exception as e:
         logger.warning(f"Failed to fetch S3 data from {s3_url}: {e}")
         return {}
+
+
+def get_post_count_from_posts_s3(posts_s3_url: Optional[str], source: str) -> int:
+    """
+    Fetch posts JSON from S3 and return count.
+    LinkedIn: post.json has {"posts": [...]}. Reddit: posts.json is a list of post objects.
+    If no URL or fetch fails, return 0.
+    """
+    if not posts_s3_url:
+        return 0
+    data = fetch_s3_json_safe(posts_s3_url)
+    if not data:
+        return 0
+    if isinstance(data, list):
+        return len(data)
+    return len(data.get("posts", []))
+
+
+def get_comment_count_from_comments_s3(comments_s3_url: Optional[str]) -> int:
+    """
+    Fetch comments JSON from S3 and return count.
+    Reddit: comments file is a list of comment objects. Returns 0 if not list or missing.
+    """
+    if not comments_s3_url:
+        return 0
+    data = fetch_s3_json_safe(comments_s3_url)
+    if not data:
+        return 0
+    if isinstance(data, list):
+        return len(data)
+    return 0
+
+
+def update_profile_description_counts(
+    profile_description_s3_url: Optional[str],
+    post_count: int,
+    comment_count: Optional[int],
+    source: str,
+) -> None:
+    """
+    Fetch profile description JSON from S3, set postCount (and commentCount for Reddit), upload back.
+    If no profileDescriptionS3Url, skip (nothing to update).
+    """
+    if not profile_description_s3_url:
+        return
+    try:
+        key = extract_s3_key_from_url(profile_description_s3_url)
+        if not key:
+            return
+        data = fetch_json_from_s3(key)
+        if not isinstance(data, dict):
+            return
+        data["postCount"] = post_count
+        if source and source.lower() == "reddit" and comment_count is not None:
+            data["commentCount"] = comment_count
+        upload_json_to_s3(key, data)
+    except Exception as e:
+        logger.warning(f"Failed to update profile description with counts: {e}")
 
 
 def build_profile_preview(profile: Dict[str, Any], source: str) -> Dict[str, Any]:
@@ -37,6 +95,7 @@ def build_profile_preview(profile: Dict[str, Any], source: str) -> Dict[str, Any
             "current_company": profile_data.get("current_company"),
             "industry": profile_data.get("industry"),
             "summary": profile_data.get("summary"),
+            "postCount": profile_data.get("postCount", 0),
             "source": "linkedin",
         }
     else:
@@ -44,8 +103,8 @@ def build_profile_preview(profile: Dict[str, Any], source: str) -> Dict[str, Any
             "id": profile.get("id"),
             "name": profile_data.get("username") or profile.get("profileName"),
             "reddit_profile_url": profile_data.get("userUrl") or profile.get("profileUrl"),
-            "post_count": profile_data.get("postCount"),
-            "comment_count": profile_data.get("commentCount"),
+            "post_count": profile_data.get("postCount", 0),
+            "comment_count": profile_data.get("commentCount", 0),
             "summary": profile_data.get("summary"),
             "source": "reddit",
         }
