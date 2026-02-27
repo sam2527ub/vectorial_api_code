@@ -1,38 +1,56 @@
 """
-Direct API Client - Fallback for direct API calls when gateway is disabled.
-
-This file provides a fallback mechanism for making direct API calls to OpenAI and Claude
-when the AI gateway is disabled or unavailable. It uses the official AsyncOpenAI and
-AsyncAnthropic SDKs to make direct API calls, bypassing the gateway entirely. This ensures
-the application can still function even when the gateway is not configured or enabled.
+Direct API Client - Fallback when gateway is disabled (vectorial-reddit-pipeline style).
 """
-import json
+import asyncio
 import os
 from typing import List, Dict, Any, Optional
+
 from fastapi import HTTPException
 from openai import AsyncOpenAI
 from anthropic import AsyncAnthropic
+from groq import Groq
+
+from app.config import logger as app_logger
 from app.services.ai_gateway_service.utils import gateway_utils as utils
 
 
+def _groq_model_name(model: Optional[str]) -> str:
+    """Strip provider prefix for Groq (e.g. groq/llama-3.3-70b -> llama-3.3-70b)."""
+    if not model:
+        return "llama-3.3-70b-versatile"
+    return model.split("/", 1)[-1] if "/" in model else model
+
+
 class DirectApiClient:
-    """Fallback for direct API calls when gateway is disabled. Uses async SDK clients."""
-    
+    """Fallback for direct API calls when gateway is disabled."""
+
     @staticmethod
-    async def call_openai(profile_id: str, messages: List[Dict[str, str]], max_tokens: int, model: Optional[str]) -> Dict[str, Any]:
-        """Call OpenAI API directly without gateway using AsyncOpenAI SDK. Returns parsed JSON response."""
+    async def call_openai(
+        profile_id: str,
+        messages: List[Dict[str, str]],
+        max_tokens: int,
+        model: Optional[str],
+        validate_summary: bool = False,
+    ) -> Dict[str, Any]:
+        """Call OpenAI API directly. Returns parsed JSON (robust parse_json_response)."""
         api_key = os.getenv("OPENAI_API_KEY")
         if not api_key:
             raise HTTPException(status_code=503, detail="OPENAI_API_KEY not configured")
-        
         client = AsyncOpenAI(api_key=api_key)
         response = await client.chat.completions.create(
             model=model or "gpt-5-mini",
             messages=messages,
             max_completion_tokens=max_tokens,
-            temperature=0.3
+            temperature=0.3,
+            response_format={"type": "json_object"},
         )
-        return json.loads(response.choices[0].message.content)
+        content = (response.choices[0].message.content or "").strip()
+        if not content:
+            raise ValueError("OpenAI returned empty content")
+        result = utils.parse_json_response(content, logger=app_logger)
+        if validate_summary and not result.get("summary", "").strip():
+            raise ValueError("OpenAI returned empty summary")
+        return result
     
     @staticmethod
     async def call_claude(context_id: str, messages: List[Dict[str, str]], max_tokens: int, model: str) -> str:
@@ -55,3 +73,32 @@ class DirectApiClient:
         if response.content and len(response.content) > 0:
             return response.content[0].text
         raise ValueError("Claude returned empty response")
+
+    @staticmethod
+    async def call_groq(
+        profile_id: str,
+        messages: List[Dict[str, str]],
+        max_tokens: int,
+        model: Optional[str],
+    ) -> Dict[str, Any]:
+        """Call Groq API directly. Returns parsed JSON."""
+        api_key = os.getenv("GROQ_API_KEY")
+        if not api_key:
+            raise HTTPException(status_code=503, detail="GROQ_API_KEY not configured")
+        groq_model = _groq_model_name(model)
+        client = Groq(api_key=api_key)
+
+        def _create():
+            return client.chat.completions.create(
+                model=groq_model,
+                messages=messages,
+                max_tokens=max_tokens,
+                temperature=0.1,
+                response_format={"type": "json_object"},
+            )
+
+        response = await asyncio.to_thread(_create)
+        if not response.choices or not response.choices[0].message.content:
+            raise ValueError("Groq returned empty response")
+        content = response.choices[0].message.content.strip()
+        return utils.parse_json_response(content, logger=app_logger)

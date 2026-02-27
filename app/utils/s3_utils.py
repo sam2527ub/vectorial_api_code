@@ -44,45 +44,39 @@ def ensure_enterprise_audience_folders_exist(enterprise_name: Optional[str] = No
     """
     Ensure both linkedin-audience and reddit-audience folders exist for an enterprise.
     Creates empty folder markers if they don't exist.
-    
+
     Args:
         enterprise_name: Enterprise name (auto-discover from env vars). If None, uses "default"
     """
     if not s3_client or not s3_bucket:
         logger.warning("S3 not configured, skipping folder creation")
         return
-    
-    # Normalize enterprise name
+
     if enterprise_name:
         normalized_enterprise = enterprise_name.lower().strip()
     else:
         normalized_enterprise = "default"
-    
-    # Create both folder types
+
     for audience_type in ["linkedin-audience", "reddit-audience"]:
         folder_key = f"{normalized_enterprise}/{audience_type}/"
-        
         try:
-            # Check if folder marker already exists
             try:
                 s3_client.head_object(Bucket=s3_bucket, Key=folder_key)
                 logger.info(f"Enterprise folder already exists: {folder_key}")
             except s3_client.exceptions.ClientError as e:
-                if e.response['Error']['Code'] == '404':
-                    # Folder doesn't exist, create it
+                if e.response["Error"]["Code"] == "404":
                     logger.info(f"Creating enterprise folder marker: {folder_key}")
                     s3_client.put_object(
                         Bucket=s3_bucket,
                         Key=folder_key,
-                        Body=b'',  # Empty body
-                        ContentType="application/x-directory"
+                        Body=b"",
+                        ContentType="application/x-directory",
                     )
                     logger.info(f"Successfully created enterprise folder: {folder_key}")
                 else:
                     raise
         except Exception as e:
             logger.error(f"Failed to ensure folder exists for {folder_key}: {e}")
-            # Don't fail the request if folder creation fails
 
 
 def initialize_all_enterprise_audience_folders():

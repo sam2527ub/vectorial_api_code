@@ -23,6 +23,7 @@ logger = logging.getLogger(__name__)
 # Constants
 POST_SCRAPER_ACTOR_ID = "curious_coder/linkedin-post-search-scraper"
 PROFILE_SCRAPER_ACTOR_ID = "2SyF0bVxmgGr8IVCZ"  # LinkedIn Profile Scraper
+LINKEDIN_COMMENTS_ACTOR_ID = "harvestapi/linkedin-profile-comments"
 
 # Initialize Clients (Global variables - will be set during initialization)
 pdl_client: Optional["PDLPY"] = None

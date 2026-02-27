@@ -48,18 +48,38 @@ class GatewayConfig:
         # Profile Summary config
         profile_config = rotation_config.get("profile_summary", {})
         self.profile_summary_default = profile_config.get("default", "openai/gpt-5-mini")
-        self.profile_summary_fallbacks = profile_config.get("fallbacks", [
-            "anthropic/claude-sonnet-4.5",
-            "openai/gpt-4o-mini"
-        ])
+        self.profile_summary_fallbacks = profile_config.get(
+            "fallbacks",
+            [
+                "anthropic/claude-sonnet-4.5",
+                "openai/gpt-4o-mini",
+            ],
+        )
         
         # Group Summary config
         group_config = rotation_config.get("group_summary", {})
         self.group_summary_default = group_config.get("default", "anthropic/claude-sonnet-4.5")
-        self.group_summary_fallbacks = group_config.get("fallbacks", [
-            "openai/gpt-5-mini",
-            "openai/gpt-4o-mini"
-        ])
+        self.group_summary_fallbacks = group_config.get(
+            "fallbacks",
+            [
+                "openai/gpt-5-mini",
+                "openai/gpt-4o-mini",
+            ],
+        )
+
+        # Comment Context Summary config (LinkedIn comments context summaries)
+        comment_context_config = rotation_config.get("comment_context_summary", {})
+        self.comment_context_summary_default = comment_context_config.get(
+            "default",
+            "groq/llama-3.3-70b-versatile",
+        )
+        self.comment_context_summary_fallbacks = comment_context_config.get(
+            "fallbacks",
+            [
+                "openai/gpt-5-mini",
+                "openai/gpt-4o-mini",
+            ],
+        )
         
         # Legacy: general fallbacks (for backward compatibility)
         if rotation_str_env:

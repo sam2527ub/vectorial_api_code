@@ -10,6 +10,7 @@ from .s3_utils import (
     extract_s3_key_from_url,
     fetch_json_from_s3,
 )
+from .message_utils import split_prompt_into_messages
 
 __all__ = [
     "calculate_experience_years",
@@ -19,5 +20,6 @@ __all__ = [
     "upload_json_to_s3",
     "extract_s3_key_from_url",
     "fetch_json_from_s3",
+    "split_prompt_into_messages",
 ]
 

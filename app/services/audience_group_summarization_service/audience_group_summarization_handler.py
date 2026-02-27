@@ -7,7 +7,8 @@ from fastapi import HTTPException
 from app.config import logger, s3_client, s3_bucket
 from app.utils.helpers import ensure_db_available
 from app.utils.s3_utils import extract_s3_key_from_url, fetch_json_from_s3, upload_json_to_s3
-from app.services.openai_service import call_claude_with_retry, split_prompt_into_messages
+from app.utils.message_utils import split_prompt_into_messages
+from app.services.ai_gateway_service import ai_gateway
 from app.services.dynamic_context_window_management_service import context_manager
 from app import database
 from app.services.audience_group_summarization_service.config import (
@@ -177,18 +178,24 @@ class AudienceGroupSummarizationHandler:
                 f"to fit {group_model} context window"
             )
 
-        group_summary = await call_claude_with_retry(
+        group_result = await ai_gateway.call_via_gateway(
             context_id=audience_room_id,
             messages=[
                 {"role": "system", "content": system_message},
                 {"role": "user", "content": adjusted_user_prompt},
             ],
             max_tokens=max_completion_tokens,
-            max_retries=3,
-            initial_delay=1.0,
-            model=self.config.group_model_snapshot,
+            model=None,
+            default_model=self.config.group_model,
+            fallback_models=["openai/gpt-5-mini", "openai/gpt-4o-mini"],
+            config_default_attr="group_summary_default",
+            config_fallbacks_attr="group_summary_fallbacks",
+            hardcoded_default="anthropic/claude-sonnet-4.5",
+            validate_summary=False,
+            return_text=True,
+            direct_api_fallback_model=self.config.group_model_snapshot,
         )
-        group_summary = group_summary.strip()
+        group_summary = (group_result if isinstance(group_result, str) else str(group_result)).strip()
 
         from prompts import traits_generation_prompt
         full_traits_prompt = traits_generation_prompt.format(
@@ -212,18 +219,24 @@ class AudienceGroupSummarizationHandler:
                 f"to fit {group_model} context window"
             )
 
-        traits_response = await call_claude_with_retry(
+        traits_result = await ai_gateway.call_via_gateway(
             context_id=audience_room_id,
             messages=[
                 {"role": "system", "content": traits_system_message},
                 {"role": "user", "content": adjusted_traits_prompt},
             ],
             max_tokens=traits_max_completion_tokens,
-            max_retries=3,
-            initial_delay=1.0,
-            model=self.config.group_model_snapshot,
+            model=None,
+            default_model=self.config.group_model,
+            fallback_models=["openai/gpt-5-mini", "openai/gpt-4o-mini"],
+            config_default_attr="group_summary_default",
+            config_fallbacks_attr="group_summary_fallbacks",
+            hardcoded_default="anthropic/claude-sonnet-4.5",
+            validate_summary=False,
+            return_text=True,
+            direct_api_fallback_model=self.config.group_model_snapshot,
         )
-        traits_response = traits_response.strip()
+        traits_response = (traits_result if isinstance(traits_result, str) else str(traits_result)).strip()
         if "```json" in traits_response:
             traits_response = traits_response.split("```json")[1].split("```")[0].strip()
         elif "```" in traits_response:

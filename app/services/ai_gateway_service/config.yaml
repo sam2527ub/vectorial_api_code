@@ -15,9 +15,10 @@ gateway:
   # API key for the gateway (should be set via AI_GATEWAY_API_KEY env var for security)
   api_key: ""
   
-  # Vercel AI Gateway unified endpoint (handles all providers: OpenAI, Anthropic, Groq)
+  # Vercel AI Gateway (vectorial-reddit-pipeline style)
   vercel:
     openai_url: "https://ai-gateway.vercel.sh/v1"
+    anthropic_url: "https://ai-gateway.vercel.sh"
 
 # Model fallback configuration
 # Separate fallback lists for different use cases
@@ -34,6 +35,14 @@ model_rotation:
   # Default: anthropic/claude-sonnet-4.5, then fallbacks
   group_summary:
     default: "anthropic/claude-sonnet-4.5"
+    fallbacks:
+      - "openai/gpt-5-mini"
+      - "openai/gpt-4o-mini"
+  
+  # Comment Context Summary fallbacks (used by comment_context_summary_service)
+  # Default: groq/llama-3.3-70b-versatile (via AI Gateway), then fallbacks
+  comment_context_summary:
+    default: "groq/llama-3.3-70b-versatile"
     fallbacks:
       - "openai/gpt-5-mini"
       - "openai/gpt-4o-mini"

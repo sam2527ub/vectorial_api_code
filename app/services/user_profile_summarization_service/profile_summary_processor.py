@@ -2,7 +2,7 @@
 from typing import Dict, Any, Optional, Any as AnyType
 from fastapi import HTTPException
 from app.config import logger, s3_client, s3_bucket
-from app.services.openai_service import generate_profile_summary_from_posts
+from app.services.user_profile_summarization_service.profile_summary_generator import generate_profile_summary_from_posts
 from app.utils.s3_utils import upload_json_to_s3, extract_s3_key_from_url, fetch_json_from_s3
 from app import database
 

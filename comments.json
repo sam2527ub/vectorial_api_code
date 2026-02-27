@@ -1,0 +1,333 @@
+{
+    "comments": [
+      {
+        "comment_url": "https://www.linkedin.com/feed/update/urn:li:ugcPost:7429593568111026176?commentUrn=urn%3Ali%3Acomment%3A%28ugcPost%3A7429593568111026176%2C7429603708344311808%29&dashCommentUrn=urn%3Ali%3Afsd_comment%3A%287429603708344311808%2Curn%3Ali%3AugcPost%3A7429593568111026176%29",
+        "post_url": "https://www.linkedin.com/posts/amplitude-analytics_we-rebuilt-amplitude-with-ai-that-senses-ugcPost-7429593568111026176-nhzC",
+        "comment_body": "Good work Janaki Vivrekar!",
+        "post_body": "We rebuilt Amplitude with AI that senses, decides, and acts. ⚡️\n\nSenior Architect, AI Systems Janaki Vivrekar walks through everything that’s new to our AI Analytics Platform: https://lnkd.in/exApjEBM",
+        "parent_comment_body": null
+      },
+      {
+        "comment_url": "https://www.linkedin.com/feed/update/urn:li:activity:7429580884216848384?commentUrn=urn%3Ali%3Acomment%3A%28activity%3A7429580884216848384%2C7429599172418232320%29&dashCommentUrn=urn%3Ali%3Afsd_comment%3A%287429599172418232320%2Curn%3Ali%3Aactivity%3A7429580884216848384%29",
+        "post_url": "https://www.linkedin.com/posts/drbartpm_productmanagement-productmanager-dataanalysis-activity-7429580884216848384-V6Cs",
+        "comment_body": "A lot of engineers have told me that Claude code has made them enjoy coding more. Hopefully Amplitude has just done the same for analytics.",
+        "post_body": "It's depressing that so many areas of your product can blow up cause you don't have the manpower to watch over them. Here's a solution:\n\nFunnels break, conversions dip, dashboards quietly stop working, and real user anger is lost somewhere in the tons of emotionless data.\n\nNot because your team is bad.\nNot because you don’t care.\n\nModern products simply have too many areas and aspects to monitor manually.\n\nEven if you have automated reporting, there are so many warnings and alerts that hardly anyone can tell the noise from an actual disaster, pending any more.\n\nThis is where Amplitude, partner of today's post, comes in with the work they are doing with AI Agents.\n\nWhat are they?\n\nThey are AI-powered teammates that continuously analyze behavior data, surface meaningful changes, explain why they happened, and help you act. They do that either via Amplitude UI directly or using... Slack!\n\nSo rather than being \"If only I...\" after something goes wrong, you have AI scanning your data for any signs of mischief or important insights.\n\nTo achieve this, Amplitude introduced 2 layers of such teammates:\n\nGlobal Agent (formerly Ask Amplitude)\nHere, you can ask complex questions in natural language, explore funnels/cohorts/replays, and take action directly from answers (create cohorts, start experiments, launch guides). It understands your taxonomy, journeys, and business context. Just like an actual human Data Analyst,\n\nThere are also Specialized Agents with more narrow tasks:\n\n• Dashboard Agent: It auto-generates insights from any dashboard, deep dives into interesting trends and anomalies, and runs proactive monitoring on a schedule so issues surface before they become problems.\n\n• Session Replay Agent: This one reviews hundreds of sessions on a scheduled basis to identify friction and patterns costing conversions. Recommends specific fixes with quantified impact.\n\n• Website Conversion Agent: This agent proposes experiments, generates variants, and creates experiment configurations. With your permission, it will execute launches and share results along with rollout decisions.\n\n• Feedback Agent: It generates scheduled summaries of top themes from unstructured feedback (e.g., surveys, tickets) and surfaces actionable insights teams would otherwise miss.\n\nIn other words, you are no longer reactive or looking for issues like needles in a haystack. Problems are found and come to you, explained. \n\nTherefore:\nLess dashboard babysitting.\nFaster detection.\nFaster decisions.\nFaster experiments.\n\nYour product doesn’t need more people staring at charts.\n\nOne of the best AI implementations I've seen since the AI era began.\n\nCheck it out here: https://lnkd.in/dHmSjt6V\n\nDo you feel you'd need such AI teammates in your line of duty?\n\nLet me know in the comments.\n\n#productmanagement #productmanager #dataanalysis",
+        "parent_comment_body": null
+      },
+      {
+        "comment_url": "https://www.linkedin.com/feed/update/urn:li:ugcPost:7429571464690843649?commentUrn=urn%3Ali%3Acomment%3A%28ugcPost%3A7429571464690843649%2C7429596357994115072%29&dashCommentUrn=urn%3Ali%3Afsd_comment%3A%287429596357994115072%2Curn%3Ali%3AugcPost%3A7429571464690843649%29",
+        "post_url": "https://www.linkedin.com/posts/spenserskates_al-has-collapsed-the-time-it-takes-to-ship-ugcPost-7429571464690843649-kHcb",
+        "comment_body": "A lot of engineers have told me that Claude code has made them enjoy coding more. This just did the same for analytics.",
+        "post_body": "Al has collapsed the time it takes to ship a feature. Now it's all about shipping the right thing. It's just as hard as it ever was.\n\nAs coding gets automated, agentic analytics becomes the bottleneck. Teams that win will build within context rich environments that capture user behavior and customer feedback, making that data accessible to both builders and agents.\n\nToday Amplitude is launching our Al Analytics Platform with Agents and MCP. Autonomous analytics that helps builders and coding agents ship products that their customers actually want.\n\nHere's what's new:\n- Global Agent: The first fully automated AI Analyst. Global Agent can do anything a human can do in Amplitude. You can go from creating a cohort to deploying a guide in a few minutes. It is accessible now via our new Slack MCP. \n- Specialized Agents: Dashboard monitoring agent, feedback agent, website conversion agent, and session replay agent. Watch the agent review hundreds of sessions to identify friction and patterns that impact conversion. It then recommends UX fixes with quantified impact.\n- MCP: We've been building MCP with the team at Anthropic. Amplitude can go wherever you work, with rich outputs like charts and widgets inline in conversations. Amplitude MCP is available today in Anthropic, OpenAI, Cursor, Lovable, Figma, Notion, GitHub, and more.\n\nJust as our partner Anthropic has reinvented software, Amplitude is reinventing analytics for the Al age.\n\nWe have achieved 76% accuracy for complex production grade queries and agentic usage has grown 10x in 3 months.\n\nDon't just build fast, build what's right.\n\nTry it for free, today: https://amplitude.com/ai",
+        "parent_comment_body": null
+      },
+      {
+        "comment_url": "https://www.linkedin.com/feed/update/urn:li:activity:7429579407209455616?commentUrn=urn%3Ali%3Acomment%3A%28activity%3A7429579407209455616%2C7429598422959165440%29&dashCommentUrn=urn%3Ali%3Afsd_comment%3A%287429598422959165440%2Curn%3Ali%3Aactivity%3A7429579407209455616%29",
+        "post_url": "https://www.linkedin.com/posts/elenaverna_growth-ai-activity-7429579407209455616-k3cU",
+        "comment_body": "A lot of engineers have told me that Claude code has made them enjoy coding more. Hopefully Amplitude has just done the same for analytics.",
+        "post_body": "Somewhere, a deeply exhausted analyst is crying tears of joy. Not because the stupid data questions stopped (they never do). But because answering them and watching the answers disappear into some Doc to die is finally not their sad reality.\n\nToday, Amplitude released its shiny MCP server, and it's a big deal because.... Your Lovable app can now pull real product data straight from Amplitude, (ai)nswer them data questions 🫨, propose product ch(ai)nges 🤯 , (AI)ND deploy them to the app ❤️‍🔥 . \n\nCheckout the deets here: https://lnkd.in/gxFj2CeE\n\nAnd if you want some free Amplitude for you app: https://lnkd.in/g2j7THFu\n\nMy. Mind. Is. Blown. What a time to be alive.\n\nSo go ahead. Ask Lovable away:\n-\u003E Did something break in onboarding last week? Let's fix it.\n-\u003E What features drive the retention? Can we increase their usage?\n-\u003E Where are people rage-clicking and how can we fix it?\n-\u003E [Insert your vague and unhinged business question here.] \n\nAsk anything. Let Amplitude+Lovable answer it. Watch Lovable actually do something about it. All in the same prompt window. \n#growth #ai",
+        "parent_comment_body": null
+      },
+      {
+        "comment_url": "https://www.linkedin.com/feed/update/urn:li:ugcPost:7429598939735048192?commentUrn=urn%3Ali%3Acomment%3A%28ugcPost%3A7429598939735048192%2C7429599442929979393%29&dashCommentUrn=urn%3Ali%3Afsd_comment%3A%287429599442929979393%2Curn%3Ali%3AugcPost%3A7429598939735048192%29",
+        "post_url": "https://www.linkedin.com/posts/chengcst_al-has-collapsed-the-time-it-takes-to-ship-ugcPost-7429598939735048192-mZdu",
+        "comment_body": "A lot of engineers have told me that Claude code has made them enjoy coding more. Hopefully Amplitude has just done the same for analytics!",
+        "post_body": "From pitching the Amplitude Global Agent vision and strategy straight to Spenser Skates in the early days → grinding through multi-quarter iterations and rollouts → today's epic launch! Excited to see our AI Analytics Platform empower builders with true 10x shipping velocity - see Spenser's post 🔥\n\nThank you to all who helped make this happen! Special shoutout to this crew that's been amazing to build with: \n\nIncredible product visionaries ❤️ - William Newton, Jacob Newman, Frank Lee\n\nHigh ownership engineers, many with heroic efforts ❤️ - Eric Carlson, Ramakrishna Soma, Pranjal Joshi, Avery Chan, Richard F., Jimmy Wilson, Peyton Rose, Adam Struck, Eric Kim, Andrew Chou, Henry Arbolaez, Janaki Vivrekar, Brian Giori, Karandeep Johar, Ashkan Aghdai, Amogh Dikshit, Benjamin Feigin, Yang (Marvin) Liu, Kevin Wu, Adam Lohner, Vinay Goel, Nhi D., Skylar G.\n\nAnd thank you to Tommy Keeley, Anita Mo, Nikhil Gangaraju for helping to drive external partnerships and connections 🙌\n\n#AmplitudeAI",
+        "parent_comment_body": null
+      },
+      {
+        "comment_url": "https://www.linkedin.com/feed/update/urn:li:ugcPost:7429572843719467010?commentUrn=urn%3Ali%3Acomment%3A%28ugcPost%3A7429572843719467010%2C7429583247149473792%29&dashCommentUrn=urn%3Ali%3Afsd_comment%3A%287429583247149473792%2Curn%3Ali%3AugcPost%3A7429572843719467010%29",
+        "post_url": "https://www.linkedin.com/posts/amplitude-analytics_a-new-era-of-analytics-begins-today-introducing-ugcPost-7429572843719467010-hIWP",
+        "comment_body": "A lot of engineers have told me that Claude code has made them enjoy coding more. I hope Amplitude has just done the same for analytics!",
+        "post_body": "A new era of analytics begins today 💥\n\nIntroducing the Amplitude AI Analytics platform. Learn how our new Global Agent, Specialized Agents, and MCP are changing the world of analytics as we know it: https://lnkd.in/exApjEBM",
+        "parent_comment_body": null
+      },
+      {
+        "comment_url": "https://www.linkedin.com/feed/update/urn:li:ugcPost:7404550814645501952?commentUrn=urn%3Ali%3Acomment%3A%28ugcPost%3A7404550814645501952%2C7404595851014344705%29&dashCommentUrn=urn%3Ali%3Afsd_comment%3A%287404595851014344705%2Curn%3Ali%3AugcPost%3A7404550814645501952%29",
+        "post_url": "https://www.linkedin.com/posts/amplitude-analytics_the-future-of-analytics-is-here-introducing-ugcPost-7404550814645501952-jUJa",
+        "comment_body": "Great job team!",
+        "post_body": "The future of analytics is here 🔮\n\nIntroducing Automated Insights, our new capability that finds the connections on your product data for you, so you can spend time on the work that matters. Learn more: https://bit.ly/48KCU97",
+        "parent_comment_body": null
+      },
+      {
+        "comment_url": "https://www.linkedin.com/feed/update/urn:li:ugcPost:7394229870429442048?commentUrn=urn%3Ali%3Acomment%3A%28ugcPost%3A7394229870429442048%2C7394482653699371009%29&dashCommentUrn=urn%3Ali%3Afsd_comment%3A%287394482653699371009%2Curn%3Ali%3AugcPost%3A7394229870429442048%29",
+        "post_url": "https://www.linkedin.com/posts/ywelinder_dont-talk-to-users-ngmi-todays-launch-ugcPost-7394229870429442048-fGyh",
+        "comment_body": "This is huge! quantitative 🤝 qualitative",
+        "post_body": "Don’t talk to users? \n\nngmi\n\nToday’s launch of AI Feedback is personal. \nIt’s the culmination of my Kraftful journey. \nWe built Kraftful to help teams truly listen to users.  \n\nNow we’re taking that mission even further at Amplitude with AI Feedback.  \n\nAI can automate almost everything.  \nBut it can’t replace how people *feel* when using your product.  \n\nFor builders, listening to those emotions is how you create something exceptional.  \n\nNow you can do that right inside Amplitude. \nAcross surveys, support tickets, sales calls, app reviews, Reddit, Discord, X, G2, and more.  \n\nConnect your sources in minutes and start getting daily insights that used to take hundreds of thousands of hours to analyze manually.  \n\nAvailable on every Amplitude plan (even the free one!).  \n\nGo try it. Listen to your users. Build better:\n\nhttps://lnkd.in/gdXRTnbF",
+        "parent_comment_body": null
+      },
+      {
+        "comment_url": "https://www.linkedin.com/feed/update/urn:li:ugcPost:7394229870429442048?commentUrn=urn%3Ali%3Acomment%3A%28ugcPost%3A7394229870429442048%2C7394482653699371009%29&replyUrn=urn%3Ali%3Acomment%3A%28ugcPost%3A7394229870429442048%2C7394589181861269504%29&dashCommentUrn=urn%3Ali%3Afsd_comment%3A%287394482653699371009%2Curn%3Ali%3AugcPost%3A7394229870429442048%29&dashReplyUrn=urn%3Ali%3Afsd_comment%3A%287394589181861269504%2Curn%3Ali%3AugcPost%3A7394229870429442048%29",
+        "post_url": "",
+        "comment_body": "Andrew Chou best combo!",
+        "post_body": "",
+        "parent_comment_body": "This is huge! quantitative 🤝 qualitative"
+      },
+      {
+        "comment_url": "https://www.linkedin.com/feed/update/urn:li:ugcPost:7394396480469442562?commentUrn=urn%3Ali%3Acomment%3A%28ugcPost%3A7394396480469442562%2C7394480547609235456%29&dashCommentUrn=urn%3Ali%3Afsd_comment%3A%287394480547609235456%2Curn%3Ali%3AugcPost%3A7394396480469442562%29",
+        "post_url": "https://www.linkedin.com/posts/amplitude-analytics_feedback-is-a-gift-but-sorting-through-ugcPost-7394396480469442562-QveP",
+        "comment_body": "This is huge! quantitative 🤝 qualitative",
+        "post_body": "Feedback is a gift 🎁\n\nBut sorting through sales calls, support tickets, Reddit, Inc. threads, and G2 reviews takes TIME. Which is why we're introducing Amplitude AI Feedback. Simply connect your feedback sources and get insights in minutes. Try it out: https://lnkd.in/ebfFGM5D",
+        "parent_comment_body": null
+      },
+      {
+        "comment_url": "https://www.linkedin.com/feed/update/urn:li:ugcPost:7389300764038438912?commentUrn=urn%3Ali%3Acomment%3A%28ugcPost%3A7389300764038438912%2C7389373208539521024%29&dashCommentUrn=urn%3Ali%3Afsd_comment%3A%287389373208539521024%2Curn%3Ali%3AugcPost%3A7389300764038438912%29",
+        "post_url": "https://www.linkedin.com/posts/amplitude-analytics_ai-is-the-new-search-thats-why-we-launched-ugcPost-7389300764038438912-kLOx",
+        "comment_body": "Great job Leo Jiang and team!",
+        "post_body": "AI is the new search 👀\n\nThat's why we launched Amplitude AI Visibility. See what your favorite AI tools like ChatGPT, Claude, and Google AI Overview are saying about your brand, and make sure customers find you, *not* your competitors: https://bit.ly/3WqjtN5",
+        "parent_comment_body": null
+      },
+      {
+        "comment_url": "https://www.linkedin.com/feed/update/urn:li:activity:7347923097355730945?commentUrn=urn%3Ali%3Acomment%3A%28activity%3A7347923097355730945%2C7348184456182013952%29&dashCommentUrn=urn%3Ali%3Afsd_comment%3A%287348184456182013952%2Curn%3Ali%3Aactivity%3A7347923097355730945%29",
+        "post_url": "https://www.linkedin.com/posts/achraff-adjileye-3740a5211_baller-linkedin-activity-7347923097355730945-4Wq_",
+        "comment_body": "this is cool, but events are more equivalent to tokens than players are. players are more like the system prompt 😂",
+        "post_body": "🚀 THIS IS GOING TO BE WILD. That’s the feeling I’ve had for over a year now — and more than ever today.\n\nChatGPT handles language impressively well — because it understands semantics, nuance, and word meanings across virtually any context.\n\nNow imagine that each word is actually a football player. You get an AI that understands players — their nuance depending on the context, their chemistry, their fit with others. Even more: an AI capable of understanding every game, every squad, every competition — and adapting to any tactical environment.\n\n⚽ An AI that can power all football analytics tasks — just like GPT (3, 4, 4.5, 4o, o3 — take your pick) powers all language tasks: text generation, code generation, information retrieval, RAG, Q&A, and more.\n\nRisingBALLER was my first step in that direction. It showed that this kind of model was possible — even at a small scale, with only 2,600 “words” (i.e., players). But 2,600 is small. Way too small. If GPT only understood 2,600 words, it wouldn’t be able to do much.\nToday, it’s no longer about 2,600 players — but 94,000, from every continent. And that number is only going to grow.\n\nThis project is meant to become a foundation for the next generation of football analytics models. Built from scratch — with players as tokens — and trained on hundreds of thousands of matches to encode the full semantics of the game.\n\nIt opens the door to a wide range of applications (check the project website). And this isn’t the usual hypothetical paragraph at the end of a research paper listing potential applications — they are already under extensive experimentation, and some have already shown very promising results.\n\n🔥 The BALLER is no longer rising — the BALLER is here. Follow the project page to stay updated: https://lnkd.in/e-4gCiM7",
+        "parent_comment_body": null
+      },
+      {
+        "comment_url": "https://www.linkedin.com/feed/update/urn:li:ugcPost:7338296997520531456?commentUrn=urn%3Ali%3Acomment%3A%28ugcPost%3A7338296997520531456%2C7338307625735884802%29&dashCommentUrn=urn%3Ali%3Afsd_comment%3A%287338307625735884802%2Curn%3Ali%3AugcPost%3A7338296997520531456%29",
+        "post_url": "https://www.linkedin.com/posts/amplitude-analytics_amplitudeaiagents-ugcPost-7338296997520531456-MurT",
+        "comment_body": "The backup dancer is spot on!",
+        "post_body": "No one said AI was perfect... \n\nBut you're going to love #AmplitudeAIAgents almost as much as Spenser Skates' dance moves 🕺🏻 https://bit.ly/3HAF8Oj",
+        "parent_comment_body": null
+      },
+      {
+        "comment_url": "https://www.linkedin.com/feed/update/urn:li:ugcPost:7386385916128288768?commentUrn=urn%3Ali%3Acomment%3A%28ugcPost%3A7386385916128288768%2C7386433335331528704%29&dashCommentUrn=urn%3Ali%3Afsd_comment%3A%287386433335331528704%2Curn%3Ali%3AugcPost%3A7386385916128288768%29",
+        "post_url": "https://www.linkedin.com/posts/amplitude-analytics_aaaaand-the-winner-is-today-were-ugcPost-7386385916128288768-ChNQ",
+        "comment_body": "great skit! but also realistic! amplitude+claude is a powerful combo",
+        "post_body": "AAAAAND THE WINNER IS... 🥊\n\nToday, we're releasing Amplitude MCP: A new way for anyone on your team to get expert-level insights in seconds from your favorite AI tools like Claude, Cursor, or any MCP client. No SQL, no configuring dashboards, no waiting on the data team. \n\nCheck it out: https://bit.ly/42P3hbK",
+        "parent_comment_body": null
+      },
+      {
+        "comment_url": "https://www.linkedin.com/feed/update/urn:li:ugcPost:7328403925609426944?commentUrn=urn%3Ali%3Acomment%3A%28ugcPost%3A7328403925609426944%2C7328428238878257153%29&dashCommentUrn=urn%3Ali%3Afsd_comment%3A%287328428238878257153%2Curn%3Ali%3AugcPost%3A7328403925609426944%29",
+        "post_url": "https://www.linkedin.com/posts/amplitude-analytics_your-marketing-budget-deserves-better-than-ugcPost-7328403925609426944-22ss",
+        "comment_body": "This is huge!",
+        "post_body": "🚩 Red flags? Not with Amplitude.\n\nToday, we're hard-launching ✨#AmplitudeforMarketers,✨ a new way to unify marketing and product data to drive conversions, lifetime value, and ROI. Learn more: https://bit.ly/3ZiUDAl",
+        "parent_comment_body": null
+      },
+      {
+        "comment_url": "https://www.linkedin.com/feed/update/urn:li:ugcPost:7295079425346318336?commentUrn=urn%3Ali%3Acomment%3A%28ugcPost%3A7295079425346318336%2C7295129008663343106%29&dashCommentUrn=urn%3Ali%3Afsd_comment%3A%287295129008663343106%2Curn%3Ali%3AugcPost%3A7295079425346318336%29",
+        "post_url": "https://www.linkedin.com/posts/amplitude-analytics_guidesandsurveys-ugcPost-7295079425346318336-ul6U",
+        "comment_body": "This is huge for the platform!",
+        "post_body": "👋 Goodbye, annoying popups. Hello, Amplitude #GuidesAndSurveys 🎉 \n\nNow you can deliver personalized guidance to improve retention, drive engagement, and help users be more successful. And it's all based on *actual* user behaviors. Learn more: https://bit.ly/3QdkRzy",
+        "parent_comment_body": null
+      },
+      {
+        "comment_url": "https://www.linkedin.com/feed/update/urn:li:ugcPost:7252320855764910080?commentUrn=urn%3Ali%3Acomment%3A%28ugcPost%3A7252320855764910080%2C7252361496196788225%29&dashCommentUrn=urn%3Ali%3Afsd_comment%3A%287252361496196788225%2Curn%3Ali%3AugcPost%3A7252320855764910080%29",
+        "post_url": "https://www.linkedin.com/posts/amplitude-analytics_introducing-amplitude-web-experimentation-ugcPost-7252320855764910080-vHCe",
+        "comment_body": "Love it! So intuitive and easy!",
+        "post_body": "From code to clicks ✨\n\nIntroducing Amplitude Web Experimentation 🧪 Now, anyone can run A/B without having to rely on their eng team. Learn more: https://bit.ly/3YqHAwQ",
+        "parent_comment_body": null
+      },
+      {
+        "comment_url": "https://www.linkedin.com/feed/update/urn:li:ugcPost:7289713561633783808?commentUrn=urn%3Ali%3Acomment%3A%28ugcPost%3A7289713561633783808%2C7289777457006575616%29&replyUrn=urn%3Ali%3Acomment%3A%28ugcPost%3A7289713561633783808%2C7290140193951469570%29&dashCommentUrn=urn%3Ali%3Afsd_comment%3A%287289777457006575616%2Curn%3Ali%3AugcPost%3A7289713561633783808%29&dashReplyUrn=urn%3Ali%3Afsd_comment%3A%287290140193951469570%2Curn%3Ali%3AugcPost%3A7289713561633783808%29",
+        "post_url": "https://www.linkedin.com/posts/erfan-akbarnezhad_sportsai-aiinfootball-ai-ugcPost-7289713561633783808-GNY2",
+        "comment_body": "Piotr Skalski it doesn’t matter because key point detection is the wrong approach. In many videos there are not enough visible key points. You need to invert and and go from pixel to xy coordinate rather than the other way around. works shockingly well",
+        "post_body": "Arsenal F.C Vs Chelsea Football Club \n\n\nContinuing from the previous post.\n\n\n\n#SportsAI #AIinFootball #AI #AIandSports #AIandSports #FootballAnalytics #python #ai #yolo #deeplearning\n#Roboflow #DeepLearning #ComputerVision #OpenCV\nOpenCV    YOLOvX   Ultralytics    Roboflow   Provispo",
+        "parent_comment_body": null
+      },
+      {
+        "comment_url": "https://www.linkedin.com/feed/update/urn:li:ugcPost:7289713561633783808?commentUrn=urn%3Ali%3Acomment%3A%28ugcPost%3A7289713561633783808%2C7289777457006575616%29&replyUrn=urn%3Ali%3Acomment%3A%28ugcPost%3A7289713561633783808%2C7290233866491990016%29&dashCommentUrn=urn%3Ali%3Afsd_comment%3A%287289777457006575616%2Curn%3Ali%3AugcPost%3A7289713561633783808%29&dashReplyUrn=urn%3Ali%3Afsd_comment%3A%287290233866491990016%2Curn%3Ali%3AugcPost%3A7289713561633783808%29",
+        "post_url": "https://www.linkedin.com/posts/erfan-akbarnezhad_sportsai-aiinfootball-ai-ugcPost-7289713561633783808-GNY2",
+        "comment_body": "erfan akbarnezhad interesting, we found team assignments to be hardest",
+        "post_body": "Arsenal F.C Vs Chelsea Football Club \n\n\nContinuing from the previous post.\n\n\n\n#SportsAI #AIinFootball #AI #AIandSports #AIandSports #FootballAnalytics #python #ai #yolo #deeplearning\n#Roboflow #DeepLearning #ComputerVision #OpenCV\nOpenCV    YOLOvX   Ultralytics    Roboflow   Provispo",
+        "parent_comment_body": null
+      },
+      {
+        "comment_url": "https://www.linkedin.com/feed/update/urn:li:ugcPost:7289713561633783808?commentUrn=urn%3Ali%3Acomment%3A%28ugcPost%3A7289713561633783808%2C7289777457006575616%29&replyUrn=urn%3Ali%3Acomment%3A%28ugcPost%3A7289713561633783808%2C7290146446937407489%29&dashCommentUrn=urn%3Ali%3Afsd_comment%3A%287289777457006575616%2Curn%3Ali%3AugcPost%3A7289713561633783808%29&dashReplyUrn=urn%3Ali%3Afsd_comment%3A%287290146446937407489%2Curn%3Ali%3AugcPost%3A7289713561633783808%29",
+        "post_url": "https://www.linkedin.com/posts/erfan-akbarnezhad_sportsai-aiinfootball-ai-ugcPost-7289713561633783808-GNY2",
+        "comment_body": "Piotr Skalski oh yeah your videos are extremely cool by the way! for videos like that it works great, but there aren’t many videos that stay so zoomed out for so long. but then also the model doesn’t really matter because the key point task is very easy",
+        "post_body": "Arsenal F.C Vs Chelsea Football Club \n\n\nContinuing from the previous post.\n\n\n\n#SportsAI #AIinFootball #AI #AIandSports #AIandSports #FootballAnalytics #python #ai #yolo #deeplearning\n#Roboflow #DeepLearning #ComputerVision #OpenCV\nOpenCV    YOLOvX   Ultralytics    Roboflow   Provispo",
+        "parent_comment_body": null
+      },
+      {
+        "comment_url": "https://www.linkedin.com/feed/update/urn:li:ugcPost:7242285721972080640?commentUrn=urn%3Ali%3Acomment%3A%28ugcPost%3A7242285721972080640%2C7242543078408941569%29&dashCommentUrn=urn%3Ali%3Afsd_comment%3A%287242543078408941569%2Curn%3Ali%3AugcPost%3A7242285721972080640%29",
+        "post_url": "https://www.linkedin.com/posts/spenserskates_hubspot-amplitude-are-joining-forces-ugcPost-7242285721972080640-6sgJ",
+        "comment_body": "Amazing best in class partnership!",
+        "post_body": "We're very excited to be HubSpot's featured partner at their Inbound 2024 conference: https://www.inbound.com/\n\nWe're releasing a deep HubSpot integration in concert with their team that allows you to:\n-Track HubSpot CMS data in Amplitude with two lines of code\n-Send targeted email campaigns in HubSpot based on Amplitude behavioral data\n-Use Amplitude data in HubSpot to do product qualified lead scoring and behavioral health scoring for sales and customer success\n-Look at Amplitude dashboards natively in HubSpot\n\nBefore this, Hubspot was already one of the top destinations for data at Amplitude. Now they work natively together as two best in class products for marketing teams. Thank you Karen Ng, Andrew Pitre for your executive sponsorship as well as Yamini Rangan.\n\nOn a personal note, I've always looked up to what Brian Halligan and Dharmesh Shah have built as one of the best products in SaaS. It's an honor to partner with them in this way.\n\n#Inbound #Inbound24 #PLG #ProductLedGrowth",
+        "parent_comment_body": null
+      },
+      {
+        "comment_url": "https://www.linkedin.com/feed/update/urn:li:ugcPost:7242167439617142785?commentUrn=urn%3Ali%3Acomment%3A%28ugcPost%3A7242167439617142785%2C7242206119782178816%29&dashCommentUrn=urn%3Ali%3Afsd_comment%3A%287242206119782178816%2Curn%3Ali%3AugcPost%3A7242167439617142785%29",
+        "post_url": "https://www.linkedin.com/posts/amplitude-analytics_hubspot-amplitude-are-joining-forces-ugcPost-7242167439617142785-OylG",
+        "comment_body": "Amazing best in class partnership!",
+        "post_body": "HubSpot & Amplitude are joining forces 🤝\n\nToday we're announcing a strategic partnership to help GTM teams prioritize leads, improve sales conversion, and retain more customers. Learn more: https://lnkd.in/eaMdeCmF",
+        "parent_comment_body": null
+      },
+      {
+        "comment_url": "https://www.linkedin.com/feed/update/urn:li:activity:7241875304137334785?commentUrn=urn%3Ali%3Acomment%3A%28activity%3A7241875304137334785%2C7241881896488419329%29&replyUrn=urn%3Ali%3Acomment%3A%28activity%3A7241875304137334785%2C7242004563786940418%29&dashCommentUrn=urn%3Ali%3Afsd_comment%3A%287241881896488419329%2Curn%3Ali%3Aactivity%3A7241875304137334785%29&dashReplyUrn=urn%3Ali%3Afsd_comment%3A%287242004563786940418%2Curn%3Ali%3Aactivity%3A7241875304137334785%29",
+        "post_url": "https://www.linkedin.com/posts/chloedrimal_storytime-and-updates-on-me-sol-circles-activity-7241875304137334785-lBI8",
+        "comment_body": "😍 Mike Ottavi-Brannon Chloë Drimal",
+        "post_body": "Storytime and updates on me & Sol Circles. \n\nThis past March, I let go of our last full-time engineer after a series of lay-offs that started in June 2023. I was left alone to keep Sol alive. We made enough money through subscriptions to pay monthly tech fees, and I couldn’t bring myself to close down the app as it continued to be an essential mental health tool for hundreds of women around the world, including myself. \n\nI stopped looking at data, thinking about product, and put my focus into how the app could sustain itself with little to no work from me. I worked with Matt Herz to get all the final bugs out and automate 90% of the operational work. \n\nIn July, when everything was stable, still grappling with grief, heartbreak, and regrets, I went offline. I traveled. I wrote. I didn’t look at my emails. \n\nWhen I got back in August, I remembered that I still had to close out our Amplitude Growth plan, which would be reinstated in October. But when I did, I was told that it wasn’t possible because I was three days late for the cutoff. \n\nI freaked. We did not have the $16k+ to pay the bill, meaning this might be the end of Sol Circles.\n\nI kept asking to speak with manager after manager, but each told me it wasn’t possible. We had to pay for it.\n\nI began to cold reach out to Amplitude executives. Emailing them my story, asking them for their support. I texted people I knew at Amplitude to see if they could champion me. Eventually, Andrew Casey, their CFO, reached out. We hopped on a Zoom. He was warm and asked about Sol Circles and my entrepreneurial journey. He could not have been more supportive or compassionate of where I am as an entrepreneur and encouraging about my future. He reminded me of everything I’ve learned on this journey and everything I can take into my next chapter.  \n\nAnd yes, he let me get out of the contract. He made it clear that Amplitude is a partner to entrepreneurs. I can keep Sol Circles alive. \n\nNot only was Amplitude an essential tool for us while we built out our features and understood our user journey and retention, but now I saw that they really did understand the volatile, stressful, and lonely journey of the entrepreneur, especially the product-driven one. \n\nI am so grateful to Andrew Casey for his time and empathy. And to Andrew Chou, who was my internal champion :)  \n\nI’m thankful that I can continue to keep this app and community alive. That I can continue to attend Circle each week and learn, grow, and evolve alongside the magical community.  \n\nI’m also excited and ready for my next chapter.  This past month, I have spoken with such inspiring entrepreneurs. I can’t wait to help a team turn a concept into a reality — would love to chat with anyone interested!\n\nShout out to my talented teammates who held my hand even though they were losing their jobs — Matt Herz, Ellie Moon, Delfina Soria, Brett Walker. And my investors - Michelle Nacouzi & Gabriella Cambanis who continue to root for both me and Sol Circles.",
+        "parent_comment_body": null
+      },
+      {
+        "comment_url": "https://www.linkedin.com/feed/update/urn:li:activity:7239304183328219137?commentUrn=urn%3Ali%3Acomment%3A%28activity%3A7239304183328219137%2C7239309868988317696%29&dashCommentUrn=urn%3Ali%3Afsd_comment%3A%287239309868988317696%2Curn%3Ali%3Aactivity%3A7239304183328219137%29",
+        "post_url": "https://www.linkedin.com/posts/jeffreyw314159_amplitude-made-easy-activity-7239304183328219137-wmn9",
+        "comment_body": "Love that each of the platform features is even easier to use together!",
+        "post_body": "Ten years ago, we set out to build the most advanced product analytics out there. Startup CEOs and PMs were desperate to understand their users' behavior. While that never ends (analytics has no limit!), today marks a new era of Amplitude.\n\nNot only do people want advanced, they also want *easy*, which has never been the hallmark of our industry. We've taken all of the innovations of the last decade and pointed them toward one problem: building products with data as easily as possible!\n\nhttps://bit.ly/47jNSB4 #AmplitudeMadeEasy",
+        "parent_comment_body": null
+      },
+      {
+        "comment_url": "https://www.linkedin.com/feed/update/urn:li:activity:7239292404053237762?commentUrn=urn%3Ali%3Acomment%3A%28activity%3A7239292404053237762%2C7239298083296047105%29&dashCommentUrn=urn%3Ali%3Afsd_comment%3A%287239298083296047105%2Curn%3Ali%3Aactivity%3A7239292404053237762%29",
+        "post_url": "https://www.linkedin.com/posts/spenserskates_introducing-the-future-of-digital-analytics-activity-7239292404053237762-QnK4",
+        "comment_body": "The platform is really coming together!",
+        "post_body": "Since its inception, digital analytics has been difficult to use. Whether you're building a custom data stack or using an off the shelf analytics tool, every single step of setting up analytics is hard.\n\nToday, Amplitude is changing that. We're sharing a new vision for analytics: Amplitude Made Easy. Amplitude Made Easy is a reimagined experience that radically simplifies digital analytics, making it easy to get started, gather insights, and scale your analytics implementation.\n\nWhat’s new with Amplitude Made Easy?\n-One line of code set up: Getting started with analytics used to take weeks of planning and hundreds of lines of code to implement. Now, one line of code gets you access to our end-to-end platform.\n-Out-of-the-box insights: Teams used to have to build dashboards and charts to understand their data. Now, Amplitude populates real-time product, marketing, and growth insights without having to build anything.\n-Autocapture: No more needing help from engineering to implement tracking code for every single event. We’re not making you choose between Autocapture and precision tracking–we’re giving you the best of both worlds.\n-Expert-made templates: We collaborated with the top names in product, marketing, and growth (like Elena Verna, Kyle Poyar, and Timo Dechau) so you can use data like some of the best in the game.\n-Ask Amplitude: Enter a question in plain English, get fast answers. Powered by Generative AI, Ask Amplitude visualizes data, makes recommendations, and builds on past context.\n-Analytics, Experiment, Session Replay, and CDP in one platform. Session Replay in particular is so much more powerful when integrated with analytics. You can switch back between aggregated analytics datasets and individual user journeys. Lots more to come here shortly!\n\nIt’s been nearly 10 years since we’ve made changes this significant to the Amplitude platform. I'm excited to finally share them with you.\n\nTimo Dechau and I are chatting about this live at 12:30pm PT. Join us: https://lnkd.in/gpre59MX\n\nPlatform redesigns like this don’t happen overnight. #AmplitudeMadeEasy came out of a hackathon our design team held at the start of this year. It has been a lot of hard work, testing, iteration, and engineering. Thank you to everyone on the Amplitude team who made this possible!\n\nHear more about how the future of analytics can be easy: https://lnkd.in/gzMnSUhs",
+        "parent_comment_body": null
+      },
+      {
+        "comment_url": "https://www.linkedin.com/feed/update/urn:li:activity:7239309300727214080?commentUrn=urn%3Ali%3Acomment%3A%28activity%3A7239309300727214080%2C7239309681335091200%29&dashCommentUrn=urn%3Ali%3Afsd_comment%3A%287239309681335091200%2Curn%3Ali%3Aactivity%3A7239309300727214080%29",
+        "post_url": "https://www.linkedin.com/posts/curtisliu_amplitudemadeeasy-activity-7239309300727214080-P3Gj",
+        "comment_body": "Love that each of the platform features is even easier to use together!",
+        "post_body": "Today, Amplitude is launching its biggest change ever. We're making leveraging analytics for building digital products 100 times easier with #AmplitudeMadeEasy. Here's how:\n\n- One line of code setup: with one line of code, you now have access to all parts of the Amplitude platform, including analytics, session replay, feature flags, and experimentation.\n- Autocapture: Now you can get started without any additional engineering work. Out of the box events and advanced visual tagging make it easier than ever to track what you care about. And precision tracking is still there where you need it.\n- Ask Amplitude: Ask Amplitude has been supercharged with a conversational interface that understands your data taxonomy, and refine your question to get to the answers you need. It also leverages our improved search to look across your data, feature flags, saved charts, dashboards, notebooks, and the repository of knowledge in your organization to get the fastest answer to your question. This makes it easy for anyone to start diving into their data.\n- Out-of-the-box insights: Now with our Product Analytics and Web Analytics Hubs, Amplitude kicks you off with preset templates that work together with autocaptured data to give you an operational dashboard from day one.\n- Expert templates: We've worked with industry experts to create analysis templates that anyone can use to get insights from their data. Our library of templates covers an array of industries, and is continually growing. We want our customers to help each other by sharing their best practices and templates too!\n- All-in-one platform: Session replay is now front and center and integrated in your analysis workflows. User profiles are now connected to analysis, session replays, cohorts, experiments, and flags in a single unified view. It's easy to go from analysis to individual sessions and vice versa to provide a holistic understanding of user behavior. We have a lot more in store for making the platform work together seamlessly!\n\nRead more about it here: https://amplitude.com/easy\n\nThis is a tremendous effort put on by the entire company, and I'm proud of everyone on the team at Amplitude for making this happen!",
+        "parent_comment_body": null
+      },
+      {
+        "comment_url": "https://www.linkedin.com/feed/update/urn:li:activity:7239271744895688705?commentUrn=urn%3Ali%3Acomment%3A%28activity%3A7239271744895688705%2C7239292630432391170%29&dashCommentUrn=urn%3Ali%3Afsd_comment%3A%287239292630432391170%2Curn%3Ali%3Aactivity%3A7239271744895688705%29",
+        "post_url": "https://www.linkedin.com/posts/nirmalutwani_amplitudemadeeasy-activity-7239271744895688705-0QtY",
+        "comment_body": "Good work Nirmal Utwani!",
+        "post_body": "We, at Amplitude, have been the most advanced and powerful analytics tools for over 5 years. However, we acknowledge our Achilles' heel – it's been too complex, hard to get started, hard to use, and hard to scale.\n\nIn the past few months, our entire company has united efforts to make Amplitude the easiest analytics tool to get started with, the easiest to use, and the easiest to scale. Now, anyone, really anyone, can get started on our entire Product Suite of Product Analytics, Experimentation, Feature Flagging, Session Replay, with just one line of code.\n\nThere's been at least 100+ people who have helped make this a reality. Calling out a few who went above and beyond in making this a reality: Anna Zeman, Weston Clarke, Kelson Warner, Yang (Marvin) Liu, Dillon Yao, Michael Bird, Colin Williamson, Abbie Kouzmanoff, William Newton, Jenny Chang, Steven Cheng, Nikhil Gangaraju and Jinhao Wan.\n\nLearn more here: https://bit.ly/4ebWXhy \n\n#AmplitudeMadeEasy",
+        "parent_comment_body": null
+      },
+      {
+        "comment_url": "https://www.linkedin.com/feed/update/urn:li:ugcPost:7239286874521939968?commentUrn=urn%3Ali%3Acomment%3A%28ugcPost%3A7239286874521939968%2C7239308131955023872%29&dashCommentUrn=urn%3Ali%3Afsd_comment%3A%287239308131955023872%2Curn%3Ali%3AugcPost%3A7239286874521939968%29",
+        "post_url": "https://www.linkedin.com/posts/amplitude-analytics_amplitudemadeeasy-ugcPost-7239286874521939968-Gh6O",
+        "comment_body": "🥳",
+        "post_body": "Corporate fire drills... everyone knows them, everyone hates them 🙄 😤\n\nMake last-minute data requests a non-issue with #AmplitudeMadeEasy 🧯 https://bit.ly/47jNSB4",
+        "parent_comment_body": null
+      },
+      {
+        "comment_url": "https://www.linkedin.com/feed/update/urn:li:ugcPost:7239256361795006464?commentUrn=urn%3Ali%3Acomment%3A%28ugcPost%3A7239256361795006464%2C7239291756364619777%29&dashCommentUrn=urn%3Ali%3Afsd_comment%3A%287239291756364619777%2Curn%3Ali%3AugcPost%3A7239256361795006464%29",
+        "post_url": "https://www.linkedin.com/posts/amplitude-analytics_amplitudemadeeasy-ugcPost-7239256361795006464-1MEu",
+        "comment_body": "This is huge!",
+        "post_body": "Digital analytics is hard. We're changing that. \n\nIntroducing Amplitude Made Easy✨ A better, simpler way for teams to get started, get insights, and get value. Learn more: https://bit.ly/47jNSB4\n\n#AmplitudeMadeEasy",
+        "parent_comment_body": null
+      },
+      {
+        "comment_url": "https://www.linkedin.com/feed/update/urn:li:activity:7008781258717601792?commentUrn=urn%3Ali%3Acomment%3A%28activity%3A7008781258717601792%2C7008973219311341568%29&replyUrn=urn%3Ali%3Acomment%3A%28activity%3A7008781258717601792%2C7009239880509571072%29&dashCommentUrn=urn%3Ali%3Afsd_comment%3A%287008973219311341568%2Curn%3Ali%3Aactivity%3A7008781258717601792%29&dashReplyUrn=urn%3Ali%3Afsd_comment%3A%287009239880509571072%2Curn%3Ali%3Aactivity%3A7008781258717601792%29",
+        "post_url": "https://www.linkedin.com/posts/triketora_i-tried-to-have-chatgpt-write-a-linkedin-activity-7008781258717601792-OvLk",
+        "comment_body": "(un)fortunately im pretty sure chatgpt will improve faster than the average highschooler (or human)",
+        "post_body": "I tried to have ChatGPT write a LinkedIn post for me so I could squirrel out of my content creator responsibilities as a founder 😅 but unfortunately it sounds like a not particularly insightful nor creative high schooler trying to meet word count requirements for an English assignment. Alas. If you want to lose a few brain cells, you can read ChatGPT's post below, but for the foreseeable future you'll still be getting the human me on here.\n\nChatGPT says: \n\nAs a founder or hiring manager, it's important to stay visible on social media for recruiting purposes. In today's digital world, many job seekers turn to social media to find job opportunities and connect with potential employers. By having a strong presence on social media, you can showcase your company's culture and values, as well as highlight job openings and opportunities.\n\nNot only can social media help you attract top talent, but it can also help you build and maintain relationships with potential candidates. By regularly engaging with job seekers and providing valuable content, you can establish yourself as an industry thought leader and create a positive brand image for your company.\n\nAdditionally, social media can also help you stay up-to-date on the latest recruiting trends and best practices. By following relevant industry leaders and influencers, you can gain valuable insights and stay ahead of the curve when it comes to recruiting.\n\nIn short, staying visible on social media is crucial for founders and hiring managers who want to attract top talent and stay competitive in today's job market. By leveraging the power of social media, you can connect with potential candidates, showcase your company's culture, and stay informed about the latest recruiting trends.",
+        "parent_comment_body": null
+      },
+      {
+        "comment_url": "https://www.linkedin.com/feed/update/urn:li:activity:6985483144544038913?commentUrn=urn%3Ali%3Acomment%3A%28activity%3A6985483144544038913%2C6988582001700134912%29&dashCommentUrn=urn%3Ali%3Afsd_comment%3A%286988582001700134912%2Curn%3Ali%3Aactivity%3A6985483144544038913%29",
+        "post_url": "https://www.linkedin.com/posts/rmac18_skepticism-confusion-frustration-inside-activity-6985483144544038913-mbsG",
+        "comment_body": "It's definitely the future and the Oculus Quest 2 was already pretty good but idk if FB will ever recoup their investment",
+        "post_body": "meet me in the metaverse\n\nhttps://lnkd.in/dUWsyrUH",
+        "parent_comment_body": null
+      },
+      {
+        "comment_url": "https://www.linkedin.com/feed/update/urn:li:activity:7142633044967882753?commentUrn=urn%3Ali%3Acomment%3A%28activity%3A7142633044967882753%2C7142933965262245888%29&dashCommentUrn=urn%3Ali%3Afsd_comment%3A%287142933965262245888%2Curn%3Ali%3Aactivity%3A7142633044967882753%29",
+        "post_url": "https://www.linkedin.com/posts/zaarnold_properly-assort-100-units-from-xs-to-5x-for-activity-7142633044967882753-g1m1",
+        "comment_body": "lol I first need to know your definition of \"closely approximates\"",
+        "post_body": "Properly assort 100 units from XS to 5X for the US Men's DTC apparel market. The person that most closely approximates our data at TPJ - creators of the perfect jean gets a prize 🏆. \n\nExample below:",
+        "parent_comment_body": null
+      },
+      {
+        "comment_url": "https://www.linkedin.com/feed/update/urn:li:activity:6886954206939406337?commentUrn=urn%3Ali%3Acomment%3A%28activity%3A6886954206939406337%2C6887248272117895168%29&replyUrn=urn%3Ali%3Acomment%3A%28activity%3A6886954206939406337%2C6888544721736605697%29&dashCommentUrn=urn%3Ali%3Afsd_comment%3A%286887248272117895168%2Curn%3Ali%3Aactivity%3A6886954206939406337%29&dashReplyUrn=urn%3Ali%3Afsd_comment%3A%286888544721736605697%2Curn%3Ali%3Aactivity%3A6886954206939406337%29",
+        "post_url": "https://www.linkedin.com/posts/mikkeldengsoe_how-does-the-data-to-engineers-ratio-compare-activity-6886954206939406337-5ldF",
+        "comment_body": "Mikkel Dengsøe No, If your data team is swamped with ad-hoc requests you probably need to buy some self serve data tools.",
+        "post_body": "How does the data to engineers ratio compare for some of the top US and European tech companies? I used LinkedIn data to find out 🇺🇸 🤺 🇪🇺\n* The median data to engineers ratio for the US companies I looked at is 1:7 (1:4 for Europe)\n* Twice as many US companies are \"engineering first\" compared to Europe\n* Disappointing as it may be, analytics companies such as Amplitude, Pendo, Snowflake and Fullstory have relatively few data people\n\nMuch more in the full post: https://lnkd.in/evhTc2C2",
+        "parent_comment_body": null
+      },
+      {
+        "comment_url": "https://www.linkedin.com/feed/update/urn:li:activity:7047779092036812800?commentUrn=urn%3Ali%3Acomment%3A%28activity%3A7047779092036812800%2C7048113437494636544%29&dashCommentUrn=urn%3Ali%3Afsd_comment%3A%287048113437494636544%2Curn%3Ali%3Aactivity%3A7047779092036812800%29",
+        "post_url": "https://www.linkedin.com/posts/philipachou_hi-all-just-to-let-you-know-im-retiring-activity-7047779092036812800-L_vY",
+        "comment_body": "i notice the quotes around “retiring” 🤔",
+        "post_body": "Hi all, just to let you know, I'm \"retiring\" today from a career in industrial research that spanned Bell Labs, Xerox PARC, Microsoft Research, Google Research, and several startups, not to mention affiliate professorships at several universities. It's been a great ride, and I'm proud to have pioneered a number of technologies that are positively affecting the lives of billions of people every day. But the best part of it all has been the relationships and collaborations that I have had with all of you. So whatever comes next, I hope to stay in touch.",
+        "parent_comment_body": null
+      },
+      {
+        "comment_url": "https://www.linkedin.com/feed/update/urn:li:activity:7047779092036812800?commentUrn=urn%3Ali%3Acomment%3A%28activity%3A7047779092036812800%2C7048113437494636544%29&replyUrn=urn%3Ali%3Acomment%3A%28activity%3A7047779092036812800%2C7048129032797786112%29&dashCommentUrn=urn%3Ali%3Afsd_comment%3A%287048113437494636544%2Curn%3Ali%3Aactivity%3A7047779092036812800%29&dashReplyUrn=urn%3Ali%3Afsd_comment%3A%287048129032797786112%2Curn%3Ali%3Aactivity%3A7047779092036812800%29",
+        "post_url": "",
+        "comment_body": "Well, you'll have to judge for yourself what the quotes mean 😜",
+        "post_body": "",
+        "parent_comment_body": "i notice the quotes around “retiring” 🤔"
+      },
+      {
+        "comment_url": "https://www.linkedin.com/feed/update/urn:li:activity:7047779092036812800?commentUrn=urn%3Ali%3Acomment%3A%28activity%3A7047779092036812800%2C7048113437494636544%29&replyUrn=urn%3Ali%3Acomment%3A%28activity%3A7047779092036812800%2C7048222483761565696%29&dashCommentUrn=urn%3Ali%3Afsd_comment%3A%287048113437494636544%2Curn%3Ali%3Aactivity%3A7047779092036812800%29&dashReplyUrn=urn%3Ali%3Afsd_comment%3A%287048222483761565696%2Curn%3Ali%3Aactivity%3A7047779092036812800%29",
+        "post_url": "",
+        "comment_body": "I \"retired\" twice and am currently enjoying full-time work as a regular employee at EAGLYS Inc. 😄\n\nBTW, for anyone who lives in Japan and is having second thoughts about \"retiring\", we're hiring!",
+        "post_body": "",
+        "parent_comment_body": "i notice the quotes around “retiring” 🤔"
+      },
+      {
+        "comment_url": "https://www.linkedin.com/feed/update/urn:li:activity:6962558808837558272?commentUrn=urn%3Ali%3Acomment%3A%28activity%3A6962558808837558272%2C6963900603534090240%29&dashCommentUrn=urn%3Ali%3Afsd_comment%3A%286963900603534090240%2Curn%3Ali%3Aactivity%3A6962558808837558272%29",
+        "post_url": "https://www.linkedin.com/posts/frankw1_malcolm-gladwell-is-confused-i-will-probably-activity-6962558808837558272-dAgc",
+        "comment_body": "it’s cus he’s a storyteller not a scientist lol",
+        "post_body": "Malcolm Gladwell is confused. I will probably never have a job that requires me to go to an office ever again. WFH has made it so that my personal life is truly separate from my work life. Not having to commute has improved my physical and mental health. The list of benefits goes on. \n\nIt hasn't reduced me to anything. If anything, office life has reduced us by forcing us to make hard choices between our work and personal life. WFH is not perfect, but going into an office is even worse!\n\nAlso, how would Malcolm know? He's worked from his couch for 20 years. Easy for him to say.\n\nhttps://lnkd.in/gW48cwvy",
+        "parent_comment_body": null
+      },
+      {
+        "comment_url": "https://www.linkedin.com/feed/update/urn:li:activity:6831250570901360640?commentUrn=urn%3Ali%3Acomment%3A%28activity%3A6831250570901360640%2C6831275890874322944%29&dashCommentUrn=urn%3Ali%3Afsd_comment%3A%286831275890874322944%2Curn%3Ali%3Aactivity%3A6831250570901360640%29",
+        "post_url": "https://www.linkedin.com/posts/rmac18_my-first-story-for-the-nyt-is-up-https-activity-6831250570901360640-famp",
+        "comment_body": "Facebook fucked up but idk if this is all Facebook's fault. One company can't fix racism. It's so prevalent that at some point you need to blame the people doing the racist things. Even when we played UCSB back in the day there were a lot of racist comments against Asians (they were probably too intimidated by you to say them to your face lol). And Santa Barbara is supposedly a very liberal town.",
+        "post_body": "My first story for the NYT is up! https://lnkd.in/gqQaCyKD",
+        "parent_comment_body": null
+      },
+      {
+        "comment_url": "https://www.linkedin.com/feed/update/urn:li:activity:6831250570901360640?commentUrn=urn%3Ali%3Acomment%3A%28activity%3A6831250570901360640%2C6831275890874322944%29&replyUrn=urn%3Ali%3Acomment%3A%28activity%3A6831250570901360640%2C6831288283004329984%29&dashCommentUrn=urn%3Ali%3Afsd_comment%3A%286831275890874322944%2Curn%3Ali%3Aactivity%3A6831250570901360640%29&dashReplyUrn=urn%3Ali%3Afsd_comment%3A%286831288283004329984%2Curn%3Ali%3Aactivity%3A6831250570901360640%29",
+        "post_url": "",
+        "comment_body": "hah that Santa Barbara game was a bad one. they trucked us.\n\nsure, i think there are a lot of factors are play, but there's no denying social media, particularly platforms that amplify voices, has supercharged some of the existing negativity already in society. it's on facebook to rectify that so that their platform doesn't become a medium to amplify hate.",
+        "post_body": "",
+        "parent_comment_body": "Facebook fucked up but idk if this is all Facebook's fault. One company can't fix racism. It's so prevalent that at some point you need to blame the people doing the racist things. Even when we played UCSB back in the day there were a lot of racist comments against Asians (they were probably too intimidated by you to say them to your face lol). And Santa Barbara is supposedly a very liberal town."
+      },
+      {
+        "comment_url": "https://www.linkedin.com/feed/update/urn:li:activity:6841005942688088065?commentUrn=urn%3Ali%3Acomment%3A%28activity%3A6841005942688088065%2C6841202307711979520%29&dashCommentUrn=urn%3Ali%3Afsd_comment%3A%286841202307711979520%2Curn%3Ali%3Aactivity%3A6841005942688088065%29",
+        "post_url": "https://www.linkedin.com/posts/davelu_box-office-marvels-shang-chi-crushes-activity-6841005942688088065-N4R4",
+        "comment_body": "Watch Warrior on HBO",
+        "post_body": "The previous Labor Day Weekend record was $30 million. The analysts predicted anywhere from $35-55 million. Shang-Chi smashed all expectations with a $90 million opening weekend domestically. Hollywood keeps gaslighting us that we need big name celebrities to bring in box office dollars. Black Panther and Shang-Chi have categorically proven them wrong. Audiences want to see more diverse content and not the same old rehashed stories and all-white casts. Simu Liu’s biggest role prior to this was on a Canadian sitcom and he was relatively unknown. \n\nThis movie and moment was celebrated by the Asian American community for so many reasons. The main one being that we finally had our own Marvel superhero that looked like us. Many people won’t understand the significance of that because they’ve had heroes and action figures that looked like them their whole lives. This was the first movie my son and I have ever seen in a theater together, because I wanted him to know that Asians can be Avengers and superheroes too. Now he can play with his Shang-Chi action figure and dress up as Shang-Chi for Halloween. You never realize how big of a deal that is until you’re a dad watching your son staring in awe at the big screen and seeing a guy from our home in San Francisco do superhuman things and take out all the bad guys. \n\nI am so grateful for The Walt Disney Company for taking the gamble on this and putting the right screenwriters, cast and director to make this important project. Let’s hope that it’s just the first of many to come. \n\n#representationmatters #shangchi #superheroes",
+        "parent_comment_body": null
+      },
+      {
+        "comment_url": "https://www.linkedin.com/feed/update/urn:li:activity:6841005942688088065?commentUrn=urn%3Ali%3Acomment%3A%28activity%3A6841005942688088065%2C6841202307711979520%29&replyUrn=urn%3Ali%3Acomment%3A%28activity%3A6841005942688088065%2C6841227792412229632%29&dashCommentUrn=urn%3Ali%3Afsd_comment%3A%286841202307711979520%2Curn%3Ali%3Aactivity%3A6841005942688088065%29&dashReplyUrn=urn%3Ali%3Afsd_comment%3A%286841227792412229632%2Curn%3Ali%3Aactivity%3A6841005942688088065%29",
+        "post_url": "",
+        "comment_body": "I second this. Here’s hoping they come back with a few more seasons!",
+        "post_body": "",
+        "parent_comment_body": "Watch Warrior on HBO"
+      },
+      {
+        "comment_url": "https://www.linkedin.com/feed/update/urn:li:activity:6841005942688088065?commentUrn=urn%3Ali%3Acomment%3A%28activity%3A6841005942688088065%2C6841202307711979520%29&replyUrn=urn%3Ali%3Acomment%3A%28activity%3A6841005942688088065%2C6841390173750722560%29&dashCommentUrn=urn%3Ali%3Afsd_comment%3A%286841202307711979520%2Curn%3Ali%3Aactivity%3A6841005942688088065%29&dashReplyUrn=urn%3Ali%3Afsd_comment%3A%286841390173750722560%2Curn%3Ali%3Aactivity%3A6841005942688088065%29",
+        "post_url": "",
+        "comment_body": "Will check it out 🌟",
+        "post_body": "",
+        "parent_comment_body": "Watch Warrior on HBO"
+      },
+      {
+        "comment_url": "https://www.linkedin.com/feed/update/urn:li:activity:6771095530891182080?commentUrn=urn%3Ali%3Acomment%3A%28activity%3A6771095530891182080%2C6771150886174507008%29&dashCommentUrn=urn%3Ali%3Afsd_comment%3A%286771150886174507008%2Curn%3Ali%3Aactivity%3A6771095530891182080%29",
+        "post_url": "https://www.linkedin.com/posts/david-ehrich-62a0169_financialinclusion-technologyforgood-fintech-activity-6771095530891182080-qGNN",
+        "comment_body": "Congrats team! Endo forgot to smile though 😁",
+        "post_body": "A hearty congratulations to my co-founders Jason Gross, Jack Arenas, Andrew Endicott and to Brian Foley from Silicon Valley Bank for closing a $125M credit facility that will ensure Petal’s growth and scale. \n\nThis is a huge vote of confidence for cash flow underwriting as a solution for consumers who dont have a credit score or don’t have a history of credit! \n\nRead more: https://lnkd.in/dedRMYX\n\n #financialinclusion #technologyforgood  #fintech #innovation",
+        "parent_comment_body": null
+      },
+      {
+        "comment_url": "https://www.linkedin.com/feed/update/urn:li:activity:6771095530891182080?commentUrn=urn%3Ali%3Acomment%3A%28activity%3A6771095530891182080%2C6771150886174507008%29&replyUrn=urn%3Ali%3Acomment%3A%28activity%3A6771095530891182080%2C6771162513816989696%29&dashCommentUrn=urn%3Ali%3Afsd_comment%3A%286771150886174507008%2Curn%3Ali%3Aactivity%3A6771095530891182080%29&dashReplyUrn=urn%3Ali%3Afsd_comment%3A%286771162513816989696%2Curn%3Ali%3Aactivity%3A6771095530891182080%29",
+        "post_url": "",
+        "comment_body": "I know, he never smiles in photos...",
+        "post_body": "",
+        "parent_comment_body": "Congrats team! Endo forgot to smile though 😁"
+      },
+      {
+        "comment_url": "https://www.linkedin.com/feed/update/urn:li:activity:6785634537520140288?commentUrn=urn%3Ali%3Acomment%3A%28activity%3A6785634537520140288%2C6785634855825752064%29&dashCommentUrn=urn%3Ali%3Afsd_comment%3A%286785634855825752064%2Curn%3Ali%3Aactivity%3A6785634537520140288%29",
+        "post_url": "https://www.linkedin.com/posts/frankw1_leadership-executivepay-activity-6785634537520140288-uRsU",
+        "comment_body": "the most undervalued athletes are the ones whose salary is capped",
+        "post_body": "Crazy idea... Can we cap executive pay like how various sports cap athletes' pay? Am I missing something? \n\n#leadership #executivepay",
+        "parent_comment_body": null
+      },
+      {
+        "comment_url": "https://www.linkedin.com/feed/update/urn:li:activity:6816382289061257216?commentUrn=urn%3Ali%3Acomment%3A%28activity%3A6816382289061257216%2C6816384861536829440%29&dashCommentUrn=urn%3Ali%3Afsd_comment%3A%286816384861536829440%2Curn%3Ali%3Aactivity%3A6816382289061257216%29",
+        "post_url": "https://www.linkedin.com/posts/jackarenas_after-an-incredible-five-years-of-building-activity-6816382289061257216-mUGb",
+        "comment_body": "Love it! Good luck!",
+        "post_body": "After an incredible five years of building and leading at Petal from inception as Co-Founder and CTO, I’ve decided to step away in order to build a new business from the ground up. I’m grateful for everyone I’ve had the opportunity to partner with over the years, who’ve shared their time, knowledge and skills, and I hope to partner with you all again in the future. I’m particularly thankful for Jason, Andrew, and David's partnership as co-founders. I’m excited to see the great heights Petal rises to over the coming years. Onwards and upwards 🚀\n\nI’m thrilled to announce that Michael and I are building something new in the Fintech space (more soon 👀). We’re a well-funded, fast growing startup and looking for software engineers and a product designer to help us build the future of insurance. If you’re interested in partnering with a rockstar team, starting from the ground floor, and tackling an important social mission please reach out. If you know anyone who might be interested, feel free to connect us.",
+        "parent_comment_body": null
+      },
+      {
+        "comment_url": "https://www.linkedin.com/feed/update/urn:li:activity:6770366586428755968?commentUrn=urn%3Ali%3Acomment%3A%28activity%3A6770366586428755968%2C6770391131483074560%29&dashCommentUrn=urn%3Ali%3Afsd_comment%3A%286770391131483074560%2Curn%3Ali%3Aactivity%3A6770366586428755968%29",
+        "post_url": "https://www.linkedin.com/posts/jackarenas_petal-takes-in-1266m-debt-facility-to-provide-activity-6770366586428755968-de6b",
+        "comment_body": "Congrats!",
+        "post_body": "We're partnering with Silicon Valley Bank and Trinity Capital to further expand access to credit. Exciting times for our next phase of growth! If you're interested in helping us put this capital to work and join our mission-driven team, we're hiring. 🚀",
+        "parent_comment_body": null
+      }
+    ]
+  }
