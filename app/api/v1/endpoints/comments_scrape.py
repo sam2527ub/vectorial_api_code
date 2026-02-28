@@ -20,7 +20,7 @@ def start_comments_scrape(payload: CommentsScrapeRequest):
     """
     Start Apify LinkedIn profile comments scraper for an audience room.
     Profile URLs are loaded from the room; no LinkedIn URLs in the request.
-    Returns run_id. Poll GET /api/v1/comments/scrape/status with same run_id and audience_room_id.
+    Returns run_id. Poll GET /api/v1/comments/scrape/status with audience_room_id to get status.
     """
     handler = UserCommentsFetchHandler()
     result = handler.start_run(
@@ -34,11 +34,11 @@ def start_comments_scrape(payload: CommentsScrapeRequest):
 
 @router.get("/api/v1/comments/scrape/status", response_model=CommentsScrapeStatusResponse)
 def get_comments_scrape_status(
-    audience_room_id: str = Query(..., description="Audience room ID – job is stored in S3 under this room"),
-    enterprise_name: Optional[str] = Query(None, description="Enterprise for DB/S3 (same as POST if applicable)"),
+    audience_room_id: str = Query(..., description="Audience room ID – job is stored in DB for this room"),
+    enterprise_name: Optional[str] = Query(None, description="Enterprise for DB (same as POST if applicable)"),
 ):
     """
-    Poll comment scrape status by audience_room_id. Job metadata is loaded from S3 (room's linkedin-comment-context/job.json).
+    Poll comment scrape status by audience_room_id. Job metadata is loaded from DB (latest job for this room).
     When SUCCEEDED, comment.json is uploaded per profile and commentsS3Url is updated.
     """
     if not audience_room_id:

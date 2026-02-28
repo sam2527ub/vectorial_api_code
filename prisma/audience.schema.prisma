@@ -114,6 +114,21 @@ model ScrapeJob {
   @@index([status])
 }
 
+model CommentScrapeJob {
+  id             String   @id
+  audienceRoomId String
+  enterpriseName String?
+  status         String   @default("PROCESSING")
+  result         Json?
+  error          String?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime
+
+  @@index([status])
+  @@index([audienceRoomId])
+  @@index([createdAt])
+}
+
 model SearchQuery {
   id          String   @id
   filters     Json

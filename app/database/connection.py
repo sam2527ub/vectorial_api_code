@@ -228,6 +228,19 @@ class ParallelSearchJob:
         self.updatedAt = row.get('updatedAt') or row.get('updatedat')
 
 
+class CommentScrapeJob:
+    """Represents a CommentScrapeJob record (comment scrape job metadata, replaces S3 job.json)."""
+    def __init__(self, row: Dict[str, Any]):
+        self.id = row.get('id')
+        self.audienceRoomId = row.get('audienceRoomId') or row.get('audienceroomid')
+        self.enterpriseName = row.get('enterpriseName') or row.get('enterprisename')
+        self.status = row.get('status', 'PROCESSING')
+        self.result = row.get('result')
+        self.error = row.get('error')
+        self.createdAt = row.get('createdAt') or row.get('createdat')
+        self.updatedAt = row.get('updatedAt') or row.get('updatedat')
+
+
 class AudienceRoom:
     """Represents an AudienceRoom record."""
     def __init__(self, row: Dict[str, Any]):
@@ -401,6 +414,132 @@ def update_scrape_job(job_id: str, data: Dict[str, Any], enterprise_name: Option
                 return ScrapeJob(row) if row else None
     except Exception as e:
         logger.error(f"Exception in update_scrape_job for job {job_id} (enterprise_name={enterprise_name}): {e}", exc_info=True)
+        raise
+
+
+# ============================================
+# ============================================
+# CommentScrapeJob Operations (Audience Database)
+# ============================================
+
+def ensure_comment_scrape_job_table_exists(enterprise_name: Optional[str] = None) -> None:
+    """Create CommentScrapeJob table if it doesn't exist. Safe to call on every request."""
+    with get_enterprise_audience_connection(enterprise_name) as conn:
+        with conn.cursor() as cur:
+            cur.execute("""
+                CREATE TABLE IF NOT EXISTS "CommentScrapeJob" (
+                    "id" TEXT NOT NULL,
+                    "audienceRoomId" TEXT NOT NULL,
+                    "enterpriseName" TEXT,
+                    "status" TEXT NOT NULL DEFAULT 'PROCESSING',
+                    "result" JSONB,
+                    "error" TEXT,
+                    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                    "updatedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                    CONSTRAINT "CommentScrapeJob_pkey" PRIMARY KEY ("id")
+                )
+            """)
+        with conn.cursor() as cur:
+            cur.execute('CREATE INDEX IF NOT EXISTS "CommentScrapeJob_status_idx" ON "CommentScrapeJob"("status")')
+        with conn.cursor() as cur:
+            cur.execute('CREATE INDEX IF NOT EXISTS "CommentScrapeJob_audienceRoomId_idx" ON "CommentScrapeJob"("audienceRoomId")')
+        with conn.cursor() as cur:
+            cur.execute('CREATE INDEX IF NOT EXISTS "CommentScrapeJob_createdAt_idx" ON "CommentScrapeJob"("createdAt")')
+    logger.info("CommentScrapeJob table ensured to exist")
+
+
+def create_comment_scrape_job(
+    audience_room_id: str,
+    run_ids: List[str],
+    enterprise_name: Optional[str] = None,
+) -> CommentScrapeJob:
+    """Create a new CommentScrapeJob record. result JSON holds run_ids, batches_total, batches_completed, final_result."""
+    ensure_comment_scrape_job_table_exists(enterprise_name)
+    job_id = str(uuid.uuid4())
+    now = datetime.utcnow()
+    result = {
+        "run_ids": run_ids,
+        "batches_total": len(run_ids),
+        "batches_completed": 0,
+        "final_result": None,
+    }
+    with get_enterprise_audience_connection(enterprise_name) as conn:
+        with conn.cursor(cursor_factory=RealDictCursor) as cur:
+            cur.execute(
+                """
+                INSERT INTO "CommentScrapeJob" (id, "audienceRoomId", "enterpriseName", status, result, "createdAt", "updatedAt")
+                VALUES (%s, %s, %s, %s, %s, %s, %s)
+                RETURNING *
+                """,
+                (job_id, audience_room_id, enterprise_name, 'PROCESSING', Json(result), now, now)
+            )
+            row = cur.fetchone()
+            return CommentScrapeJob(row)
+
+
+def find_comment_scrape_job_by_id(job_id: str, enterprise_name: Optional[str] = None) -> Optional[CommentScrapeJob]:
+    """Find a CommentScrapeJob by ID."""
+    ensure_comment_scrape_job_table_exists(enterprise_name)
+    with get_enterprise_audience_connection(enterprise_name) as conn:
+        with conn.cursor(cursor_factory=RealDictCursor) as cur:
+            cur.execute('SELECT * FROM "CommentScrapeJob" WHERE id = %s', (job_id,))
+            row = cur.fetchone()
+            return CommentScrapeJob(row) if row else None
+
+
+def find_latest_comment_scrape_job_by_audience_room_id(
+    audience_room_id: str,
+    enterprise_name: Optional[str] = None,
+) -> Optional[CommentScrapeJob]:
+    """Find the most recent CommentScrapeJob for an audience room (for polling by audience_room_id)."""
+    ensure_comment_scrape_job_table_exists(enterprise_name)
+    with get_enterprise_audience_connection(enterprise_name) as conn:
+        with conn.cursor(cursor_factory=RealDictCursor) as cur:
+            cur.execute(
+                'SELECT * FROM "CommentScrapeJob" WHERE "audienceRoomId" = %s ORDER BY "createdAt" DESC LIMIT 1',
+                (audience_room_id,)
+            )
+            row = cur.fetchone()
+            return CommentScrapeJob(row) if row else None
+
+
+def update_comment_scrape_job(
+    job_id: str,
+    data: Dict[str, Any],
+    enterprise_name: Optional[str] = None,
+) -> Optional[CommentScrapeJob]:
+    """Update a CommentScrapeJob record. data can include status, result, error."""
+    ensure_comment_scrape_job_table_exists(enterprise_name)
+    if not data:
+        return find_comment_scrape_job_by_id(job_id, enterprise_name=enterprise_name)
+    set_clauses = []
+    values = []
+    field_mapping = {
+        'status': '"status"',
+        'result': '"result"',
+        'error': '"error"',
+    }
+    for key, value in data.items():
+        if key in field_mapping:
+            set_clauses.append(f'{field_mapping[key]} = %s')
+            if key == 'result':
+                values.append(Json(value) if value is not None else None)
+            else:
+                values.append(value)
+    set_clauses.append('"updatedAt" = %s')
+    values.append(datetime.utcnow())
+    values.append(job_id)
+    try:
+        with get_enterprise_audience_connection(enterprise_name) as conn:
+            with conn.cursor(cursor_factory=RealDictCursor) as cur:
+                cur.execute(
+                    f'UPDATE "CommentScrapeJob" SET {", ".join(set_clauses)} WHERE id = %s RETURNING *',
+                    values
+                )
+                row = cur.fetchone()
+                return CommentScrapeJob(row) if row else None
+    except Exception as e:
+        logger.error(f"Exception in update_comment_scrape_job for job {job_id}: {e}", exc_info=True)
         raise
 
 

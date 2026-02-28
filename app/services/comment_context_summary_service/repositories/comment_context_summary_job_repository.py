@@ -12,7 +12,7 @@ COMMENT_CONTEXT_SUMMARY_JOB_TABLE_NAME = "CommentContextSummaryJob"
 
 
 def ensure_comment_context_summary_job_table_exists(enterprise_name: Optional[str] = None) -> None:
-    """Create CommentContextSummaryJob table if it doesn't exist. Safe – won't affect existing data."""
+    """Create CommentContextSummaryJob table if it doesn't exist. Add missing columns on existing tables."""
     try:
         with get_enterprise_audience_connection(enterprise_name) as conn:
             with conn.cursor() as cur:
@@ -38,6 +38,19 @@ def ensure_comment_context_summary_job_table_exists(enterprise_name: Optional[st
                     )
                     """
                 )
+            # Add columns that may be missing on tables created by an older schema
+            for col_def in [
+                ('"processedComments"', 'INTEGER NOT NULL DEFAULT 0'),
+                ('"summarizedComments"', 'INTEGER NOT NULL DEFAULT 0'),
+                ('"skippedComments"', 'INTEGER NOT NULL DEFAULT 0'),
+                ('"errorCount"', 'INTEGER NOT NULL DEFAULT 0'),
+                ('"currentChunk"', 'INTEGER NOT NULL DEFAULT 0'),
+                ('"totalChunks"', 'INTEGER NOT NULL DEFAULT 0'),
+            ]:
+                with conn.cursor() as cur:
+                    cur.execute(
+                        f'ALTER TABLE "{COMMENT_CONTEXT_SUMMARY_JOB_TABLE_NAME}" ADD COLUMN IF NOT EXISTS {col_def[0]} {col_def[1]}'
+                    )
             with conn.cursor() as cur:
                 cur.execute(
                     f"""
