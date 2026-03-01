@@ -57,8 +57,9 @@ class AIGatewayClient:
     def _log_initialization(self):
         if self.enabled:
             logger.info(f"Vercel AI Gateway enabled: {self.openai_base_url}")
-            if len(getattr(self.config, "model_fallbacks", [])) > 1:
-                logger.info(f"Model fallbacks configured: {len(self.config.model_fallbacks)} models")
+            fallbacks = getattr(self.config, "model_fallbacks", [])
+            if len(fallbacks) > 1:
+                logger.info(f"Model fallbacks configured: {len(fallbacks)} models")
         else:
             logger.info("AI Gateway disabled - using direct API calls")
 

@@ -39,7 +39,7 @@ class AudienceGroupSummarizationHandler:
             )
 
     def _collect_profile_summaries(self, audience_room_id: str, enterprise_name: Optional[str]) -> tuple:
-        """Fetch room with profiles, then build profile_summaries list and companies set. Returns (room, profile_summaries, companies, profiles_processed, profiles_skipped)."""
+        """Fetch room with profiles, then build profile_summaries list and companies set. Returns (room, description_key, profile_summaries, companies, profiles_processed, profiles_skipped)."""
         audience_room = database.find_audience_room_by_id(
             audience_room_id, include_profiles=True, enterprise_name=enterprise_name
         )

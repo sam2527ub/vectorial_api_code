@@ -1,6 +1,5 @@
 """Handler for User Observation Fetch service: Trigger Parallel Scraping and Get Status."""
 import asyncio
-import uuid
 from datetime import datetime
 from typing import Any, Dict, List, Optional
 
@@ -53,7 +52,6 @@ class UserObservationFetchHandler:
         batch_size = min(batch_size or self.config.max_urls_per_batch, self.config.max_urls_per_batch)
         batches = split_urls_into_batches(linkedin_urls, batch_size)
 
-        job_id = str(uuid.uuid4())
         try:
             job = create_job(
                 linkedin_urls=normalized_urls,
@@ -65,6 +63,7 @@ class UserObservationFetchHandler:
             logger.info(f"Created scrape job {job_id} for parallel scraping")
         except Exception as e:
             logger.warning(f"Failed to create scrape job in database: {e}")
+            raise HTTPException(status_code=500, detail=f"Failed to create scrape job: {e}")
 
         semaphore = asyncio.Semaphore(self.config.max_concurrent_batches)
 

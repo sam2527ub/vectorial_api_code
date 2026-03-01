@@ -6,8 +6,10 @@ from app.database.connection import (
     # Connection management
     get_main_pool,
     get_audience_pool,
+    get_enterprise_pool,
     get_main_connection,
     get_audience_connection,
+    get_enterprise_audience_connection,
     close_pools,
     
     # Database health checks
@@ -76,8 +78,10 @@ from app.database.connection import (
 __all__ = [
     "get_main_pool",
     "get_audience_pool",
+    "get_enterprise_pool",
     "get_main_connection",
     "get_audience_connection",
+    "get_enterprise_audience_connection",
     "close_pools",
     "check_main_db_connection",
     "check_audience_db_connection",

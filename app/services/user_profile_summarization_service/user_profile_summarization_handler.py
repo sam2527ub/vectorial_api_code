@@ -142,6 +142,8 @@ class UserProfileSummarizationHandler:
 
             chunks_to_process = min(self.chunks_per_api_call, total_chunks - start_chunk)
 
+            semaphore = asyncio.Semaphore(self.max_concurrent)
+
             for chunk_offset in range(chunks_to_process):
                 chunk_num = start_chunk + chunk_offset
                 if chunk_num >= total_chunks:
@@ -155,8 +157,6 @@ class UserProfileSummarizationHandler:
                     f"[SummariesJob {job_id}] Processing chunk {chunk_num + 1}/{total_chunks} ({len(profiles_chunk)} profiles)"
                 )
                 update_summaries_job(job_id, enterprise_name, current_chunk=chunk_num + 1)
-
-                semaphore = asyncio.Semaphore(self.max_concurrent)
 
                 async def rate_limited_process(profile):
                     async with semaphore:
