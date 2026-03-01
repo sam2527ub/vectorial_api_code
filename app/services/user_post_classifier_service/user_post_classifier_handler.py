@@ -26,9 +26,7 @@ class UserPostClassifierHandler:
 
     def _validate(self) -> None:
         ensure_db_available("audience")
-        from app.config import groq_client, s3_client, s3_bucket
-        if not groq_client:
-            raise HTTPException(status_code=503, detail="Groq client not initialized. Set GROQ_API_KEY.")
+        from app.config import s3_client, s3_bucket
         if not s3_client or not s3_bucket:
             raise HTTPException(status_code=503, detail="S3 is not configured.")
 

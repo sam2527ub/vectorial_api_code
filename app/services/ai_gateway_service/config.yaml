@@ -46,6 +46,14 @@ model_rotation:
     fallbacks:
       - "openai/gpt-5-mini"
       - "openai/gpt-4o-mini"
+
+  # User Post Classifier (used by user_post_classifier_service)
+  # Default: groq/llama-3.3-70b-versatile (via AI Gateway), then fallbacks
+  user_post_classifier:
+    default: "groq/llama-3.3-70b-versatile"
+    fallbacks:
+      - "openai/gpt-5-mini"
+      - "openai/gpt-4o-mini"
   
   # Legacy: general fallbacks (for backward compatibility)
   models:

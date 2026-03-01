@@ -87,6 +87,7 @@ async def process_classifier_job(
                         classifier_labels=classifier_labels,
                         classifier_examples=classifier_examples,
                         batch_size=classify_batch_size,
+                        config=cfg,
                     )
                     for idx, post in enumerate(posts):
                         if idx < len(classification_results):

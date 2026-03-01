@@ -18,7 +18,6 @@ class CommentContextSummaryConfig:
 
         # Groq / model config (used via AI Gateway + direct Groq fallback)
         self.groq_model: str = "groq/llama-3.3-70b-versatile"
-        self.groq_temperature: float = 0.1
 
         # Context truncation limits
         self.context_max_post_length: int = 2000

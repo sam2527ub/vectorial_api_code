@@ -15,20 +15,7 @@ async def process_posts_and_update_profiles(
     linkedin_urls: Optional[List[str]] = None,
     enterprise_name: Optional[str] = None,
 ) -> Dict[str, Any]:
-    """
-    Process posts from Apify dataset, split by profile, upload to S3, and update AudienceProfile table.
-
-    Args:
-        dataset_client: Apify dataset client to iterate items from
-        job_id: Scrape job ID
-        audience_room_id: Optional audience room ID to filter profiles
-        linkedin_urls: Optional list of LinkedIn URLs that were scraped (for matching)
-        enterprise_name: Optional enterprise name (gamma, app, entelligence, beta).
-                        Defaults to AUDIENCE_DATABASE_URL if None.
-
-    Returns:
-        Dictionary with processing results (posts_found, profiles_updated, profiles_missing, etc.)
-    """
+    """Process posts from Apify dataset, split by profile, upload to S3, and update AudienceProfile table."""
     from app.config import s3_client, s3_bucket
 
     logger.info(f"process_posts_and_update_profiles called: job_id={job_id}, audience_room_id={audience_room_id}, enterprise_name={enterprise_name}")

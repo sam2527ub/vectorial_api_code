@@ -80,6 +80,20 @@ class GatewayConfig:
                 "openai/gpt-4o-mini",
             ],
         )
+
+        # User Post Classifier config (used by user_post_classifier_service)
+        user_post_classifier_config = rotation_config.get("user_post_classifier", {})
+        self.user_post_classifier_default = user_post_classifier_config.get(
+            "default",
+            "groq/llama-3.3-70b-versatile",
+        )
+        self.user_post_classifier_fallbacks = user_post_classifier_config.get(
+            "fallbacks",
+            [
+                "openai/gpt-5-mini",
+                "openai/gpt-4o-mini",
+            ],
+        )
         
         # Legacy: general fallbacks (for backward compatibility)
         if rotation_str_env:

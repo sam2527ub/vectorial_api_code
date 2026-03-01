@@ -1,5 +1,4 @@
-"""LLM clients for post classification."""
+"""LLM interface for post classification (classification is done via ai_gateway in batch_runner)."""
 from .interface import PostClassifierClientInterface
-from .factory import get_classifier_client
 
-__all__ = ["PostClassifierClientInterface", "get_classifier_client"]
+__all__ = ["PostClassifierClientInterface"]

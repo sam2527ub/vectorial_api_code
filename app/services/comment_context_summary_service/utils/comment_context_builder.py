@@ -1,23 +1,13 @@
-"""Utilities for building LinkedIn comment context payloads for AI summarization."""
+"""Build context dict for a LinkedIn comment from comment.json for AI summarization."""
 
 from typing import Any, Dict, Optional
 
 from app.config import logger
-from .config import CommentContextSummaryConfig
 
-
-def _truncate(text: Optional[str], max_length: int) -> Optional[str]:
-    if not text:
-        return None
-    text = str(text)
-    if len(text) <= max_length:
-        return text
-    # Simple word-boundary–aware truncation
-    truncated = text[:max_length]
-    last_space = truncated.rfind(" ")
-    if last_space > max_length * 0.8:
-        truncated = truncated[:last_space]
-    return truncated + "..."
+from app.services.comment_context_summary_service.config import CommentContextSummaryConfig
+from app.services.comment_context_summary_service.utils.text_truncation import (
+    truncate_text_at_max_length,
+)
 
 
 def build_context_for_comment(
@@ -27,9 +17,8 @@ def build_context_for_comment(
     """
     Build context dict for a LinkedIn comment from comment.json.
 
-    Expects fields:
-    - post_body
-    - parent_comment_body (optional)
+    Expects fields: post_body, parent_comment_body (optional).
+    Truncates to config limits and returns None if no usable text.
     """
     cfg = config or CommentContextSummaryConfig()
 
@@ -41,9 +30,11 @@ def build_context_for_comment(
     if parent_body_raw is not None and not isinstance(parent_body_raw, str):
         parent_body_raw = str(parent_body_raw or "")
 
-    post_body = _truncate(post_body_raw.strip(), cfg.context_max_post_length)
+    post_body = truncate_text_at_max_length(post_body_raw.strip(), cfg.context_max_post_length)
     parent_comment_body = (
-        _truncate(parent_body_raw.strip(), cfg.context_max_parent_comment_length)
+        truncate_text_at_max_length(
+            parent_body_raw.strip(), cfg.context_max_parent_comment_length
+        )
         if parent_body_raw
         else None
     )
@@ -56,5 +47,3 @@ def build_context_for_comment(
         "post_body": post_body or "",
         "parent_comment_body": parent_comment_body,
     }
-
-
