@@ -1,7 +1,7 @@
 """Handler for User Profile Summarization: trigger async summaries, process chunks, status."""
 import asyncio
 import uuid
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, Optional
 
 import httpx
 from fastapi import HTTPException
@@ -274,8 +274,3 @@ class UserProfileSummarizationHandler:
             "created_at": job["created_at"],
             "updated_at": job["updated_at"],
         }
-
-    def get_pending_jobs(self, enterprise_name: Optional[str] = None) -> List[Dict[str, Any]]:
-        """Return all pending/processing summaries jobs."""
-        from app.services.user_profile_summarization_service.repositories import get_pending_summaries_jobs
-        return get_pending_summaries_jobs(enterprise_name)

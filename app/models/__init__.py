@@ -1,7 +1,6 @@
 """Pydantic models for request/response schemas."""
 from .schemas import (
     EnrichRequest,
-    DescriptionRequest,
     SearchFilters,
     Cookie,
     ScrapeRequest,
@@ -14,7 +13,6 @@ from .schemas import (
 
 __all__ = [
     "EnrichRequest",
-    "DescriptionRequest",
     "SearchFilters",
     "Cookie",
     "ScrapeRequest",

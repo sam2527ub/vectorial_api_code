@@ -10,7 +10,6 @@
 |--------|----------|-------------|---------------|
 | `GET` | `/` | Health check | < 1s |
 | `POST` | `/api/v1/enrich` | Enrich job title | 1-2s |
-| `POST` | `/api/v1/extract-filters` | Extract filters from text | 2-5s |
 | `POST` | `/api/v1/search` | Search profiles | 2-5s |
 | `POST` | `/api/v1/audience-rooms` | Create audience room + profiles (stores to S3) | 1-2s |
 | `POST` | `/api/v1/audience-rooms/{audience_room_id}/posts` | Batch attach scraped posts JSON to profiles (by inputUrl) | 1-2s |
@@ -52,28 +51,7 @@ Content-Type: application/json
 
 ---
 
-### 3. Extract Filters
-```http
-POST /api/v1/extract-filters
-Content-Type: application/json
-
-{
-  "description": "Software Engineers in SF"
-}
-```
-```json
-{
-  "job_titles": ["Software Engineer"],
-  "skills": ["Python"],
-  "locations": ["San Francisco"],
-  "role_search_type": "Current Role Only",
-  "company_search_type": "Current Company Only"
-}
-```
-
----
-
-### 4. Search Profiles
+### 3. Search Profiles
 ```http
 POST /api/v1/search
 Content-Type: application/json
@@ -117,7 +95,7 @@ Content-Type: application/json
 
 ---
 
-### 5. Create Audience Room with Profiles (and upload to S3)
+### 4. Create Audience Room with Profiles (and upload to S3)
 ```http
 POST /api/v1/audience-rooms
 Content-Type: application/json
@@ -159,7 +137,7 @@ Content-Type: application/json
 
 ---
 
-### 6. Attach Posts to a Profile (after scraping)
+### 5. Attach Posts to a Profile (after scraping)
 ```http
 POST /api/v1/audience-rooms/{audience_room_id}/profiles/{profile_id}/posts
 Content-Type: application/json
@@ -178,7 +156,7 @@ Content-Type: application/json
 
 ---
 
-### 7. Batch Attach Posts for a Room (send full dataset)
+### 6. Batch Attach Posts for a Room (send full dataset)
 ```http
 POST /api/v1/audience-rooms/{audience_room_id}/posts
 Content-Type: application/json
@@ -212,7 +190,7 @@ Content-Type: application/json
 
 ---
 
-### 8. Start Scraping (Async)
+### 7. Start Scraping (Async)
 ```http
 POST /api/v1/scrape
 Content-Type: application/json
@@ -240,7 +218,7 @@ Content-Type: application/json
 
 ---
 
-### 8. Check Scraping Status
+### 9. Check Scraping Status
 ```http
 GET /api/v1/scrape/status/{job_id}
 ```

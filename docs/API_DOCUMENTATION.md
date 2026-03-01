@@ -10,12 +10,11 @@
 
 1. [Health Check](#1-health-check)
 2. [Job Title Enrichment](#2-job-title-enrichment)
-3. [Extract Filters from Description](#3-extract-filters-from-description)
-4. [Search Profiles](#4-search-profiles)
-5. [Start Scraping Job (Async)](#5-start-scraping-job-async)
-6. [Check Scraping Job Status](#6-check-scraping-job-status)
-7. [Error Handling](#error-handling)
-8. [Frontend Integration Examples](#frontend-integration-examples)
+3. [Search Profiles](#3-search-profiles)
+4. [Start Scraping Job (Async)](#4-start-scraping-job-async)
+5. [Check Scraping Job Status](#5-check-scraping-job-status)
+6. [Error Handling](#error-handling)
+7. [Frontend Integration Examples](#frontend-integration-examples)
 
 ---
 
@@ -101,81 +100,7 @@ const enrichedData = await response.json();
 
 ---
 
-## 3. Extract Filters from Description
-
-Extract structured search filters from natural language description using OpenAI.
-
-### Endpoint
-```
-POST /api/v1/extract-filters
-```
-
-### Request Body
-```json
-{
-  "description": "Software Engineers in SF working at Series B companies"
-}
-```
-
-### Request Schema
-| Field | Type | Required | Description |
-|-------|------|----------|-------------|
-| `description` | string | ✅ Yes | Natural language description of desired profiles |
-
-### Response
-```json
-{
-  "job_titles": ["Software Engineer", "Senior Software Engineer"],
-  "skills": ["Python", "JavaScript", "React"],
-  "locations": ["San Francisco", "United States"],
-  "company_names": [],
-  "industries": ["Technology", "Software"],
-  "company_sizes": ["51-200", "201-500"],
-  "education_degrees": ["Bachelors", "Masters"],
-  "seniority_levels": ["Senior", "Mid-level"],
-  "job_roles": ["Engineer", "Developer"],
-  "role_search_type": "Current Role Only",
-  "company_search_type": "Current Company Only"
-}
-```
-
-### Response Schema
-| Field | Type | Description |
-|-------|------|-------------|
-| `job_titles` | string[] | Extracted job titles |
-| `skills` | string[] | Extracted skills |
-| `locations` | string[] | Extracted locations (cities/countries) |
-| `company_names` | string[] | Extracted company names |
-| `industries` | string[] | Extracted industries |
-| `company_sizes` | string[] | Company size ranges (e.g., "1-10", "11-50", "10000+") |
-| `education_degrees` | string[] | Education degrees (e.g., "Bachelors", "Masters") |
-| `seniority_levels` | string[] | Seniority levels |
-| `job_roles` | string[] | Job roles |
-| `role_search_type` | string | "Current Role Only" or "Entire History" |
-| `company_search_type` | string | "Current Company Only" or "Entire History" |
-
-### Example
-```javascript
-const response = await fetch('https://your-project.vercel.app/api/v1/extract-filters', {
-  method: 'POST',
-  headers: {
-    'Content-Type': 'application/json'
-  },
-  body: JSON.stringify({
-    description: "Software Engineers in SF working at Series B companies"
-  })
-});
-
-const filters = await response.json();
-// Use filters in search endpoint
-```
-
-### Error Responses
-- **500 Internal Server Error**: OpenAI API error or server error
-
----
-
-## 4. Search Profiles
+## 3. Search Profiles
 
 Search for profiles using People Data Labs with filters.
 
@@ -318,7 +243,7 @@ console.log(`Found ${searchResults.count} profiles`);
 
 ---
 
-## 5. Start Scraping Job (Async)
+## 4. Start Scraping Job (Async)
 
 Start an asynchronous scraping job for LinkedIn posts. Returns immediately with a `job_id` for polling.
 
@@ -472,7 +397,7 @@ const { job_id } = await response.json();
 
 ---
 
-## 6. Check Scraping Job Status
+## 5. Check Scraping Job Status
 
 Poll this endpoint to check the status of a scraping job and get results when completed.
 

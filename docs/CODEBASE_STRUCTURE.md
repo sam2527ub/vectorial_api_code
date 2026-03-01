@@ -46,7 +46,6 @@ Audience-workflow/
 │   │           │                         #    - Create/delete audience rooms
 │   │           │                         #    - Get profiles, posts, descriptions
 │   │           │                         #    - Generate summaries (individual & group)
-│   │           │                         #    - Remove labels from posts
 │   │           │
 │   │           ├── classifier.py        # 🏷️  Post classification endpoints
 │   │           │                         #    - Run classifier on all posts in a room
@@ -286,7 +285,6 @@ app/api/
   - `GET /api/v1/audience-rooms/{id}/profiles/{profile_id}/posts` - Get profile posts
   - `POST /api/v1/audience-rooms/{id}/generate-summaries` - Generate profile summaries
   - `POST /api/v1/audience-rooms/{id}/generate-group-summary` - Generate group summary
-  - `POST /api/v1/audience-rooms/{id}/remove-labels` - Remove labels from posts
 
 ##### `app/api/v1/endpoints/classifier.py`
 - **Purpose**: Post classification endpoints

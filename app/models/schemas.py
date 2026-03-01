@@ -7,10 +7,6 @@ class EnrichRequest(BaseModel):
     job_title: str = Field(..., example="Machine Learning Engineer")
 
 
-class DescriptionRequest(BaseModel):
-    description: str = Field(..., example="Software Engineers in SF working at Series B companies")
-
-
 class SearchFilters(BaseModel):
     titles: List[str] = []
     skills: List[str] = []

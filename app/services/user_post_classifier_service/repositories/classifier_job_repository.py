@@ -1,5 +1,5 @@
 """Repository for ClassifierJob (audience DB). Uses get_enterprise_audience_connection."""
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, Optional
 
 from app.config import logger
 from app.database.connection import get_enterprise_audience_connection
@@ -127,32 +127,3 @@ def update_classifier_job(
                 SET {', '.join(set_clauses)}
                 WHERE id = %s
             """, values)
-
-
-def get_pending_classifier_jobs(enterprise_name: Optional[str] = None) -> List[Dict[str, Any]]:
-    """Get all pending/processing classifier jobs."""
-    ensure_classifier_job_table_exists(enterprise_name)
-    with get_enterprise_audience_connection(enterprise_name) as conn:
-        with conn.cursor() as cur:
-            cur.execute("""
-                SELECT id, status, "classifierId", "audienceRoomId", "totalProfiles",
-                       "processedProfiles", "totalPostsClassified", error, "taskToken",
-                       "createdAt", "updatedAt"
-                FROM "ClassifierJob"
-                WHERE status IN ('PENDING', 'PROCESSING')
-                ORDER BY "createdAt" DESC
-            """)
-            rows = cur.fetchall()
-            return [{
-                "job_id": row[0],
-                "status": row[1],
-                "classifier_id": row[2],
-                "audience_room_id": row[3],
-                "total_profiles": row[4],
-                "processed_profiles": row[5],
-                "total_posts_classified": row[6],
-                "error": row[7],
-                "task_token": row[8],
-                "created_at": row[9].isoformat() if row[9] else None,
-                "updated_at": row[10].isoformat() if row[10] else None,
-            } for row in rows]

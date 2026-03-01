@@ -10,9 +10,6 @@ from fastapi import APIRouter, BackgroundTasks, HTTPException, Path, Query, Requ
 from app.config import logger
 from app.utils.helpers import ensure_db_available
 from app.services.comment_context_summary_service.comment_context_summary_async_handler import CommentContextSummaryAsyncHandler
-from app.services.comment_context_summary_service.repositories.comment_context_summary_job_repository import (
-    get_pending_comment_context_summary_jobs,
-)
 from app.services.comment_context_summary_service.config import CommentContextSummaryConfig
 from app.services.user_profile_summarization_service.utils import get_base_url
 
@@ -189,13 +186,4 @@ async def get_async_comment_context_summary_status(
         audience_room_id=audience_room_id,
         enterprise_name=enterpriseName,
     )
-
-
-@router.get("/api/v1/comment-context-summary/async/pending")
-async def get_pending_comment_context_summary_jobs_endpoint(
-    enterpriseName: Optional[str] = Query(None, description="Enterprise name"),
-):
-    """Get all pending/processing comment context summary jobs (for debugging/admin)."""
-    jobs = get_pending_comment_context_summary_jobs(enterprise_name=enterpriseName)
-    return {"jobs": jobs, "count": len(jobs)}
 

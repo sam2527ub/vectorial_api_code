@@ -4,7 +4,6 @@ from app.services.user_post_classifier_service.repositories.classifier_job_repos
     create_classifier_job,
     get_classifier_job,
     update_classifier_job,
-    get_pending_classifier_jobs,
 )
 
 __all__ = [
@@ -12,5 +11,4 @@ __all__ = [
     "create_classifier_job",
     "get_classifier_job",
     "update_classifier_job",
-    "get_pending_classifier_jobs",
 ]

@@ -121,12 +121,3 @@ async def get_async_summaries_status(
         audience_room_id=audience_room_id,
         enterprise_name=enterpriseName,
     )
-
-
-@router.get("/api/v1/summaries/async/pending")
-async def get_pending_summaries_jobs_endpoint(
-    enterpriseName: Optional[str] = Query(None, description="Enterprise name"),
-):
-    """Get all pending/processing summaries jobs."""
-    jobs = summarization_handler.get_pending_jobs(enterprise_name=enterpriseName)
-    return {"jobs": jobs, "count": len(jobs)}

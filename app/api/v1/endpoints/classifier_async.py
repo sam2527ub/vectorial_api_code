@@ -93,12 +93,3 @@ async def get_async_classifier_status(
     except Exception as e:
         logger.error(f"Error in get_async_classifier_status: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))
-
-
-@router.get("/api/classifier/async/pending")
-async def get_pending_classifier_jobs_endpoint(
-    enterpriseName: Optional[str] = Query(None, description="Enterprise name"),
-):
-    """Get all pending/processing classifier jobs."""
-    jobs = user_post_classifier_handler.get_pending_jobs(enterprise_name=enterpriseName)
-    return {"jobs": jobs, "count": len(jobs)}

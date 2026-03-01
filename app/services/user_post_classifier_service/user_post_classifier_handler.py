@@ -1,6 +1,6 @@
 """Handler for User Post Classifier: trigger async jobs, delegate processing, status."""
 import uuid
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, Optional
 
 from fastapi import HTTPException
 
@@ -12,7 +12,6 @@ from .config import UserPostClassifierConfig
 from .repositories import (
     create_classifier_job,
     get_classifier_job,
-    get_pending_classifier_jobs,
 )
 from .job_processor import process_classifier_job as run_job
 
@@ -96,7 +95,3 @@ class UserPostClassifierHandler:
             "created_at": job["created_at"],
             "updated_at": job["updated_at"],
         }
-
-    def get_pending_jobs(self, enterprise_name: Optional[str] = None) -> List[Dict[str, Any]]:
-        """Return all pending/processing classifier jobs."""
-        return get_pending_classifier_jobs(enterprise_name)

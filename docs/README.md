@@ -94,9 +94,6 @@ For Vercel deployment, use one of these PostgreSQL services:
 ### Job Title Enrichment
 - `POST /api/v1/enrich` - Enrich a job title using PDL
 
-### Filter Extraction
-- `POST /api/v1/extract-filters` - Extract search filters from natural language using OpenAI
-
 ### Profile Search
 - `POST /api/v1/search` - Search profiles using PDL with filters
 
