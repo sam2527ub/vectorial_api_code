@@ -205,7 +205,7 @@ class UserProfileSummarizationHandler:
                 )
                 api_base_url = base_url or get_base_url()
                 try:
-                    async with httpx.AsyncClient(timeout=30.0) as client:
+                    async with httpx.AsyncClient(timeout=10.0) as client:
                         trigger_url = (
                             f"{api_base_url}/api/v1/audience-rooms/{audience_room_id}/generate-summaries/async/process"
                         )
@@ -219,12 +219,12 @@ class UserProfileSummarizationHandler:
                         response = await client.post(trigger_url, params=params)
                         response.raise_for_status()
                         logger.info(f"[SummariesJob {job_id}] Successfully triggered next batch (chunk {next_chunk})")
-                except Exception as trigger_error:
-                    logger.error(f"[SummariesJob {job_id}] Failed to trigger next batch: {trigger_error}")
-                    update_summaries_job(
-                        job_id, enterprise_name,
-                        status="FAILED",
-                        error=f"Failed to trigger next batch: {str(trigger_error)}",
+                except Exception as e:
+                    # Log only; do not mark job FAILED (same as comment context summary - trigger is best-effort)
+                    logger.error(
+                        f"[SummariesJob {job_id}] Failed to trigger next batch: %s",
+                        e,
+                        exc_info=True,
                     )
             else:
                 update_summaries_job(
