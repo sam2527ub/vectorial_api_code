@@ -27,6 +27,10 @@ class SlimComment(BaseModel):
         default=None,
         description="AI-generated 1–2 sentence summary of post + parent comment context",
     )
+    observationType: str = Field(
+        default="comment",
+        description="Observation type – always 'comment' for comment items",
+    )
 
 
 class CommentsScrapeResponse(BaseModel):

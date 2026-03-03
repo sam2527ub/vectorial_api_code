@@ -8,6 +8,28 @@ from app.utils.s3_utils import upload_json_to_s3, extract_s3_key_from_url, fetch
 logger = logging.getLogger(__name__)
 
 
+def classify_observation_type(item: Dict[str, Any]) -> str:
+    """Classify a LinkedIn post as 'individual', 'repost', or 'reaction'.
+
+    Rules (derived from Apify post-scraper JSON structure):
+    - isActivity=True with activityDescription containing 'reposted' → repost
+    - resharedPost present with non-empty outer text → reaction
+    - resharedPost present without outer text → repost
+    - Otherwise → individual
+    """
+    is_activity = item.get("isActivity", False)
+    activity_desc = item.get("activityDescription", "") or ""
+
+    if is_activity and "reposted" in activity_desc.lower():
+        return "repost"
+
+    if "resharedPost" in item:
+        outer_text = (item.get("text") or "").strip()
+        return "reaction" if outer_text else "repost"
+
+    return "individual"
+
+
 async def process_posts_and_update_profiles(
     dataset_client,
     job_id: str,
@@ -88,6 +110,7 @@ async def process_posts_and_update_profiles(
             continue
         target = profile_by_url.get(input_url)
         if target:
+            item["observationType"] = classify_observation_type(item)
             posts_acc[target["id"]].append(item)
 
     profiles_with_posts = len([p for p in posts_acc.values() if p])
