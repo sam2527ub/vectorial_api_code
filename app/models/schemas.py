@@ -1,6 +1,6 @@
 """Pydantic models for request/response schemas."""
 from typing import List, Optional
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 
 
 class EnrichRequest(BaseModel):
@@ -53,6 +53,9 @@ class ScrapeRequest(BaseModel):
 
 
 class AudienceProfilePayload(BaseModel):
+    """Profile payload; may include full Apify enrichment (e.g. profile_info). Extra fields are stored to profile.json."""
+    model_config = ConfigDict(extra="allow")
+
     name: str = Field(..., description="Full name of the profile")
     age: Optional[int] = Field(None, description="Age if available")
     current_company: Optional[str] = Field(None, description="Current company")

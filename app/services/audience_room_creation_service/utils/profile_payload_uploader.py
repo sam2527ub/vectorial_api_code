@@ -13,7 +13,8 @@ def upload_profile_payloads_and_build_records(
     source: Optional[str],
 ) -> List[Dict[str, Any]]:
     """
-    For each profile, upload profile.json to S3 and build the record dict for create_audience_room.
+    For each profile, upload full profile (including Apify enrichment) to profile.json in S3,
+    and build the record dict for create_audience_room.
     Returns list of dicts with id, profileName, profileUrl, profileDescriptionS3Url, postsS3Url.
     """
     profile_creates = []
@@ -22,20 +23,12 @@ def upload_profile_payloads_and_build_records(
         profile_key = get_s3_key_for_audience(
             room_id, f"profiles/{profile_id}/profile.json", enterprise_name, source
         )
+        # Full profile: Pydantic model_dump() includes all fields + extra (e.g. profile_info from Apify)
+        full_profile = profile.model_dump() if hasattr(profile, "model_dump") else dict(profile)
         profile_payload = {
+            **full_profile,
             "profile_id": profile_id,
             "audience_room_id": room_id,
-            "name": profile.name,
-            "age": profile.age,
-            "current_company": profile.current_company,
-            "current_location": profile.current_location,
-            "total_years_experience": profile.total_years_experience,
-            "industry": profile.industry,
-            "education": profile.education,
-            "linkedin_profile_url": profile.linkedin_profile_url,
-            "jobTitle": getattr(profile, "jobTitle", None),
-            "headline": getattr(profile, "headline", None),
-            "about": getattr(profile, "about", None),
             "summary": None,
         }
         profile_url = upload_json_to_s3(profile_key, profile_payload)
