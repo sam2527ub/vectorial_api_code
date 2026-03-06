@@ -52,7 +52,7 @@ def merge_apify_result_into_profile(
     linkedin_url: str,
     apify_url_map: Dict[str, Dict[str, Any]],
 ) -> Dict[str, Any]:
-    """Merge Apify result into original profile; set profile_info and apify_enriched."""
+    """Merge Apify result into original profile; set profile_info, apify_result (full data), and apify_enriched."""
     apify_data = _find_apify_data_for_url(linkedin_url, apify_url_map)
     extracted = extract_apify_profile_fields(apify_data) if apify_data else {}
     enriched = {
@@ -60,6 +60,9 @@ def merge_apify_result_into_profile(
         "profile_info": extracted,
         "apify_enriched": bool(extracted and extracted.get("fullName")),
     }
+    # Attach full Apify LinkedIn Profile Scraper result so profile.json stores everything (experiences, connections, followers, etc.)
+    if apify_data:
+        enriched["apify_result"] = apify_data
     return enriched
 
 
