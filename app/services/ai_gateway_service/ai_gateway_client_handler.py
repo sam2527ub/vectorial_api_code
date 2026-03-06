@@ -118,16 +118,42 @@ class AIGatewayClient:
         )
         if not self.gateway_handler:
             raise RuntimeError("Gateway handler not initialized.")
-
-        result = await self.gateway_handler.call(
-            profile_id=context_id,
-            messages=messages,
-            max_tokens=max_tokens,
-            model=primary_model,
-            fallback_models=fallback_models_final,
-            validate_summary=validate_summary,
-            return_text=return_text,
-        )
+        try:
+            result = await self.gateway_handler.call(
+                profile_id=context_id,
+                messages=messages,
+                max_tokens=max_tokens,
+                model=primary_model,
+                fallback_models=fallback_models_final,
+                validate_summary=validate_summary,
+                return_text=return_text,
+            )
+        except Exception as e:
+            logger.error(
+                "Gateway call failed for context %s (primary %s, fallbacks %s): %s. "
+                "Falling back to direct API.",
+                context_id,
+                primary_model,
+                fallback_models_final,
+                e,
+            )
+            fallback_model = direct_api_fallback_model or primary_model or hardcoded_default
+            provider = get_model_provider(fallback_model)
+            if provider == "groq":
+                return await DirectApiClient.call_groq(
+                    context_id, messages, max_tokens, fallback_model
+                )
+            if return_text:
+                return await DirectApiClient.call_claude(
+                    context_id, messages, max_tokens, fallback_model
+                )
+            return await DirectApiClient.call_openai(
+                context_id,
+                messages,
+                max_tokens,
+                fallback_model,
+                validate_summary=validate_summary,
+            )
         if return_text:
             return result if isinstance(result, str) else str(result)
         return result if isinstance(result, dict) else result
