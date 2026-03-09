@@ -47,12 +47,42 @@ def _find_apify_data_for_url(
     return None
 
 
+def _promote_extracted_to_top_level(
+    enriched: Dict[str, Any], extracted: Dict[str, Any]
+) -> None:
+    """Fill top-level profile fields from extracted (profile_info) when missing or null."""
+    if not extracted:
+        return
+    # Map profile_info keys -> top-level keys expected by API / profile.json
+    promotions = [
+        ("fullName", "name"),
+        ("jobTitle", "jobTitle"),
+        ("currentCompany", "current_company"),
+        ("companyIndustry", "industry"),
+        ("currentLocation", "current_location"),
+        ("totalYearsExperience", "total_years_experience"),
+        ("education", "education"),
+        ("headline", "headline"),
+        ("about", "about"),
+    ]
+    for src_key, top_key in promotions:
+        val = extracted.get(src_key)
+        if val is None:
+            continue
+        if top_key == "education" and isinstance(val, list):
+            # Keep as list for compatibility; consumers can stringify if needed
+            pass
+        current = enriched.get(top_key)
+        if current is None or current == "":
+            enriched[top_key] = val
+
+
 def merge_apify_result_into_profile(
     original_profile: Dict[str, Any],
     linkedin_url: str,
     apify_url_map: Dict[str, Dict[str, Any]],
 ) -> Dict[str, Any]:
-    """Merge Apify result into original profile; set profile_info, apify_result (full data), and apify_enriched."""
+    """Merge Apify result into original profile; set profile_info, apify_result (full data), apify_enriched, and top-level fields."""
     apify_data = _find_apify_data_for_url(linkedin_url, apify_url_map)
     extracted = extract_apify_profile_fields(apify_data) if apify_data else {}
     enriched = {
@@ -63,6 +93,8 @@ def merge_apify_result_into_profile(
     # Attach full Apify LinkedIn Profile Scraper result so profile.json stores everything (experiences, connections, followers, etc.)
     if apify_data:
         enriched["apify_result"] = apify_data
+    # Promote extracted fields to top level so jobTitle, current_company, headline, etc. are not null in profile.json
+    _promote_extracted_to_top_level(enriched, extracted)
     return enriched
 
 
