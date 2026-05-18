@@ -1,0 +1,540 @@
+{
+  "group_summary": "This group represents a diverse mix of technology professionals primarily from Microsoft's ecosystem, showcasing deep expertise in cloud infrastructure, AI/ML platforms, and developer tooling. They blend technical depth with community-building, engaging in mentorship, event organization, and amplifying colleagues' work. Their content is resource-rich, focusing on actionable insights and inclusivity, with a strong emphasis on responsible AI practices. A smaller cohort from startups adds a dynamic energy, emphasizing practical automation and accessible tools. Collectively, they are educators and connectors, driving innovation and democratizing technology access.",
+  "baseline_group_summary": "This group represents a fascinating cross-section of technology professionals who bridge enterprise-scale engineering at Microsoft with entrepreneurial ventures in education technology and automation. The overwhelming majority work within Microsoft's vast ecosystem, where they demonstrate deep technical expertise across cloud infrastructure (Azure networking, AKS, Kubernetes), AI and machine learning platforms (Copilot, Azure AI Foundry, model monitoring), developer tooling (GitHub, Visual Studio, Fluent UI), and specialized domains like cybersecurity, observability, database engines, and high-performance computing. A common thread is the blend of hands-on technical depth—sharing step-by-step tutorials, configuration guides, debugging tips, and open-source contributions—with strong community-building behaviors including active recruiting, mentorship, event organization, and amplification of colleagues' work. These professionals consistently balance product evangelism and thought leadership with authentic personal storytelling, celebrating team wins, diversity initiatives, career milestones, and even parallel passions like music or fitness. The smaller cohort from CodingRippler and College Match LLC brings a contrasting startup energy focused on practical automation, no-code orchestration, and accessible college planning tools, emphasizing affordability, rapid delivery, and grassroots growth strategies. Across all four organizations, posting styles favor actionable, resource-rich content—linking to repos, blogs, job postings, and learning materials—over abstract commentary, and there is a pronounced emphasis on inclusivity, responsible AI practices, and real-world impact metrics. Collectively, this group showcases how modern tech professionals operate as educators, connectors, and problem-solvers who leverage both cutting-edge platforms and human-centered leadership to drive innovation, build communities, and democratize access to technology and education.",
+  "qualitative_summary": {
+    "skills_and_expertise": [
+      {
+        "text": "Deep expertise in cloud-native architectures and AI/ML infrastructure, including Kubernetes, service mesh, and GPU-accelerated workloads.",
+        "rationalization": "Seeded from LinkedIn audience-room description.json (traits descriptions).",
+        "confidence_score": 0.85
+      },
+      {
+        "text": "Strong full-stack capabilities across backend services, frontend frameworks, API development, and system-level programming.",
+        "rationalization": "Seeded from LinkedIn audience-room description.json (traits descriptions).",
+        "confidence_score": 0.85
+      },
+      {
+        "text": "Comprehensive DevOps and security knowledge, including CI/CD pipelines, observability, and cloud security.",
+        "rationalization": "Seeded from LinkedIn audience-room description.json (traits descriptions).",
+        "confidence_score": 0.85
+      },
+      {
+        "text": "Proven data engineering and MLOps skills with a focus on model evaluation, data science workflows, and automation orchestration.",
+        "rationalization": "Seeded from LinkedIn audience-room description.json (traits descriptions).",
+        "confidence_score": 0.85
+      },
+      {
+        "text": "Expertise in developer experience tooling, enhancing software delivery and reducing friction.",
+        "rationalization": "Seeded from LinkedIn audience-room description.json (traits descriptions).",
+        "confidence_score": 0.85
+      },
+      {
+        "text": "Ability to integrate advanced technologies like LLMs and Voice AI into business operations, focusing on systematic delivery and addressing industry-specific challenges.",
+        "rationalization": "The prediction error logs highlighted a focus on integrating advanced technologies and addressing specific challenges, particularly in sectors like banking and financial services.",
+        "confidence_score": 0.9
+      },
+      {
+        "text": "Emphasis on practical applications of AI tools, particularly in enhancing customer interactions and operational efficiency.",
+        "rationalization": "The prediction error logs revealed a focus on practical applications and human-like interactions in AI, which were central to the actual posts.",
+        "confidence_score": 0.9
+      }
+    ],
+    "working_style": [
+      {
+        "text": "Preference for hands-on technical challenges through code and experimentation, validating solutions before scaling.",
+        "rationalization": "Seeded from LinkedIn audience-room description.json (traits descriptions).",
+        "confidence_score": 0.85
+      },
+      {
+        "text": "Commitment to teaching and upskilling through tutorials, talks, and open-source contributions.",
+        "rationalization": "Seeded from LinkedIn audience-room description.json (traits descriptions).",
+        "confidence_score": 0.85
+      },
+      {
+        "text": "Comfortable collaborating across disciplines to co-develop solutions with shared ownership.",
+        "rationalization": "Seeded from LinkedIn audience-room description.json (traits descriptions).",
+        "confidence_score": 0.85
+      },
+      {
+        "text": "Bias toward fast iteration and delivery, valuing speed and learning over perfection.",
+        "rationalization": "Seeded from LinkedIn audience-room description.json (traits descriptions).",
+        "confidence_score": 0.85
+      },
+      {
+        "text": "Pattern of creating and sharing resources to enable peer learning and preserve knowledge.",
+        "rationalization": "Seeded from LinkedIn audience-room description.json (traits descriptions).",
+        "confidence_score": 0.85
+      },
+      {
+        "text": "Emphasis on structured conversations and technical guidance, particularly in helping entrepreneurs clarify ideas before committing to a build.",
+        "rationalization": "The prediction error logs indicated a strong focus on structured conversations and providing technical guidance to entrepreneurs.",
+        "confidence_score": 0.9
+      },
+      {
+        "text": "When engaging with community or collaborative projects, they emphasize simplicity and client-centric solutions, often focusing on practical steps and real-world applications.",
+        "rationalization": "The prediction error logs highlighted a focus on simplicity and practical steps for business owners, which were central to the actual posts.",
+        "confidence_score": 0.9
+      }
+    ],
+    "motivations_and_values": [
+      {
+        "text": "Driven by measurable impact on users, prioritizing outcomes over vanity metrics.",
+        "rationalization": "Seeded from LinkedIn audience-room description.json (traits descriptions).",
+        "confidence_score": 0.85
+      },
+      {
+        "text": "Commitment to inclusive hiring and creating pathways for underrepresented groups.",
+        "rationalization": "Seeded from LinkedIn audience-room description.json (traits descriptions).",
+        "confidence_score": 0.85
+      },
+      {
+        "text": "Emphasis on responsible AI practices and transparent communication about AI systems.",
+        "rationalization": "Seeded from LinkedIn audience-room description.json (traits descriptions).",
+        "confidence_score": 0.85
+      },
+      {
+        "text": "Passion for mentorship and creating learning opportunities for career advancement.",
+        "rationalization": "Seeded from LinkedIn audience-room description.json (traits descriptions).",
+        "confidence_score": 0.85
+      },
+      {
+        "text": "Active participation in tech communities and volunteer efforts to extend impact.",
+        "rationalization": "Seeded from LinkedIn audience-room description.json (traits descriptions).",
+        "confidence_score": 0.85
+      },
+      {
+        "text": "Value simplicity in solutions and direct engagement with audiences, particularly in addressing their struggles with data management.",
+        "rationalization": "The prediction error logs highlighted a focus on simplicity and direct engagement, particularly in the context of data management challenges.",
+        "confidence_score": 0.9
+      },
+      {
+        "text": "When discussing career development or personal growth, they often share personal narratives and reflections, emphasizing the importance of mentorship and community support.",
+        "rationalization": "The prediction error logs revealed a focus on personal storytelling and mentorship, which were central to the actual posts.",
+        "confidence_score": 0.9
+      }
+    ],
+    "pain_points_and_needs": [
+      {
+        "text": "Challenges managing complexity at enterprise scale while maintaining performance and cost efficiency.",
+        "rationalization": "Seeded from LinkedIn audience-room description.json (traits descriptions).",
+        "confidence_score": 0.85
+      },
+      {
+        "text": "Need to attract and retain specialized talent in competitive markets.",
+        "rationalization": "Seeded from LinkedIn audience-room description.json (traits descriptions).",
+        "confidence_score": 0.85
+      },
+      {
+        "text": "Balancing cutting-edge AI adoption with production readiness and reliability.",
+        "rationalization": "Seeded from LinkedIn audience-room description.json (traits descriptions).",
+        "confidence_score": 0.85
+      },
+      {
+        "text": "Friction integrating diverse technology stacks while maintaining interoperability.",
+        "rationalization": "Seeded from LinkedIn audience-room description.json (traits descriptions).",
+        "confidence_score": 0.85
+      },
+      {
+        "text": "Recognition of burnout risks and focus on work-life balance and sustainable performance.",
+        "rationalization": "Seeded from LinkedIn audience-room description.json (traits descriptions).",
+        "confidence_score": 0.85
+      },
+      {
+        "text": "Need for seamless integration of existing tools and simplicity in orchestration to streamline business operations.",
+        "rationalization": "The prediction error logs indicated a focus on seamless integration and simplicity in orchestration as key needs for streamlining operations.",
+        "confidence_score": 0.9
+      },
+      {
+        "text": "When facing tool overload or complex systems, they express a need for simplicity and streamlined solutions to enhance operational efficiency.",
+        "rationalization": "The prediction error logs highlighted a critique of tool overload and a call for simplicity, which were central to the actual posts.",
+        "confidence_score": 0.9
+      }
+    ],
+    "org_leadership_and_psychographic_profile": [
+      {
+        "text": "Serve as internal champions for Microsoft platforms, driving adoption through engagement.",
+        "rationalization": "Seeded from LinkedIn audience-room description.json (traits descriptions).",
+        "confidence_score": 0.85
+      },
+      {
+        "text": "Translate technical complexity into business value, aligning platform investments with customer needs.",
+        "rationalization": "Seeded from LinkedIn audience-room description.json (traits descriptions).",
+        "confidence_score": 0.85
+      },
+      {
+        "text": "Blend technical credibility with actionable guidance, offering concrete architectures and best practices.",
+        "rationalization": "Seeded from LinkedIn audience-room description.json (traits descriptions).",
+        "confidence_score": 0.85
+      },
+      {
+        "text": "Leverage professional networks to facilitate hiring, partnerships, and knowledge exchange.",
+        "rationalization": "Seeded from LinkedIn audience-room description.json (traits descriptions).",
+        "confidence_score": 0.85
+      },
+      {
+        "text": "Motivated by a sense of purpose beyond code, viewing technology as a means to create societal impact.",
+        "rationalization": "Seeded from LinkedIn audience-room description.json (traits descriptions).",
+        "confidence_score": 0.85
+      },
+      {
+        "text": "Emphasize personal growth and handling uncertainty, reflecting on challenges and embracing lessons learned.",
+        "rationalization": "The prediction error logs highlighted a focus on personal growth and handling uncertainty as key elements in their professional narratives.",
+        "confidence_score": 0.9
+      },
+      {
+        "text": "When discussing leadership or organizational roles, they often highlight personal narratives and the importance of community recognition and support.",
+        "rationalization": "The prediction error logs revealed a focus on personal reflection and community engagement, which were central to the actual posts.",
+        "confidence_score": 0.9
+      }
+    ]
+  },
+  "baseline_qualitative_summary": {
+    "skills_and_expertise": [
+      {
+        "text": "Deep expertise in Azure, AWS, and cloud-native architectures including Kubernetes, service mesh, container networking, and AI/ML infrastructure at hyperscale, with hands-on experience deploying LLMs, model optimization, and GPU-accelerated workloads.",
+        "trait_section_title": "Skills & Expertise",
+        "rationalization": "Seeded from LinkedIn audience-room description.json (traits descriptions).",
+        "confidence_score": 0.85
+      },
+      {
+        "text": "Strong full-stack capabilities spanning backend services, frontend frameworks (React, Blazor), API development, database internals (PostgreSQL, SAP S/4HANA), and system-level programming in C++, Rust, and Python.",
+        "trait_section_title": "Skills & Expertise",
+        "rationalization": "Seeded from LinkedIn audience-room description.json (traits descriptions).",
+        "confidence_score": 0.85
+      },
+      {
+        "text": "Comprehensive DevOps and security knowledge including CI/CD pipelines, GitHub Copilot integration, observability (OpenTelemetry), compliance automation (STIG, DoD), and cloud security (Defender for Cloud, Azure Firewall, network security).",
+        "trait_section_title": "Skills & Expertise",
+        "rationalization": "Seeded from LinkedIn audience-room description.json (traits descriptions).",
+        "confidence_score": 0.85
+      },
+      {
+        "text": "Proven data engineering and MLOps skills encompassing model evaluation pipelines, data science workflows, automation orchestration (n8n, Zapier), and enterprise data platforms with focus on reproducibility and governance.",
+        "trait_section_title": "Skills & Expertise",
+        "rationalization": "Seeded from LinkedIn audience-room description.json (traits descriptions).",
+        "confidence_score": 0.85
+      },
+      {
+        "text": "Expertise in developer experience tooling including Visual Studio, .NET, design systems (Fluent UI), agentic AI workflows, code generation, and productivity platforms that accelerate software delivery and reduce friction.",
+        "trait_section_title": "Skills & Expertise",
+        "rationalization": "Seeded from LinkedIn audience-room description.json (traits descriptions).",
+        "confidence_score": 0.85
+      }
+    ],
+    "working_style": [
+      {
+        "text": "Preference for diving into technical challenges directly through code, configuration, and experimentation—building demos, troubleshooting kernel issues, running local models, and implementing proof-of-concepts to validate solutions before scaling.",
+        "trait_section_title": "Working Style",
+        "rationalization": "Seeded from LinkedIn audience-room description.json (traits descriptions).",
+        "confidence_score": 0.85
+      },
+      {
+        "text": "Strong commitment to teaching and upskilling others through tutorial series, step-by-step walkthroughs, conference talks, meetups, and open-source contributions that make complex topics accessible to practitioners at all levels.",
+        "trait_section_title": "Working Style",
+        "rationalization": "Seeded from LinkedIn audience-room description.json (traits descriptions).",
+        "confidence_score": 0.85
+      },
+      {
+        "text": "Comfortable working across disciplines—partnering with designers, data scientists, product managers, security teams, and customers to co-develop solutions, emphasizing alignment, transparency, and shared ownership of outcomes.",
+        "trait_section_title": "Working Style",
+        "rationalization": "Seeded from LinkedIn audience-room description.json (traits descriptions).",
+        "confidence_score": 0.85
+      },
+      {
+        "text": "Bias toward fast iteration and delivery, leveraging hackathons, MVPs, and agile sprints to ship working software quickly, gather feedback, and adapt—valuing speed and learning over perfection in early stages.",
+        "trait_section_title": "Working Style",
+        "rationalization": "Seeded from LinkedIn audience-room description.json (traits descriptions).",
+        "confidence_score": 0.85
+      },
+      {
+        "text": "Consistent pattern of creating and sharing resources including GitHub repos, blog posts, SlideShare decks, video tutorials, and technical documentation to preserve institutional knowledge and enable peer learning.",
+        "trait_section_title": "Working Style",
+        "rationalization": "Seeded from LinkedIn audience-room description.json (traits descriptions).",
+        "confidence_score": 0.85
+      }
+    ],
+    "motivations_and_values": [
+      {
+        "text": "Driven by measurable impact on users and customers—whether protecting identities from fraud, reducing college costs for families, enabling frontline workers, or solving industry-specific problems with AI—prioritizing outcomes over vanity metrics.",
+        "trait_section_title": "Motivations & Values",
+        "rationalization": "Seeded from LinkedIn audience-room description.json (traits descriptions).",
+        "confidence_score": 0.85
+      },
+      {
+        "text": "Deep commitment to inclusive hiring practices, accessibility testing and remediation, language localization, support for people with disabilities, and creating pathways for underrepresented groups including veterans, women in tech, and international talent.",
+        "trait_section_title": "Motivations & Values",
+        "rationalization": "Seeded from LinkedIn audience-room description.json (traits descriptions).",
+        "confidence_score": 0.85
+      },
+      {
+        "text": "Strong emphasis on responsible AI practices including red teaming, model provenance, reproducibility, safety evaluations, governance frameworks, and transparent communication about limitations and risks of AI systems.",
+        "trait_section_title": "Motivations & Values",
+        "rationalization": "Seeded from LinkedIn audience-room description.json (traits descriptions).",
+        "confidence_score": 0.85
+      },
+      {
+        "text": "Passion for growing the next generation through mentorship, campus outreach, internship programs, career coaching, interview preparation, and creating learning opportunities that help juniors and mid-level engineers advance.",
+        "trait_section_title": "Motivations & Values",
+        "rationalization": "Seeded from LinkedIn audience-room description.json (traits descriptions).",
+        "confidence_score": 0.85
+      },
+      {
+        "text": "Active participation in tech communities, user groups, open-source projects, civic tech initiatives (like VoteMate), regional conferences (BSides, KubeCon), and volunteer efforts that extend impact beyond corporate boundaries.",
+        "trait_section_title": "Motivations & Values",
+        "rationalization": "Seeded from LinkedIn audience-room description.json (traits descriptions).",
+        "confidence_score": 0.85
+      }
+    ],
+    "pain_points_and_needs": [
+      {
+        "text": "Ongoing challenges managing complexity at enterprise scale including multi-region deployments, fleet-wide monitoring, zero-downtime migrations, heterogeneous hardware, and maintaining performance/cost efficiency as AI workloads grow exponentially.",
+        "trait_section_title": "Pain Points & Needs",
+        "rationalization": "Seeded from LinkedIn audience-room description.json (traits descriptions).",
+        "confidence_score": 0.85
+      },
+      {
+        "text": "Persistent need to attract, hire, and retain specialized talent across cloud engineering, AI/ML, security, and platform roles—especially in competitive markets and for niche skills like kernel engineering, RDMA networking, and model optimization.",
+        "trait_section_title": "Pain Points & Needs",
+        "rationalization": "Seeded from LinkedIn audience-room description.json (traits descriptions).",
+        "confidence_score": 0.85
+      },
+      {
+        "text": "Tension between adopting cutting-edge AI capabilities (LLMs, agents, generative UX) and ensuring production readiness, security, compliance, and reliability—requiring careful governance, testing, and phased rollouts to manage risk.",
+        "trait_section_title": "Pain Points & Needs",
+        "rationalization": "Seeded from LinkedIn audience-room description.json (traits descriptions).",
+        "confidence_score": 0.85
+      },
+      {
+        "text": "Friction integrating diverse technology stacks, legacy systems (SAP, two-tier ERP), open-source tools, and proprietary platforms while maintaining interoperability, data consistency, and developer productivity across hybrid and multi-cloud environments.",
+        "trait_section_title": "Pain Points & Needs",
+        "rationalization": "Seeded from LinkedIn audience-room description.json (traits descriptions).",
+        "confidence_score": 0.85
+      },
+      {
+        "text": "Recognition of burnout risks from high-pressure delivery, always-on culture, and juggling multiple passions or roles—leading to explicit focus on time management, energy protection, work-life balance, and sustainable high performance.",
+        "trait_section_title": "Pain Points & Needs",
+        "rationalization": "Seeded from LinkedIn audience-room description.json (traits descriptions).",
+        "confidence_score": 0.85
+      }
+    ],
+    "org_leadership_and_psychographic_profile": [
+      {
+        "text": "Serve as internal champions for Microsoft platforms, Azure capabilities, and developer tools—amplifying product launches, sharing customer success stories, and driving adoption through demos, workshops, and direct engagement with engineering and business stakeholders.",
+        "trait_section_title": "Organizational Leadership & Psychographic Profile",
+        "rationalization": "Seeded from LinkedIn audience-room description.json (traits descriptions).",
+        "confidence_score": 0.85
+      },
+      {
+        "text": "Skilled at translating technical complexity into business value, whether explaining AI ROI to executives, aligning platform investments with customer pain points, or framing security and compliance in terms of risk mitigation and competitive advantage.",
+        "trait_section_title": "Organizational Leadership & Psychographic Profile",
+        "rationalization": "Seeded from LinkedIn audience-room description.json (traits descriptions).",
+        "confidence_score": 0.85
+      },
+      {
+        "text": "Blend technical credibility with actionable guidance—offering concrete architectures, migration playbooks, and operational best practices rather than abstract theory, and openly discussing tradeoffs, limitations, and when not to use certain technologies.",
+        "trait_section_title": "Organizational Leadership & Psychographic Profile",
+        "rationalization": "Seeded from LinkedIn audience-room description.json (traits descriptions).",
+        "confidence_score": 0.85
+      },
+      {
+        "text": "Leverage extensive professional networks to facilitate hiring, referrals, partnerships, and knowledge exchange—actively tagging colleagues, promoting peers' work, organizing events, and mobilizing communities to solve problems collaboratively.",
+        "trait_section_title": "Organizational Leadership & Psychographic Profile",
+        "rationalization": "Seeded from LinkedIn audience-room description.json (traits descriptions).",
+        "confidence_score": 0.85
+      },
+      {
+        "text": "Motivated by a sense of purpose beyond code—whether democratizing education, advancing healthcare AI, supporting veterans, promoting open science, or building civic tech—viewing technology as a means to create positive societal impact.",
+        "trait_section_title": "Organizational Leadership & Psychographic Profile",
+        "rationalization": "Seeded from LinkedIn audience-room description.json (traits descriptions).",
+        "confidence_score": 0.85
+      }
+    ]
+  },
+  "refinement_call_count": 2,
+  "shrink_call_count": 2,
+  "qual_refinement_call_count": 2,
+  "qual_shrink_call_count": 0,
+  "batch_seq": 12,
+  "last_completed_iteration": 1,
+  "processed_post_ids": [
+    "12707bb7-7e48-4c4e-b690-84fd28843105_3",
+    "1db61e77-786d-4d4c-94e0-4dcc221af20b_10",
+    "1db61e77-786d-4d4c-94e0-4dcc221af20b_12",
+    "1db61e77-786d-4d4c-94e0-4dcc221af20b_16",
+    "1db61e77-786d-4d4c-94e0-4dcc221af20b_17",
+    "1db61e77-786d-4d4c-94e0-4dcc221af20b_19",
+    "1db61e77-786d-4d4c-94e0-4dcc221af20b_2",
+    "1db61e77-786d-4d4c-94e0-4dcc221af20b_20",
+    "1db61e77-786d-4d4c-94e0-4dcc221af20b_21",
+    "1db61e77-786d-4d4c-94e0-4dcc221af20b_22",
+    "1db61e77-786d-4d4c-94e0-4dcc221af20b_23",
+    "1db61e77-786d-4d4c-94e0-4dcc221af20b_24",
+    "1db61e77-786d-4d4c-94e0-4dcc221af20b_25",
+    "1db61e77-786d-4d4c-94e0-4dcc221af20b_26",
+    "1db61e77-786d-4d4c-94e0-4dcc221af20b_27",
+    "1db61e77-786d-4d4c-94e0-4dcc221af20b_28",
+    "1db61e77-786d-4d4c-94e0-4dcc221af20b_29",
+    "1db61e77-786d-4d4c-94e0-4dcc221af20b_3",
+    "1db61e77-786d-4d4c-94e0-4dcc221af20b_30",
+    "1db61e77-786d-4d4c-94e0-4dcc221af20b_31",
+    "1db61e77-786d-4d4c-94e0-4dcc221af20b_32",
+    "1db61e77-786d-4d4c-94e0-4dcc221af20b_33",
+    "1db61e77-786d-4d4c-94e0-4dcc221af20b_34",
+    "1db61e77-786d-4d4c-94e0-4dcc221af20b_35",
+    "1db61e77-786d-4d4c-94e0-4dcc221af20b_39",
+    "1db61e77-786d-4d4c-94e0-4dcc221af20b_4",
+    "1db61e77-786d-4d4c-94e0-4dcc221af20b_40",
+    "1db61e77-786d-4d4c-94e0-4dcc221af20b_41",
+    "1db61e77-786d-4d4c-94e0-4dcc221af20b_42",
+    "1db61e77-786d-4d4c-94e0-4dcc221af20b_45",
+    "1db61e77-786d-4d4c-94e0-4dcc221af20b_46",
+    "1db61e77-786d-4d4c-94e0-4dcc221af20b_47",
+    "1db61e77-786d-4d4c-94e0-4dcc221af20b_48",
+    "1db61e77-786d-4d4c-94e0-4dcc221af20b_49",
+    "1db61e77-786d-4d4c-94e0-4dcc221af20b_5",
+    "1db61e77-786d-4d4c-94e0-4dcc221af20b_50",
+    "1db61e77-786d-4d4c-94e0-4dcc221af20b_6",
+    "1db61e77-786d-4d4c-94e0-4dcc221af20b_7",
+    "1db61e77-786d-4d4c-94e0-4dcc221af20b_8",
+    "1db61e77-786d-4d4c-94e0-4dcc221af20b_9",
+    "22288d07-4cdf-4ea0-8242-70c9e9426b58_4",
+    "2d60701b-70df-4c28-877a-eadcf31eca3f_1",
+    "2e4a00af-909d-4ee2-9aa6-52eee25d18e9_18",
+    "2e4a00af-909d-4ee2-9aa6-52eee25d18e9_5",
+    "2e4a00af-909d-4ee2-9aa6-52eee25d18e9_9",
+    "30e90503-bef8-4da2-8ffb-f47487b0e1de_1",
+    "313325f0-0334-45f7-93b3-e65adcc597e9_10",
+    "313325f0-0334-45f7-93b3-e65adcc597e9_13",
+    "313325f0-0334-45f7-93b3-e65adcc597e9_15",
+    "313325f0-0334-45f7-93b3-e65adcc597e9_17",
+    "313325f0-0334-45f7-93b3-e65adcc597e9_4",
+    "313325f0-0334-45f7-93b3-e65adcc597e9_8",
+    "351405ab-deb1-45b5-810c-d32798c95f40_12",
+    "351405ab-deb1-45b5-810c-d32798c95f40_14",
+    "351405ab-deb1-45b5-810c-d32798c95f40_19",
+    "351405ab-deb1-45b5-810c-d32798c95f40_2",
+    "351405ab-deb1-45b5-810c-d32798c95f40_26",
+    "351405ab-deb1-45b5-810c-d32798c95f40_3",
+    "351405ab-deb1-45b5-810c-d32798c95f40_34",
+    "351405ab-deb1-45b5-810c-d32798c95f40_38",
+    "351405ab-deb1-45b5-810c-d32798c95f40_40",
+    "351405ab-deb1-45b5-810c-d32798c95f40_41",
+    "351405ab-deb1-45b5-810c-d32798c95f40_44",
+    "351405ab-deb1-45b5-810c-d32798c95f40_46",
+    "351405ab-deb1-45b5-810c-d32798c95f40_5",
+    "351405ab-deb1-45b5-810c-d32798c95f40_6",
+    "351405ab-deb1-45b5-810c-d32798c95f40_7",
+    "351405ab-deb1-45b5-810c-d32798c95f40_9",
+    "3a0a7529-16a1-48d1-b987-c60e4260ad46_23",
+    "3a0a7529-16a1-48d1-b987-c60e4260ad46_30",
+    "3a0a7529-16a1-48d1-b987-c60e4260ad46_34",
+    "3a0a7529-16a1-48d1-b987-c60e4260ad46_39",
+    "3a0a7529-16a1-48d1-b987-c60e4260ad46_6",
+    "3a0a7529-16a1-48d1-b987-c60e4260ad46_9",
+    "54c19b05-7985-47be-b2f2-6a2f8360cf89_1",
+    "54c19b05-7985-47be-b2f2-6a2f8360cf89_13",
+    "54c19b05-7985-47be-b2f2-6a2f8360cf89_17",
+    "54c19b05-7985-47be-b2f2-6a2f8360cf89_3",
+    "54c19b05-7985-47be-b2f2-6a2f8360cf89_9",
+    "583f07ae-71cc-42ed-982b-67b6c6d6a3ff_12",
+    "583f07ae-71cc-42ed-982b-67b6c6d6a3ff_13",
+    "583f07ae-71cc-42ed-982b-67b6c6d6a3ff_14",
+    "583f07ae-71cc-42ed-982b-67b6c6d6a3ff_4",
+    "583f07ae-71cc-42ed-982b-67b6c6d6a3ff_8",
+    "5b792818-ac34-4256-97f8-cdce43bde7f0_1",
+    "5b792818-ac34-4256-97f8-cdce43bde7f0_13",
+    "5b792818-ac34-4256-97f8-cdce43bde7f0_16",
+    "5b792818-ac34-4256-97f8-cdce43bde7f0_6",
+    "7333df73-63cf-4f92-b724-caefc9171b63_12",
+    "7333df73-63cf-4f92-b724-caefc9171b63_18",
+    "7333df73-63cf-4f92-b724-caefc9171b63_19",
+    "7333df73-63cf-4f92-b724-caefc9171b63_21",
+    "7333df73-63cf-4f92-b724-caefc9171b63_28",
+    "7333df73-63cf-4f92-b724-caefc9171b63_3",
+    "7333df73-63cf-4f92-b724-caefc9171b63_4",
+    "7333df73-63cf-4f92-b724-caefc9171b63_5",
+    "7333df73-63cf-4f92-b724-caefc9171b63_6",
+    "7333df73-63cf-4f92-b724-caefc9171b63_7",
+    "7333df73-63cf-4f92-b724-caefc9171b63_9",
+    "77a8e5f8-0a16-456a-a634-c30cecdf356b_2",
+    "8774ee3b-19ab-45ca-8197-b68720c4b1b8_10",
+    "8774ee3b-19ab-45ca-8197-b68720c4b1b8_12",
+    "8774ee3b-19ab-45ca-8197-b68720c4b1b8_6",
+    "8774ee3b-19ab-45ca-8197-b68720c4b1b8_9",
+    "881ba53e-5c01-4ae4-bc09-59d059c315a5_2",
+    "881ba53e-5c01-4ae4-bc09-59d059c315a5_8",
+    "881ba53e-5c01-4ae4-bc09-59d059c315a5_9",
+    "937353b2-546c-41e3-ae57-4b7507de8a1d_18",
+    "937353b2-546c-41e3-ae57-4b7507de8a1d_28",
+    "937353b2-546c-41e3-ae57-4b7507de8a1d_42",
+    "937353b2-546c-41e3-ae57-4b7507de8a1d_43",
+    "9d0711b8-17ae-44cc-adbd-f2e39f25571b_12",
+    "9d0711b8-17ae-44cc-adbd-f2e39f25571b_17",
+    "9d0711b8-17ae-44cc-adbd-f2e39f25571b_45",
+    "a9f99660-2db6-4851-a76e-61fc5c205a53_3",
+    "ab1fb966-d14e-4639-b504-00f7b6f9084b_11",
+    "ab1fb966-d14e-4639-b504-00f7b6f9084b_13",
+    "ab1fb966-d14e-4639-b504-00f7b6f9084b_14",
+    "ab1fb966-d14e-4639-b504-00f7b6f9084b_15",
+    "ab1fb966-d14e-4639-b504-00f7b6f9084b_17",
+    "ab1fb966-d14e-4639-b504-00f7b6f9084b_18",
+    "ab1fb966-d14e-4639-b504-00f7b6f9084b_19",
+    "ab1fb966-d14e-4639-b504-00f7b6f9084b_20",
+    "ab1fb966-d14e-4639-b504-00f7b6f9084b_21",
+    "ab1fb966-d14e-4639-b504-00f7b6f9084b_22",
+    "ab1fb966-d14e-4639-b504-00f7b6f9084b_25",
+    "ab1fb966-d14e-4639-b504-00f7b6f9084b_26",
+    "ab1fb966-d14e-4639-b504-00f7b6f9084b_30",
+    "ab1fb966-d14e-4639-b504-00f7b6f9084b_32",
+    "ab1fb966-d14e-4639-b504-00f7b6f9084b_35",
+    "ab1fb966-d14e-4639-b504-00f7b6f9084b_4",
+    "ab1fb966-d14e-4639-b504-00f7b6f9084b_40",
+    "ab1fb966-d14e-4639-b504-00f7b6f9084b_42",
+    "ab1fb966-d14e-4639-b504-00f7b6f9084b_43",
+    "ab1fb966-d14e-4639-b504-00f7b6f9084b_48",
+    "ab1fb966-d14e-4639-b504-00f7b6f9084b_5",
+    "ab1fb966-d14e-4639-b504-00f7b6f9084b_50",
+    "ab1fb966-d14e-4639-b504-00f7b6f9084b_52",
+    "ab1fb966-d14e-4639-b504-00f7b6f9084b_7",
+    "ab1fb966-d14e-4639-b504-00f7b6f9084b_9",
+    "b897cdbe-ca1b-40fe-b087-ef4c1958425c_1",
+    "b897cdbe-ca1b-40fe-b087-ef4c1958425c_3",
+    "b897cdbe-ca1b-40fe-b087-ef4c1958425c_8",
+    "b897cdbe-ca1b-40fe-b087-ef4c1958425c_9",
+    "c802671d-8fd2-4a18-8fe8-689b72f7c268_13",
+    "c802671d-8fd2-4a18-8fe8-689b72f7c268_2",
+    "c802671d-8fd2-4a18-8fe8-689b72f7c268_25",
+    "c802671d-8fd2-4a18-8fe8-689b72f7c268_4",
+    "c802671d-8fd2-4a18-8fe8-689b72f7c268_5",
+    "dc0b5d74-87d9-4fe3-8883-aef9d0924114_12",
+    "dc0b5d74-87d9-4fe3-8883-aef9d0924114_7",
+    "dc0b5d74-87d9-4fe3-8883-aef9d0924114_8",
+    "e9e811b0-6759-473a-aed2-8a84e5566a8c_10",
+    "e9e811b0-6759-473a-aed2-8a84e5566a8c_14",
+    "e9e811b0-6759-473a-aed2-8a84e5566a8c_15",
+    "e9e811b0-6759-473a-aed2-8a84e5566a8c_21",
+    "e9e811b0-6759-473a-aed2-8a84e5566a8c_24",
+    "e9e811b0-6759-473a-aed2-8a84e5566a8c_30",
+    "e9e811b0-6759-473a-aed2-8a84e5566a8c_40",
+    "e9e811b0-6759-473a-aed2-8a84e5566a8c_41",
+    "e9e811b0-6759-473a-aed2-8a84e5566a8c_5",
+    "e9e811b0-6759-473a-aed2-8a84e5566a8c_51",
+    "e9e811b0-6759-473a-aed2-8a84e5566a8c_52",
+    "f20ab826-b48b-42cf-be34-de640b4befa1_1",
+    "f20ab826-b48b-42cf-be34-de640b4befa1_10",
+    "f20ab826-b48b-42cf-be34-de640b4befa1_12",
+    "f20ab826-b48b-42cf-be34-de640b4befa1_16",
+    "f20ab826-b48b-42cf-be34-de640b4befa1_18",
+    "f20ab826-b48b-42cf-be34-de640b4befa1_2",
+    "f20ab826-b48b-42cf-be34-de640b4befa1_20",
+    "f20ab826-b48b-42cf-be34-de640b4befa1_21",
+    "f20ab826-b48b-42cf-be34-de640b4befa1_23",
+    "f20ab826-b48b-42cf-be34-de640b4befa1_29",
+    "f20ab826-b48b-42cf-be34-de640b4befa1_3",
+    "f20ab826-b48b-42cf-be34-de640b4befa1_38",
+    "f20ab826-b48b-42cf-be34-de640b4befa1_4",
+    "f20ab826-b48b-42cf-be34-de640b4befa1_6",
+    "f20ab826-b48b-42cf-be34-de640b4befa1_8",
+    "fa8cec49-9e7b-44e2-b2ce-7b6a324697f1_5"
+  ]
+}

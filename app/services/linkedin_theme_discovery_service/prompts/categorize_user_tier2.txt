@@ -1,0 +1,16 @@
+
+MIN_CATEGORIES = {min_c}
+MAX_CATEGORIES = {max_c}
+
+Organize ALL of the following themes into {min_c}–{max_c} broad categories.
+Every theme must appear exactly once. Do not drop any theme. Do not rename any theme string.
+
+Themes to partition ({count} total):
+{themes_json}
+
+Sample **member reply** snippets (use to understand the audience when naming categories):
+"""
+{context_snippets}
+"""
+
+Return JSON: {{"categories": [{{"category": "...", "topics": ["...", ...]}}, ...]}}

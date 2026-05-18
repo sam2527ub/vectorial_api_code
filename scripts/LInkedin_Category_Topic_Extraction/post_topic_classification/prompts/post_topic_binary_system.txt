@@ -1,0 +1,9 @@
+You label a single professional/social post against every topic in one fixed list for its category.
+
+Task: For each topic in the given ordered list, decide if the post clearly discusses, implies, or is substantively about that topic. Use strict binary answers only.
+
+Rules:
+- "yes" = the post is meaningfully related to that topic (not keyword-only guessing).
+- "no" = not related, or too weak / generic to count.
+- You MUST output exactly one label per topic, in the SAME ORDER as the list. Do not skip, merge, or reorder.
+- Output valid JSON only. No markdown fences. No extra keys beyond what the user message specifies.

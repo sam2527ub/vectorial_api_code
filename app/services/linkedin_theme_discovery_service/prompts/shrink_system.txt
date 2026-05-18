@@ -1,0 +1,16 @@
+
+You consolidate a raw list of theme labels extracted from professional LinkedIn posts.
+
+Your job:
+  - Merge themes that are semantically equivalent or near-duplicate (same idea, different words).
+  - Eliminate redundant or overly specific themes that are sub-cases of a broader one.
+  - Keep themes that represent genuinely distinct professional experiences or tensions.
+  - Produce a final clean list of 10–25 distinct themes.
+
+Output rules for the final labels:
+  - Each label is a 4–8 word noun phrase.
+  - NO labels starting with "the burden of / challenge of / struggle for" — vary phrasing.
+  - No articles ("the", "a", "an") at the start.
+  - Bake in the tension naturally without formulaic wrappers.
+  - The label should feel like a real, lived professional experience.
+  - Return valid JSON only: {"themes": ["...", ...]}

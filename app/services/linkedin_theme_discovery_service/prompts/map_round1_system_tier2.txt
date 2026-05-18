@@ -1,0 +1,34 @@
+
+You extract recurring themes from **LinkedIn member interaction text** (comments, replies, 
+and short notes on reshares — the member's own words, not the original thread alone).
+
+WHAT A GOOD THEME LABEL IS:
+A short noun phrase (10-15 words) that carries the human tension, stakes, or
+feeling around a subject — not just the subject name itself.
+
+The label should feel like something a professional would immediately recognize
+as a real, lived experience in their world. It should be specific enough to be
+meaningful, but broad enough that multiple replies could belong to it.
+
+CRITICAL FORMATTING RULES:
+- Noun phrase only. 4-8 words. No articles at the start ("the", "a", "an").
+  Do NOT start every label with "the burden of" / "the challenge of" /
+  "the struggle for" — vary your phrasing completely.
+- Bake in the tension naturally — do not use formulaic wrappers.
+- No hashtags. No full sentences. No duplicates or near-duplicates.
+- Return valid JSON only: {"themes": ["...", ...]}
+
+Quality bar (no example phrases — derive every label from THIS batch of replies):
+  - Ground each label in language, roles, and tensions the replies actually use; avoid generic
+    "could apply anywhere" slogans or stock professional clichés.
+  - Within one response, vary grammatical shape so themes do not all read like the same template.
+  - Do not echo a single catchy rhythm across the list; if two themes would sound parallel,
+    rewrite one into a different structure.
+
+BAD examples — do NOT produce labels like these:
+  "technical debt"                          ← too dry, no tension
+  "the challenge of technical debt"         ← formulaic wrapper, starts with "the"
+  "the burden of unrecognized skills"       ← same problem
+  "the struggle for clarity in comms"       ← same problem
+  "people feel frustrated by process"       ← full sentence
+  "leadership"                              ← too broad, no texture

@@ -1,0 +1,30 @@
+You maintain a single **audience / tribe group summary** (plain prose) used as context when predicting how LinkedIn posts distribute attention across topic labels.
+
+The summary should read like a **rich audience-room portrait**: who they are, how they work, what they value, and how they show up on LinkedIn — **aligned with the underlying trait schema**, not a thin generic blurb.
+
+### INPUTS
+1. **CURRENT GROUP SUMMARY (editable):**
+{current_group_summary}
+
+2. **ORIGINAL BASELINE (read-only anchor — preserve its specificity and coherence):**
+{baseline_group_summary}
+
+3. **MEMORY — PREDICTION ERROR LOGS** (high-divergence posts: topic mismatch + bridge analyses).  
+   The block below has a **CURRENT WINDOW** (the batches driving this update) plus **RECENT PRIOR BATCHES** (may be truncated for length). Use them only as **evidence**, not as prose to paste in verbatim.
+{batch_analyses_text}
+
+4. **UNDERLYING GROUP TRAITS (description text only — narrative, no scores):**  
+   Use this to **ground** the summary in the same behavioral substance the prediction pipeline sees. Reflect themes and contrasts **at the tribe level** (generalized prose). Do **not** paste trait bullets or enumerate categories; synthesize.
+{underlying_traits_for_summary}
+
+### QUALITY BAR (critical)
+- **Trait-informed synthesis:** Where MEMORY highlights a gap, check whether **traits** already imply that behavior; integrate one coherent sentence into the summary rather than inventing a new fragment that contradicts traits.
+- The revised summary must be **at least as strong as the baseline** in **scope and nuance**: named domains/tools/platforms, cohort contrasts (e.g. enterprise vs startup), and posting norms. **Never** collapse the baseline into vague shorthand (“technology professionals”, “community-building”, “responsible AI”) unless MEMORY **explicitly** supersedes that detail.
+- **Surgical revision:** start from CURRENT and **repair** thin or generic stretches using MEMORY **and** trait substance. Prefer **woven insertions** (merged into existing sentences) over a detached list of fixes.
+- **No bolt-on endings:** do **not** introduce themes unless they appear **clearly and repeatedly** in MEMORY **or** are strongly supported by traits. If evidence is thin, **omit** rather than speculate.
+- **No redundancy:** if CURRENT already states a theme, **merge or sharpen** instead of restating.
+- **Evidence rule:** additions driven by prediction errors must be traceable to MEMORY; **re-grounding** vague summary language using **baseline + traits** (no new claims) is encouraged even when a specific log does not repeat every detail.
+- **Length:** target roughly **90%–135%** of the **baseline** word count. If CURRENT is **shorter** than the baseline, **expand** with justified, generalized detail from baseline anchor + traits (+ MEMORY where relevant) until you reach at least ~90% of baseline words. Do **not** optimize for brevity.
+
+### OUTPUT
+Return **only** valid JSON: {{"summary": "<updated full group summary text>"}}

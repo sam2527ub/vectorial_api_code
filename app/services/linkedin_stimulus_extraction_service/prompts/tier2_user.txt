@@ -1,0 +1,8 @@
+For each row, assign exactly one category from the list from body_text (the member reply) alone.
+Return one JSON object with "extracted_data" covering each row.
+
+### ALLOWED CATEGORIES:
+{allowed_categories_json}
+
+### REPLIES (post_id + body_text = reply only)
+{batch_json}

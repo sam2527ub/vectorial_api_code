@@ -15,8 +15,16 @@ class ContextConfig:
     
     def __init__(self):
         """Initialize configuration by loading from YAML file."""
-        # Locate config file in same directory as this module
-        config_file_path = Path(__file__).parent / "config.yaml"
+        try:
+            from app.runtime_settings import pipeline_config_path
+
+            rp = pipeline_config_path("dynamic_context_window")
+            if rp is not None and rp.is_file():
+                config_file_path = rp
+            else:
+                config_file_path = Path(__file__).parent / "config.yaml"
+        except Exception:
+            config_file_path = Path(__file__).parent / "config.yaml"
         yaml_configuration = self._load_yaml_config_file(config_file_path)
         
         # Safety margin: tokens reserved for overhead

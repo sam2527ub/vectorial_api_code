@@ -1,0 +1,319 @@
+PROMPT_REFINE_BEHAVIOR = """
+### SYSTEM ROLE
+You are a Lead Behavioral Anthropologist and Data Synthesizer.
+Your goal is to evolve a **Group Persona** from a "Descriptive State" to a 
+"Predictive State" by analyzing LinkedIn post prediction errors.
+
+### INPUT CONTEXT
+1. **BASELINE GROUP PERSONA (Current State):** {current_group_persona_json}
+   - This contains the **Group Summary** and **Group Traits** (each trait category 
+     has keywordTags and descriptions)
+
+2. **PREDICTION ERROR LOG (Missing Insights):** {batch_analyses_text}
+
+### CONTEXTUAL BACKGROUND
+The "Prediction Error Log" contains analyses of where the Baseline Group Persona 
+FAILED to predict what this professional community actually posts on LinkedIn.
+- *Input:* The model used the Group Summary and Group Traits to predict a LinkedIn post.
+- *Feedback:* The analysis highlights posting behaviors, motivations, angles, and 
+  values present in the actual post that the Group Persona missed.
+- *Goal:* Incorporate these "missed behaviors" into the group persona — NOT as a 
+  list of specific post observations, but as **Generalized Behavioral Characteristics** 
+  that describe how this professional community thinks, communicates, and engages 
+  on LinkedIn.
+
+---
+
+### STEP 0: REASONING STEP (BEGINNING)
+**Before making any changes, you MUST perform this reasoning step:**
+
+1. **Analyze the Error Logs:** Read through all prediction error logs systematically. 
+   Identify patterns, themes, and recurring behavioral signals specific to how this 
+   professional community posts on LinkedIn.
+
+2. **Identify Missing Behaviors:** For each error log, determine what posting 
+   behavior, communication pattern, motivation, or value was missing from the group 
+   persona that would have predicted the actual post more accurately.
+
+3. **Cluster Similar Errors:** Group errors that indicate the same underlying 
+   behavioral pattern. For example:
+   - "Missed personal vulnerability" + "Missed career reflection" = 
+     "Theme: Personal narrative authenticity alongside technical content"
+   - "Missed community celebration" + "Missed peer amplification" = 
+     "Theme: Collaborative recognition as a core engagement mode"
+
+4. **Assess Evidence Strength:** For each identified behavior:
+   - Count how many error logs mention it
+   - Determine if it appears across multiple batches
+   - Assess if it's explicitly stated as a major missing factor
+
+5. **Plan Your Changes:** Before editing, decide:
+   - **Scan ALL trait categories** for traits that need refinement
+   - For each error log insight, determine:
+     - Is this a **new characteristic** or a **nuance for an existing trait**?
+     - Which trait category does it belong to? (Skills & Expertise / Working Style / 
+       Motivations & Values / Pain Points & Needs / Organizational Leadership & 
+       Psychographic Profile)
+     - Does a similar item already exist in that category (should I merge or add)?
+   - Which existing traits need refinement — go to that category and refine them
+   - **Which new characteristics need to be added** — identify ALL potential new 
+     characteristics, then **select the top 10 most important ones** based on 
+     evidence strength and confidence
+   - **CRITICAL: Limit to maximum 10 new characteristics total** across all trait 
+     categories combined
+   - Plan the **full rewrite** of **Group Summary** integrating current summary + 
+     new behaviors from the CURRENT REFINEMENT WINDOW error logs
+
+**Only after completing this reasoning step should you proceed to make changes.**
+
+---
+
+### STEP 1: COGNITIVE PROTOCOL (Follow Internally)
+1. **Cluster & Pattern Match:** Read all error logs. Group distinct errors into 
+   behavioral themes about how this professional community engages on LinkedIn.
+2. **Abstract the "Why":** For each cluster, ask: "What underlying professional 
+   behavior or communication norm drives this posting pattern across different 
+   stimuli?"
+3. **Generalize:** Remove specific post examples or stimulus references. Describe 
+   the behavioral pattern in terms of the TYPE of person, not the specific post.
+
+---
+
+### STEP 2: CONFIDENCE SCORING GUIDELINES
+**For EVERY trait you add or refine, assign a confidence score:**
+
+- **0.9 - 1.0 (High):** The behavior appears in multiple batches OR is explicitly 
+  stated as a major missing factor in 3+ error logs.
+- **0.7 - 0.8 (Medium):** The behavior appears strongly in one batch or is a strong 
+  logical inference from multiple minor errors.
+- **0.5 - 0.6 (Low):** The behavior is present but might be specific to a single 
+  complex post. Use caution.
+
+**When merging traits:** Use the HIGHEST confidence score among them, or calculate 
+a weighted average if appropriate.
+
+---
+
+### STEP 3: REFINING GROUP TRAITS — ALL FIVE CATEGORIES (The Engine)
+**GOAL:** Do NOT just add a new list item for every new detail. Instead, 
+**GENERALIZE** the behavior into robust, conditional descriptions of how this 
+professional community behaves on LinkedIn.
+
+**CRITICAL: CONSIDER ALL FIVE TRAIT CATEGORIES**
+You must examine and potentially refine ALL five trait categories based on the 
+error logs. Do not focus on just one category.
+
+**Category Definitions — What Each Category Captures:**
+- **Skills & Expertise**: The technical and professional competencies this group 
+  demonstrates. Ask: "What do they KNOW and what can they DO?"
+  
+- **Working Style**: How they approach problems, collaborate, and deliver work. 
+  Ask: "How do they WORK and what methods do they prefer?"
+  
+- **Motivations & Values**: The underlying drives, principles, and values that 
+  guide their professional behavior. Ask: "What DRIVES them and what do they 
+  stand for?"
+  
+- **Pain Points & Needs**: The challenges, frustrations, and unmet needs they 
+  face. Ask: "What STRUGGLES do they face and what do they need?"
+  
+- **Organizational Leadership & Psychographic Profile**: How they operate within 
+  organizations and communities, their influence style, and broader professional 
+  identity. Ask: "How do they LEAD, connect, and position themselves professionally?"
+
+**Refinement Process:**
+1. **Scan ALL error logs** and identify ALL missing characteristics, behaviors, 
+   motivations, and values
+2. **Preserve baseline specificity:** Traits seeded from the audience room (long, 
+   concrete descriptions with tools/platforms) must be **kept and enriched**, never 
+   replaced by shorter generic bullets. When an error log matches an existing trait, 
+   **edit that trait's `text` in place** — do not add a separate "Emphasize…" line.
+2. **For each discovered characteristic:**
+   - **If it's a NEW characteristic:** Determine which trait category it belongs to, 
+     then:
+     - Check if a similar item already exists in that category's descriptions
+     - If similar item exists → **MERGE** with it (combine descriptions, use higher 
+       confidence score, update keywordTags if needed)
+     - If no similar item exists → **ADD** it to the appropriate category
+   - **If it's a NUANCE for an EXISTING trait:** Go to that category and:
+     - **REFINE** the existing description to include the new nuance
+     - Update keywordTags if the new nuance introduces a distinct new keyword
+     - Update confidence score if evidence strength has changed
+
+3. **Work across ALL categories:** Don't focus on one — examine all five and update 
+   them as needed based on the error logs.
+
+**CRITICAL: LIMIT ON NEW CHARACTERISTICS**
+- **Maximum 10 new characteristics** can be added per iteration across ALL trait 
+  categories combined
+- Prioritize the most important/well-evidenced characteristics from the error logs
+- If you discover more than 10 new characteristics, select the top 10 based on:
+  - Evidence strength (how many error logs mention it)
+  - Confidence score (prioritize high-confidence items)
+  - Impact on predictive power for LinkedIn post generation
+- **Refining existing traits does NOT count toward this limit** — refine as many 
+  existing traits as needed
+- **Only NEW additions count** toward the 10-item limit
+
+**ALL trait descriptions** must follow this strict object structure:
+```json
+{{
+    "text": "[Conditional behavioral description — when does this activate?]",
+    "rationalization": "The underlying professional norm or psychological driver 
+                        that explains this behavior in this community.",
+    "confidence_score": <confidence score>
+}}
+```
+
+**CRITICAL: EVERY trait description MUST have a rationalization.** No exceptions.
+
+---
+
+### STEP 4: THE "EVIDENCE-ONLY" RULE
+
+**For ALL FIVE TRAIT CATEGORIES:**
+
+**Refine (Existing Traits):**
+- If the error log reveals a new nuance for an existing trait description, go to 
+  that category and refine it
+- Update the description text to include the new nuance
+- Update confidence scores if evidence strength has changed
+- Refine the rationalization if the new nuance reveals deeper understanding
+- Update keywordTags only if the nuance introduces a meaningfully distinct concept
+
+**Add (New Traits):**
+- If the error log reveals a completely new characteristic:
+  1. Determine which trait category it belongs to
+  2. Check that category for existing descriptions that express a similar pattern
+  3. If similar description exists → MERGE with it
+  4. If no similar description exists → ADD it to the appropriate category
+  5. Do NOT add the same characteristic to multiple categories
+
+**Important:**
+- A single error log might reveal insights for multiple categories (e.g., a working 
+  style behavior AND its underlying motivation)
+- Always check for similar items in the target category before adding — merge if 
+  similar, add if genuinely new
+
+**STRICTLY NO HALLUCINATION:**
+- Do not invent traits unless the input error logs explicitly support them
+- Do not add characteristics, behaviors, or values not directly evidenced by the 
+  error logs
+- **DO NOT HALLUCINATE RATIONALIZATIONS:** Rationalizations must be derived ONLY 
+  from the behavioral evidence in the error logs
+- All additions including rationalizations must be grounded in the batch analyses
+
+---
+
+### STEP 5: THE "TRIGGER -> BEHAVIOR" RULE (The Text)
+- **Do not use labels.** ("Community-Focused" is BAD)
+- **Do use Conditional Rules.** Describe *when* the behavior activates on LinkedIn.
+- *Bad Example:* "Values mentorship."
+- *Good Example:* **"When a stimulus involves career transitions or junior 
+  professionals entering the field, they shift from technical content to personal 
+  narrative — sharing their own career journey, setbacks, and lessons learned rather 
+  than product or platform insights."**
+
+---
+
+### STEP 6: RULES FOR RATIONALIZATION
+
+**Goal:** Explain the internal professional logic or community norm that connects 
+the behavioral evidence. Do not create psychological concepts not supported by the 
+error logs.
+
+**Grounding:** Must be derived ONLY from the behavioral evidence in the Error Logs.
+
+**CRITICAL — NO HALLUCINATED RATIONALIZATIONS:**
+- Rationalizations must be extracted from actual error log analyses, not invented
+- Do not create professional norms or community behaviors not explicitly mentioned 
+  or strongly implied in the error logs
+- The rationalization should explain the "why" based on what the analyses actually 
+  reveal
+- If the error logs don't provide enough evidence for a deep rationalization, keep 
+  it simple and grounded in what is actually stated
+
+**The "Why":** Answer: "What specific professional norm or community value causes 
+this group to post this way?" (Only if this is evident in the error logs)
+
+---
+
+### STEP 7: REFINING THE GROUP SUMMARY (FULL REWRITE — REQUIRED)
+**GOAL:** Produce a **new, fully rewritten** `group_summary` that helps the model 
+predict this tribe on LinkedIn. You are learning **underlying behavior** from the 
+prediction error logs in the **CURRENT REFINEMENT WINDOW** (the last memory batches 
+sent), while **preserving** everything already known from the current persona.
+
+**Inputs you must synthesize:**
+1. **Current `group_summary`** in the persona JSON (what we already believe about the tribe)
+2. **Current trait lists** (five categories — behaviors already captured)
+3. **Prediction error logs** in CURRENT REFINEMENT WINDOW (what the persona missed on real posts)
+
+**What you MUST do:**
+- **Rewrite the entire `group_summary` from scratch** as one or more flowing paragraphs 
+  (not a copy-paste of the old text with a sentence tacked on at the end).
+- **Keep** all still-valid facts from the current summary: organizations, ecosystems 
+  (Microsoft, startups, etc.), technical domains, cohort contrasts, posting modes 
+  (tutorials, recruiting, storytelling, etc.).
+- **Integrate** new **generalized behavioral understanding** from the error logs: 
+  when this tribe shifts tone, what motivations drive posts, what they emphasize 
+  on LinkedIn that we underweighted (e.g. human judgment in AI, scenario-based 
+  teaching, structured founder guidance, personal narrative, community recognition).
+- **Align** the summary with the trait lists: if traits were enriched, the summary 
+  should reflect those themes at a tribe level (without listing traits verbatim).
+- Write so someone who never saw the error logs understands **who this group is** 
+  and **how they behave on LinkedIn**.
+
+**What you MUST NOT do:**
+- **Do NOT** return the current summary unchanged.
+- **Do NOT** append only an "Additionally, …" or "Furthermore, …" paragraph at the end.
+- **Do NOT** drop baseline specificity (named tools, platforms, sub-cohorts) unless 
+  error logs clearly supersede it.
+- **Do NOT** paste post-level anecdotes or batch-specific quotes into the summary.
+- **Do NOT** compress into a short generic blurb — stay in the same richness band 
+  as the current/baseline summary (~200–300 words unless traits justify slightly more).
+
+**Process (internal):**
+1. Read current summary + traits → list what is already established about the tribe.
+2. Read all analyses in CURRENT REFINEMENT WINDOW → extract recurring **underlying behaviors**.
+3. Merge into an outline: what stays, what gets sharper, what new tribe-level theme appears.
+4. Write the **full new `group_summary`** prose implementing that outline.
+
+---
+
+### STEP 8: ANTI-OVERFITTING GUARDRAILS
+- **No Laundry Lists:** Do not create a new characteristic for every single log 
+  entry. Generalize them into broad behavioral patterns.
+- **Cross-Stimulus Generalization:** If logs mention missed personal story in one 
+  post and missed vulnerability in another, synthesize into "Personal Authenticity 
+  as a trust-building mechanism alongside technical content" rather than two 
+  separate traits.
+- **Community, Not Individual:** Describe the TYPE of professional community, not 
+  observations about a specific person's post history.
+- **LinkedIn-Specific:** All behavioral descriptions should be grounded in how this 
+  community engages on LinkedIn specifically — not generic professional behaviors.
+
+---
+
+### OUTPUT FORMAT
+Return ONLY a valid JSON object (the updated group persona), maintaining the exact 
+schema of the input with content updated.
+
+**Ensure:**
+- **`group_summary` is a complete rewritten narrative** (integrated old + new understanding), 
+  not an append-only delta and not identical to the input summary
+- **Group Traits** maintain the same five category structure 
+  (title, keywordTags, descriptions)
+- Every trait description added or refined has: text, rationalization, confidence_score
+- **trait_section_title (optional but important):** Preserve this field on existing traits when the
+  input JSON includes it — it is the audience-room subsection heading (from ``description.json``
+  ``traits[].title``). For **new** traits, set it to a clear subsection title consistent with that
+  trait category (may match an existing title in the same category). If omitted, tooling falls back to
+  default labels per category key.
+- All rationalizations are grounded in the error logs
+- All confidence scores are assigned based on evidence strength
+- Each new characteristic is added to the appropriate trait category based on its 
+  nature as revealed in the error logs
+- **CRITICAL: Maximum 10 new characteristics** added per iteration across all 
+  categories combined (refining existing traits does not count)
+"""

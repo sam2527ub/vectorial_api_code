@@ -1,0 +1,42 @@
+# S3 object basenames under: {enterprise}/{<source>-audience}/{room_id}/{tiered_folder}/
+# Shared contract for: rebuild-tiered-posts → filter-tiered-posts → theme_category_discovery.
+# Edit this file to rename objects; do not hardcode these strings in service code.
+
+tiered_folder: tiered_posts
+
+# rebuild-tiered-posts writes
+tier_1_authored: tier_1_authored.json
+tier_2_reposts_and_comments: tier_2_reposts_and_comments.json
+tier_3_sparse: tier_3_sparse.json
+manifest: manifest.json
+
+# filter-tiered-posts reads unfiltered, writes JSON: top-level
+#   source_file, stats, users[profileId].{ posts[] | interactions[] } — theme discovery loads this as-is
+tier_1_authored_filtered: tier_1_authored_filtered.json
+tier_2_reposts_and_comments_filtered: tier_2_reposts_and_comments_filtered.json
+
+# theme_category_discovery writes
+discovered_category_topic_mapping_tier1_filtered: discovered_category_topic_mapping_tier1_filtered.json
+discovered_category_topic_mapping_tier2_filtered: discovered_category_topic_mapping_tier2_filtered.json
+
+# contextual stimulus + category (tier 1 LLM) / category-only (tier 2 LLM) — after theme discovery
+contextual_stimulus_extraction_tier1_filtered: contextual_stimulus_extraction_tier1_filtered.json
+contextual_stimulus_extraction_tier2_filtered: contextual_stimulus_extraction_tier2_filtered.json
+
+# per-topic ground truth (Yes/No + logprobs) — independent pipeline; read stimulus + theme mapping from above
+ground_truth_extraction_tier1_filtered: ground_truth_extraction_tier1_filtered.json
+ground_truth_extraction_tier2_filtered: ground_truth_extraction_tier2_filtered.json
+
+# initial prediction (i0: synthetic post + topic logprobs + deltas) — after ground-truth extraction; tier-specific JSON
+initial_prediction_tier1: Predictions/initial_prediction_tier1.json
+initial_prediction_tier2: Predictions/initial_prediction_tier2.json
+
+# LinkedIn SGO delta-method pipeline (after initial prediction) — tier-specific JSON under tiered_posts/
+linkedin_sgo_predictions_tier1: linkedin_sgo/delta_method_predictions_tier1.json
+linkedin_sgo_predictions_tier2: linkedin_sgo/delta_method_predictions_tier2.json
+linkedin_sgo_evolution_state_tier1: linkedin_sgo/evolution_state_tier1.json
+linkedin_sgo_evolution_state_tier2: linkedin_sgo/evolution_state_tier2.json
+linkedin_sgo_memory_batches_tier1: linkedin_sgo/memory_batch_analyses_tier1.json
+linkedin_sgo_memory_batches_tier2: linkedin_sgo/memory_batch_analyses_tier2.json
+linkedin_sgo_aggregate_deltas_tier1: linkedin_sgo/linkedin_all_reviews_deltas_tier1.json
+linkedin_sgo_aggregate_deltas_tier2: linkedin_sgo/linkedin_all_reviews_deltas_tier2.json

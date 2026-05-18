@@ -13,6 +13,7 @@ from .endpoints import (
     summaries_async,
     comments_scrape,
     comment_context_summary_async,
+    linkedin_room_pipeline_async,
 )
 from extra_endpoints import router as extra_endpoints_router
 
@@ -28,5 +29,8 @@ api_router.include_router(parallel_search.router)
 api_router.include_router(apify_search.router)
 api_router.include_router(apify_enrich.router)
 api_router.include_router(summaries_async.router)  # Async profile summaries for large rooms
+api_router.include_router(
+    linkedin_room_pipeline_async.router
+)  # LinkedIn theme, stimulus, ground-truth async
 api_router.include_router(comments_scrape.router)  # LinkedIn comments scrape (poll Apify, update commentsS3Url only)
 api_router.include_router(comment_context_summary_async.router)  # Async comment context summaries on LinkedIn comments.json

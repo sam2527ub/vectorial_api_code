@@ -1,0 +1,45 @@
+# Application runtime defaults (non-secret). Secrets stay in .env (API keys, DATABASE_URL, etc.).
+# Override path: RUNTIME_CONFIG_PATH=/path/to/custom.yaml
+# Env overrides (optional): SERVER_HOST, SERVER_PORT, UVICORN_RELOAD, LOG_LEVEL
+
+server:
+  host: "0.0.0.0"
+  port: 8000
+  reload: false
+
+logging:
+  level: "INFO"
+
+database_pool:
+  min_connections: 1
+  max_connections: 10
+
+database_retry:
+  max_attempts: 4
+  base_delay_s: 0.12
+
+linkedin_sgo_async:
+  process_trigger_timeout_s: 120
+
+# Repo-relative paths for pipeline YAML (resolved from repository root). Env vars still win per service when set.
+pipeline_config_files:
+  linkedin_sgo_async: "app/services/linkedin_sgo_pipeline_service_async/linkedin_sgo_pipeline_async_config.yaml"
+  linkedin_initial_prediction: "app/services/linkedin_initial_prediction_service/initial_prediction_config.yaml"
+  linkedin_ground_truth_extraction: "app/services/linkedin_ground_truth_extraction_service/ground_truth_extraction_config.yaml"
+  linkedin_stimulus_extraction: "app/services/linkedin_stimulus_extraction_service/stimulus_extraction_config.yaml"
+  dynamic_context_window: "app/services/dynamic_context_window_management_service/config.yaml"
+
+# Optional explicit repo root (empty = infer from app/runtime_settings.py location).
+paths:
+  repo_root: ""
+
+aws:
+  region_default: "us-west-2"
+
+api_clients:
+  groq_default_model: "llama-3.3-70b-versatile"
+
+scrapers:
+  linkedin_post_actor_id: "curious_coder/linkedin-post-search-scraper"
+  linkedin_profile_actor_id: "2SyF0bVxmgGr8IVCZ"
+  linkedin_comments_actor_id: "harvestapi/linkedin-profile-comments"

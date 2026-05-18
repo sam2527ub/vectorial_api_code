@@ -21,6 +21,7 @@ class GatewayHandlerInterface(ABC):
         top_logprobs: Optional[int] = None,
         return_full_response: bool = False,
         response_format: Optional[Dict[str, str]] = None,
+        temperature: Optional[float] = None,
     ) -> Union[Dict[str, Any], str, Any]:
         """Make a call through the gateway. Returns dict (JSON), str (text), or full response."""
         pass

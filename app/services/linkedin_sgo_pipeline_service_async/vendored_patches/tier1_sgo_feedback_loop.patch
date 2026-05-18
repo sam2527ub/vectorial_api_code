@@ -1,0 +1,57 @@
+--- linkedin/tier1_sgo_feedback_loop.py
++++ linkedin/tier1_sgo_feedback_loop.py
+@@ -6,7 +6,7 @@
+ group-summary refine/shrink, batch Part B root-cause memory, qualitative-summary seeding/sync,
+ ``delta_method_predictions.json`` artifact writes, and ``TribeSchemaEvolver`` wiring.
+ 
+-**Runner:** production uses ``app.services.linkedin_sgo_pipeline_service_async``; this file is the dev/CLI mirror under ``scripts/scripts_sgo``.
++**Runner:** production uses ``app.services.linkedin_sgo_pipeline_service_async`` (this vendored tree); local CLI mirror is ``scripts/scripts_sgo/linkedin/tier1_delta_method_predictions.py``.
+ 
+ **Full-file backup** (pre-truncation, for diff / audit): ``tier1_sgo_feedback_loop_FULL_BACKUP_before_helper_refactor.py``.
+ """
+@@ -36,11 +36,14 @@
+     load_dotenv = None  # type: ignore
+ 
+ SCRIPTS_SGO = Path(__file__).resolve().parent.parent
+-REPO_ROOT = SCRIPTS_SGO.parent.parent
+-PROMPTS_DIR = SCRIPTS_SGO / "prompts"
+ if str(SCRIPTS_SGO) not in sys.path:
+     sys.path.insert(0, str(SCRIPTS_SGO))
+ 
++from _paths import repo_root as _linkedin_sgo_repo_root
++
++REPO_ROOT = _linkedin_sgo_repo_root()
++PROMPTS_DIR = SCRIPTS_SGO / "prompts"
++
+ if load_dotenv:
+     load_dotenv(REPO_ROOT / ".env", override=True)
+ 
+@@ -1073,6 +1076,28 @@
+     return state_new, hist_new
+ 
+ 
++def ensure_tier2_evolution_baseline_from_tier1_workdir(
++    tier2_work_dir: Path,
++    tier1_work_dir: Path,
++) -> None:
++    """
++    When starting tier 2, copy tier 1's latest ``evolution/evolution_state.json`` into the tier-2
++    work directory if tier 2 has no state file yet.
++    """
++    dest, _ = resolve_workdir_evolution_paths(tier2_work_dir)
++    if dest.is_file():
++        return
++    src, _ = resolve_workdir_evolution_paths(Path(tier1_work_dir))
++    if not src.is_file():
++        raise FileNotFoundError(
++            "Tier-2 seeding requires tier-1 evolution state at "
++            f"{src}; run tier 1 first or pass a valid tier1_evolution_work_dir."
++        )
++    dest.parent.mkdir(parents=True, exist_ok=True)
++    shutil.copy2(src, dest)
++    logger.info("[TIER2] Seeded evolution state from tier-1 work dir: %s -> %s", src, dest)
++
++
+ def append_evolution_state_snapshot(
+     history_dir: Path,
+     state: Dict[str, Any],

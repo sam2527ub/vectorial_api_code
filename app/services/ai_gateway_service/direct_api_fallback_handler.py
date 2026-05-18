@@ -31,18 +31,21 @@ class DirectApiClient:
         max_tokens: int,
         model: Optional[str],
         validate_summary: bool = False,
+        response_format: Optional[Dict[str, str]] = None,
+        temperature: float = 0.3,
     ) -> Dict[str, Any]:
         """Call OpenAI API directly. Returns parsed JSON (robust parse_json_response)."""
         api_key = os.getenv("OPENAI_API_KEY")
         if not api_key:
             raise HTTPException(status_code=503, detail="OPENAI_API_KEY not configured")
         client = AsyncOpenAI(api_key=api_key)
+        rfmt = response_format if response_format is not None else {"type": "json_object"}
         response = await client.chat.completions.create(
             model=model or "gpt-5-mini",
             messages=messages,
             max_completion_tokens=max_tokens,
-            temperature=0.3,
-            response_format={"type": "json_object"},
+            temperature=temperature,
+            response_format=rfmt,
         )
         content = (response.choices[0].message.content or "").strip()
         if not content:

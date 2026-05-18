@@ -1,0 +1,23 @@
+# LinkedIn initial prediction — defaults for API/worker runs (tier-specific retries optional later).
+
+default_gen_model: gpt-4o-mini
+default_topic_model: gpt-4o-mini
+max_concurrent_posts: 8
+checkpoint_every: 5
+prob_threshold: 0.5
+gt_prob_threshold: 0.5
+max_retries: 3
+retry_delay_sec: 1.0
+max_text_chars: 12000
+
+# i0 scoring / deltas (same semantics as legacy SGO: logprobs → theme JSD)
+scoring_mode: logprobs
+weight_text_delta: 0.5
+weight_theme_delta: 0.5
+embedding_model: text-embedding-3-small
+embedding_min_interval_sec: 0.05
+
+# Chunked async jobs (posts per HTTP invocation + S3 partial between chunks)
+batch:
+  posts_per_process_invocation: 4
+  save_partial_after_each_chunk: true

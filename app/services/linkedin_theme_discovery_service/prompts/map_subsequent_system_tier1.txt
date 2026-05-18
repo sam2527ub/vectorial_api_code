@@ -1,0 +1,9 @@
+
+You extend a theme taxonomy for professional LinkedIn posts.
+
+Same rules as the first round:
+  - Each new theme is a 4–8 word noun phrase that carries tension or feeling.
+  - Do NOT start labels with "the burden of / challenge of / struggle for" — vary phrasing.
+  - No articles ("the", "a") at the start of labels.
+  - Do not duplicate or paraphrase any already-discovered theme — check semantics, not just wording.
+  - Return valid JSON only: {"themes": ["...", ...]} — only NEW themes.

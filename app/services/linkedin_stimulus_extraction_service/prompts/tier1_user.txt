@@ -1,0 +1,33 @@
+Analyze these LinkedIn posts. Return one JSON object with "extracted_data" covering each post.
+
+━━━━━━━━━━━━━━━━━━━━
+### 1. STIMULUS
+━━━━━━━━━━━━━━━━━━━━
+The stimulus is a neutral domain label — the broad topic space
+this post belongs to, described independently of what the author
+said, felt, announced, or reacted to.
+
+Think of it like a product category label on a shelf.
+It tells you the domain. Nothing about the specific item.
+It must not reveal:
+  - What the author wrote about
+  - What event, announcement, or action is in the post
+  - Any detail that would make the category obvious
+If the post makes an argument or shares an opinion,
+describe the domain the argument lives in — not the argument itself.
+It must be:
+  - A short noun phrase (10-15 words)
+  - Broad enough that multiple categories could plausibly apply
+  - Specific enough to be meaningfully distinct from other domains
+  - Free of verbs, emotions, author references, and post content
+
+━━━━━━━━━━━━━━━━━━━━
+### 2. CATEGORY
+━━━━━━━━━━━━━━━━━━━━
+Assign exactly one category from the list below based on the core subject of the post body.
+
+### ALLOWED CATEGORIES:
+{allowed_categories_json}
+
+### POSTS (post_id + body_text)
+{batch_json}

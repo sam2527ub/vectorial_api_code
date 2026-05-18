@@ -1,0 +1,1996 @@
+{
+  "dropped_posts": [
+    {
+      "user_id": "00a93ac9-ae3c-40a4-95fa-1f565d6f7411",
+      "post_id": "00a93ac9-ae3c-40a4-95fa-1f565d6f7411_1",
+      "reason": "Too few real words: 30 (min 40)",
+      "text_preview": "Fantastic announcement at #MSIgnite today \nMicrosoft's #MAIA100 AI Accelerator will power some of the largest AI workloads running on #MicrosoftAzure\n"
+    },
+    {
+      "user_id": "00a93ac9-ae3c-40a4-95fa-1f565d6f7411",
+      "post_id": "00a93ac9-ae3c-40a4-95fa-1f565d6f7411_2",
+      "reason": "Too short: 112 chars (min 200)",
+      "text_preview": "Interesting article about how AI is changing the computer industry! #MIT #AI #DeepLearning #TPUs #NeuralNetworks"
+    },
+    {
+      "user_id": "00a93ac9-ae3c-40a4-95fa-1f565d6f7411",
+      "post_id": "00a93ac9-ae3c-40a4-95fa-1f565d6f7411_3",
+      "reason": "Too few real words: 30 (min 40)",
+      "text_preview": "A pivotal news about creation of 'The PyTorch Foundation' was announced this week!\nThis will immensely help the ever increasing community of open sour"
+    },
+    {
+      "user_id": "00a93ac9-ae3c-40a4-95fa-1f565d6f7411",
+      "post_id": "00a93ac9-ae3c-40a4-95fa-1f565d6f7411_4",
+      "reason": "Too short: 106 chars (min 200)",
+      "text_preview": "Great to see Qualcomm getting the recognition of Best Places to Work in 2022! #Glassdoor #TeamQualcomm #5G"
+    },
+    {
+      "user_id": "00a93ac9-ae3c-40a4-95fa-1f565d6f7411",
+      "post_id": "00a93ac9-ae3c-40a4-95fa-1f565d6f7411_5",
+      "reason": "Too short: 104 chars (min 200)",
+      "text_preview": "Number1 public university for 5 years in row!\nProud to be a Bruin #UCLA #almamater #GoBruins #university"
+    },
+    {
+      "user_id": "00a93ac9-ae3c-40a4-95fa-1f565d6f7411",
+      "post_id": "00a93ac9-ae3c-40a4-95fa-1f565d6f7411_6",
+      "reason": "Too short: 75 chars (min 200)",
+      "text_preview": "For those who were wondering if the '5G E' on their ATT phone is real 5G..."
+    },
+    {
+      "user_id": "12707bb7-7e48-4c4e-b690-84fd28843105",
+      "post_id": "12707bb7-7e48-4c4e-b690-84fd28843105_1",
+      "reason": "Too few real words: 37 (min 40)",
+      "text_preview": "This writeup describes a side project trying out VILA, Llama 3, and Whisper to generate offline summaries of viral videos from social media. These are"
+    },
+    {
+      "user_id": "12707bb7-7e48-4c4e-b690-84fd28843105",
+      "post_id": "12707bb7-7e48-4c4e-b690-84fd28843105_2",
+      "reason": "Too few real words: 33 (min 40)",
+      "text_preview": "After learning about Wordle, I made a version for my mother tongue Punjabi. This required some interesting changes to gameplay, so I wrote about them."
+    },
+    {
+      "user_id": "1db61e77-786d-4d4c-94e0-4dcc221af20b",
+      "post_id": "1db61e77-786d-4d4c-94e0-4dcc221af20b_1",
+      "reason": "Too few real words: 38 (min 40)",
+      "text_preview": "Just like Holi brings together many colors, building great products and businesses requires diverse ideas and collaboration.\n\nGrateful for the clients"
+    },
+    {
+      "user_id": "1db61e77-786d-4d4c-94e0-4dcc221af20b",
+      "post_id": "1db61e77-786d-4d4c-94e0-4dcc221af20b_11",
+      "reason": "Too few real words: 37 (min 40)",
+      "text_preview": "Every meaningful decision carries risk.\n\nAs a founder, you don’t just choose what to build.\nYou choose what to bet time, money, and trust on.\n\nThat we"
+    },
+    {
+      "user_id": "1db61e77-786d-4d4c-94e0-4dcc221af20b",
+      "post_id": "1db61e77-786d-4d4c-94e0-4dcc221af20b_13",
+      "reason": "Too short: 178 chars (min 200)",
+      "text_preview": "AI unlocked a wave of new tools.\n\nMany promise “you can do this yourself.”\nSo teams try more tools,\nbut finish fewer outcomes.\n\nCapability increased.\n"
+    },
+    {
+      "user_id": "1db61e77-786d-4d4c-94e0-4dcc221af20b",
+      "post_id": "1db61e77-786d-4d4c-94e0-4dcc221af20b_14",
+      "reason": "Too few real words: 31 (min 40)",
+      "text_preview": "Product planning sets the intent.\n\nFounder feedback is what moves the product forward.\n\nShipping something small creates signals.\nThose signals shape "
+    },
+    {
+      "user_id": "1db61e77-786d-4d4c-94e0-4dcc221af20b",
+      "post_id": "1db61e77-786d-4d4c-94e0-4dcc221af20b_15",
+      "reason": "Too short: 189 chars (min 200)",
+      "text_preview": "Technology unlocks new possibilities.\n\nSuddenly, the same opportunity becomes visible to many people.\n\nSome stay ideas.\nSome get built.\n\nThe differenc"
+    },
+    {
+      "user_id": "1db61e77-786d-4d4c-94e0-4dcc221af20b",
+      "post_id": "1db61e77-786d-4d4c-94e0-4dcc221af20b_18",
+      "reason": "Too short: 56 chars (min 200)",
+      "text_preview": "Merry Christmas and warm wishes to everyone celebrating."
+    },
+    {
+      "user_id": "1db61e77-786d-4d4c-94e0-4dcc221af20b",
+      "post_id": "1db61e77-786d-4d4c-94e0-4dcc221af20b_36",
+      "reason": "Too short: 113 chars (min 200)",
+      "text_preview": "Progress beats perfection when cash is burning. \nOur team nailed it with this one.\n#StartupLife #FounderStruggles"
+    },
+    {
+      "user_id": "1db61e77-786d-4d4c-94e0-4dcc221af20b",
+      "post_id": "1db61e77-786d-4d4c-94e0-4dcc221af20b_37",
+      "reason": "Too short: 92 chars (min 200)",
+      "text_preview": "What if you could cut React development time by up to 75% and redirect R&D budget to growth?"
+    },
+    {
+      "user_id": "1db61e77-786d-4d4c-94e0-4dcc221af20b",
+      "post_id": "1db61e77-786d-4d4c-94e0-4dcc221af20b_38",
+      "reason": "Too short: 116 chars (min 200)",
+      "text_preview": "My team doesn't just talk about performance—they obsess over it.\nEvery sprint. Every line of code. Every deployment."
+    },
+    {
+      "user_id": "1db61e77-786d-4d4c-94e0-4dcc221af20b",
+      "post_id": "1db61e77-786d-4d4c-94e0-4dcc221af20b_43",
+      "reason": "Too short: 101 chars (min 200)",
+      "text_preview": "Loved putting this together. Coding is where it all begins. What’s the craziest thing you ever built?"
+    },
+    {
+      "user_id": "22288d07-4cdf-4ea0-8242-70c9e9426b58",
+      "post_id": "22288d07-4cdf-4ea0-8242-70c9e9426b58_1",
+      "reason": "Too short: 105 chars (min 200)",
+      "text_preview": "I’m happy to share that I’m starting a new position as Senior Software Development Engineer at Microsoft!"
+    },
+    {
+      "user_id": "22288d07-4cdf-4ea0-8242-70c9e9426b58",
+      "post_id": "22288d07-4cdf-4ea0-8242-70c9e9426b58_2",
+      "reason": "Too short: 38 chars (min 200)",
+      "text_preview": "Message me if someone needs a referral"
+    },
+    {
+      "user_id": "22288d07-4cdf-4ea0-8242-70c9e9426b58",
+      "post_id": "22288d07-4cdf-4ea0-8242-70c9e9426b58_3",
+      "reason": "Too few real words: 28 (min 40)",
+      "text_preview": "Are you going to the #HRTechConf in Las Vegas? We are and so is our customer Foot Locker! Don't forget to stop by our booth 2032 to meet us! \n #TeamIn"
+    },
+    {
+      "user_id": "2c0dd0f9-7978-435b-904e-2f53704ad828",
+      "post_id": "2c0dd0f9-7978-435b-904e-2f53704ad828_1",
+      "reason": "Too short: 126 chars (min 200)",
+      "text_preview": "We're hiring! An incredibly talented team looking for a Senior Sys Dev Engineer to join them! Apply now if you are interested!"
+    },
+    {
+      "user_id": "2c0dd0f9-7978-435b-904e-2f53704ad828",
+      "post_id": "2c0dd0f9-7978-435b-904e-2f53704ad828_2",
+      "reason": "Too short: 14 chars (min 200)",
+      "text_preview": "Hannah Olukoye"
+    },
+    {
+      "user_id": "2e4a00af-909d-4ee2-9aa6-52eee25d18e9",
+      "post_id": "2e4a00af-909d-4ee2-9aa6-52eee25d18e9_1",
+      "reason": "Too short: 44 chars (min 200)",
+      "text_preview": "Come join my team! DM me and I’ll refer you."
+    },
+    {
+      "user_id": "2e4a00af-909d-4ee2-9aa6-52eee25d18e9",
+      "post_id": "2e4a00af-909d-4ee2-9aa6-52eee25d18e9_6",
+      "reason": "Too short: 161 chars (min 200)",
+      "text_preview": "For all my MSSA and tech connections. CMI2 is hiring. Recent MSSA graduates this could be a great opportunity.\n\nCloud Engineer \n\nCybersecurity Complia"
+    },
+    {
+      "user_id": "2e4a00af-909d-4ee2-9aa6-52eee25d18e9",
+      "post_id": "2e4a00af-909d-4ee2-9aa6-52eee25d18e9_7",
+      "reason": "Too short: 35 chars (min 200)",
+      "text_preview": "One of the best programs out there."
+    },
+    {
+      "user_id": "2e4a00af-909d-4ee2-9aa6-52eee25d18e9",
+      "post_id": "2e4a00af-909d-4ee2-9aa6-52eee25d18e9_8",
+      "reason": "Too short: 51 chars (min 200)",
+      "text_preview": "Excited to see how this will change search engines!"
+    },
+    {
+      "user_id": "2e4a00af-909d-4ee2-9aa6-52eee25d18e9",
+      "post_id": "2e4a00af-909d-4ee2-9aa6-52eee25d18e9_10",
+      "reason": "Too short: 80 chars (min 200)",
+      "text_preview": "I’m happy to share that I was promoted to Senior Software Engineer at Microsoft!"
+    },
+    {
+      "user_id": "2e4a00af-909d-4ee2-9aa6-52eee25d18e9",
+      "post_id": "2e4a00af-909d-4ee2-9aa6-52eee25d18e9_11",
+      "reason": "Too short: 132 chars (min 200)",
+      "text_preview": "This plagues all DoD computers. In my opinion this is a severe vulnerability because it encourages the user to use personal devices."
+    },
+    {
+      "user_id": "2e4a00af-909d-4ee2-9aa6-52eee25d18e9",
+      "post_id": "2e4a00af-909d-4ee2-9aa6-52eee25d18e9_12",
+      "reason": "Too few real words: 36 (min 40)",
+      "text_preview": "Super Proud of Bravo Battery 1-201st Field Artillery Battalion. This picture is and M109A6 Paladin and we are fielding a precision guided kit (PGK) fu"
+    },
+    {
+      "user_id": "2e4a00af-909d-4ee2-9aa6-52eee25d18e9",
+      "post_id": "2e4a00af-909d-4ee2-9aa6-52eee25d18e9_13",
+      "reason": "Too short: 112 chars (min 200)",
+      "text_preview": "Microsoft is #hiring! Know anyone who might be interested? Let me know if you’re interested and I can refer you."
+    },
+    {
+      "user_id": "2e4a00af-909d-4ee2-9aa6-52eee25d18e9",
+      "post_id": "2e4a00af-909d-4ee2-9aa6-52eee25d18e9_14",
+      "reason": "Too short: 20 chars (min 200)",
+      "text_preview": "First West Virginia!"
+    },
+    {
+      "user_id": "2e4a00af-909d-4ee2-9aa6-52eee25d18e9",
+      "post_id": "2e4a00af-909d-4ee2-9aa6-52eee25d18e9_15",
+      "reason": "Too short: 7 chars (min 200)",
+      "text_preview": "Spot on"
+    },
+    {
+      "user_id": "2e4a00af-909d-4ee2-9aa6-52eee25d18e9",
+      "post_id": "2e4a00af-909d-4ee2-9aa6-52eee25d18e9_16",
+      "reason": "Too short: 33 chars (min 200)",
+      "text_preview": "Let me know if you’re interested!"
+    },
+    {
+      "user_id": "2e4a00af-909d-4ee2-9aa6-52eee25d18e9",
+      "post_id": "2e4a00af-909d-4ee2-9aa6-52eee25d18e9_17",
+      "reason": "Too short: 26 chars (min 200)",
+      "text_preview": "Pretty great place to work"
+    },
+    {
+      "user_id": "2e4a00af-909d-4ee2-9aa6-52eee25d18e9",
+      "post_id": "2e4a00af-909d-4ee2-9aa6-52eee25d18e9_19",
+      "reason": "Too few real words: 32 (min 40)",
+      "text_preview": "We continue to build resources to help Defense Industrial Base & DoD organizations improve their STIG posture. Learn about our latest sample solutions"
+    },
+    {
+      "user_id": "2e4a00af-909d-4ee2-9aa6-52eee25d18e9",
+      "post_id": "2e4a00af-909d-4ee2-9aa6-52eee25d18e9_20",
+      "reason": "Too short: 172 chars (min 200)",
+      "text_preview": "Hey All! If you’re attending Microsoft Ignite DC tomorrow make sure you come see my demos at “Hit the ground running with running with Azure Governmen"
+    },
+    {
+      "user_id": "2e4a00af-909d-4ee2-9aa6-52eee25d18e9",
+      "post_id": "2e4a00af-909d-4ee2-9aa6-52eee25d18e9_21",
+      "reason": "Too short: 38 chars (min 200)",
+      "text_preview": "Good turn out today at our User Group."
+    },
+    {
+      "user_id": "2e4a00af-909d-4ee2-9aa6-52eee25d18e9",
+      "post_id": "2e4a00af-909d-4ee2-9aa6-52eee25d18e9_22",
+      "reason": "Too short: 10 chars (min 200)",
+      "text_preview": "Yay GEICO!"
+    },
+    {
+      "user_id": "2e4a00af-909d-4ee2-9aa6-52eee25d18e9",
+      "post_id": "2e4a00af-909d-4ee2-9aa6-52eee25d18e9_23",
+      "reason": "Too short: 21 chars (min 200)",
+      "text_preview": "Peter Berlin awesome!"
+    },
+    {
+      "user_id": "313325f0-0334-45f7-93b3-e65adcc597e9",
+      "post_id": "313325f0-0334-45f7-93b3-e65adcc597e9_1",
+      "reason": "Too short: 145 chars (min 200)",
+      "text_preview": "Grateful for all the learnings at Intel. \n\nI’m happy to share that I’m starting a new position as a Software Development Engineer 2 at Microsoft!"
+    },
+    {
+      "user_id": "313325f0-0334-45f7-93b3-e65adcc597e9",
+      "post_id": "313325f0-0334-45f7-93b3-e65adcc597e9_3",
+      "reason": "Too short: 25 chars (min 200)",
+      "text_preview": "Congrats NYU. Go Violets."
+    },
+    {
+      "user_id": "313325f0-0334-45f7-93b3-e65adcc597e9",
+      "post_id": "313325f0-0334-45f7-93b3-e65adcc597e9_7",
+      "reason": "Too short: 59 chars (min 200)",
+      "text_preview": "On the importance of having a founders mindset for success."
+    },
+    {
+      "user_id": "313325f0-0334-45f7-93b3-e65adcc597e9",
+      "post_id": "313325f0-0334-45f7-93b3-e65adcc597e9_9",
+      "reason": "Too short: 23 chars (min 200)",
+      "text_preview": "Congrats batch of 2021."
+    },
+    {
+      "user_id": "313325f0-0334-45f7-93b3-e65adcc597e9",
+      "post_id": "313325f0-0334-45f7-93b3-e65adcc597e9_11",
+      "reason": "Too short: 12 chars (min 200)",
+      "text_preview": "#Violetpride"
+    },
+    {
+      "user_id": "313325f0-0334-45f7-93b3-e65adcc597e9",
+      "post_id": "313325f0-0334-45f7-93b3-e65adcc597e9_12",
+      "reason": "Too short: 10 chars (min 200)",
+      "text_preview": "Go violets"
+    },
+    {
+      "user_id": "313325f0-0334-45f7-93b3-e65adcc597e9",
+      "post_id": "313325f0-0334-45f7-93b3-e65adcc597e9_14",
+      "reason": "Too short: 77 chars (min 200)",
+      "text_preview": "Best. Zoom meeting. Ever. \n\nDo you remember the day you were accepted to NYU?"
+    },
+    {
+      "user_id": "313325f0-0334-45f7-93b3-e65adcc597e9",
+      "post_id": "313325f0-0334-45f7-93b3-e65adcc597e9_16",
+      "reason": "Too short: 5 chars (min 200)",
+      "text_preview": "#IISc"
+    },
+    {
+      "user_id": "3347a9f3-5493-4be8-9df0-f0e7663bc6dd",
+      "post_id": "3347a9f3-5493-4be8-9df0-f0e7663bc6dd_4",
+      "reason": "Noise signal detected: 'we're hiring'",
+      "text_preview": "Industry Solutions Engineering チームでは新しい仲間を募集しています！\n お客様の課題を深く理解し、実際のビジネスにインパクトを与えるソリューションを共に創りたい方を歓迎します。\n データサイエンス、プログラムマネジメント、ソフトウェアエンジニアリングの分野で、情熱を持"
+    },
+    {
+      "user_id": "3347a9f3-5493-4be8-9df0-f0e7663bc6dd",
+      "post_id": "3347a9f3-5493-4be8-9df0-f0e7663bc6dd_5",
+      "reason": "Too short: 121 chars (min 200)",
+      "text_preview": "日本のゴールドマン・サックスでは理系出身の社員が多数活躍しています。世界金融という大きな舞台に挑戦するエンジニア 達に会ってみませんか。学生の皆様に向け、オープン・デーを2月に東京六本木オフィスで開催予定です。1月21日までにご応募ください。"
+    },
+    {
+      "user_id": "351405ab-deb1-45b5-810c-d32798c95f40",
+      "post_id": "351405ab-deb1-45b5-810c-d32798c95f40_10",
+      "reason": "Too few real words: 36 (min 40)",
+      "text_preview": "Seems there is no limit to the ignorance of the world leaders (I am not even sure why they are called leaders). This time it is inflicting hunger and "
+    },
+    {
+      "user_id": "351405ab-deb1-45b5-810c-d32798c95f40",
+      "post_id": "351405ab-deb1-45b5-810c-d32798c95f40_13",
+      "reason": "Noise signal detected: 'open position'",
+      "text_preview": "One of my friends was laid off from Google as part of the last big wave. If anyone has an open position for an experienced program manager in greater "
+    },
+    {
+      "user_id": "351405ab-deb1-45b5-810c-d32798c95f40",
+      "post_id": "351405ab-deb1-45b5-810c-d32798c95f40_17",
+      "reason": "Too short: 48 chars (min 200)",
+      "text_preview": "Manage transitive dependencies in Visual Studio:"
+    },
+    {
+      "user_id": "351405ab-deb1-45b5-810c-d32798c95f40",
+      "post_id": "351405ab-deb1-45b5-810c-d32798c95f40_18",
+      "reason": "Too short: 83 chars (min 200)",
+      "text_preview": "Employees are happier and more productive when they're treated like adults at work."
+    },
+    {
+      "user_id": "351405ab-deb1-45b5-810c-d32798c95f40",
+      "post_id": "351405ab-deb1-45b5-810c-d32798c95f40_20",
+      "reason": "Too short: 56 chars (min 200)",
+      "text_preview": "first day back in office after 2 years of work-from-home"
+    },
+    {
+      "user_id": "351405ab-deb1-45b5-810c-d32798c95f40",
+      "post_id": "351405ab-deb1-45b5-810c-d32798c95f40_21",
+      "reason": "Too short: 169 chars (min 200)",
+      "text_preview": "Hey folks, I am back from the longest vacation I've ever had, will resume the production of #programmingWithArsen videos soon. I hope you didn't think"
+    },
+    {
+      "user_id": "351405ab-deb1-45b5-810c-d32798c95f40",
+      "post_id": "351405ab-deb1-45b5-810c-d32798c95f40_22",
+      "reason": "Too few real words: 31 (min 40)",
+      "text_preview": "#programmingWithArsen\n\nChapter 4 is about computer hardware, its role in the execution of software, and some details of inner workings of particular c"
+    },
+    {
+      "user_id": "351405ab-deb1-45b5-810c-d32798c95f40",
+      "post_id": "351405ab-deb1-45b5-810c-d32798c95f40_23",
+      "reason": "Too short: 147 chars (min 200)",
+      "text_preview": "#programmingWithArsen \n\nFor those few people (if any) waiting for the next video, I am taking a one-week break to manage my on-call duties at work."
+    },
+    {
+      "user_id": "351405ab-deb1-45b5-810c-d32798c95f40",
+      "post_id": "351405ab-deb1-45b5-810c-d32798c95f40_24",
+      "reason": "Noise signal detected: 'open position'",
+      "text_preview": "30 OPEN POSITIONS AT ACA!!!\n\nArmenian Code Academy is expanding its borders in future plans and is in need of motivated, enthusiastic and result-drive"
+    },
+    {
+      "user_id": "351405ab-deb1-45b5-810c-d32798c95f40",
+      "post_id": "351405ab-deb1-45b5-810c-d32798c95f40_25",
+      "reason": "Too short: 86 chars (min 200)",
+      "text_preview": "#programmingWithArsen\n\nFinishing the program we started writing in the previous video:"
+    },
+    {
+      "user_id": "351405ab-deb1-45b5-810c-d32798c95f40",
+      "post_id": "351405ab-deb1-45b5-810c-d32798c95f40_27",
+      "reason": "Too short: 175 chars (min 200)",
+      "text_preview": "#programmingWithArsen\n\nLet's see functions in action on a small exercise. In this video I try to write a program for printing out a calendar for a mon"
+    },
+    {
+      "user_id": "351405ab-deb1-45b5-810c-d32798c95f40",
+      "post_id": "351405ab-deb1-45b5-810c-d32798c95f40_28",
+      "reason": "Too short: 108 chars (min 200)",
+      "text_preview": "Did you know that 04/04, 06/06, 08/08, 10/10, 12/12 always fall on the same day of the week in a given year?"
+    },
+    {
+      "user_id": "351405ab-deb1-45b5-810c-d32798c95f40",
+      "post_id": "351405ab-deb1-45b5-810c-d32798c95f40_29",
+      "reason": "Too short: 93 chars (min 200)",
+      "text_preview": "#programmingWithArsen\n\nSome more details about functions before we try to solve new problems:"
+    },
+    {
+      "user_id": "351405ab-deb1-45b5-810c-d32798c95f40",
+      "post_id": "351405ab-deb1-45b5-810c-d32798c95f40_30",
+      "reason": "Too short: 103 chars (min 200)",
+      "text_preview": "#programmingWithArsen\n\nContinuing the topic of functions with an episode on their definition and usage."
+    },
+    {
+      "user_id": "351405ab-deb1-45b5-810c-d32798c95f40",
+      "post_id": "351405ab-deb1-45b5-810c-d32798c95f40_31",
+      "reason": "Too few real words: 39 (min 40)",
+      "text_preview": "#programmingWithArsen \n\nEnter the function! This week we'll learn what a function is and why is it so essential. The first video is just an intro, and"
+    },
+    {
+      "user_id": "351405ab-deb1-45b5-810c-d32798c95f40",
+      "post_id": "351405ab-deb1-45b5-810c-d32798c95f40_32",
+      "reason": "Too short: 126 chars (min 200)",
+      "text_preview": "#programmingWithArsen\n\nLet's see control flow statements in practice (again using the 3 problems we discussed many times now)."
+    },
+    {
+      "user_id": "351405ab-deb1-45b5-810c-d32798c95f40",
+      "post_id": "351405ab-deb1-45b5-810c-d32798c95f40_33",
+      "reason": "Too short: 129 chars (min 200)",
+      "text_preview": "#programmingWithArsen\n\nA short addendum to the operators and loops, the things that are important, but I didn't cover previously:"
+    },
+    {
+      "user_id": "351405ab-deb1-45b5-810c-d32798c95f40",
+      "post_id": "351405ab-deb1-45b5-810c-d32798c95f40_35",
+      "reason": "Too few real words: 38 (min 40)",
+      "text_preview": "#programmingWithArsen \n\nThis week we'll see how to choose which statements to execute based on the value of a condition (boolean expression), as well "
+    },
+    {
+      "user_id": "351405ab-deb1-45b5-810c-d32798c95f40",
+      "post_id": "351405ab-deb1-45b5-810c-d32798c95f40_36",
+      "reason": "Too short: 196 chars (min 200)",
+      "text_preview": "#programmingWithArsen\n\nThis video gives an introduction to control flow and statements that affect it. Next week we'll focus on loops (for/do/while/fo"
+    },
+    {
+      "user_id": "351405ab-deb1-45b5-810c-d32798c95f40",
+      "post_id": "351405ab-deb1-45b5-810c-d32798c95f40_37",
+      "reason": "Too short: 198 chars (min 200)",
+      "text_preview": "#programmingWithArsen\n\nThis week's topic is statements. In the first video we'll go through some more notions/concepts including statements, and after"
+    },
+    {
+      "user_id": "351405ab-deb1-45b5-810c-d32798c95f40",
+      "post_id": "351405ab-deb1-45b5-810c-d32798c95f40_39",
+      "reason": "Too short: 193 chars (min 200)",
+      "text_preview": "#programmingWithArsen\n\n2nd problem of the week. One more coming in a couple days.\n\nFrom next week we'll continue some more language basics to give us "
+    },
+    {
+      "user_id": "351405ab-deb1-45b5-810c-d32798c95f40",
+      "post_id": "351405ab-deb1-45b5-810c-d32798c95f40_42",
+      "reason": "Too short: 96 chars (min 200)",
+      "text_preview": "#programmingWithArsen \n\nThis episode covers operators in programming languages and what they do:"
+    },
+    {
+      "user_id": "351405ab-deb1-45b5-810c-d32798c95f40",
+      "post_id": "351405ab-deb1-45b5-810c-d32798c95f40_43",
+      "reason": "Too few real words: 27 (min 40)",
+      "text_preview": "We have a hot summer coming up at DISQO!\n\nWe're launching a series of internship programs, starting with a Data Science Summer Internship! Hurry up to"
+    },
+    {
+      "user_id": "351405ab-deb1-45b5-810c-d32798c95f40",
+      "post_id": "351405ab-deb1-45b5-810c-d32798c95f40_45",
+      "reason": "Too short: 148 chars (min 200)",
+      "text_preview": "#programmingWithArsen\n\nContinuing the \"language basics\" chapter with a quick overview of data types: what they are, why we need them, how they help."
+    },
+    {
+      "user_id": "351405ab-deb1-45b5-810c-d32798c95f40",
+      "post_id": "351405ab-deb1-45b5-810c-d32798c95f40_47",
+      "reason": "Too few real words: 36 (min 40)",
+      "text_preview": "#programmingWithArsen\n\nStarting the 2nd chapter with variables - what they are and what they are for. This chapter will be all about primitives of pro"
+    },
+    {
+      "user_id": "351405ab-deb1-45b5-810c-d32798c95f40",
+      "post_id": "351405ab-deb1-45b5-810c-d32798c95f40_48",
+      "reason": "Too short: 159 chars (min 200)",
+      "text_preview": "Խաղերի ստեղծման ինթերշիփ մանրամասները քոմենթներում ⬇\n\nՇնորհակալ կլինեմ եթե տարածեք, միգուցե ձեր ընկերների մեջ կան մարդիկ ովքեր փնտրում են նման հնարավո"
+    },
+    {
+      "user_id": "351405ab-deb1-45b5-810c-d32798c95f40",
+      "post_id": "351405ab-deb1-45b5-810c-d32798c95f40_49",
+      "reason": "Too few real words: 32 (min 40)",
+      "text_preview": "#programmingWithArsen\n\nIn this episode I try to give an overview of binary numbers and bitwise operations.\n\nThis is the final introductory video. Star"
+    },
+    {
+      "user_id": "351405ab-deb1-45b5-810c-d32798c95f40",
+      "post_id": "351405ab-deb1-45b5-810c-d32798c95f40_50",
+      "reason": "Too few real words: 31 (min 40)",
+      "text_preview": "#programmingWithArsen\n\nAll right, folks, here comes this week's first video with definitions/descriptions of some of common terms that we'll be using "
+    },
+    {
+      "user_id": "3a0a7529-16a1-48d1-b987-c60e4260ad46",
+      "post_id": "3a0a7529-16a1-48d1-b987-c60e4260ad46_5",
+      "reason": "Too few real words: 22 (min 40)",
+      "text_preview": "Ingress-NGINX is retiring in March 2026. Before you migrate, read this checklist to avoid silent behavior changes when moving to Gateway API \n\n#Kubern"
+    },
+    {
+      "user_id": "3a0a7529-16a1-48d1-b987-c60e4260ad46",
+      "post_id": "3a0a7529-16a1-48d1-b987-c60e4260ad46_17",
+      "reason": "Too short: 69 chars (min 200)",
+      "text_preview": "This is serious stuff. Please don’t ignore and plan your upgrades now"
+    },
+    {
+      "user_id": "3a0a7529-16a1-48d1-b987-c60e4260ad46",
+      "post_id": "3a0a7529-16a1-48d1-b987-c60e4260ad46_21",
+      "reason": "Too short: 102 chars (min 200)",
+      "text_preview": "a great opportunity to work with a great team operating at the frontiers is data scale and throughput!"
+    },
+    {
+      "user_id": "3a0a7529-16a1-48d1-b987-c60e4260ad46",
+      "post_id": "3a0a7529-16a1-48d1-b987-c60e4260ad46_31",
+      "reason": "Too short: 151 chars (min 200)",
+      "text_preview": "This is a great opportunity I want to ensure my network is aware of. Come help us build the next-gen service network! Job posting is in the descriptio"
+    },
+    {
+      "user_id": "493cb77a-819e-4e20-9364-2cf9c5b733a6",
+      "post_id": "493cb77a-819e-4e20-9364-2cf9c5b733a6_5",
+      "reason": "Too few real words: 30 (min 40)",
+      "text_preview": "Today I had the opportunity to present the 'Towards Transparent AI' workshop at #vghc2020 with Ehi Nosakhare, Ph.D. It was great interacting with the "
+    },
+    {
+      "user_id": "493cb77a-819e-4e20-9364-2cf9c5b733a6",
+      "post_id": "493cb77a-819e-4e20-9364-2cf9c5b733a6_6",
+      "reason": "Too few real words: 30 (min 40)",
+      "text_preview": "Interested in speaking at this year's Grace Hopper Celebration? Join the AnitaB.org Boston chapter for CFP submissions workshop next Tuesday, February"
+    },
+    {
+      "user_id": "54c19b05-7985-47be-b2f2-6a2f8360cf89",
+      "post_id": "54c19b05-7985-47be-b2f2-6a2f8360cf89_4",
+      "reason": "Too short: 175 chars (min 200)",
+      "text_preview": "The saying goes that the apple doesn't fall too far from the tree. My dad is an industrial engineer and I am a software engineer. I wonder what my son"
+    },
+    {
+      "user_id": "54c19b05-7985-47be-b2f2-6a2f8360cf89",
+      "post_id": "54c19b05-7985-47be-b2f2-6a2f8360cf89_5",
+      "reason": "Too short: 41 chars (min 200)",
+      "text_preview": "I loved using BlackBerry back in the day!"
+    },
+    {
+      "user_id": "54c19b05-7985-47be-b2f2-6a2f8360cf89",
+      "post_id": "54c19b05-7985-47be-b2f2-6a2f8360cf89_6",
+      "reason": "Too short: 142 chars (min 200)",
+      "text_preview": "I just wanted you to know that you're an awesome person and I'm so glad we're connected on LinkedIn. \n\nHope you have an amazing start to 2022!"
+    },
+    {
+      "user_id": "54c19b05-7985-47be-b2f2-6a2f8360cf89",
+      "post_id": "54c19b05-7985-47be-b2f2-6a2f8360cf89_7",
+      "reason": "Too few real words: 33 (min 40)",
+      "text_preview": "#systemdesign #notes \nThese notes covers the basics in precise manner. Hope this helps #community \n\nFollow me to get updates on latest posts.\n\nI found"
+    },
+    {
+      "user_id": "54c19b05-7985-47be-b2f2-6a2f8360cf89",
+      "post_id": "54c19b05-7985-47be-b2f2-6a2f8360cf89_8",
+      "reason": "Too short: 105 chars (min 200)",
+      "text_preview": "Does anyone know of opportunities for a talented animator? My friend Aiden Guo is looking! #opportunities"
+    },
+    {
+      "user_id": "54c19b05-7985-47be-b2f2-6a2f8360cf89",
+      "post_id": "54c19b05-7985-47be-b2f2-6a2f8360cf89_10",
+      "reason": "Too short: 142 chars (min 200)",
+      "text_preview": "I recently received Amazon's Engineer of the Quarter award.\n\nI wanted to say thank you to my teammates and manager for their help and support!"
+    },
+    {
+      "user_id": "54c19b05-7985-47be-b2f2-6a2f8360cf89",
+      "post_id": "54c19b05-7985-47be-b2f2-6a2f8360cf89_11",
+      "reason": "Too short: 199 chars (min 200)",
+      "text_preview": "\"Men outnumber women in construction, substantially, but more women continue to join the field and often at higher wages than they would in other care"
+    },
+    {
+      "user_id": "54c19b05-7985-47be-b2f2-6a2f8360cf89",
+      "post_id": "54c19b05-7985-47be-b2f2-6a2f8360cf89_12",
+      "reason": "Too short: 107 chars (min 200)",
+      "text_preview": "Great place to work and learn. The team is very knowledgeable and considerate to one another!\n#design #work"
+    },
+    {
+      "user_id": "54c19b05-7985-47be-b2f2-6a2f8360cf89",
+      "post_id": "54c19b05-7985-47be-b2f2-6a2f8360cf89_14",
+      "reason": "Too short: 99 chars (min 200)",
+      "text_preview": "How Tomlinson Group of Companies transformed their dispatching and fleet communication using Tread."
+    },
+    {
+      "user_id": "54c19b05-7985-47be-b2f2-6a2f8360cf89",
+      "post_id": "54c19b05-7985-47be-b2f2-6a2f8360cf89_15",
+      "reason": "Too short: 154 chars (min 200)",
+      "text_preview": "Just finished Start With Why. Really good book that my friend Seif reccomended. Biggest take away: \"People don't buy what you do people buy why you do"
+    },
+    {
+      "user_id": "54c19b05-7985-47be-b2f2-6a2f8360cf89",
+      "post_id": "54c19b05-7985-47be-b2f2-6a2f8360cf89_16",
+      "reason": "Too short: 145 chars (min 200)",
+      "text_preview": "To celebrate our latest launch in math1229 and being able to empower thousands of students with adapative learning the team got some awesome swag"
+    },
+    {
+      "user_id": "56d7e3b2-8a5b-4647-ada8-33898383fad8",
+      "post_id": "56d7e3b2-8a5b-4647-ada8-33898383fad8_2",
+      "reason": "Too short: 140 chars (min 200)",
+      "text_preview": "Find out why #MicrosoftAzure Firewall and Azure Firewall Manager are the superheroes keeping Microsoft’s corporate network safe. #ITShowcase"
+    },
+    {
+      "user_id": "56d7e3b2-8a5b-4647-ada8-33898383fad8",
+      "post_id": "56d7e3b2-8a5b-4647-ada8-33898383fad8_3",
+      "reason": "Too few real words: 28 (min 40)",
+      "text_preview": "So proud that Microsoft is a sponsor of AnitaB.org's Virtual Grace Hopper Celebration. #vGHC #TogetherWeBuild If you'll be attending, let's connect—I'"
+    },
+    {
+      "user_id": "56d7e3b2-8a5b-4647-ada8-33898383fad8",
+      "post_id": "56d7e3b2-8a5b-4647-ada8-33898383fad8_4",
+      "reason": "Too short: 125 chars (min 200)",
+      "text_preview": "Thanks UIET Alumniaffairscell for inviting me for the talk. It was great to talk to students and help answer their questions!"
+    },
+    {
+      "user_id": "56d7e3b2-8a5b-4647-ada8-33898383fad8",
+      "post_id": "56d7e3b2-8a5b-4647-ada8-33898383fad8_5",
+      "reason": "Noise signal detected: 'congratulations to'",
+      "text_preview": "Congratulations to my awesome team on the preview launch of the newest security service on Azure - Azure Firewall Manager!! \nComprehensive security fo"
+    },
+    {
+      "user_id": "56d7e3b2-8a5b-4647-ada8-33898383fad8",
+      "post_id": "56d7e3b2-8a5b-4647-ada8-33898383fad8_6",
+      "reason": "Too short: 147 chars (min 200)",
+      "text_preview": "Microsoft's business operations have been carbon neutral since 2012. Now we are beginning to extend that to our products and devices. #MSFTAdvocate"
+    },
+    {
+      "user_id": "56d7e3b2-8a5b-4647-ada8-33898383fad8",
+      "post_id": "56d7e3b2-8a5b-4647-ada8-33898383fad8_7",
+      "reason": "Too few real words: 32 (min 40)",
+      "text_preview": "Azure Networking is the place to be! I am proud to partner with a team that has this kind of impact. #Microsoft #azurenetworking #azure #cloudcomputin"
+    },
+    {
+      "user_id": "56d7e3b2-8a5b-4647-ada8-33898383fad8",
+      "post_id": "56d7e3b2-8a5b-4647-ada8-33898383fad8_8",
+      "reason": "Too short: 72 chars (min 200)",
+      "text_preview": "Learning is a continuous process. Finished two courses today! #databases"
+    },
+    {
+      "user_id": "56d7e3b2-8a5b-4647-ada8-33898383fad8",
+      "post_id": "56d7e3b2-8a5b-4647-ada8-33898383fad8_9",
+      "reason": "Too short: 32 chars (min 200)",
+      "text_preview": "Nice analogy! Thanks Kyle McKiou"
+    },
+    {
+      "user_id": "56d7e3b2-8a5b-4647-ada8-33898383fad8",
+      "post_id": "56d7e3b2-8a5b-4647-ada8-33898383fad8_10",
+      "reason": "Too short: 27 chars (min 200)",
+      "text_preview": "This is definitely helpful."
+    },
+    {
+      "user_id": "583f07ae-71cc-42ed-982b-67b6c6d6a3ff",
+      "post_id": "583f07ae-71cc-42ed-982b-67b6c6d6a3ff_1",
+      "reason": "Too short: 85 chars (min 200)",
+      "text_preview": "\"When a measure becomes a target, it ceases to be a good measure\", Marilyn Strathern."
+    },
+    {
+      "user_id": "583f07ae-71cc-42ed-982b-67b6c6d6a3ff",
+      "post_id": "583f07ae-71cc-42ed-982b-67b6c6d6a3ff_2",
+      "reason": "Too short: 28 chars (min 200)",
+      "text_preview": "Now the real learning starts"
+    },
+    {
+      "user_id": "583f07ae-71cc-42ed-982b-67b6c6d6a3ff",
+      "post_id": "583f07ae-71cc-42ed-982b-67b6c6d6a3ff_5",
+      "reason": "Too short: 135 chars (min 200)",
+      "text_preview": "That moment when you pass a certification after 6 courses but it's less amazing cause you shared an intermediary course brag last week."
+    },
+    {
+      "user_id": "583f07ae-71cc-42ed-982b-67b6c6d6a3ff",
+      "post_id": "583f07ae-71cc-42ed-982b-67b6c6d6a3ff_6",
+      "reason": "Too short: 110 chars (min 200)",
+      "text_preview": "I’m happy to share that I’ve obtained a new certification: Configuration Management and the Cloud from Google!"
+    },
+    {
+      "user_id": "583f07ae-71cc-42ed-982b-67b6c6d6a3ff",
+      "post_id": "583f07ae-71cc-42ed-982b-67b6c6d6a3ff_9",
+      "reason": "Too short: 139 chars (min 200)",
+      "text_preview": "My good friend Alexandra is hosting an open interviewing day. I think this is a great alternative to open doors events during the pandemic."
+    },
+    {
+      "user_id": "583f07ae-71cc-42ed-982b-67b6c6d6a3ff",
+      "post_id": "583f07ae-71cc-42ed-982b-67b6c6d6a3ff_10",
+      "reason": "Too short: 101 chars (min 200)",
+      "text_preview": "Riverbed is hiring a Technical Recruiter to join the team in Romania, if you're interested apply now."
+    },
+    {
+      "user_id": "583f07ae-71cc-42ed-982b-67b6c6d6a3ff",
+      "post_id": "583f07ae-71cc-42ed-982b-67b6c6d6a3ff_11",
+      "reason": "Too few real words: 31 (min 40)",
+      "text_preview": "With all the current focus on excellence, ready-made skills that will apply immediately, and decline of interest in good traits especially for mid-sen"
+    },
+    {
+      "user_id": "5b792818-ac34-4256-97f8-cdce43bde7f0",
+      "post_id": "5b792818-ac34-4256-97f8-cdce43bde7f0_2",
+      "reason": "Too short: 65 chars (min 200)",
+      "text_preview": "Grateful to have played a small part in this amazing team effort."
+    },
+    {
+      "user_id": "5b792818-ac34-4256-97f8-cdce43bde7f0",
+      "post_id": "5b792818-ac34-4256-97f8-cdce43bde7f0_3",
+      "reason": "Noise signal detected: '#hiring'",
+      "text_preview": "My team at Microsoft is growing, and we have multiple exciting opportunities open. Levels from 61 to 65.\nIf you are passionate about building impactfu"
+    },
+    {
+      "user_id": "5b792818-ac34-4256-97f8-cdce43bde7f0",
+      "post_id": "5b792818-ac34-4256-97f8-cdce43bde7f0_7",
+      "reason": "Noise signal detected: 'join our team'",
+      "text_preview": "Incredible Career Opportunity Alert! \n\nReady to elevate your professional journey? Microsoft is actively scouting for exceptional talent to join our t"
+    },
+    {
+      "user_id": "5b792818-ac34-4256-97f8-cdce43bde7f0",
+      "post_id": "5b792818-ac34-4256-97f8-cdce43bde7f0_14",
+      "reason": "Too short: 4 chars (min 200)",
+      "text_preview": "true"
+    },
+    {
+      "user_id": "5b792818-ac34-4256-97f8-cdce43bde7f0",
+      "post_id": "5b792818-ac34-4256-97f8-cdce43bde7f0_15",
+      "reason": "Too short: 16 chars (min 200)",
+      "text_preview": "#Microsoft #SDE2"
+    },
+    {
+      "user_id": "5b792818-ac34-4256-97f8-cdce43bde7f0",
+      "post_id": "5b792818-ac34-4256-97f8-cdce43bde7f0_17",
+      "reason": "Too short: 81 chars (min 200)",
+      "text_preview": "Just finished the course “Data Science Foundations: Choosing the Right Database”!"
+    },
+    {
+      "user_id": "5b792818-ac34-4256-97f8-cdce43bde7f0",
+      "post_id": "5b792818-ac34-4256-97f8-cdce43bde7f0_18",
+      "reason": "Too short: 92 chars (min 200)",
+      "text_preview": "Just finished the course “Data Science Foundations: Choosing the Right Database”! #databases"
+    },
+    {
+      "user_id": "5b792818-ac34-4256-97f8-cdce43bde7f0",
+      "post_id": "5b792818-ac34-4256-97f8-cdce43bde7f0_19",
+      "reason": "Too short: 11 chars (min 200)",
+      "text_preview": "Print team."
+    },
+    {
+      "user_id": "5b792818-ac34-4256-97f8-cdce43bde7f0",
+      "post_id": "5b792818-ac34-4256-97f8-cdce43bde7f0_20",
+      "reason": "Too few real words: 18 (min 40)",
+      "text_preview": "Let's do our bit towards protecting our environment. Every bit helps!\nLet's be more environmentally responsible corporate citizens!\n\n#WeMeanToClean #C"
+    },
+    {
+      "user_id": "5b792818-ac34-4256-97f8-cdce43bde7f0",
+      "post_id": "5b792818-ac34-4256-97f8-cdce43bde7f0_21",
+      "reason": "Too short: 32 chars (min 200)",
+      "text_preview": "100 best places to work in IT..."
+    },
+    {
+      "user_id": "6217bbbb-06c5-4c5d-b3a1-f30fb9a169bd",
+      "post_id": "6217bbbb-06c5-4c5d-b3a1-f30fb9a169bd_1",
+      "reason": "Too short: 81 chars (min 200)",
+      "text_preview": "ICYMI: ‘Huge for patients’: AI forecasts new atrial fibrillation, stroke risk #AI"
+    },
+    {
+      "user_id": "6217bbbb-06c5-4c5d-b3a1-f30fb9a169bd",
+      "post_id": "6217bbbb-06c5-4c5d-b3a1-f30fb9a169bd_2",
+      "reason": "Too short: 11 chars (min 200)",
+      "text_preview": "Amazing !!!"
+    },
+    {
+      "user_id": "6217bbbb-06c5-4c5d-b3a1-f30fb9a169bd",
+      "post_id": "6217bbbb-06c5-4c5d-b3a1-f30fb9a169bd_3",
+      "reason": "Too short: 137 chars (min 200)",
+      "text_preview": "Having a dream, coupled with the will, courage and ambition to be on top of the world, will get you further in life than you can imagine."
+    },
+    {
+      "user_id": "6629981a-f60d-452c-b773-9adfa0827259",
+      "post_id": "6629981a-f60d-452c-b773-9adfa0827259_4",
+      "reason": "Noise signal detected: 'thrilled to announce'",
+      "text_preview": "I'm thrilled to announce that I have accepted a new role as Senior Principal Software Engineer at Baffle, Inc.! I want to express my sincere gratitude"
+    },
+    {
+      "user_id": "6629981a-f60d-452c-b773-9adfa0827259",
+      "post_id": "6629981a-f60d-452c-b773-9adfa0827259_5",
+      "reason": "Too short: 156 chars (min 200)",
+      "text_preview": "Hi everyone - I am looking for a new role as C++ and Rust developer in Database internals or Blockchain space and would appreciate your support. #Open"
+    },
+    {
+      "user_id": "6629981a-f60d-452c-b773-9adfa0827259",
+      "post_id": "6629981a-f60d-452c-b773-9adfa0827259_6",
+      "reason": "Too short: 170 chars (min 200)",
+      "text_preview": "Hi everyone - I am looking for a new role and would appreciate your support. Thank you in advance for any connections, advice, or opportunities you ca"
+    },
+    {
+      "user_id": "6629981a-f60d-452c-b773-9adfa0827259",
+      "post_id": "6629981a-f60d-452c-b773-9adfa0827259_8",
+      "reason": "Too short: 11 chars (min 200)",
+      "text_preview": "At times..."
+    },
+    {
+      "user_id": "6629981a-f60d-452c-b773-9adfa0827259",
+      "post_id": "6629981a-f60d-452c-b773-9adfa0827259_9",
+      "reason": "Too few real words: 39 (min 40)",
+      "text_preview": "We want more, to be happy and contended ...\n\nSharing a tale of a father and two children.. Who are making the most of what life has given to them.\n\nDo"
+    },
+    {
+      "user_id": "6629981a-f60d-452c-b773-9adfa0827259",
+      "post_id": "6629981a-f60d-452c-b773-9adfa0827259_10",
+      "reason": "Too short: 42 chars (min 200)",
+      "text_preview": "Every day should be better than yesterday!"
+    },
+    {
+      "user_id": "6629981a-f60d-452c-b773-9adfa0827259",
+      "post_id": "6629981a-f60d-452c-b773-9adfa0827259_11",
+      "reason": "Too short: 98 chars (min 200)",
+      "text_preview": "Japanese Multiplication : Multiply using lines #multiples #abovetheline #datascience #dataanalysis"
+    },
+    {
+      "user_id": "6629981a-f60d-452c-b773-9adfa0827259",
+      "post_id": "6629981a-f60d-452c-b773-9adfa0827259_12",
+      "reason": "Too short: 126 chars (min 200)",
+      "text_preview": "We are hiring in the Database Systems Technology Group @ Hewlett Packard Enterprise, Bangalore\n\nDetails are given in the post."
+    },
+    {
+      "user_id": "6629981a-f60d-452c-b773-9adfa0827259",
+      "post_id": "6629981a-f60d-452c-b773-9adfa0827259_13",
+      "reason": "Too few real words: 29 (min 40)",
+      "text_preview": "Sapient is hiring Sr. Developer - Java (5+ years of exp) for Bangalore location. Skill - Core Java, Spring, Hibernate, Multi-threading,Data structure,"
+    },
+    {
+      "user_id": "6629981a-f60d-452c-b773-9adfa0827259",
+      "post_id": "6629981a-f60d-452c-b773-9adfa0827259_14",
+      "reason": "Too short: 4 chars (min 200)",
+      "text_preview": "#HPE"
+    },
+    {
+      "user_id": "6629981a-f60d-452c-b773-9adfa0827259",
+      "post_id": "6629981a-f60d-452c-b773-9adfa0827259_15",
+      "reason": "Too short: 57 chars (min 200)",
+      "text_preview": "OpenStack cloud architects for Hewlett Packard Enterprise"
+    },
+    {
+      "user_id": "6629981a-f60d-452c-b773-9adfa0827259",
+      "post_id": "6629981a-f60d-452c-b773-9adfa0827259_16",
+      "reason": "Too short: 63 chars (min 200)",
+      "text_preview": "The new Hewlett Packard Enterprise. Official arrival: 11.01.15."
+    },
+    {
+      "user_id": "6629981a-f60d-452c-b773-9adfa0827259",
+      "post_id": "6629981a-f60d-452c-b773-9adfa0827259_17",
+      "reason": "Too short: 112 chars (min 200)",
+      "text_preview": "Our next app 'BYT Foodie' is being released... You could find restaurants near by to you and exciting offers in."
+    },
+    {
+      "user_id": "7333df73-63cf-4f92-b724-caefc9171b63",
+      "post_id": "7333df73-63cf-4f92-b724-caefc9171b63_8",
+      "reason": "Too short: 96 chars (min 200)",
+      "text_preview": "Thank you Global Mentorship Initiative for this opportunity.\n\nThank you Mohammed Yahaya Sheriff."
+    },
+    {
+      "user_id": "7333df73-63cf-4f92-b724-caefc9171b63",
+      "post_id": "7333df73-63cf-4f92-b724-caefc9171b63_13",
+      "reason": "Noise signal detected: 'job opportunity'",
+      "text_preview": "I recommend Marian for any QA-related job opportunity. \n\nI’ve worked with him at Ubisoft for the upcoming Avatar game, where he has shown admirable de"
+    },
+    {
+      "user_id": "7333df73-63cf-4f92-b724-caefc9171b63",
+      "post_id": "7333df73-63cf-4f92-b724-caefc9171b63_15",
+      "reason": "Too short: 180 chars (min 200)",
+      "text_preview": "Interesting to see how Gartner puts the “AI Hype” on the map. What do you think?\n\nI tend to agree.\nI still remember when Cleverbot launched, and the h"
+    },
+    {
+      "user_id": "7333df73-63cf-4f92-b724-caefc9171b63",
+      "post_id": "7333df73-63cf-4f92-b724-caefc9171b63_22",
+      "reason": "Noise signal detected: 'proud to announce'",
+      "text_preview": "I am proud to announce that I've successfully completed the IELTS Academic examination with an overall score (listening + reading + writing + speaking"
+    },
+    {
+      "user_id": "7333df73-63cf-4f92-b724-caefc9171b63",
+      "post_id": "7333df73-63cf-4f92-b724-caefc9171b63_26",
+      "reason": "Too short: 97 chars (min 200)",
+      "text_preview": "It's a joy to be able to offer my services for such a wonderful company. \n\n#work #microsoft #msft"
+    },
+    {
+      "user_id": "7333df73-63cf-4f92-b724-caefc9171b63",
+      "post_id": "7333df73-63cf-4f92-b724-caefc9171b63_27",
+      "reason": "Noise signal detected: 'thrilled to announce'",
+      "text_preview": "I am so thrilled to announce that, starting today, I'll be joining Microsoft as a CSS Technical Engineer Intern!\n\nThank you, Martyna Kurmin for the am"
+    },
+    {
+      "user_id": "77a8e5f8-0a16-456a-a634-c30cecdf356b",
+      "post_id": "77a8e5f8-0a16-456a-a634-c30cecdf356b_4",
+      "reason": "Too short: 71 chars (min 200)",
+      "text_preview": "View my verified achievement from Microsoft E+D Divisional FHL program."
+    },
+    {
+      "user_id": "86d688ad-1e09-4343-a4cc-ce318bf1b00d",
+      "post_id": "86d688ad-1e09-4343-a4cc-ce318bf1b00d_11",
+      "reason": "Too short: 130 chars (min 200)",
+      "text_preview": "I’m happy to share that I’m starting a new position as Principal High-Performance Computing Backend Network Engineer at Microsoft!"
+    },
+    {
+      "user_id": "86d688ad-1e09-4343-a4cc-ce318bf1b00d",
+      "post_id": "86d688ad-1e09-4343-a4cc-ce318bf1b00d_12",
+      "reason": "Too short: 122 chars (min 200)",
+      "text_preview": "I’m happy to share that I’m starting a new position as Principal Engineer, System Software Architect at Intel Corporation!"
+    },
+    {
+      "user_id": "86d688ad-1e09-4343-a4cc-ce318bf1b00d",
+      "post_id": "86d688ad-1e09-4343-a4cc-ce318bf1b00d_13",
+      "reason": "Too short: 70 chars (min 200)",
+      "text_preview": "Proud moments with intel executives at intel inventors awards ceremony"
+    },
+    {
+      "user_id": "8774ee3b-19ab-45ca-8197-b68720c4b1b8",
+      "post_id": "8774ee3b-19ab-45ca-8197-b68720c4b1b8_5",
+      "reason": "Too short: 130 chars (min 200)",
+      "text_preview": "Happy to see our work on Content Assembly getting shipped as part of Microsoft Syntex! Lots of exciting stuff ahead!\n\nRead more at"
+    },
+    {
+      "user_id": "8774ee3b-19ab-45ca-8197-b68720c4b1b8",
+      "post_id": "8774ee3b-19ab-45ca-8197-b68720c4b1b8_7",
+      "reason": "Too short: 56 chars (min 200)",
+      "text_preview": "Good presentation Shreya Ganguly and Swapnil Shrivastava"
+    },
+    {
+      "user_id": "8774ee3b-19ab-45ca-8197-b68720c4b1b8",
+      "post_id": "8774ee3b-19ab-45ca-8197-b68720c4b1b8_8",
+      "reason": "Too short: 158 chars (min 200)",
+      "text_preview": "I'm very excited to share that we've started rolling out Content Assembly in #SharePoint #Syntex - docs went live today and customers will see it very"
+    },
+    {
+      "user_id": "8774ee3b-19ab-45ca-8197-b68720c4b1b8",
+      "post_id": "8774ee3b-19ab-45ca-8197-b68720c4b1b8_11",
+      "reason": "Too short: 139 chars (min 200)",
+      "text_preview": "Happy 10th Birthday - #office365 - one of biggest days in Microsoft’s history - cloud-first transformation for customers, partners, and us."
+    },
+    {
+      "user_id": "881ba53e-5c01-4ae4-bc09-59d059c315a5",
+      "post_id": "881ba53e-5c01-4ae4-bc09-59d059c315a5_1",
+      "reason": "Too short: 83 chars (min 200)",
+      "text_preview": "Just finished the course “Build REST APIs with FastAPI”! #fastapi #restapis #python"
+    },
+    {
+      "user_id": "881ba53e-5c01-4ae4-bc09-59d059c315a5",
+      "post_id": "881ba53e-5c01-4ae4-bc09-59d059c315a5_3",
+      "reason": "Too short: 60 chars (min 200)",
+      "text_preview": "View my verified achievement from Amazon Web Services (AWS)."
+    },
+    {
+      "user_id": "881ba53e-5c01-4ae4-bc09-59d059c315a5",
+      "post_id": "881ba53e-5c01-4ae4-bc09-59d059c315a5_4",
+      "reason": "Too short: 46 chars (min 200)",
+      "text_preview": "Check out this job at Factored : Data Engineer"
+    },
+    {
+      "user_id": "881ba53e-5c01-4ae4-bc09-59d059c315a5",
+      "post_id": "881ba53e-5c01-4ae4-bc09-59d059c315a5_5",
+      "reason": "Too few real words: 33 (min 40)",
+      "text_preview": "We’re still excited about the fact that we’ve been named as a Select Consulting Partner in the Amazon Web Services (AWS) Partner Network (APN)! \n\nRead"
+    },
+    {
+      "user_id": "881ba53e-5c01-4ae4-bc09-59d059c315a5",
+      "post_id": "881ba53e-5c01-4ae4-bc09-59d059c315a5_6",
+      "reason": "Too short: 52 chars (min 200)",
+      "text_preview": "Check out this job at Factored : Full-Stack Engineer"
+    },
+    {
+      "user_id": "881ba53e-5c01-4ae4-bc09-59d059c315a5",
+      "post_id": "881ba53e-5c01-4ae4-bc09-59d059c315a5_7",
+      "reason": "Too short: 60 chars (min 200)",
+      "text_preview": "View my verified achievement from Amazon Web Services (AWS)."
+    },
+    {
+      "user_id": "881ba53e-5c01-4ae4-bc09-59d059c315a5",
+      "post_id": "881ba53e-5c01-4ae4-bc09-59d059c315a5_10",
+      "reason": "Too few real words: 36 (min 40)",
+      "text_preview": "Data and AI: How do they feed each other? \n\nWe’ve designed a rigorous Data Engineering Program for Data Engineers wanting to do the best work of their"
+    },
+    {
+      "user_id": "881ba53e-5c01-4ae4-bc09-59d059c315a5",
+      "post_id": "881ba53e-5c01-4ae4-bc09-59d059c315a5_11",
+      "reason": "Too few real words: 27 (min 40)",
+      "text_preview": "How To Analyze Live Video Streams with Blazor, NET 5 And Azure Video Indexer youtu.be/czQ6TrJ4RVw\n#blazor #dotnet #dotnetcore\nEsteban Solano Granados "
+    },
+    {
+      "user_id": "937353b2-546c-41e3-ae57-4b7507de8a1d",
+      "post_id": "937353b2-546c-41e3-ae57-4b7507de8a1d_26",
+      "reason": "Too short: 195 chars (min 200)",
+      "text_preview": "To any of my Rowan University Computer Science alumni friends! We are hosting our annual Tech Connect event. This is a great chance to come and talk t"
+    },
+    {
+      "user_id": "937353b2-546c-41e3-ae57-4b7507de8a1d",
+      "post_id": "937353b2-546c-41e3-ae57-4b7507de8a1d_30",
+      "reason": "Too short: 125 chars (min 200)",
+      "text_preview": "We are looking for BSides speakers!\n\nJoin the BSides South Jersey group if you're interested in getting updates on the event!"
+    },
+    {
+      "user_id": "937353b2-546c-41e3-ae57-4b7507de8a1d",
+      "post_id": "937353b2-546c-41e3-ae57-4b7507de8a1d_36",
+      "reason": "Too short: 88 chars (min 200)",
+      "text_preview": "An interesting take in all the hype around AI from an engineer. Worth the 3 minute read."
+    },
+    {
+      "user_id": "937353b2-546c-41e3-ae57-4b7507de8a1d",
+      "post_id": "937353b2-546c-41e3-ae57-4b7507de8a1d_47",
+      "reason": "Too short: 118 chars (min 200)",
+      "text_preview": "My buddy Scott wrote this article about developing a healthy relationship with AI. Check it out when you get a minute!"
+    },
+    {
+      "user_id": "937353b2-546c-41e3-ae57-4b7507de8a1d",
+      "post_id": "937353b2-546c-41e3-ae57-4b7507de8a1d_48",
+      "reason": "Too short: 115 chars (min 200)",
+      "text_preview": "Had the wonderful opportunity to host the Rowan University computer science students at Microsoft in NYC last week."
+    },
+    {
+      "user_id": "97d44170-c93f-48f4-b33f-c5655fb0bfcb",
+      "post_id": "97d44170-c93f-48f4-b33f-c5655fb0bfcb_16",
+      "reason": "Too short: 90 chars (min 200)",
+      "text_preview": "I’m happy to share that I’ve earned the #GitHubCopilot certification from GitHub/Microsoft"
+    },
+    {
+      "user_id": "9d0711b8-17ae-44cc-adbd-f2e39f25571b",
+      "post_id": "9d0711b8-17ae-44cc-adbd-f2e39f25571b_14",
+      "reason": "Noise signal detected: 'happy to share that'",
+      "text_preview": "I’m happy to share that I’m starting a new position as Senior Software Engineer at Microsoft! \n\nI am incredibly grateful for this outstanding opportun"
+    },
+    {
+      "user_id": "9d0711b8-17ae-44cc-adbd-f2e39f25571b",
+      "post_id": "9d0711b8-17ae-44cc-adbd-f2e39f25571b_15",
+      "reason": "Too short: 152 chars (min 200)",
+      "text_preview": "I’m hiring for a strong TPM in Seattle to lead complex programs in WW Installments Customer Experience charter. Please connect with Linda if intereste"
+    },
+    {
+      "user_id": "a9f99660-2db6-4851-a76e-61fc5c205a53",
+      "post_id": "a9f99660-2db6-4851-a76e-61fc5c205a53_4",
+      "reason": "Too short: 158 chars (min 200)",
+      "text_preview": "Win with your remote workforce by zeroing in on how your sales team is spending its time and who they are engaging. Get the first plays today: #stilli"
+    },
+    {
+      "user_id": "ab1fb966-d14e-4639-b504-00f7b6f9084b",
+      "post_id": "ab1fb966-d14e-4639-b504-00f7b6f9084b_1",
+      "reason": "Too short: 155 chars (min 200)",
+      "text_preview": "In case you are looking for Data Science and TPM opportunities at Microsoft... It is a US-based team so you will need to be located in the US to apply"
+    },
+    {
+      "user_id": "ab1fb966-d14e-4639-b504-00f7b6f9084b",
+      "post_id": "ab1fb966-d14e-4639-b504-00f7b6f9084b_2",
+      "reason": "Too short: 197 chars (min 200)",
+      "text_preview": "I really find Adam Grant's books and insights inspirational. Core values make us move in some direction or act (or not act) in ways others may not und"
+    },
+    {
+      "user_id": "ab1fb966-d14e-4639-b504-00f7b6f9084b",
+      "post_id": "ab1fb966-d14e-4639-b504-00f7b6f9084b_3",
+      "reason": "Too short: 14 chars (min 200)",
+      "text_preview": "Opportunity..."
+    },
+    {
+      "user_id": "ab1fb966-d14e-4639-b504-00f7b6f9084b",
+      "post_id": "ab1fb966-d14e-4639-b504-00f7b6f9084b_6",
+      "reason": "Too short: 156 chars (min 200)",
+      "text_preview": "Pessoal, data atualizada para 26 de Junho, não perca, resistre-se o quanto antes gratuitamente. A conversa será sobre liderança e empreendedorismo fem"
+    },
+    {
+      "user_id": "ab1fb966-d14e-4639-b504-00f7b6f9084b",
+      "post_id": "ab1fb966-d14e-4639-b504-00f7b6f9084b_8",
+      "reason": "Too short: 81 chars (min 200)",
+      "text_preview": "I'm thrilled to share this program. Time to learn AI. Join and share to others..."
+    },
+    {
+      "user_id": "ab1fb966-d14e-4639-b504-00f7b6f9084b",
+      "post_id": "ab1fb966-d14e-4639-b504-00f7b6f9084b_10",
+      "reason": "Too short: 170 chars (min 200)",
+      "text_preview": "I'm impressed with this initiative, an opportunity to empower everyone and make history. If you want to know more about the AI Skills Fest, take a loo"
+    },
+    {
+      "user_id": "ab1fb966-d14e-4639-b504-00f7b6f9084b",
+      "post_id": "ab1fb966-d14e-4639-b504-00f7b6f9084b_12",
+      "reason": "Too short: 138 chars (min 200)",
+      "text_preview": "If you are passionate about Data Science and looking for internship in one of the best organizations at Microsoft, this post is for you..."
+    },
+    {
+      "user_id": "ab1fb966-d14e-4639-b504-00f7b6f9084b",
+      "post_id": "ab1fb966-d14e-4639-b504-00f7b6f9084b_16",
+      "reason": "Too short: 165 chars (min 200)",
+      "text_preview": "If you are looking for a position in one of the best engineering teams at Microsoft or know someone that may be interested, this post is for you. Chec"
+    },
+    {
+      "user_id": "ab1fb966-d14e-4639-b504-00f7b6f9084b",
+      "post_id": "ab1fb966-d14e-4639-b504-00f7b6f9084b_23",
+      "reason": "Too short: 170 chars (min 200)",
+      "text_preview": "A comunidade Brasil do The WIT Network promoverá no dia 28 de Junho um Webinar sobre Generative AI. Participe e divulgue! \nPara saber mais sobre o Web"
+    },
+    {
+      "user_id": "ab1fb966-d14e-4639-b504-00f7b6f9084b",
+      "post_id": "ab1fb966-d14e-4639-b504-00f7b6f9084b_24",
+      "reason": "Noise signal detected: '#hiring'",
+      "text_preview": "Do you enjoy software development and working directly with customers? Do you enjoy solving complex problems in novel ways across a myriad of platform"
+    },
+    {
+      "user_id": "ab1fb966-d14e-4639-b504-00f7b6f9084b",
+      "post_id": "ab1fb966-d14e-4639-b504-00f7b6f9084b_27",
+      "reason": "Too short: 171 chars (min 200)",
+      "text_preview": "This article presents a research result about the impact of helpfull leaders in the success of others and their own success. \"Don’t just look for the "
+    },
+    {
+      "user_id": "ab1fb966-d14e-4639-b504-00f7b6f9084b",
+      "post_id": "ab1fb966-d14e-4639-b504-00f7b6f9084b_28",
+      "reason": "Too short: 167 chars (min 200)",
+      "text_preview": "To all of you that are learning about the racism present and past history and becoming an ally as I'm to create a better future. How to have difficult"
+    },
+    {
+      "user_id": "ab1fb966-d14e-4639-b504-00f7b6f9084b",
+      "post_id": "ab1fb966-d14e-4639-b504-00f7b6f9084b_29",
+      "reason": "Too short: 190 chars (min 200)",
+      "text_preview": "Every partner is welcome at #MSInspire, our global #MSPartner digital event experience. Join us from your time zone to create connections with partner"
+    },
+    {
+      "user_id": "ab1fb966-d14e-4639-b504-00f7b6f9084b",
+      "post_id": "ab1fb966-d14e-4639-b504-00f7b6f9084b_31",
+      "reason": "Too short: 77 chars (min 200)",
+      "text_preview": "Great article about culture and how to close the gaps. This is worth reading."
+    },
+    {
+      "user_id": "ab1fb966-d14e-4639-b504-00f7b6f9084b",
+      "post_id": "ab1fb966-d14e-4639-b504-00f7b6f9084b_33",
+      "reason": "Too short: 113 chars (min 200)",
+      "text_preview": "É interessante observar como as empresas de alguns setores têm inovado na relação com os clientes em potential..."
+    },
+    {
+      "user_id": "ab1fb966-d14e-4639-b504-00f7b6f9084b",
+      "post_id": "ab1fb966-d14e-4639-b504-00f7b6f9084b_34",
+      "reason": "Too short: 113 chars (min 200)",
+      "text_preview": "É interessante observar como as empresas de alguns setores têm inovado na relação com os clientes em potential..."
+    },
+    {
+      "user_id": "ab1fb966-d14e-4639-b504-00f7b6f9084b",
+      "post_id": "ab1fb966-d14e-4639-b504-00f7b6f9084b_36",
+      "reason": "Too short: 174 chars (min 200)",
+      "text_preview": "Technology is benefiting all segments. Take a look on this article about smart mirrors. They may create a lot of new opportunities for retailing. #art"
+    },
+    {
+      "user_id": "ab1fb966-d14e-4639-b504-00f7b6f9084b",
+      "post_id": "ab1fb966-d14e-4639-b504-00f7b6f9084b_37",
+      "reason": "Too short: 58 chars (min 200)",
+      "text_preview": "I really liked the idea and the user experience behind it."
+    },
+    {
+      "user_id": "ab1fb966-d14e-4639-b504-00f7b6f9084b",
+      "post_id": "ab1fb966-d14e-4639-b504-00f7b6f9084b_38",
+      "reason": "Too short: 146 chars (min 200)",
+      "text_preview": "O melhor curso de Ciência de Dados é na Unicamp!\nInscrições para Turma 2020 a partir de 14/10/2019.\nSaiba mais em: \n#MDC2020 #DataScience #Unicamp"
+    },
+    {
+      "user_id": "ab1fb966-d14e-4639-b504-00f7b6f9084b",
+      "post_id": "ab1fb966-d14e-4639-b504-00f7b6f9084b_39",
+      "reason": "Too short: 24 chars (min 200)",
+      "text_preview": "I couldn't agree more..."
+    },
+    {
+      "user_id": "ab1fb966-d14e-4639-b504-00f7b6f9084b",
+      "post_id": "ab1fb966-d14e-4639-b504-00f7b6f9084b_41",
+      "reason": "Too short: 64 chars (min 200)",
+      "text_preview": "One more tech trend and business model: RaaS. Take a look below."
+    },
+    {
+      "user_id": "ab1fb966-d14e-4639-b504-00f7b6f9084b",
+      "post_id": "ab1fb966-d14e-4639-b504-00f7b6f9084b_44",
+      "reason": "Too short: 74 chars (min 200)",
+      "text_preview": "Microsoft is democratizing AI. See by yourself...#msinspire #ai #hololens2"
+    },
+    {
+      "user_id": "ab1fb966-d14e-4639-b504-00f7b6f9084b",
+      "post_id": "ab1fb966-d14e-4639-b504-00f7b6f9084b_45",
+      "reason": "Too short: 103 chars (min 200)",
+      "text_preview": "Cool and unexpected use case. It took me some seconds to figure out even after reading the explanation."
+    },
+    {
+      "user_id": "ab1fb966-d14e-4639-b504-00f7b6f9084b",
+      "post_id": "ab1fb966-d14e-4639-b504-00f7b6f9084b_46",
+      "reason": "Too short: 40 chars (min 200)",
+      "text_preview": "Robots helping on volleyball practice..."
+    },
+    {
+      "user_id": "ab1fb966-d14e-4639-b504-00f7b6f9084b",
+      "post_id": "ab1fb966-d14e-4639-b504-00f7b6f9084b_47",
+      "reason": "Too short: 17 chars (min 200)",
+      "text_preview": "Delivery robot..."
+    },
+    {
+      "user_id": "ab1fb966-d14e-4639-b504-00f7b6f9084b",
+      "post_id": "ab1fb966-d14e-4639-b504-00f7b6f9084b_49",
+      "reason": "Too short: 167 chars (min 200)",
+      "text_preview": "Google has done an amazing job with its Assistant. Imagine it embedded in your car. Of course, there is space for even more. #artificialintelligence #"
+    },
+    {
+      "user_id": "ab1fb966-d14e-4639-b504-00f7b6f9084b",
+      "post_id": "ab1fb966-d14e-4639-b504-00f7b6f9084b_51",
+      "reason": "Too few real words: 35 (min 40)",
+      "text_preview": "AI: How far are we from intelligent systems and robots like humans?\nHere is a research that may give us some clue: \"Robots learn-by-doing, and without"
+    },
+    {
+      "user_id": "ab1fb966-d14e-4639-b504-00f7b6f9084b",
+      "post_id": "ab1fb966-d14e-4639-b504-00f7b6f9084b_53",
+      "reason": "Too short: 198 chars (min 200)",
+      "text_preview": "Excelente evento da Deloitte apresentando e convergindo visões de empresas, governo, universidades e especialistas em temas relacionados à transformaç"
+    },
+    {
+      "user_id": "ab1fb966-d14e-4639-b504-00f7b6f9084b",
+      "post_id": "ab1fb966-d14e-4639-b504-00f7b6f9084b_54",
+      "reason": "Too short: 48 chars (min 200)",
+      "text_preview": "Eldorado e grandes parceiros levando inovação..."
+    },
+    {
+      "user_id": "ab1fb966-d14e-4639-b504-00f7b6f9084b",
+      "post_id": "ab1fb966-d14e-4639-b504-00f7b6f9084b_55",
+      "reason": "Too short: 16 chars (min 200)",
+      "text_preview": "Já se inscreveu?"
+    },
+    {
+      "user_id": "ab1fb966-d14e-4639-b504-00f7b6f9084b",
+      "post_id": "ab1fb966-d14e-4639-b504-00f7b6f9084b_56",
+      "reason": "Too short: 22 chars (min 200)",
+      "text_preview": "#innovation #newdesign"
+    },
+    {
+      "user_id": "ab1fb966-d14e-4639-b504-00f7b6f9084b",
+      "post_id": "ab1fb966-d14e-4639-b504-00f7b6f9084b_57",
+      "reason": "Too short: 75 chars (min 200)",
+      "text_preview": "#artificial #intelligence \"The Most Amazing A.I. Milestones...\".\nWhat next?"
+    },
+    {
+      "user_id": "ab9d0a34-906e-4d05-9992-ae4fbd70cd87",
+      "post_id": "ab9d0a34-906e-4d05-9992-ae4fbd70cd87_2",
+      "reason": "Too short: 38 chars (min 200)",
+      "text_preview": "Inspirational story from my hometown !"
+    },
+    {
+      "user_id": "ab9d0a34-906e-4d05-9992-ae4fbd70cd87",
+      "post_id": "ab9d0a34-906e-4d05-9992-ae4fbd70cd87_3",
+      "reason": "Too short: 19 chars (min 200)",
+      "text_preview": "This one is amazing"
+    },
+    {
+      "user_id": "ab9d0a34-906e-4d05-9992-ae4fbd70cd87",
+      "post_id": "ab9d0a34-906e-4d05-9992-ae4fbd70cd87_4",
+      "reason": "Too short: 10 chars (min 200)",
+      "text_preview": "Nice one !"
+    },
+    {
+      "user_id": "ab9d0a34-906e-4d05-9992-ae4fbd70cd87",
+      "post_id": "ab9d0a34-906e-4d05-9992-ae4fbd70cd87_5",
+      "reason": "Too short: 19 chars (min 200)",
+      "text_preview": "Quite nicely said !"
+    },
+    {
+      "user_id": "ab9d0a34-906e-4d05-9992-ae4fbd70cd87",
+      "post_id": "ab9d0a34-906e-4d05-9992-ae4fbd70cd87_6",
+      "reason": "Too short: 16 chars (min 200)",
+      "text_preview": "SpeakUp #speakup"
+    },
+    {
+      "user_id": "ab9d0a34-906e-4d05-9992-ae4fbd70cd87",
+      "post_id": "ab9d0a34-906e-4d05-9992-ae4fbd70cd87_7",
+      "reason": "Too short: 15 chars (min 200)",
+      "text_preview": "#makinganimpact"
+    },
+    {
+      "user_id": "ab9d0a34-906e-4d05-9992-ae4fbd70cd87",
+      "post_id": "ab9d0a34-906e-4d05-9992-ae4fbd70cd87_8",
+      "reason": "Too short: 127 chars (min 200)",
+      "text_preview": "Microsoft is Hiring software engineering Interns for 2021 Grads.\n\nNo college restrictions.\nCGPA > 7.0\n\nMessage me for reference"
+    },
+    {
+      "user_id": "ab9d0a34-906e-4d05-9992-ae4fbd70cd87",
+      "post_id": "ab9d0a34-906e-4d05-9992-ae4fbd70cd87_9",
+      "reason": "Too short: 34 chars (min 200)",
+      "text_preview": "Anyone interested, reach out to me"
+    },
+    {
+      "user_id": "ab9d0a34-906e-4d05-9992-ae4fbd70cd87",
+      "post_id": "ab9d0a34-906e-4d05-9992-ae4fbd70cd87_10",
+      "reason": "Too short: 36 chars (min 200)",
+      "text_preview": "One of the best videos I came across"
+    },
+    {
+      "user_id": "b897cdbe-ca1b-40fe-b087-ef4c1958425c",
+      "post_id": "b897cdbe-ca1b-40fe-b087-ef4c1958425c_4",
+      "reason": "Too short: 44 chars (min 200)",
+      "text_preview": "View my verified achievement from Microsoft."
+    },
+    {
+      "user_id": "b897cdbe-ca1b-40fe-b087-ef4c1958425c",
+      "post_id": "b897cdbe-ca1b-40fe-b087-ef4c1958425c_5",
+      "reason": "Too few real words: 35 (min 40)",
+      "text_preview": "Congrats team on winning not one, but two awards at Microsoft Hackathon!! I’m truly grateful to have joined this project and worked with these amazing"
+    },
+    {
+      "user_id": "b897cdbe-ca1b-40fe-b087-ef4c1958425c",
+      "post_id": "b897cdbe-ca1b-40fe-b087-ef4c1958425c_6",
+      "reason": "Too few real words: 39 (min 40)",
+      "text_preview": "Last year I was honored to get invited to Charlotte Yarokoni’s In Real Life show, and now they are following up on the past guests and see how they ar"
+    },
+    {
+      "user_id": "b897cdbe-ca1b-40fe-b087-ef4c1958425c",
+      "post_id": "b897cdbe-ca1b-40fe-b087-ef4c1958425c_7",
+      "reason": "Too short: 147 chars (min 200)",
+      "text_preview": "Glad to be featured on the show \"In Real Life\" to share my piano passion :) thank you Jennifer Ritzinger and Charlotte Yarkoni for the opportunity!"
+    },
+    {
+      "user_id": "c788cdc0-2b0a-4a32-bf4e-de67621560ce",
+      "post_id": "c788cdc0-2b0a-4a32-bf4e-de67621560ce_2",
+      "reason": "Too short: 47 chars (min 200)",
+      "text_preview": "For any current and aspiring PMs in the network"
+    },
+    {
+      "user_id": "c788cdc0-2b0a-4a32-bf4e-de67621560ce",
+      "post_id": "c788cdc0-2b0a-4a32-bf4e-de67621560ce_3",
+      "reason": "Too short: 142 chars (min 200)",
+      "text_preview": "Thanks Soumya Kanti Roy for the share.\n\nGoutham Kumar can be reached on his website:\n\nwww.serveneedy.org\n\nHe can also be accessed on Facebook:"
+    },
+    {
+      "user_id": "c802671d-8fd2-4a18-8fe8-689b72f7c268",
+      "post_id": "c802671d-8fd2-4a18-8fe8-689b72f7c268_1",
+      "reason": "Too short: 46 chars (min 200)",
+      "text_preview": "Very well written Naman Muley. Always Proud !!"
+    },
+    {
+      "user_id": "c802671d-8fd2-4a18-8fe8-689b72f7c268",
+      "post_id": "c802671d-8fd2-4a18-8fe8-689b72f7c268_3",
+      "reason": "Too short: 126 chars (min 200)",
+      "text_preview": "Loved being a part of this !! Thank you Jita Dash and MSFT for upholding our company culture and D&I as one of the core values"
+    },
+    {
+      "user_id": "c802671d-8fd2-4a18-8fe8-689b72f7c268",
+      "post_id": "c802671d-8fd2-4a18-8fe8-689b72f7c268_6",
+      "reason": "Too short: 109 chars (min 200)",
+      "text_preview": "Check out this video on Microsoft Loop - The product, my teammates and I work on !! #microsoft #microsoftloop"
+    },
+    {
+      "user_id": "c802671d-8fd2-4a18-8fe8-689b72f7c268",
+      "post_id": "c802671d-8fd2-4a18-8fe8-689b72f7c268_7",
+      "reason": "Too short: 196 chars (min 200)",
+      "text_preview": "Love the positive attitude Sara !! The best opportunity is on its way !! Wishing you the very best in your search and requesting folks on my network t"
+    },
+    {
+      "user_id": "c802671d-8fd2-4a18-8fe8-689b72f7c268",
+      "post_id": "c802671d-8fd2-4a18-8fe8-689b72f7c268_8",
+      "reason": "Noise signal detected: 'happy to share that'",
+      "text_preview": "I’m happy to share that I’ve obtained a new certification: Microsoft Global Hackathon 2023 from Microsoft!\n\nSo glad to have gotten a chance to partici"
+    },
+    {
+      "user_id": "c802671d-8fd2-4a18-8fe8-689b72f7c268",
+      "post_id": "c802671d-8fd2-4a18-8fe8-689b72f7c268_9",
+      "reason": "Too short: 44 chars (min 200)",
+      "text_preview": "View my verified achievement from Microsoft."
+    },
+    {
+      "user_id": "c802671d-8fd2-4a18-8fe8-689b72f7c268",
+      "post_id": "c802671d-8fd2-4a18-8fe8-689b72f7c268_10",
+      "reason": "Too short: 110 chars (min 200)",
+      "text_preview": "It's officially here now !! My team and I have been working on this from the service side \nGo give it a try !!"
+    },
+    {
+      "user_id": "c802671d-8fd2-4a18-8fe8-689b72f7c268",
+      "post_id": "c802671d-8fd2-4a18-8fe8-689b72f7c268_11",
+      "reason": "Too short: 154 chars (min 200)",
+      "text_preview": "Very very relatable and beautifully written thoughts Brototy Mishra !! As always, proud of you and proud of our Mothers - the \"average Indian housewif"
+    },
+    {
+      "user_id": "c802671d-8fd2-4a18-8fe8-689b72f7c268",
+      "post_id": "c802671d-8fd2-4a18-8fe8-689b72f7c268_12",
+      "reason": "Too short: 127 chars (min 200)",
+      "text_preview": "Excited to share this news !! My team and I have been working on some of the backend projects. Check out #MicrosoftLoop\n\nVideo:"
+    },
+    {
+      "user_id": "c802671d-8fd2-4a18-8fe8-689b72f7c268",
+      "post_id": "c802671d-8fd2-4a18-8fe8-689b72f7c268_14",
+      "reason": "Too short: 32 chars (min 200)",
+      "text_preview": "Sharing on behalf of my friend !"
+    },
+    {
+      "user_id": "c802671d-8fd2-4a18-8fe8-689b72f7c268",
+      "post_id": "c802671d-8fd2-4a18-8fe8-689b72f7c268_15",
+      "reason": "Too short: 44 chars (min 200)",
+      "text_preview": "Resharing for better reach !! Brototy Mishra"
+    },
+    {
+      "user_id": "c802671d-8fd2-4a18-8fe8-689b72f7c268",
+      "post_id": "c802671d-8fd2-4a18-8fe8-689b72f7c268_16",
+      "reason": "Too short: 39 chars (min 200)",
+      "text_preview": "Resharing this on behalf of a friend !!"
+    },
+    {
+      "user_id": "c802671d-8fd2-4a18-8fe8-689b72f7c268",
+      "post_id": "c802671d-8fd2-4a18-8fe8-689b72f7c268_17",
+      "reason": "Too short: 73 chars (min 200)",
+      "text_preview": "This day !! Made it to the first crystal #5years #grateful #microsoftlife"
+    },
+    {
+      "user_id": "c802671d-8fd2-4a18-8fe8-689b72f7c268",
+      "post_id": "c802671d-8fd2-4a18-8fe8-689b72f7c268_18",
+      "reason": "Too short: 87 chars (min 200)",
+      "text_preview": "So proud of the amazing work you are doing Brototy Mishra !! Sharing for broader reach."
+    },
+    {
+      "user_id": "c802671d-8fd2-4a18-8fe8-689b72f7c268",
+      "post_id": "c802671d-8fd2-4a18-8fe8-689b72f7c268_19",
+      "reason": "Noise signal detected: 'we're hiring'",
+      "text_preview": "Check out this fun video to learn more about the Modern Workplace Transformation team. I have been lucky to be a part of the fun events shown in this "
+    },
+    {
+      "user_id": "c802671d-8fd2-4a18-8fe8-689b72f7c268",
+      "post_id": "c802671d-8fd2-4a18-8fe8-689b72f7c268_20",
+      "reason": "Too short: 34 chars (min 200)",
+      "text_preview": "Interesting read ! #microsoftteams"
+    },
+    {
+      "user_id": "c802671d-8fd2-4a18-8fe8-689b72f7c268",
+      "post_id": "c802671d-8fd2-4a18-8fe8-689b72f7c268_21",
+      "reason": "Too short: 35 chars (min 200)",
+      "text_preview": "#microsoftteams for Personal use !!"
+    },
+    {
+      "user_id": "c802671d-8fd2-4a18-8fe8-689b72f7c268",
+      "post_id": "c802671d-8fd2-4a18-8fe8-689b72f7c268_22",
+      "reason": "Too short: 67 chars (min 200)",
+      "text_preview": "FLW for the win ! #frontlineworkers #shifts #retail #microsoftteams"
+    },
+    {
+      "user_id": "c802671d-8fd2-4a18-8fe8-689b72f7c268",
+      "post_id": "c802671d-8fd2-4a18-8fe8-689b72f7c268_23",
+      "reason": "Too short: 15 chars (min 200)",
+      "text_preview": "#MicrosoftTeams"
+    },
+    {
+      "user_id": "c802671d-8fd2-4a18-8fe8-689b72f7c268",
+      "post_id": "c802671d-8fd2-4a18-8fe8-689b72f7c268_24",
+      "reason": "Too short: 33 chars (min 200)",
+      "text_preview": "#microsoftteams #frontlineworkers"
+    },
+    {
+      "user_id": "c802671d-8fd2-4a18-8fe8-689b72f7c268",
+      "post_id": "c802671d-8fd2-4a18-8fe8-689b72f7c268_26",
+      "reason": "Too short: 65 chars (min 200)",
+      "text_preview": "Proud to be part of this team ! #frontlineworkers #microsoftteams"
+    },
+    {
+      "user_id": "c802671d-8fd2-4a18-8fe8-689b72f7c268",
+      "post_id": "c802671d-8fd2-4a18-8fe8-689b72f7c268_27",
+      "reason": "Too short: 54 chars (min 200)",
+      "text_preview": "#firstlineworkers #microsoftteams #workforcemanagement"
+    },
+    {
+      "user_id": "c802671d-8fd2-4a18-8fe8-689b72f7c268",
+      "post_id": "c802671d-8fd2-4a18-8fe8-689b72f7c268_28",
+      "reason": "Too short: 15 chars (min 200)",
+      "text_preview": "#microsoftteams"
+    },
+    {
+      "user_id": "c802671d-8fd2-4a18-8fe8-689b72f7c268",
+      "post_id": "c802671d-8fd2-4a18-8fe8-689b72f7c268_29",
+      "reason": "Too short: 101 chars (min 200)",
+      "text_preview": "Congratulations Caleb Tseng and team !! This is so amazing and so happy to see Honeywell in the video"
+    },
+    {
+      "user_id": "c802671d-8fd2-4a18-8fe8-689b72f7c268",
+      "post_id": "c802671d-8fd2-4a18-8fe8-689b72f7c268_30",
+      "reason": "Too few real words: 30 (min 40)",
+      "text_preview": "We saw some great announcements and a lot of excitement come out of Microsoft Build this week. Microsoft continues to empower healthcare provider coll"
+    },
+    {
+      "user_id": "c802671d-8fd2-4a18-8fe8-689b72f7c268",
+      "post_id": "c802671d-8fd2-4a18-8fe8-689b72f7c268_31",
+      "reason": "Too short: 54 chars (min 200)",
+      "text_preview": "Shifts for the win !! #microsoftteams #microsoftshifts"
+    },
+    {
+      "user_id": "c802671d-8fd2-4a18-8fe8-689b72f7c268",
+      "post_id": "c802671d-8fd2-4a18-8fe8-689b72f7c268_32",
+      "reason": "Too short: 36 chars (min 200)",
+      "text_preview": "Go #microsoftteams #firstlineworkers"
+    },
+    {
+      "user_id": "c802671d-8fd2-4a18-8fe8-689b72f7c268",
+      "post_id": "c802671d-8fd2-4a18-8fe8-689b72f7c268_33",
+      "reason": "Too short: 33 chars (min 200)",
+      "text_preview": "#firstlineworkers #microsoftteams"
+    },
+    {
+      "user_id": "c802671d-8fd2-4a18-8fe8-689b72f7c268",
+      "post_id": "c802671d-8fd2-4a18-8fe8-689b72f7c268_34",
+      "reason": "Too short: 128 chars (min 200)",
+      "text_preview": "Excited to see the amazing work my team is doing rolling out to help users, when it matters the most! #firstline #microsoftteams"
+    },
+    {
+      "user_id": "c802671d-8fd2-4a18-8fe8-689b72f7c268",
+      "post_id": "c802671d-8fd2-4a18-8fe8-689b72f7c268_35",
+      "reason": "Too short: 11 chars (min 200)",
+      "text_preview": "#givingback"
+    },
+    {
+      "user_id": "c802671d-8fd2-4a18-8fe8-689b72f7c268",
+      "post_id": "c802671d-8fd2-4a18-8fe8-689b72f7c268_36",
+      "reason": "Too short: 10 chars (min 200)",
+      "text_preview": "#firstline"
+    },
+    {
+      "user_id": "c802671d-8fd2-4a18-8fe8-689b72f7c268",
+      "post_id": "c802671d-8fd2-4a18-8fe8-689b72f7c268_37",
+      "reason": "Too short: 100 chars (min 200)",
+      "text_preview": "Fortune annouced that Satya is the #1 Business Person of the year. Proud to work for an amazing CEO."
+    },
+    {
+      "user_id": "c802671d-8fd2-4a18-8fe8-689b72f7c268",
+      "post_id": "c802671d-8fd2-4a18-8fe8-689b72f7c268_38",
+      "reason": "Too short: 96 chars (min 200)",
+      "text_preview": "\"Once you’ve won the battle with yourself every other hurdle you face seems easy to overcome...\""
+    },
+    {
+      "user_id": "c802671d-8fd2-4a18-8fe8-689b72f7c268",
+      "post_id": "c802671d-8fd2-4a18-8fe8-689b72f7c268_39",
+      "reason": "Too short: 10 chars (min 200)",
+      "text_preview": "Good one!!"
+    },
+    {
+      "user_id": "c802671d-8fd2-4a18-8fe8-689b72f7c268",
+      "post_id": "c802671d-8fd2-4a18-8fe8-689b72f7c268_40",
+      "reason": "Too short: 19 chars (min 200)",
+      "text_preview": "Very well written.."
+    },
+    {
+      "user_id": "dc0b5d74-87d9-4fe3-8883-aef9d0924114",
+      "post_id": "dc0b5d74-87d9-4fe3-8883-aef9d0924114_1",
+      "reason": "Too short: 38 chars (min 200)",
+      "text_preview": "View my verified achievement from SAP."
+    },
+    {
+      "user_id": "dc0b5d74-87d9-4fe3-8883-aef9d0924114",
+      "post_id": "dc0b5d74-87d9-4fe3-8883-aef9d0924114_2",
+      "reason": "Too short: 120 chars (min 200)",
+      "text_preview": "I’m happy to share that I’m starting a new position as Software Engineer II at Microsoft! \n#microsoftlife #sapconsulting"
+    },
+    {
+      "user_id": "dc0b5d74-87d9-4fe3-8883-aef9d0924114",
+      "post_id": "dc0b5d74-87d9-4fe3-8883-aef9d0924114_3",
+      "reason": "Too short: 38 chars (min 200)",
+      "text_preview": "View my verified achievement from SAP."
+    },
+    {
+      "user_id": "dc0b5d74-87d9-4fe3-8883-aef9d0924114",
+      "post_id": "dc0b5d74-87d9-4fe3-8883-aef9d0924114_4",
+      "reason": "Too short: 44 chars (min 200)",
+      "text_preview": "View my verified achievement from Scrum.org."
+    },
+    {
+      "user_id": "dc0b5d74-87d9-4fe3-8883-aef9d0924114",
+      "post_id": "dc0b5d74-87d9-4fe3-8883-aef9d0924114_5",
+      "reason": "Too short: 44 chars (min 200)",
+      "text_preview": "View my verified achievement from Microsoft."
+    },
+    {
+      "user_id": "dc0b5d74-87d9-4fe3-8883-aef9d0924114",
+      "post_id": "dc0b5d74-87d9-4fe3-8883-aef9d0924114_6",
+      "reason": "Too short: 153 chars (min 200)",
+      "text_preview": "1).Cost of Goods Sold Split.\n2).Production Variance Split. \nIf Companies follow Account Based COPA in S4 HANA With Material Ledger ( Multiple Valuatio"
+    },
+    {
+      "user_id": "dc0b5d74-87d9-4fe3-8883-aef9d0924114",
+      "post_id": "dc0b5d74-87d9-4fe3-8883-aef9d0924114_9",
+      "reason": "Too short: 198 chars (min 200)",
+      "text_preview": "Advantages of the Report Painter include:\n - Easy and flexible report definition\n - Report definition without using sets\n - Direct layout control\n\nSee"
+    },
+    {
+      "user_id": "dc0b5d74-87d9-4fe3-8883-aef9d0924114",
+      "post_id": "dc0b5d74-87d9-4fe3-8883-aef9d0924114_10",
+      "reason": "Too short: 8 chars (min 200)",
+      "text_preview": "HBD SAP!"
+    },
+    {
+      "user_id": "dc0b5d74-87d9-4fe3-8883-aef9d0924114",
+      "post_id": "dc0b5d74-87d9-4fe3-8883-aef9d0924114_11",
+      "reason": "Too short: 18 chars (min 200)",
+      "text_preview": "MM-FI Integration."
+    },
+    {
+      "user_id": "dc0b5d74-87d9-4fe3-8883-aef9d0924114",
+      "post_id": "dc0b5d74-87d9-4fe3-8883-aef9d0924114_13",
+      "reason": "Too short: 68 chars (min 200)",
+      "text_preview": "I just uploaded \"Trade unions in mahanadi coal fields\" on SlideShare"
+    },
+    {
+      "user_id": "dc0b5d74-87d9-4fe3-8883-aef9d0924114",
+      "post_id": "dc0b5d74-87d9-4fe3-8883-aef9d0924114_14",
+      "reason": "Too short: 38 chars (min 200)",
+      "text_preview": "I just uploaded \"Report\" on SlideShare"
+    },
+    {
+      "user_id": "dc0b5d74-87d9-4fe3-8883-aef9d0924114",
+      "post_id": "dc0b5d74-87d9-4fe3-8883-aef9d0924114_15",
+      "reason": "Too short: 78 chars (min 200)",
+      "text_preview": "I just uploaded \"REPORT ON ‘THE ECONOMIC CRISIS OF INDIA- 1991”\" on SlideShare"
+    },
+    {
+      "user_id": "df5fe5a4-2fa7-4dd8-8dde-f0adf9fdef6e",
+      "post_id": "df5fe5a4-2fa7-4dd8-8dde-f0adf9fdef6e_2",
+      "reason": "Too short: 19 chars (min 200)",
+      "text_preview": "Great opportunity!!"
+    },
+    {
+      "user_id": "df5fe5a4-2fa7-4dd8-8dde-f0adf9fdef6e",
+      "post_id": "df5fe5a4-2fa7-4dd8-8dde-f0adf9fdef6e_4",
+      "reason": "Too short: 93 chars (min 200)",
+      "text_preview": "I’m happy to share that I’m starting a new position as Senior Software Engineer at Microsoft!"
+    },
+    {
+      "user_id": "e8e645ed-2c14-4a7e-ac8f-e42993ae794a",
+      "post_id": "e8e645ed-2c14-4a7e-ac8f-e42993ae794a_1",
+      "reason": "Too short: 93 chars (min 200)",
+      "text_preview": "I’m happy to share that I’m starting a new position as Senior Software Engineer at Microsoft!"
+    },
+    {
+      "user_id": "e9e811b0-6759-473a-aed2-8a84e5566a8c",
+      "post_id": "e9e811b0-6759-473a-aed2-8a84e5566a8c_11",
+      "reason": "Noise signal detected: '#hiring'",
+      "text_preview": "#hiringinterns #internship #flexibleworking \nAangan Trust (India)\nAangan is looking to hire an #intern immediately for the following project: \n\n\"Hear "
+    },
+    {
+      "user_id": "e9e811b0-6759-473a-aed2-8a84e5566a8c",
+      "post_id": "e9e811b0-6759-473a-aed2-8a84e5566a8c_12",
+      "reason": "Noise signal detected: '#hiring'",
+      "text_preview": "#hiringinterns #internship #flexibleworking \nAangan Trust (India)\nAangan is looking to hire an #intern immediately for the following project: \n\n\"Hear "
+    },
+    {
+      "user_id": "e9e811b0-6759-473a-aed2-8a84e5566a8c",
+      "post_id": "e9e811b0-6759-473a-aed2-8a84e5566a8c_13",
+      "reason": "Too short: 104 chars (min 200)",
+      "text_preview": "The original Bitcoin whitepaper by Satoshi Nakamoto. If you've read it, that's great. If not, must read!"
+    },
+    {
+      "user_id": "e9e811b0-6759-473a-aed2-8a84e5566a8c",
+      "post_id": "e9e811b0-6759-473a-aed2-8a84e5566a8c_16",
+      "reason": "Too few real words: 39 (min 40)",
+      "text_preview": "Jargon isn't a sign of expertise; it's a signal of insecurity.\n9 studies: when people lack status, they resort to unnecessarily technical language in "
+    },
+    {
+      "user_id": "e9e811b0-6759-473a-aed2-8a84e5566a8c",
+      "post_id": "e9e811b0-6759-473a-aed2-8a84e5566a8c_17",
+      "reason": "Noise signal detected: 'proud to announce'",
+      "text_preview": "After testing, designing, and awesome beta feedback, we’re proud to announce that the moment is finally here! Our analytics platform is now live! So i"
+    },
+    {
+      "user_id": "e9e811b0-6759-473a-aed2-8a84e5566a8c",
+      "post_id": "e9e811b0-6759-473a-aed2-8a84e5566a8c_18",
+      "reason": "Too short: 104 chars (min 200)",
+      "text_preview": "Bringing easy and accessible Parasailing to Buffalo!\nCheck out our page for more, www.716parasailing.com"
+    },
+    {
+      "user_id": "e9e811b0-6759-473a-aed2-8a84e5566a8c",
+      "post_id": "e9e811b0-6759-473a-aed2-8a84e5566a8c_19",
+      "reason": "Too few real words: 30 (min 40)",
+      "text_preview": "Here's my certificate for completing InsideSherpa's #virtualinternship. Great virtual experience into how JPMC uses tools like Reactjs, Perspective to"
+    },
+    {
+      "user_id": "e9e811b0-6759-473a-aed2-8a84e5566a8c",
+      "post_id": "e9e811b0-6759-473a-aed2-8a84e5566a8c_20",
+      "reason": "Too short: 152 chars (min 200)",
+      "text_preview": "Just finished the course “Building and Deploying Deep Learning Applications with TensorFlow”! #tensorflow #machinelearning\n\nCourse Author: @Adam Geitg"
+    },
+    {
+      "user_id": "e9e811b0-6759-473a-aed2-8a84e5566a8c",
+      "post_id": "e9e811b0-6759-473a-aed2-8a84e5566a8c_22",
+      "reason": "Too few real words: 24 (min 40)",
+      "text_preview": "Completed the AWS Concepts by Linux Academy.\nGained insight into Core AWS Services and AWS Global Infrastructure.\n\nCertificate Verification Link: \n\nCo"
+    },
+    {
+      "user_id": "e9e811b0-6759-473a-aed2-8a84e5566a8c",
+      "post_id": "e9e811b0-6759-473a-aed2-8a84e5566a8c_23",
+      "reason": "Too few real words: 29 (min 40)",
+      "text_preview": "Completed the DevOps Essentials by Linux Academy.\nGained insight into DevOps culture, concepts and practices, essential tools, and integration with th"
+    },
+    {
+      "user_id": "e9e811b0-6759-473a-aed2-8a84e5566a8c",
+      "post_id": "e9e811b0-6759-473a-aed2-8a84e5566a8c_25",
+      "reason": "Too short: 27 chars (min 200)",
+      "text_preview": "Simple and straightforward!"
+    },
+    {
+      "user_id": "e9e811b0-6759-473a-aed2-8a84e5566a8c",
+      "post_id": "e9e811b0-6759-473a-aed2-8a84e5566a8c_26",
+      "reason": "Too short: 61 chars (min 200)",
+      "text_preview": "Beautiful introduction to Quantum Computing,\nvery insightful!"
+    },
+    {
+      "user_id": "e9e811b0-6759-473a-aed2-8a84e5566a8c",
+      "post_id": "e9e811b0-6759-473a-aed2-8a84e5566a8c_27",
+      "reason": "Too short: 139 chars (min 200)",
+      "text_preview": "Happy National STEM Day, friends. \n\nIf you’ve been told you can’t be a scientist, tell that person to sit tight and watch what you will do."
+    },
+    {
+      "user_id": "e9e811b0-6759-473a-aed2-8a84e5566a8c",
+      "post_id": "e9e811b0-6759-473a-aed2-8a84e5566a8c_28",
+      "reason": "Too short: 33 chars (min 200)",
+      "text_preview": "Full Stack developers cheatsheet!"
+    },
+    {
+      "user_id": "e9e811b0-6759-473a-aed2-8a84e5566a8c",
+      "post_id": "e9e811b0-6759-473a-aed2-8a84e5566a8c_29",
+      "reason": "Too short: 190 chars (min 200)",
+      "text_preview": "So it begins. Facial screening now live at Bangalore Airport. In a few months you can apparently go right through to the gates with no paper/boarding "
+    },
+    {
+      "user_id": "e9e811b0-6759-473a-aed2-8a84e5566a8c",
+      "post_id": "e9e811b0-6759-473a-aed2-8a84e5566a8c_31",
+      "reason": "Too short: 167 chars (min 200)",
+      "text_preview": "International Students: what's best for H-1B visa sponsorship? Should you target large firms? Maybe smaller firms? Maybe both? See the advice below fr"
+    },
+    {
+      "user_id": "e9e811b0-6759-473a-aed2-8a84e5566a8c",
+      "post_id": "e9e811b0-6759-473a-aed2-8a84e5566a8c_32",
+      "reason": "Too short: 37 chars (min 200)",
+      "text_preview": "Love the clarity in her achievements!"
+    },
+    {
+      "user_id": "e9e811b0-6759-473a-aed2-8a84e5566a8c",
+      "post_id": "e9e811b0-6759-473a-aed2-8a84e5566a8c_33",
+      "reason": "Too short: 185 chars (min 200)",
+      "text_preview": "Can we predict the future? I believe we can. As this year’s Hawking fellow, I want to use this platform created by him and his family to try and answe"
+    },
+    {
+      "user_id": "e9e811b0-6759-473a-aed2-8a84e5566a8c",
+      "post_id": "e9e811b0-6759-473a-aed2-8a84e5566a8c_34",
+      "reason": "Too short: 103 chars (min 200)",
+      "text_preview": "Ever wondered what that one extra thing that shows you're still hustling? Gary Vee I love your passion!"
+    },
+    {
+      "user_id": "e9e811b0-6759-473a-aed2-8a84e5566a8c",
+      "post_id": "e9e811b0-6759-473a-aed2-8a84e5566a8c_35",
+      "reason": "Hashtag-heavy: 30/107 tokens are hashtags",
+      "text_preview": "Augmented reality at its finest, how cool is this!!\n\nFans of the Dallas Cowboys were greeted with an incredible new piece of technology when they step"
+    },
+    {
+      "user_id": "e9e811b0-6759-473a-aed2-8a84e5566a8c",
+      "post_id": "e9e811b0-6759-473a-aed2-8a84e5566a8c_36",
+      "reason": "Too short: 31 chars (min 200)",
+      "text_preview": "A hand motion controlled toy..."
+    },
+    {
+      "user_id": "e9e811b0-6759-473a-aed2-8a84e5566a8c",
+      "post_id": "e9e811b0-6759-473a-aed2-8a84e5566a8c_37",
+      "reason": "Too short: 60 chars (min 200)",
+      "text_preview": "So much satisfaction in this photo, but so many more to add!"
+    },
+    {
+      "user_id": "e9e811b0-6759-473a-aed2-8a84e5566a8c",
+      "post_id": "e9e811b0-6759-473a-aed2-8a84e5566a8c_38",
+      "reason": "Too short: 25 chars (min 200)",
+      "text_preview": "Tesla slaying the market!"
+    },
+    {
+      "user_id": "e9e811b0-6759-473a-aed2-8a84e5566a8c",
+      "post_id": "e9e811b0-6759-473a-aed2-8a84e5566a8c_39",
+      "reason": "Too short: 43 chars (min 200)",
+      "text_preview": "Want a free ride around Brooklyn Navy Yard?"
+    },
+    {
+      "user_id": "e9e811b0-6759-473a-aed2-8a84e5566a8c",
+      "post_id": "e9e811b0-6759-473a-aed2-8a84e5566a8c_42",
+      "reason": "Too short: 11 chars (min 200)",
+      "text_preview": "Incredible!"
+    },
+    {
+      "user_id": "e9e811b0-6759-473a-aed2-8a84e5566a8c",
+      "post_id": "e9e811b0-6759-473a-aed2-8a84e5566a8c_43",
+      "reason": "Too short: 46 chars (min 200)",
+      "text_preview": "Deep learning has a terrible carbon footprint."
+    },
+    {
+      "user_id": "e9e811b0-6759-473a-aed2-8a84e5566a8c",
+      "post_id": "e9e811b0-6759-473a-aed2-8a84e5566a8c_44",
+      "reason": "Hashtag-heavy: 14/83 tokens are hashtags",
+      "text_preview": "An airline accepting cryptocurrency and running its own exchange?... It’s happening. Really interesting loyalty angle to this also... \n\nAccepting cryp"
+    },
+    {
+      "user_id": "e9e811b0-6759-473a-aed2-8a84e5566a8c",
+      "post_id": "e9e811b0-6759-473a-aed2-8a84e5566a8c_45",
+      "reason": "Too short: 79 chars (min 200)",
+      "text_preview": "How to Be Jason Bourne: Multiple Passports, Swiss Banking, and Crossing Borders"
+    },
+    {
+      "user_id": "e9e811b0-6759-473a-aed2-8a84e5566a8c",
+      "post_id": "e9e811b0-6759-473a-aed2-8a84e5566a8c_46",
+      "reason": "Too short: 62 chars (min 200)",
+      "text_preview": "Discover the humans running your dream company! \nHeres mine-->"
+    },
+    {
+      "user_id": "e9e811b0-6759-473a-aed2-8a84e5566a8c",
+      "post_id": "e9e811b0-6759-473a-aed2-8a84e5566a8c_47",
+      "reason": "Too short: 72 chars (min 200)",
+      "text_preview": "Whether you're harnessing AI, Data or Deep Learning, context is crucial!"
+    },
+    {
+      "user_id": "e9e811b0-6759-473a-aed2-8a84e5566a8c",
+      "post_id": "e9e811b0-6759-473a-aed2-8a84e5566a8c_48",
+      "reason": "Too short: 76 chars (min 200)",
+      "text_preview": "What to do when asked what is your greatest weakness during a job interview?"
+    },
+    {
+      "user_id": "e9e811b0-6759-473a-aed2-8a84e5566a8c",
+      "post_id": "e9e811b0-6759-473a-aed2-8a84e5566a8c_49",
+      "reason": "Too few real words: 17 (min 40)",
+      "text_preview": "Black Mirror come to life! Imagine blocking people out of your life in real-time with Augmented reality\n\n#ai #artificialintelligence #augmentedreality"
+    },
+    {
+      "user_id": "e9e811b0-6759-473a-aed2-8a84e5566a8c",
+      "post_id": "e9e811b0-6759-473a-aed2-8a84e5566a8c_50",
+      "reason": "Too short: 11 chars (min 200)",
+      "text_preview": "Mind=blown!"
+    },
+    {
+      "user_id": "e9e811b0-6759-473a-aed2-8a84e5566a8c",
+      "post_id": "e9e811b0-6759-473a-aed2-8a84e5566a8c_53",
+      "reason": "Too short: 63 chars (min 200)",
+      "text_preview": "Global Blockchain! Hoping for India on this list very soon too."
+    },
+    {
+      "user_id": "e9e811b0-6759-473a-aed2-8a84e5566a8c",
+      "post_id": "e9e811b0-6759-473a-aed2-8a84e5566a8c_54",
+      "reason": "Too short: 192 chars (min 200)",
+      "text_preview": "CVPR 2019 is underway! We’re at Booth 909 - stop by to see the latest in our perception, prediction and planning for self-driving, and meet some of th"
+    },
+    {
+      "user_id": "f20ab826-b48b-42cf-be34-de640b4befa1",
+      "post_id": "f20ab826-b48b-42cf-be34-de640b4befa1_5",
+      "reason": "Noise signal detected: 'pleased to announce'",
+      "text_preview": "In Azure, Private Endpoints (PEs) are the way to ensure your network traffic with PaaS resources like storage stay within your control and only within"
+    },
+    {
+      "user_id": "f20ab826-b48b-42cf-be34-de640b4befa1",
+      "post_id": "f20ab826-b48b-42cf-be34-de640b4befa1_7",
+      "reason": "Noise signal detected: 'happy to share that'",
+      "text_preview": "I’m happy to share that I am returning to the role as a Guest Lecturer at University of Washington Information School! Still full-time at Microsoft bu"
+    },
+    {
+      "user_id": "f20ab826-b48b-42cf-be34-de640b4befa1",
+      "post_id": "f20ab826-b48b-42cf-be34-de640b4befa1_9",
+      "reason": "Noise signal detected: 'excited to announce'",
+      "text_preview": "Today I have two exciting announcements. Let's get into the first one!\n\nWe are excited to announce that a public preview of supporting up 5,000 virtua"
+    },
+    {
+      "user_id": "f20ab826-b48b-42cf-be34-de640b4befa1",
+      "post_id": "f20ab826-b48b-42cf-be34-de640b4befa1_11",
+      "reason": "Too short: 87 chars (min 200)",
+      "text_preview": "Amazing to see this great feature added to our Azure Virtual Network Manager portfolio!"
+    },
+    {
+      "user_id": "f20ab826-b48b-42cf-be34-de640b4befa1",
+      "post_id": "f20ab826-b48b-42cf-be34-de640b4befa1_13",
+      "reason": "Too short: 136 chars (min 200)",
+      "text_preview": "A shout-out to Madhav Somani on my team for really helping enable copilot for Azure Networking. If you haven't seen this go take a look!"
+    },
+    {
+      "user_id": "f20ab826-b48b-42cf-be34-de640b4befa1",
+      "post_id": "f20ab826-b48b-42cf-be34-de640b4befa1_14",
+      "reason": "Too short: 128 chars (min 200)",
+      "text_preview": "I'm excited to see my friend since middle school publish a book on such an important topic! I encourage you all to check it out."
+    },
+    {
+      "user_id": "f20ab826-b48b-42cf-be34-de640b4befa1",
+      "post_id": "f20ab826-b48b-42cf-be34-de640b4befa1_15",
+      "reason": "Noise signal detected: 'pleased to announce'",
+      "text_preview": "One of the most asked for features by customers for Azure Virtual Network Manager (AvNM) isn't a feature at all! It was to change our billing model. \n"
+    },
+    {
+      "user_id": "f20ab826-b48b-42cf-be34-de640b4befa1",
+      "post_id": "f20ab826-b48b-42cf-be34-de640b4befa1_17",
+      "reason": "Too short: 109 chars (min 200)",
+      "text_preview": "NSP is a game changer for PaaS security and a peer product to mine. This is amazing to see in public preview!"
+    },
+    {
+      "user_id": "f20ab826-b48b-42cf-be34-de640b4befa1",
+      "post_id": "f20ab826-b48b-42cf-be34-de640b4befa1_19",
+      "reason": "Noise signal detected: 'excited to announce'",
+      "text_preview": "IP Address Management (IPAM)! \n\nIt's something that I remember doing 20 years ago in an Excel spreadsheet. And many companies today still fall back to"
+    },
+    {
+      "user_id": "f20ab826-b48b-42cf-be34-de640b4befa1",
+      "post_id": "f20ab826-b48b-42cf-be34-de640b4befa1_22",
+      "reason": "Noise signal detected: 'pleased to announce'",
+      "text_preview": "A great day for Connectivity in Azure! After years of effort, I'm pleased to announce that we have released Mesh networks and Hub/Spoke with Transitiv"
+    },
+    {
+      "user_id": "f20ab826-b48b-42cf-be34-de640b4befa1",
+      "post_id": "f20ab826-b48b-42cf-be34-de640b4befa1_25",
+      "reason": "Noise signal detected: 'excited to announce'",
+      "text_preview": "I'm excited to announce my amazing team has brought UDR management to public preview! The capability to manage custom route tables has been a major as"
+    },
+    {
+      "user_id": "f20ab826-b48b-42cf-be34-de640b4befa1",
+      "post_id": "f20ab826-b48b-42cf-be34-de640b4befa1_26",
+      "reason": "Too short: 86 chars (min 200)",
+      "text_preview": "Exciting to announce that we now have support for security admin rules in all regions."
+    },
+    {
+      "user_id": "f20ab826-b48b-42cf-be34-de640b4befa1",
+      "post_id": "f20ab826-b48b-42cf-be34-de640b4befa1_27",
+      "reason": "Too short: 103 chars (min 200)",
+      "text_preview": "One of the great things about Microsoft is that we use our products. Often we are our biggest customer!"
+    },
+    {
+      "user_id": "f20ab826-b48b-42cf-be34-de640b4befa1",
+      "post_id": "f20ab826-b48b-42cf-be34-de640b4befa1_28",
+      "reason": "Too short: 92 chars (min 200)",
+      "text_preview": "Flashback to 11 years ago when LinkedIn shared this with me. I've been on here way too long!"
+    },
+    {
+      "user_id": "f20ab826-b48b-42cf-be34-de640b4befa1",
+      "post_id": "f20ab826-b48b-42cf-be34-de640b4befa1_30",
+      "reason": "Too short: 121 chars (min 200)",
+      "text_preview": "The ability to visualize complex networks is crucial and it's great to see AvNM helping our customers be able to do this."
+    },
+    {
+      "user_id": "f20ab826-b48b-42cf-be34-de640b4befa1",
+      "post_id": "f20ab826-b48b-42cf-be34-de640b4befa1_31",
+      "reason": "Too short: 25 chars (min 200)",
+      "text_preview": "A great overview of AvNM."
+    },
+    {
+      "user_id": "f20ab826-b48b-42cf-be34-de640b4befa1",
+      "post_id": "f20ab826-b48b-42cf-be34-de640b4befa1_32",
+      "reason": "Too short: 119 chars (min 200)",
+      "text_preview": "I am so excited to announce that Azure Virtual Network Manager is now generally available. \n\n#azure #network #microsoft"
+    },
+    {
+      "user_id": "f20ab826-b48b-42cf-be34-de640b4befa1",
+      "post_id": "f20ab826-b48b-42cf-be34-de640b4befa1_33",
+      "reason": "Too short: 194 chars (min 200)",
+      "text_preview": "I'm excited to be presenting at Microsoft Ignite this year! I will be talking about Azure Networking of course. A bit nervous but should be great fun."
+    },
+    {
+      "user_id": "f20ab826-b48b-42cf-be34-de640b4befa1",
+      "post_id": "f20ab826-b48b-42cf-be34-de640b4befa1_34",
+      "reason": "Too short: 115 chars (min 200)",
+      "text_preview": "Atlanta is growing! if anyone is interested take a look at my colleague's positions. Sharoon is an amazing manager."
+    },
+    {
+      "user_id": "f20ab826-b48b-42cf-be34-de640b4befa1",
+      "post_id": "f20ab826-b48b-42cf-be34-de640b4befa1_35",
+      "reason": "Too short: 133 chars (min 200)",
+      "text_preview": "I’m happy to share that I’m starting a new position as Principal Software Engineer Manager at Microsoft! #microsoft #softwareengineer"
+    },
+    {
+      "user_id": "f20ab826-b48b-42cf-be34-de640b4befa1",
+      "post_id": "f20ab826-b48b-42cf-be34-de640b4befa1_36",
+      "reason": "Too short: 90 chars (min 200)",
+      "text_preview": "I’m happy to share that I’m back to managing people again. #microsoft #softwareengineering"
+    },
+    {
+      "user_id": "f20ab826-b48b-42cf-be34-de640b4befa1",
+      "post_id": "f20ab826-b48b-42cf-be34-de640b4befa1_37",
+      "reason": "Too short: 65 chars (min 200)",
+      "text_preview": "My team is hiring again! If you want to work with me let me know."
+    },
+    {
+      "user_id": "f20ab826-b48b-42cf-be34-de640b4befa1",
+      "post_id": "f20ab826-b48b-42cf-be34-de640b4befa1_39",
+      "reason": "Too few real words: 34 (min 40)",
+      "text_preview": "My team is hiring mid-level and senior software engineers. We build the core networking stack for Microsoft Azure. If you want to work on crazy scale "
+    },
+    {
+      "user_id": "f20ab826-b48b-42cf-be34-de640b4befa1",
+      "post_id": "f20ab826-b48b-42cf-be34-de640b4befa1_40",
+      "reason": "Too short: 176 chars (min 200)",
+      "text_preview": "Check it out! My great colleagues over in Azure Networking are hiring. If interested send me a message or apply. \n\nSenior level and more! \n\n#cloud #mi"
+    },
+    {
+      "user_id": "f20ab826-b48b-42cf-be34-de640b4befa1",
+      "post_id": "f20ab826-b48b-42cf-be34-de640b4befa1_41",
+      "reason": "Too short: 152 chars (min 200)",
+      "text_preview": "I am hiring! Come join my amazing team at Microsoft as we look to secure Microsoft's assets! #microsoft #cybersecurity #hiring #microsoftcloudaisecuri"
+    },
+    {
+      "user_id": "f20ab826-b48b-42cf-be34-de640b4befa1",
+      "post_id": "f20ab826-b48b-42cf-be34-de640b4befa1_42",
+      "reason": "Too short: 7 chars (min 200)",
+      "text_preview": "Indeed!"
+    },
+    {
+      "user_id": "fa8cec49-9e7b-44e2-b2ce-7b6a324697f1",
+      "post_id": "fa8cec49-9e7b-44e2-b2ce-7b6a324697f1_1",
+      "reason": "Too short: 126 chars (min 200)",
+      "text_preview": "Just finished the course “Hands-On AI: Image Processing with Python”! #computervision #imageprocessing #artificialintelligence"
+    },
+    {
+      "user_id": "fa8cec49-9e7b-44e2-b2ce-7b6a324697f1",
+      "post_id": "fa8cec49-9e7b-44e2-b2ce-7b6a324697f1_2",
+      "reason": "Too few real words: 15 (min 40)",
+      "text_preview": "Just finished the learning path “Microsoft Azure AI Essentials Professional Certificate by Microsoft and LinkedIn”! #azureaistudio #machinelearning #g"
+    },
+    {
+      "user_id": "fa8cec49-9e7b-44e2-b2ce-7b6a324697f1",
+      "post_id": "fa8cec49-9e7b-44e2-b2ce-7b6a324697f1_3",
+      "reason": "Too short: 129 chars (min 200)",
+      "text_preview": "Just finished the learning path “Microsoft Azure AI Essentials Professional Certificate by Microsoft and LinkedIn”! Check it out:"
+    },
+    {
+      "user_id": "fa8cec49-9e7b-44e2-b2ce-7b6a324697f1",
+      "post_id": "fa8cec49-9e7b-44e2-b2ce-7b6a324697f1_4",
+      "reason": "Too short: 48 chars (min 200)",
+      "text_preview": "Just finished the course “Secure Coding in C++”!"
+    },
+    {
+      "user_id": "fa8cec49-9e7b-44e2-b2ce-7b6a324697f1",
+      "post_id": "fa8cec49-9e7b-44e2-b2ce-7b6a324697f1_6",
+      "reason": "Too short: 42 chars (min 200)",
+      "text_preview": "Food for thought...\n.\n.\n.\nDr. Jeffrey Funk"
+    },
+    {
+      "user_id": "fa8cec49-9e7b-44e2-b2ce-7b6a324697f1",
+      "post_id": "fa8cec49-9e7b-44e2-b2ce-7b6a324697f1_7",
+      "reason": "Too short: 35 chars (min 200)",
+      "text_preview": "My team’s hard work GA-ed recently!"
+    }
+  ]
+}

@@ -1,0 +1,22 @@
+
+Analyze the following professional LinkedIn posts and identify every recurring theme 
+or topic that is clearly supported by this batch. There is no target count: include all 
+distinct prevalent tensions or through-lines you can justify from the posts; omit weak 
+one-offs and do not pad the list.
+
+Consider aspects such as (but not limited to): career growth, technical decisions, 
+team dynamics, leadership, AI and tools, hiring, communication, product thinking, 
+personal values — but focus on what people ACTUALLY write about in these posts, 
+not on a predefined list.
+
+Each theme must be a 4–8 word noun phrase that carries the human tension or feeling 
+around the topic. Do NOT start labels with "the burden of / challenge of / struggle for" 
+— vary your phrasing. No articles at the start of labels.
+
+Posts:
+"""
+{posts_block}
+"""
+
+Return JSON: {{"themes": ["...", ...]}} with no duplicate or near-duplicate strings; 
+at least 3 themes when the batch supports that many.

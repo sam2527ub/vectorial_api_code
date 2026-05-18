@@ -6,6 +6,7 @@ import logging
 from typing import Optional, Dict
 from contextlib import contextmanager
 
+import psycopg2
 from psycopg2.pool import ThreadedConnectionPool
 
 logger = logging.getLogger(__name__)
@@ -15,6 +16,17 @@ _audience_pool: Optional[ThreadedConnectionPool] = None
 _enterprise_pools: Dict[str, Optional[ThreadedConnectionPool]] = {}
 
 
+def _pool_bounds() -> tuple[int, int]:
+    from app.runtime_settings import get_runtime_settings
+
+    p = get_runtime_settings().database_pool
+    lo = max(1, int(p.min_connections))
+    hi = max(1, int(p.max_connections))
+    if lo > hi:
+        lo, hi = hi, lo
+    return lo, hi
+
+
 def get_main_pool() -> Optional[ThreadedConnectionPool]:
     """Get or create the main database connection pool."""
     global _main_pool
@@ -22,7 +34,8 @@ def get_main_pool() -> Optional[ThreadedConnectionPool]:
         database_url = os.getenv("DATABASE_URL")
         if database_url:
             try:
-                _main_pool = ThreadedConnectionPool(1, 10, database_url)
+                lo, hi = _pool_bounds()
+                _main_pool = ThreadedConnectionPool(lo, hi, database_url)
                 logger.info("Main database pool initialized successfully")
             except Exception as e:
                 logger.error(f"Failed to initialize main database pool: {e}")
@@ -36,7 +49,8 @@ def get_audience_pool() -> Optional[ThreadedConnectionPool]:
         database_url = os.getenv("AUDIENCE_DATABASE_URL")
         if database_url:
             try:
-                _audience_pool = ThreadedConnectionPool(1, 10, database_url)
+                lo, hi = _pool_bounds()
+                _audience_pool = ThreadedConnectionPool(lo, hi, database_url)
                 logger.info("Audience database pool initialized successfully")
             except Exception as e:
                 logger.error(f"Failed to initialize audience database pool: {e}")
@@ -55,7 +69,8 @@ def get_enterprise_pool(enterprise_name: str) -> Optional[ThreadedConnectionPool
     database_url = os.getenv(env_var)
     if database_url:
         try:
-            pool = ThreadedConnectionPool(1, 10, database_url)
+            lo, hi = _pool_bounds()
+            pool = ThreadedConnectionPool(lo, hi, database_url)
             display_name = format_display_name(normalized)
             logger.info(f"{display_name} database pool initialized successfully")
             _enterprise_pools[normalized] = pool
@@ -72,14 +87,24 @@ def get_main_connection():
     if not pool:
         raise Exception("Main database pool not available. Please set DATABASE_URL.")
     conn = pool.getconn()
+    discard = False
     try:
         yield conn
         conn.commit()
     except Exception as e:
-        conn.rollback()
-        raise e
+        try:
+            if getattr(conn, "closed", 0) == 0:
+                conn.rollback()
+        except Exception:
+            pass
+        if isinstance(e, (psycopg2.OperationalError, psycopg2.InterfaceError)):
+            discard = True
+        raise
     finally:
-        pool.putconn(conn)
+        try:
+            pool.putconn(conn, close=discard)
+        except Exception:
+            pass
 
 
 @contextmanager
@@ -89,14 +114,24 @@ def get_audience_connection():
     if not pool:
         raise Exception("Audience database pool not available. Please set AUDIENCE_DATABASE_URL.")
     conn = pool.getconn()
+    discard = False
     try:
         yield conn
         conn.commit()
     except Exception as e:
-        conn.rollback()
-        raise e
+        try:
+            if getattr(conn, "closed", 0) == 0:
+                conn.rollback()
+        except Exception:
+            pass
+        if isinstance(e, (psycopg2.OperationalError, psycopg2.InterfaceError)):
+            discard = True
+        raise
     finally:
-        pool.putconn(conn)
+        try:
+            pool.putconn(conn, close=discard)
+        except Exception:
+            pass
 
 
 @contextmanager
@@ -119,14 +154,24 @@ def get_enterprise_audience_connection(enterprise_name: Optional[str] = None):
             raise Exception("Audience database pool not available. Please set AUDIENCE_DATABASE_URL.")
 
     conn = pool.getconn()
+    discard = False
     try:
         yield conn
         conn.commit()
     except Exception as e:
-        conn.rollback()
-        raise e
+        try:
+            if getattr(conn, "closed", 0) == 0:
+                conn.rollback()
+        except Exception:
+            pass
+        if isinstance(e, (psycopg2.OperationalError, psycopg2.InterfaceError)):
+            discard = True
+        raise
     finally:
-        pool.putconn(conn)
+        try:
+            pool.putconn(conn, close=discard)
+        except Exception:
+            pass
 
 
 def close_pools():

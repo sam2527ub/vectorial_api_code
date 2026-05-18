@@ -1,0 +1,1334 @@
+{
+  "model_type_used": "linkedin_tier1_delta_method",
+  "user_predictions": {
+    "937353b2-546c-41e3-ae57-4b7507de8a1d": [
+      {
+        "review_key": "937353b2-546c-41e3-ae57-4b7507de8a1d_review_3",
+        "user_id": "937353b2-546c-41e3-ae57-4b7507de8a1d",
+        "review_idx": 3,
+        "status": "success",
+        "product_description": "Community engagement in educational institutions",
+        "category": "Diversity and Inclusion in Tech",
+        "post_id": "937353b2-546c-41e3-ae57-4b7507de8a1d_43",
+        "prediction": {
+          "review_text": "Reflecting on my recent collaborations with students at a local university, I’m reminded of the significant impact community engagement has on shaping the future of technology. 🌍 It's essential to not only embrace diversity in tech but also to actively mentor and empower the next generation of innovators. \n\nIn our discussions, we often highlight the importance of sharing knowledge, yet we must also recognize the real challenges these aspiring professionals encounter. Every conversation we have can guide them through their paths in this rapidly evolving landscape. \n\nMoreover, it's crucial to share our stories of overcoming setbacks. Each failure is indeed a stepping stone to success, and we must foster an environment where students feel safe to take risks and learn from their experiences. \n\nI encourage everyone involved in educational outreach to share your insights and experiences. How can we further engage our communities and support these future leaders? Let’s keep this conversation going! Together, we can make a meaningful impact! #CommunityEngagement #Mentorship #TechEducation #LearningOpportunities #RestForProductivity",
+          "predicted_themes": {
+            "embracing diversity in tech": 0.4999772877729953,
+            "illusion of social media success": 2.2698938142532793e-05,
+            "importance of rest for productivity": 2.657772408469112e-08,
+            "embracing failures as learning opportunities": 0.4999772877729953,
+            "navigating remote work challenges": 2.2698938142532793e-05
+          }
+        },
+        "initial_prediction_data": {
+          "review_text": "As we continue to bridge the gap between education and technology, I’m excited to share how community engagement in our local schools can empower the next generation of tech leaders. 🌟\n\nI recently had the opportunity to collaborate with students at a local university, discussing the importance of diversity in tech and how we can create pathways for underrepresented groups. It’s crucial that we not only share our knowledge but also actively mentor and support these aspiring professionals.\n\nLet’s keep the conversation going! If you’re involved in educational outreach or have ideas on how we can further engage our communities, I’d love to hear from you. Together, we can make a real impact! #DiversityInTech #Mentorship #CommunityEngagement",
+          "predicted_themes": {
+            "embracing diversity in tech": 0.9998184332182727,
+            "illusion of social media success": 4.53916954317528e-05,
+            "importance of rest for productivity": 4.53916954317528e-05,
+            "embracing failures as learning opportunities": 4.53916954317528e-05,
+            "navigating remote work challenges": 4.53916954317528e-05
+          }
+        },
+        "actual": {
+          "review_text": "What an absolute pleasure to be a part of Tech Day at Rowan University! This was put together, and run by the students, to bring awareness and highlight the community at the Computer Science Department - Rowan University. It has been a pleasure to work with these students and in helping to guide them on their individual paths.\n\nI was honored to be asked to speak again this year and look forward to future efforts working together.",
+          "predicted_themes": {
+            "embracing diversity in tech": 0.00017751208107721444,
+            "illusion of social media success": 0.24995562197973067,
+            "importance of rest for productivity": 0.24995562197973067,
+            "embracing failures as learning opportunities": 0.24995562197973067,
+            "navigating remote work challenges": 0.24995562197973067
+          },
+          "topic_probabilities": {
+            "embracing diversity in tech": 0.00017751208107721444,
+            "illusion of social media success": 0.24995562197973067,
+            "importance of rest for productivity": 0.24995562197973067,
+            "embracing failures as learning opportunities": 0.24995562197973067,
+            "navigating remote work challenges": 0.24995562197973067
+          }
+        },
+        "metrics": {},
+        "deltas": {
+          "text_delta": 0.5054449447544174,
+          "theme_delta": 0.9975069329520502,
+          "overall_delta": 0.6530635412137071,
+          "theme_jsd": 0.9975069329520502,
+          "delta_weights": {
+            "text": 0.7,
+            "theme": 0.3
+          }
+        },
+        "initial_prediction_deltas": {
+          "text_delta": 0.5054449447544174,
+          "theme_delta": 0.9975069329520502,
+          "overall_delta": 0.6530635412137071
+        },
+        "initial_deltas": {
+          "text_delta": 0.5054449447544174,
+          "theme_delta": 0.9975069329520502,
+          "overall_delta": 0.6530635412137071
+        },
+        "i0_topic_classification": {
+          "topics_ordered": [
+            "embracing diversity in tech",
+            "illusion of social media success",
+            "importance of rest for productivity",
+            "embracing failures as learning opportunities",
+            "navigating remote work challenges"
+          ],
+          "topic_probabilities": {
+            "embracing diversity in tech": 0.9998184332182727,
+            "illusion of social media success": 4.53916954317528e-05,
+            "importance of rest for productivity": 4.53916954317528e-05,
+            "embracing failures as learning opportunities": 4.53916954317528e-05,
+            "navigating remote work challenges": 4.53916954317528e-05
+          },
+          "topic_probabilities_before_normalisation": {
+            "embracing diversity in tech": 0.9999999998082828,
+            "illusion of social media success": 4.5397868702434395e-05,
+            "importance of rest for productivity": 4.5397868702434395e-05,
+            "embracing failures as learning opportunities": 4.539787749163786e-05,
+            "navigating remote work challenges": 4.539787749163786e-05
+          },
+          "topic_logprobs": {
+            "embracing diversity in tech": {
+              "logprob_yes": -1.9361264946837764e-07,
+              "logprob_no": -22.375
+            },
+            "illusion of social media success": {
+              "logprob_yes": -10.0,
+              "logprob_no": 0.0
+            },
+            "importance of rest for productivity": {
+              "logprob_yes": -10.0,
+              "logprob_no": 0.0
+            },
+            "embracing failures as learning opportunities": {
+              "logprob_yes": -10.0,
+              "logprob_no": -1.9361264946837764e-07
+            },
+            "navigating remote work challenges": {
+              "logprob_yes": -10.0,
+              "logprob_no": -1.9361264946837764e-07
+            }
+          },
+          "per_topic_errors": {},
+          "classification_method": "per_topic_yes_no_logprobs",
+          "prediction_uses_post_body": true,
+          "predicted_theme_labels": [
+            "embracing diversity in tech"
+          ]
+        },
+        "correction_journey": [
+          {
+            "iteration": 1,
+            "corrected_prediction_data": {
+              "review_text": "As we continue to bridge the gap between education and technology, I want to reflect on the importance of community engagement in our local schools. 🌟 Recently, I had the privilege to collaborate with students at a local university, discussing how we can empower the next generation of tech leaders. \n\nWhile diversity in tech is crucial, I believe we must also focus on the real-world challenges these aspiring professionals face. It’s vital that we share our knowledge and actively mentor them, helping them navigate their paths in this ever-evolving industry. \n\nI encourage everyone involved in educational outreach to share your experiences and insights. How can we further engage our communities and support these future leaders? Let’s keep this conversation going! Together, we can make a meaningful impact! #CommunityEngagement #Mentorship #TechEducation",
+              "predicted_themes": {
+                "embracing diversity in tech": 0.9998168626435228,
+                "illusion of social media success": 4.578433911920913e-05,
+                "importance of rest for productivity": 4.578433911920913e-05,
+                "embracing failures as learning opportunities": 4.578433911920913e-05,
+                "navigating remote work challenges": 4.578433911920913e-05
+              }
+            },
+            "new_text_delta": 0.51733815078375,
+            "new_theme_delta": 0.9974971791033409,
+            "new_overall_delta": 0.6613858592796272,
+            "analysis_used": "The analysis reveals a significant discrepancy between the predicted topic probabilities and the ground truth topic probabilities. The predicted topic probabilities strongly favor 'embracing diversity in tech' at nearly 100%, while the ground truth indicates a much more balanced distribution across multiple topics, particularly 'illusion of social media success', 'importance of rest for productivity', 'embracing failures as learning opportunities', and 'navigating remote work challenges', each around 25%. This indicates a potential overemphasis on the diversity aspect in the prediction model, possibly due to the author's known engagement in community and mentorship, overshadowing other relevant themes present in the post. | Where wrong: The model incorrectly prioritized the topic of 'embracing diversity in tech' while neglecting the broader context of community engagement and the multifaceted nature of the author's contributions, which include promoting various aspects of productivity and learning from failures. | Motives: Promote community engagement in tech education; Highlight student initiatives and achievements; Encourage mentorship and guidance for students; Foster a sense of belonging within tech communities",
+            "topic_logprobs": {
+              "embracing diversity in tech": {
+                "logprob_yes": -0.00861468818038702,
+                "logprob_no": -4.758614540100098
+              },
+              "illusion of social media success": {
+                "logprob_yes": -10.0,
+                "logprob_no": 0.0
+              },
+              "importance of rest for productivity": {
+                "logprob_yes": -10.0,
+                "logprob_no": 0.0
+              },
+              "embracing failures as learning opportunities": {
+                "logprob_yes": -10.0,
+                "logprob_no": 0.0
+              },
+              "navigating remote work challenges": {
+                "logprob_yes": -10.0,
+                "logprob_no": 0.0
+              }
+            }
+          },
+          {
+            "iteration": 2,
+            "corrected_prediction_data": {
+              "review_text": "As we continue to bridge the gap between education and technology, I want to take a moment to reflect on the importance of community engagement in our local schools. 🌟 Recently, I had the privilege to collaborate with students at a local university, discussing how we can empower the next generation of tech leaders. \n\nWhile diversity in tech is crucial, we must also acknowledge the real-world challenges these aspiring professionals face. It’s vital that we share our knowledge and actively mentor them, helping them navigate their paths in this ever-evolving industry. \n\nI encourage everyone involved in educational outreach to share your experiences and insights. How can we further engage our communities and support these future leaders? Let’s keep this conversation going! Together, we can make a meaningful impact! #CommunityEngagement #Mentorship #TechEducation #LearningOpportunities #WorkLifeBalance",
+              "predicted_themes": {
+                "embracing diversity in tech": 0.9998176913528332,
+                "illusion of social media success": 4.557716179174339e-05,
+                "importance of rest for productivity": 4.557716179174339e-05,
+                "embracing failures as learning opportunities": 4.557716179174339e-05,
+                "navigating remote work challenges": 4.557716179174339e-05
+              }
+            },
+            "new_text_delta": 0.514648919529481,
+            "new_theme_delta": 0.9975023244780648,
+            "new_overall_delta": 0.6595049410140561,
+            "analysis_used": "The analysis of the topic-attention distributions reveals a significant gap between the predicted and ground truth topic probabilities. The predicted distribution strongly emphasizes 'embracing diversity in tech' at nearly 100%, while the ground truth reflects a more balanced distribution across multiple topics, particularly 'illusion of social media success', 'importance of rest for productivity', 'embracing failures as learning opportunities', and 'navigating remote work challenges', each receiving approximately 25%. This discrepancy indicates a misalignment in the perceived focus of the post, which is primarily about community engagement in educational institutions, a theme that aligns closely with diversity in tech but does not encompass the broader range of topics reflected in the ground truth. The high Jensen-Shannon divergence (JSD) value of 0.997 suggests a substantial difference in the distributions, indicating that the predicted model may be overly focused on a singular narrative rather than capturing the multifaceted nature of the post's content. | Where wrong: The predicted topic probabilities overly concentrated on 'embracing diversity in tech' while neglecting the equally relevant themes of social media success, productivity, and learning from failures that were present in the ground truth. | Motives: Promote community engagement; Support student initiatives; Highlight diversity in tech; Encourage mentorship; Foster collaboration in education",
+            "topic_logprobs": {
+              "embracing diversity in tech": {
+                "logprob_yes": -0.0040785204619169235,
+                "logprob_no": -5.504078388214111
+              },
+              "illusion of social media success": {
+                "logprob_yes": -10.0,
+                "logprob_no": 0.0
+              },
+              "importance of rest for productivity": {
+                "logprob_yes": -10.0,
+                "logprob_no": 0.0
+              },
+              "embracing failures as learning opportunities": {
+                "logprob_yes": -10.0,
+                "logprob_no": 0.0
+              },
+              "navigating remote work challenges": {
+                "logprob_yes": -10.0,
+                "logprob_no": 0.0
+              }
+            }
+          },
+          {
+            "iteration": 3,
+            "corrected_prediction_data": {
+              "review_text": "As we continue to bridge the gap between education and technology, I want to reflect on the importance of community engagement in our local schools. 🌟 Recently, I had the privilege of collaborating with students at a local university, discussing how we can empower the next generation of tech leaders. \n\nWhile embracing diversity in tech is crucial, we must also acknowledge the real-world challenges these aspiring professionals face. It’s vital that we share our knowledge and actively mentor them, helping them navigate their paths in this ever-evolving industry. \n\nMoreover, I believe that sharing our experiences of overcoming failures can be incredibly valuable. Each setback is an opportunity to learn and grow, and it's essential that we foster an environment where students feel safe to take risks. \n\nI encourage everyone involved in educational outreach to share your experiences and insights. How can we further engage our communities and support these future leaders? Let’s keep this conversation going! Together, we can make a meaningful impact! #CommunityEngagement #Mentorship #TechEducation #LearningOpportunities #WorkLifeBalance",
+              "predicted_themes": {
+                "embracing diversity in tech": 0.49996592256380745,
+                "illusion of social media success": 2.2698424868469557e-05,
+                "importance of rest for productivity": 2.2698424868469557e-05,
+                "embracing failures as learning opportunities": 0.499965982161587,
+                "navigating remote work challenges": 2.2698424868469557e-05
+              }
+            },
+            "new_text_delta": 0.5344103669969276,
+            "new_theme_delta": 0.6540327176734728,
+            "new_overall_delta": 0.5702970721998911,
+            "analysis_used": "The analysis reveals a significant gap between the predicted topic probabilities and the ground truth topic probabilities for the LinkedIn post. The predicted model strongly emphasizes 'embracing diversity in tech' with a probability of 99.98%, while the ground truth indicates a near-equal distribution among several topics, particularly 'illusion of social media success', 'importance of rest for productivity', 'embracing failures as learning opportunities', and 'navigating remote work challenges', each around 24.99%. This discrepancy suggests that the model may have overemphasized the diversity aspect of the post, likely due to the author's involvement in community engagement and mentorship, while neglecting the broader themes present in the content. | Where wrong: The model incorrectly predicted the post's primary focus, failing to recognize the multifaceted nature of the content, which includes elements of community, mentorship, and broader themes beyond just diversity. | Motives: Promote community engagement; Highlight student initiatives; Encourage diversity in tech; Foster mentorship and guidance; Celebrate collaborative efforts",
+            "topic_logprobs": {
+              "embracing diversity in tech": {
+                "logprob_yes": -3.128163257315464e-07,
+                "logprob_no": -16.25
+              },
+              "illusion of social media success": {
+                "logprob_yes": -10.0,
+                "logprob_no": 0.0
+              },
+              "importance of rest for productivity": {
+                "logprob_yes": -10.0,
+                "logprob_no": 0.0
+              },
+              "embracing failures as learning opportunities": {
+                "logprob_yes": -1.9361264946837764e-07,
+                "logprob_no": -19.625
+              },
+              "navigating remote work challenges": {
+                "logprob_yes": -10.0,
+                "logprob_no": 0.0
+              }
+            }
+          },
+          {
+            "iteration": 4,
+            "corrected_prediction_data": {
+              "review_text": "As we continue to bridge the gap between education and technology, I want to reflect on the importance of community engagement in our local schools. 🌟 Recently, I had the privilege of collaborating with students at a local university, discussing how we can empower the next generation of tech leaders. \n\nWhile embracing diversity in tech is crucial, we must also acknowledge the real-world challenges these aspiring professionals face. It’s vital that we share our knowledge and actively mentor them, helping them navigate their paths in this ever-evolving industry. \n\nMoreover, I believe that sharing our experiences of overcoming failures can be incredibly valuable. Each setback is an opportunity to learn and grow, and it's essential that we foster an environment where students feel safe to take risks. \n\nI encourage everyone involved in educational outreach to share your experiences and insights. How can we further engage our communities and support these future leaders? Let’s keep this conversation going! Together, we can make a meaningful impact! #CommunityEngagement #Mentorship #TechEducation #LearningOpportunities #WorkLifeBalance",
+              "predicted_themes": {
+                "embracing diversity in tech": 0.4999659523647264,
+                "illusion of social media success": 2.2698423515693915e-05,
+                "importance of rest for productivity": 2.2698423515693915e-05,
+                "embracing failures as learning opportunities": 0.4999659523647264,
+                "navigating remote work challenges": 2.2698423515693915e-05
+              }
+            },
+            "new_text_delta": 0.5297276975134404,
+            "new_theme_delta": 0.654032726407326,
+            "new_overall_delta": 0.5670192061816061,
+            "analysis_used": "The analysis reveals a significant gap between the predicted topic probabilities and the ground truth topic probabilities, particularly in the context of community engagement and diversity in tech. The predicted probabilities suggest a strong emphasis on 'embracing diversity in tech' and 'embracing failures as learning opportunities', which aligns with the author's focus on community involvement and mentorship at Rowan University. However, the ground truth probabilities indicate a more balanced distribution across multiple topics, with a notable emphasis on the 'illusion of social media success', 'importance of rest for productivity', and 'navigating remote work challenges'. This discrepancy suggests that while the author is indeed highlighting diversity and community engagement, the broader context of their message may also encompass themes related to productivity and the challenges of social media, which were not captured in the predictions. | Where wrong: The predicted topic probabilities overemphasize 'embracing diversity in tech' and 'embracing failures as learning opportunities' while neglecting the importance of other relevant themes such as productivity and social media challenges, which are reflected in the ground truth probabilities. | Motives: Promote community engagement in tech education; Highlight student-led initiatives; Encourage mentorship and guidance; Foster diversity and inclusion in technology; Celebrate collaborative efforts in tech",
+            "topic_logprobs": {
+              "embracing diversity in tech": {
+                "logprob_yes": -1.9361264946837764e-07,
+                "logprob_no": -16.625
+              },
+              "illusion of social media success": {
+                "logprob_yes": -10.0,
+                "logprob_no": 0.0
+              },
+              "importance of rest for productivity": {
+                "logprob_yes": -10.0,
+                "logprob_no": 0.0
+              },
+              "embracing failures as learning opportunities": {
+                "logprob_yes": -1.9361264946837764e-07,
+                "logprob_no": -19.375
+              },
+              "navigating remote work challenges": {
+                "logprob_yes": -10.0,
+                "logprob_no": 0.0
+              }
+            }
+          },
+          {
+            "iteration": 5,
+            "corrected_prediction_data": {
+              "review_text": "As I reflect on my recent experiences collaborating with students at a local university, I am reminded of the vital role community engagement plays in shaping the future of technology. 🌟 It's not just about embracing diversity in tech; it's about actively mentoring and empowering the next generation of innovators. \n\nWe often talk about the importance of sharing our knowledge, but we must also acknowledge the real challenges these aspiring professionals face. Each conversation we have can help them navigate their paths in this rapidly evolving industry. \n\nI believe that sharing our stories of overcoming setbacks is crucial. Every failure is a stepping stone to success, and we need to create an environment where students feel safe to take risks and learn from their experiences. \n\nI invite everyone involved in educational outreach to share your insights and experiences. How can we further engage our communities and support these future leaders? Let's keep this conversation going! Together, we can make a meaningful impact! #CommunityEngagement #Mentorship #TechEducation #LearningOpportunities",
+              "predicted_themes": {
+                "embracing diversity in tech": 0.4999658927628921,
+                "illusion of social media success": 2.2698426221245037e-05,
+                "importance of rest for productivity": 2.2698426221245037e-05,
+                "embracing failures as learning opportunities": 0.49996601195844403,
+                "navigating remote work challenges": 2.2698426221245037e-05
+              }
+            },
+            "new_text_delta": 0.5464571532659542,
+            "new_theme_delta": 0.6540327089396211,
+            "new_overall_delta": 0.5787298199680542,
+            "analysis_used": "The analysis reveals a significant gap between the predicted topic probabilities and the ground truth topic probabilities. The predicted model emphasizes 'embracing diversity in tech' and 'embracing failures as learning opportunities' with high confidence, while the ground truth reflects a strong inclination towards 'illusion of social media success', 'importance of rest for productivity', and 'navigating remote work challenges'. This discrepancy suggests a misalignment in understanding the primary focus of the post, which centers on community engagement and mentorship in an educational context. | Where wrong: The predicted model failed to recognize the primary theme of community engagement and mentorship in the educational setting, leading to an overemphasis on topics that are less relevant to the content of the post. | Motives: Promote community engagement; Highlight student initiatives; Encourage mentorship and guidance; Celebrate diversity in tech education",
+            "topic_logprobs": {
+              "embracing diversity in tech": {
+                "logprob_yes": -4.320199877838604e-07,
+                "logprob_no": -15.0
+              },
+              "illusion of social media success": {
+                "logprob_yes": -10.0,
+                "logprob_no": 0.0
+              },
+              "importance of rest for productivity": {
+                "logprob_yes": -10.0,
+                "logprob_no": 0.0
+              },
+              "embracing failures as learning opportunities": {
+                "logprob_yes": -1.9361264946837764e-07,
+                "logprob_no": -10.0
+              },
+              "navigating remote work challenges": {
+                "logprob_yes": -10.0,
+                "logprob_no": 0.0
+              }
+            }
+          },
+          {
+            "iteration": 6,
+            "corrected_prediction_data": {
+              "review_text": "Reflecting on my recent collaborations with students at a local university, I’m reminded of the significant impact community engagement has on shaping the future of technology. 🌍 It's essential to not only embrace diversity in tech but also to actively mentor and empower the next generation of innovators. \n\nIn our discussions, we often highlight the importance of sharing knowledge, yet we must also recognize the real challenges these aspiring professionals encounter. Every conversation we have can guide them through their paths in this rapidly evolving landscape. \n\nMoreover, it's crucial to share our stories of overcoming setbacks. Each failure is indeed a stepping stone to success, and we must foster an environment where students feel safe to take risks and learn from their experiences. \n\nI encourage everyone involved in educational outreach to share your insights and experiences. How can we further engage our communities and support these future leaders? Let’s keep this conversation going! Together, we can make a meaningful impact! #CommunityEngagement #Mentorship #TechEducation #LearningOpportunities #RestForProductivity",
+              "predicted_themes": {
+                "embracing diversity in tech": 0.4999772877729953,
+                "illusion of social media success": 2.2698938142532793e-05,
+                "importance of rest for productivity": 2.657772408469112e-08,
+                "embracing failures as learning opportunities": 0.4999772877729953,
+                "navigating remote work challenges": 2.2698938142532793e-05
+              }
+            },
+            "new_text_delta": 0.35673094376521763,
+            "new_theme_delta": 0.6541978317386505,
+            "new_overall_delta": 0.4459710101572475,
+            "analysis_used": "The analysis reveals a significant discrepancy between the predicted topic probabilities and the ground truth topic probabilities for the LinkedIn post. The predicted probabilities suggest a strong focus on 'embracing diversity in tech' and 'embracing failures as learning opportunities,' which aligns with the author's engagement in community building and mentorship. However, the ground truth indicates a more balanced distribution among multiple topics, particularly highlighting the 'illusion of social media success,' 'importance of rest for productivity,' and 'navigating remote work challenges.' This indicates a potential misalignment in the author's intended message versus the model's interpretation, suggesting that the model may not fully capture the nuances of the author's community engagement and educational focus. | Where wrong: The model overemphasizes the topics of 'embracing diversity in tech' and 'embracing failures as learning opportunities' while neglecting the importance of other relevant themes such as the 'illusion of social media success' and 'importance of rest for productivity,' which are crucial to the author's overall message. | Motives: Promote community engagement; Support student initiatives; Encourage diversity in tech; Mentorship and guidance; Highlight collaborative efforts",
+            "topic_logprobs": {
+              "embracing diversity in tech": {
+                "logprob_yes": -1.9361264946837764e-07,
+                "logprob_no": -19.75
+              },
+              "illusion of social media success": {
+                "logprob_yes": -10.0,
+                "logprob_no": 0.0
+              },
+              "importance of rest for productivity": {
+                "logprob_yes": -16.75,
+                "logprob_no": 0.0
+              },
+              "embracing failures as learning opportunities": {
+                "logprob_yes": -1.9361264946837764e-07,
+                "logprob_no": -20.25
+              },
+              "navigating remote work challenges": {
+                "logprob_yes": -10.0,
+                "logprob_no": 0.0
+              }
+            }
+          }
+        ],
+        "feedback_loop_iteration": 5,
+        "best_deltas": {
+          "overall_delta": 0.4459710101572475,
+          "theme_delta": 0.6541978317386505
+        },
+        "best_prediction_data": {
+          "review_text": "Reflecting on my recent collaborations with students at a local university, I’m reminded of the significant impact community engagement has on shaping the future of technology. 🌍 It's essential to not only embrace diversity in tech but also to actively mentor and empower the next generation of innovators. \n\nIn our discussions, we often highlight the importance of sharing knowledge, yet we must also recognize the real challenges these aspiring professionals encounter. Every conversation we have can guide them through their paths in this rapidly evolving landscape. \n\nMoreover, it's crucial to share our stories of overcoming setbacks. Each failure is indeed a stepping stone to success, and we must foster an environment where students feel safe to take risks and learn from their experiences. \n\nI encourage everyone involved in educational outreach to share your insights and experiences. How can we further engage our communities and support these future leaders? Let’s keep this conversation going! Together, we can make a meaningful impact! #CommunityEngagement #Mentorship #TechEducation #LearningOpportunities #RestForProductivity",
+          "predicted_themes": {
+            "embracing diversity in tech": 0.4999772877729953,
+            "illusion of social media success": 2.2698938142532793e-05,
+            "importance of rest for productivity": 2.657772408469112e-08,
+            "embracing failures as learning opportunities": 0.4999772877729953,
+            "navigating remote work challenges": 2.2698938142532793e-05
+          }
+        }
+      }
+    ],
+    "dc0b5d74-87d9-4fe3-8883-aef9d0924114": [
+      {
+        "review_key": "dc0b5d74-87d9-4fe3-8883-aef9d0924114_review_2",
+        "user_id": "dc0b5d74-87d9-4fe3-8883-aef9d0924114",
+        "review_idx": 2,
+        "status": "success",
+        "product_description": "Centralized customer payments in ERP systems",
+        "category": "Business Operations and Strategy",
+        "post_id": "dc0b5d74-87d9-4fe3-8883-aef9d0924114_12",
+        "prediction": {
+          "review_text": "Centralized customer payments in ERP systems can significantly streamline financial operations and enhance cash flow management. 💰\n\nAs I've worked with SAP S/4HANA, I've seen firsthand how effective integration of centralized payments can reduce discrepancies and improve reporting accuracy. If you're navigating this landscape, I recommend diving into the configuration of the Material Ledger and ensuring your MM-FI integration is robust. \n\nFor those looking for resources, I’ve compiled some step-by-step guides and best practices on my SlideShare. Let’s make ERP systems work smarter for us! #SAP #S4HANA #Finance #ERP #Integration",
+          "predicted_themes": {
+            "building systems for autonomous operations": 0.2,
+            "understanding customer journeys in business": 0.2,
+            "building adaptive learning platforms": 0.2,
+            "power of simplicity in technology": 0.2,
+            "navigating uncertainty in professional growth": 0.2
+          }
+        },
+        "initial_prediction_data": {
+          "review_text": "Centralized customer payments in ERP systems can significantly streamline financial operations and enhance cash flow management. 💰\n\nAs I've worked with SAP S/4HANA, I've seen firsthand how effective integration of centralized payments can reduce discrepancies and improve reporting accuracy. If you're navigating this landscape, I recommend diving into the configuration of the Material Ledger and ensuring your MM-FI integration is robust. \n\nFor those looking for resources, I’ve compiled some step-by-step guides and best practices on my SlideShare. Let’s make ERP systems work smarter for us! #SAP #S4HANA #Finance #ERP #Integration",
+          "predicted_themes": {
+            "building systems for autonomous operations": 0.2,
+            "understanding customer journeys in business": 0.2,
+            "building adaptive learning platforms": 0.2,
+            "power of simplicity in technology": 0.2,
+            "navigating uncertainty in professional growth": 0.2
+          }
+        },
+        "actual": {
+          "review_text": "Centralized Customer Payments for Headquarters and Subsidiaries by Komathi T SAP Labs India \n\nWelcome to the SAP S/4HANA Cloud Two-tier ERP blog series. \n\nIn this blog, let’s look at centralized customer payments in a Two-tier deployment model.\n\nS/4HANA customer payments is a public cloud solution delivered in the SAP Cloud Platform, which provides a self-service offering to enable our customers to deploy electronic bill presentment and payment processes. In this Two-tier scenario, where headquarters is running On-Premise (ECC6+ or S/4HANA On-premise) and the subsidiary is running on S/4HANA cloud, SAP S/4HANA cloud for customer payment serves as a centralized customer payment solution for both headquarter as well as subsidiary.\n\nWhile running in such two-tier landscape, processing repetitive customer inquiries regarding invoice copies, underpayment, dispute cases, matching incoming payments with open items because of Time zone issues, Language barriers, Large numbers of documents would be a great challenge to the accounts team.\n\nCheck out the full blog here",
+          "predicted_themes": {
+            "building systems for autonomous operations": 0.0007510995654104441,
+            "understanding customer journeys in business": 4.801618876997725e-05,
+            "building adaptive learning platforms": 0.49958759151601334,
+            "power of simplicity in technology": 2.570121379305552e-05,
+            "navigating uncertainty in professional growth": 0.49958759151601334
+          },
+          "topic_probabilities": {
+            "building systems for autonomous operations": 0.0007510995654104441,
+            "understanding customer journeys in business": 4.801618876997725e-05,
+            "building adaptive learning platforms": 0.49958759151601334,
+            "power of simplicity in technology": 2.570121379305552e-05,
+            "navigating uncertainty in professional growth": 0.49958759151601334
+          }
+        },
+        "metrics": {},
+        "deltas": {
+          "text_delta": 0.31034076140909717,
+          "theme_delta": 0.39193935828795445,
+          "overall_delta": 0.33482034047275433,
+          "theme_jsd": 0.39193935828795445,
+          "delta_weights": {
+            "text": 0.7,
+            "theme": 0.3
+          }
+        },
+        "initial_prediction_deltas": {
+          "text_delta": 0.31034076140909717,
+          "theme_delta": 0.39193935828795445,
+          "overall_delta": 0.33482034047275433
+        },
+        "initial_deltas": {
+          "text_delta": 0.31034076140909717,
+          "theme_delta": 0.39193935828795445,
+          "overall_delta": 0.33482034047275433
+        },
+        "i0_topic_classification": {
+          "topics_ordered": [
+            "building systems for autonomous operations",
+            "understanding customer journeys in business",
+            "building adaptive learning platforms",
+            "power of simplicity in technology",
+            "navigating uncertainty in professional growth"
+          ],
+          "topic_probabilities": {
+            "building systems for autonomous operations": 0.2,
+            "understanding customer journeys in business": 0.2,
+            "building adaptive learning platforms": 0.2,
+            "power of simplicity in technology": 0.2,
+            "navigating uncertainty in professional growth": 0.2
+          },
+          "topic_probabilities_before_normalisation": {
+            "building systems for autonomous operations": 4.5397868702434395e-05,
+            "understanding customer journeys in business": 4.5397868702434395e-05,
+            "building adaptive learning platforms": 4.5397868702434395e-05,
+            "power of simplicity in technology": 4.5397868702434395e-05,
+            "navigating uncertainty in professional growth": 4.5397868702434395e-05
+          },
+          "topic_logprobs": {
+            "building systems for autonomous operations": {
+              "logprob_yes": -10.0,
+              "logprob_no": 0.0
+            },
+            "understanding customer journeys in business": {
+              "logprob_yes": -10.0,
+              "logprob_no": 0.0
+            },
+            "building adaptive learning platforms": {
+              "logprob_yes": -10.0,
+              "logprob_no": 0.0
+            },
+            "power of simplicity in technology": {
+              "logprob_yes": -10.0,
+              "logprob_no": 0.0
+            },
+            "navigating uncertainty in professional growth": {
+              "logprob_yes": -10.0,
+              "logprob_no": 0.0
+            }
+          },
+          "per_topic_errors": {},
+          "classification_method": "per_topic_yes_no_logprobs",
+          "prediction_uses_post_body": true,
+          "predicted_theme_labels": []
+        },
+        "correction_journey": [
+          {
+            "iteration": 1,
+            "corrected_prediction_data": {
+              "review_text": "Centralized customer payments in ERP systems are not just a technical upgrade; they are a game-changer for financial operations. 💡\n\nHaving worked extensively with SAP S/4HANA, I've witnessed how a well-implemented centralized payment process can streamline cash flow management and enhance reporting accuracy. It’s crucial to ensure that your Material Ledger is configured correctly and that your MM-FI integration is seamless to avoid discrepancies.\n\nFor anyone diving into this area, I’ve put together some detailed guides and best practices on my SlideShare to help you navigate these complexities. Let’s leverage ERP systems to their fullest potential! #SAP #S4HANA #Finance #ERP #Integration",
+              "predicted_themes": {
+                "building systems for autonomous operations": 0.2,
+                "understanding customer journeys in business": 0.2,
+                "building adaptive learning platforms": 0.2,
+                "power of simplicity in technology": 0.2,
+                "navigating uncertainty in professional growth": 0.2
+              }
+            },
+            "new_text_delta": 0.37306777479104747,
+            "new_theme_delta": 0.39193935828795445,
+            "new_overall_delta": 0.3787292498401196,
+            "analysis_used": "The analysis of the topic-attention distributions reveals a significant gap between the predicted and ground truth topic probabilities. The predicted probabilities are uniformly distributed across all topics, indicating a lack of specificity and focus in the predictions. In contrast, the ground truth probabilities show a strong emphasis on 'building adaptive learning platforms' and 'navigating uncertainty in professional growth', suggesting that the content is deeply rooted in educational technology and personal development themes. This discrepancy highlights a misalignment in understanding the core themes of the post, which centers around centralized customer payments in an ERP context, a topic that is not adequately reflected in the predicted distribution. | Where wrong: The predicted topic probabilities are overly generalized and do not capture the specific focus on ERP systems and centralized payment processes, leading to a misrepresentation of the content's intent. | Motives: Educate peers on ERP systems; Share practical insights on SAP functionalities; Highlight challenges in financial processes; Promote community learning and resource sharing",
+            "topic_logprobs": {
+              "building systems for autonomous operations": {
+                "logprob_yes": -10.0,
+                "logprob_no": 0.0
+              },
+              "understanding customer journeys in business": {
+                "logprob_yes": -10.0,
+                "logprob_no": 0.0
+              },
+              "building adaptive learning platforms": {
+                "logprob_yes": -10.0,
+                "logprob_no": -1.9361264946837764e-07
+              },
+              "power of simplicity in technology": {
+                "logprob_yes": -10.0,
+                "logprob_no": 0.0
+              },
+              "navigating uncertainty in professional growth": {
+                "logprob_yes": -10.0,
+                "logprob_no": 0.0
+              }
+            }
+          },
+          {
+            "iteration": 2,
+            "corrected_prediction_data": {
+              "review_text": "Centralized customer payments in ERP systems are not just a technical upgrade; they represent a pivotal shift in how we manage financial operations. 💡\n\nIn my experience with SAP S/4HANA, I've seen firsthand how a well-implemented centralized payment process can significantly streamline cash flow management and enhance reporting accuracy. It's essential to ensure your Material Ledger is configured correctly and that your MM-FI integration is seamless to avoid discrepancies that can lead to operational inefficiencies.\n\nFor those venturing into this area, I've compiled detailed guides and best practices on my SlideShare to help you navigate these complexities effectively. Let's harness the full potential of ERP systems to drive financial excellence! #SAP #S4HANA #Finance #ERP #Integration",
+              "predicted_themes": {
+                "building systems for autonomous operations": 0.2,
+                "understanding customer journeys in business": 0.2,
+                "building adaptive learning platforms": 0.2,
+                "power of simplicity in technology": 0.2,
+                "navigating uncertainty in professional growth": 0.2
+              }
+            },
+            "new_text_delta": 0.35070721737571875,
+            "new_theme_delta": 0.39193935828795445,
+            "new_overall_delta": 0.3630768596493894,
+            "analysis_used": "The analysis reveals a significant gap between the predicted topic probabilities and the ground truth topic probabilities for the LinkedIn post. The predicted probabilities suggest an equal distribution across all topics, indicating a lack of specificity and focus. In contrast, the ground truth probabilities show a strong emphasis on 'building adaptive learning platforms' and 'navigating uncertainty in professional growth', which are not reflected in the predictions. This discrepancy suggests that the model may not be accurately capturing the nuances of the content, particularly the specific challenges and solutions related to centralized customer payments in a Two-tier ERP context. The high Jensen-Shannon divergence (JSD) value indicates a substantial difference between the two distributions, highlighting the need for improved topic modeling that aligns more closely with the content's actual themes and the author's expertise in SAP finance systems. | Where wrong: The predicted topic probabilities are overly generalized and fail to capture the specific focus on ERP systems and customer payment processes, leading to a misalignment with the actual content of the post. | Motives: To provide practical guidance on ERP systems; To share insights on centralized customer payments; To address common challenges in finance operations; To educate peers on SAP S/4HANA functionalities; To foster community engagement through shared resources",
+            "topic_logprobs": {
+              "building systems for autonomous operations": {
+                "logprob_yes": -10.0,
+                "logprob_no": 0.0
+              },
+              "understanding customer journeys in business": {
+                "logprob_yes": -10.0,
+                "logprob_no": 0.0
+              },
+              "building adaptive learning platforms": {
+                "logprob_yes": -10.0,
+                "logprob_no": 0.0
+              },
+              "power of simplicity in technology": {
+                "logprob_yes": -10.0,
+                "logprob_no": 0.0
+              },
+              "navigating uncertainty in professional growth": {
+                "logprob_yes": -10.0,
+                "logprob_no": 0.0
+              }
+            }
+          },
+          {
+            "iteration": 3,
+            "corrected_prediction_data": {
+              "review_text": "Centralized customer payments in ERP systems are more than just a technical upgrade; they are a transformative approach to financial operations. 🌟\n\nIn my journey with SAP S/4HANA, I've witnessed how a well-executed centralized payment process can revolutionize cash flow management and improve reporting accuracy. It's crucial to ensure that your Material Ledger is configured correctly and that the MM-FI integration is seamless to prevent discrepancies that could lead to operational inefficiencies.\n\nFor those exploring this area, I've put together comprehensive guides and best practices on my SlideShare to help you navigate these complexities effectively. Let's unlock the full potential of ERP systems together and drive financial excellence! #SAP #S4HANA #Finance #ERP #Integration",
+              "predicted_themes": {
+                "building systems for autonomous operations": 0.2,
+                "understanding customer journeys in business": 0.2,
+                "building adaptive learning platforms": 0.2,
+                "power of simplicity in technology": 0.2,
+                "navigating uncertainty in professional growth": 0.2
+              }
+            },
+            "new_text_delta": 0.40925130832166445,
+            "new_theme_delta": 0.39193935828795445,
+            "new_overall_delta": 0.40405772331155143,
+            "analysis_used": "The predicted topic probabilities show a significant deviation from the ground truth topic probabilities, particularly in the emphasis on 'building adaptive learning platforms' and 'navigating uncertainty in professional growth', which were both assigned a probability of approximately 0.5 in the ground truth. The predicted probabilities, however, distribute evenly across all topics at 0.2, indicating a lack of specificity and a failure to capture the nuanced focus of the post on centralized customer payments in the context of SAP S/4HANA. This suggests that the model may not have adequately understood the technical and operational context of the post, leading to a generalized and diluted representation of the actual content. The high Jensen-Shannon divergence (0.3919) further underscores the disparity between the predicted and actual topic distributions, highlighting a gap in the model's ability to accurately reflect the author's intent and the specific subject matter discussed in the post. | Where wrong: The model failed to recognize the specific focus on centralized customer payments within the SAP S/4HANA context, leading to an overly broad and inaccurate distribution of topic probabilities. | Motives: Educate peers on ERP systems; Share practical SAP knowledge; Highlight challenges in centralized payments; Promote community learning; Provide technical guidance",
+            "topic_logprobs": {
+              "building systems for autonomous operations": {
+                "logprob_yes": -10.0,
+                "logprob_no": 0.0
+              },
+              "understanding customer journeys in business": {
+                "logprob_yes": -10.0,
+                "logprob_no": 0.0
+              },
+              "building adaptive learning platforms": {
+                "logprob_yes": -10.0,
+                "logprob_no": -1.9361264946837764e-07
+              },
+              "power of simplicity in technology": {
+                "logprob_yes": -10.0,
+                "logprob_no": 0.0
+              },
+              "navigating uncertainty in professional growth": {
+                "logprob_yes": -10.0,
+                "logprob_no": 0.0
+              }
+            }
+          },
+          {
+            "iteration": 4,
+            "corrected_prediction_data": {
+              "review_text": "Navigating the complexities of centralized customer payments in ERP systems is crucial for operational efficiency, especially within the context of SAP S/4HANA. 🌐\n\nIn my experience, implementing a centralized payment process not only streamlines cash flow management but also enhances reporting accuracy. It's essential to ensure that your Material Ledger is properly configured and that the MM-FI integration is seamless to avoid discrepancies that can lead to inefficiencies.\n\nFor those of you diving into this topic, I've compiled detailed guides and best practices on my SlideShare that can help you tackle these challenges effectively. Let's work together to unlock the full potential of ERP systems and drive financial excellence! #SAP #S4HANA #Finance #ERP #Integration",
+              "predicted_themes": {
+                "building systems for autonomous operations": 0.2,
+                "understanding customer journeys in business": 0.2,
+                "building adaptive learning platforms": 0.2,
+                "power of simplicity in technology": 0.2,
+                "navigating uncertainty in professional growth": 0.2
+              }
+            },
+            "new_text_delta": 0.4591097678658784,
+            "new_theme_delta": 0.39193935828795445,
+            "new_overall_delta": 0.43895864499250126,
+            "analysis_used": "The analysis of the topic-attention distributions reveals a significant divergence between the predicted topic probabilities and the ground truth topic probabilities. The ground truth indicates a strong focus on 'building adaptive learning platforms' and 'navigating uncertainty in professional growth,' each with a probability of approximately 0.5, while the predicted probabilities distribute attention evenly across all topics at 0.2. This suggests a lack of specificity in the predictions, failing to capture the nuanced focus of the content on centralized customer payments within the context of SAP S/4HANA and its implications for operational efficiency in a two-tier ERP model. The high Jensen-Shannon divergence (0.39) further emphasizes the gap in understanding the core themes of the post, indicating a need for improved alignment between the predicted topics and the actual content being discussed. | Where wrong: The predicted topic probabilities failed to accurately reflect the specific focus on centralized customer payments and the operational challenges associated with two-tier ERP systems, leading to an overly generalized topic distribution. | Motives: Educate peers on SAP S/4HANA functionalities; Provide practical guidance for ERP implementation; Highlight challenges in centralized payment processing; Share insights on two-tier ERP deployment models; Encourage community engagement through resource sharing",
+            "topic_logprobs": {
+              "building systems for autonomous operations": {
+                "logprob_yes": -10.0,
+                "logprob_no": 0.0
+              },
+              "understanding customer journeys in business": {
+                "logprob_yes": -10.0,
+                "logprob_no": 0.0
+              },
+              "building adaptive learning platforms": {
+                "logprob_yes": -10.0,
+                "logprob_no": 0.0
+              },
+              "power of simplicity in technology": {
+                "logprob_yes": -10.0,
+                "logprob_no": 0.0
+              },
+              "navigating uncertainty in professional growth": {
+                "logprob_yes": -10.0,
+                "logprob_no": 0.0
+              }
+            }
+          },
+          {
+            "iteration": 5,
+            "corrected_prediction_data": {
+              "review_text": "Centralized customer payments in ERP systems are more than just a technical requirement; they are essential for driving operational efficiency and financial accuracy. 🌟\n\nIn my journey with SAP S/4HANA, I've seen firsthand how a well-implemented centralized payment process can transform cash flow management. It’s crucial to ensure that your Material Ledger is configured correctly and that the integration between MM and FI modules is seamless to prevent discrepancies that could hinder performance.\n\nFor anyone looking to enhance their understanding of this topic, I’ve put together a comprehensive guide on my SlideShare, detailing best practices and configuration tips. Let’s collaborate to maximize the potential of our ERP systems and achieve financial excellence together! #SAP #S4HANA #Finance #ERP #Integration",
+              "predicted_themes": {
+                "building systems for autonomous operations": 0.2,
+                "understanding customer journeys in business": 0.2,
+                "building adaptive learning platforms": 0.2,
+                "power of simplicity in technology": 0.2,
+                "navigating uncertainty in professional growth": 0.2
+              }
+            },
+            "new_text_delta": 0.4045033668159669,
+            "new_theme_delta": 0.39193935828795445,
+            "new_overall_delta": 0.40073416425756314,
+            "analysis_used": "The predicted topic probabilities show a significant divergence from the ground truth probabilities, indicating a lack of alignment between the content of the post and the expected topics based on the author's expertise and the group's focus. The predicted probabilities are evenly distributed across all topics, suggesting a generic approach, while the ground truth probabilities highlight a strong emphasis on 'building adaptive learning platforms' and 'navigating uncertainty in professional growth.' This misalignment could lead to confusion among the audience regarding the post's relevance and focus. | Where wrong: The predicted topic probabilities do not reflect the specific focus on ERP systems and centralized payments, which are critical to the author's expertise in SAP S/4HANA finance. Instead, they suggest a broad and unfocused approach that fails to capture the nuances of the topic. | Motives: Educate peers on centralized customer payments; Share practical insights on ERP systems; Highlight challenges in two-tier deployment models; Promote SAP S/4HANA solutions",
+            "topic_logprobs": {
+              "building systems for autonomous operations": {
+                "logprob_yes": -10.0,
+                "logprob_no": 0.0
+              },
+              "understanding customer journeys in business": {
+                "logprob_yes": -10.0,
+                "logprob_no": 0.0
+              },
+              "building adaptive learning platforms": {
+                "logprob_yes": -10.0,
+                "logprob_no": 0.0
+              },
+              "power of simplicity in technology": {
+                "logprob_yes": -10.0,
+                "logprob_no": 0.0
+              },
+              "navigating uncertainty in professional growth": {
+                "logprob_yes": -10.0,
+                "logprob_no": 0.0
+              }
+            }
+          },
+          {
+            "iteration": 6,
+            "corrected_prediction_data": {
+              "review_text": "Centralized customer payments in ERP systems are not just a technical necessity; they are pivotal for enhancing operational efficiency and ensuring financial accuracy. 🚀\n\nThroughout my experience with SAP S/4HANA, I've witnessed how a robust centralized payment process can revolutionize cash flow management. It's essential to configure your Material Ledger meticulously and ensure seamless integration between the MM and FI modules to avoid discrepancies that could impact performance.\n\nFor those eager to deepen their understanding of this crucial topic, I've compiled a detailed guide on my SlideShare, which covers best practices and configuration tips. Let's work together to unlock the full potential of our ERP systems and drive financial excellence! #SAP #S4HANA #Finance #ERP #Integration",
+              "predicted_themes": {
+                "building systems for autonomous operations": 0.2,
+                "understanding customer journeys in business": 0.2,
+                "building adaptive learning platforms": 0.2,
+                "power of simplicity in technology": 0.2,
+                "navigating uncertainty in professional growth": 0.2
+              }
+            },
+            "new_text_delta": 0.406722753280764,
+            "new_theme_delta": 0.39193935828795445,
+            "new_overall_delta": 0.4022877347829211,
+            "analysis_used": "The analysis reveals a significant discrepancy between the ground truth topic probabilities and the predicted topic probabilities. The ground truth indicates a strong focus on 'building adaptive learning platforms' and 'navigating uncertainty in professional growth', each with a probability of approximately 0.5, while the predicted probabilities distribute evenly across all topics at 0.2. This suggests a lack of specificity in the predictions, failing to capture the nuanced focus of the post on centralized customer payments within the context of ERP systems. The high Jensen-Shannon divergence (JSD) value of 0.39 indicates a substantial difference in the distributions, highlighting a potential misalignment in understanding the core themes of the content shared by the author. | Where wrong: The predicted topic probabilities are overly generalized and do not reflect the specific focus on ERP systems and centralized customer payments, leading to a misalignment with the author's expertise and the content of the post. | Motives: Educate peers on ERP systems; Share practical knowledge about SAP S/4HANA; Provide solutions for common challenges in finance operations; Promote community engagement through shared resources",
+            "topic_logprobs": {
+              "building systems for autonomous operations": {
+                "logprob_yes": -10.0,
+                "logprob_no": 0.0
+              },
+              "understanding customer journeys in business": {
+                "logprob_yes": -10.0,
+                "logprob_no": 0.0
+              },
+              "building adaptive learning platforms": {
+                "logprob_yes": -10.0,
+                "logprob_no": 0.0
+              },
+              "power of simplicity in technology": {
+                "logprob_yes": -10.0,
+                "logprob_no": 0.0
+              },
+              "navigating uncertainty in professional growth": {
+                "logprob_yes": -10.0,
+                "logprob_no": -1.9361264946837764e-07
+              }
+            }
+          }
+        ],
+        "feedback_loop_iteration": 5,
+        "best_deltas": {
+          "overall_delta": 0.33482034047275433,
+          "theme_delta": 0.39193935828795445
+        },
+        "best_prediction_data": {
+          "review_text": "Centralized customer payments in ERP systems can significantly streamline financial operations and enhance cash flow management. 💰\n\nAs I've worked with SAP S/4HANA, I've seen firsthand how effective integration of centralized payments can reduce discrepancies and improve reporting accuracy. If you're navigating this landscape, I recommend diving into the configuration of the Material Ledger and ensuring your MM-FI integration is robust. \n\nFor those looking for resources, I’ve compiled some step-by-step guides and best practices on my SlideShare. Let’s make ERP systems work smarter for us! #SAP #S4HANA #Finance #ERP #Integration",
+          "predicted_themes": {
+            "building systems for autonomous operations": 0.2,
+            "understanding customer journeys in business": 0.2,
+            "building adaptive learning platforms": 0.2,
+            "power of simplicity in technology": 0.2,
+            "navigating uncertainty in professional growth": 0.2
+          }
+        }
+      }
+    ]
+  },
+  "journey_log": {
+    "937353b2-546c-41e3-ae57-4b7507de8a1d_review_3": {
+      "user_id": "937353b2-546c-41e3-ae57-4b7507de8a1d",
+      "review_idx": 3,
+      "product_description": "Community engagement in educational institutions",
+      "category": "Diversity and Inclusion in Tech",
+      "actual_review_data": {
+        "review_text": "What an absolute pleasure to be a part of Tech Day at Rowan University! This was put together, and run by the students, to bring awareness and highlight the community at the Computer Science Department - Rowan University. It has been a pleasure to work with these students and in helping to guide them on their individual paths.\n\nI was honored to be asked to speak again this year and look forward to future efforts working together.",
+        "predicted_themes": {
+          "embracing diversity in tech": 0.00017751208107721444,
+          "illusion of social media success": 0.24995562197973067,
+          "importance of rest for productivity": 0.24995562197973067,
+          "embracing failures as learning opportunities": 0.24995562197973067,
+          "navigating remote work challenges": 0.24995562197973067
+        },
+        "topic_probabilities": {
+          "embracing diversity in tech": 0.00017751208107721444,
+          "illusion of social media success": 0.24995562197973067,
+          "importance of rest for productivity": 0.24995562197973067,
+          "embracing failures as learning opportunities": 0.24995562197973067,
+          "navigating remote work challenges": 0.24995562197973067
+        },
+        "product_description": "Community engagement in educational institutions",
+        "category": "Diversity and Inclusion in Tech"
+      },
+      "initial_prediction_deltas": {
+        "text_delta": 0.5054449447544174,
+        "theme_delta": 0.9975069329520502,
+        "overall_delta": 0.6530635412137071
+      },
+      "initial_prediction_data": {
+        "review_text": "As we continue to bridge the gap between education and technology, I’m excited to share how community engagement in our local schools can empower the next generation of tech leaders. 🌟\n\nI recently had the opportunity to collaborate with students at a local university, discussing the importance of diversity in tech and how we can create pathways for underrepresented groups. It’s crucial that we not only share our knowledge but also actively mentor and support these aspiring professionals.\n\nLet’s keep the conversation going! If you’re involved in educational outreach or have ideas on how we can further engage our communities, I’d love to hear from you. Together, we can make a real impact! #DiversityInTech #Mentorship #CommunityEngagement",
+        "predicted_themes": {
+          "embracing diversity in tech": 0.9998184332182727,
+          "illusion of social media success": 4.53916954317528e-05,
+          "importance of rest for productivity": 4.53916954317528e-05,
+          "embracing failures as learning opportunities": 4.53916954317528e-05,
+          "navigating remote work challenges": 4.53916954317528e-05
+        }
+      },
+      "correction_journey": [
+        {
+          "iteration": 1,
+          "corrected_prediction_data": {
+            "review_text": "As we continue to bridge the gap between education and technology, I want to reflect on the importance of community engagement in our local schools. 🌟 Recently, I had the privilege to collaborate with students at a local university, discussing how we can empower the next generation of tech leaders. \n\nWhile diversity in tech is crucial, I believe we must also focus on the real-world challenges these aspiring professionals face. It’s vital that we share our knowledge and actively mentor them, helping them navigate their paths in this ever-evolving industry. \n\nI encourage everyone involved in educational outreach to share your experiences and insights. How can we further engage our communities and support these future leaders? Let’s keep this conversation going! Together, we can make a meaningful impact! #CommunityEngagement #Mentorship #TechEducation",
+            "predicted_themes": {
+              "embracing diversity in tech": 0.9998168626435228,
+              "illusion of social media success": 4.578433911920913e-05,
+              "importance of rest for productivity": 4.578433911920913e-05,
+              "embracing failures as learning opportunities": 4.578433911920913e-05,
+              "navigating remote work challenges": 4.578433911920913e-05
+            }
+          },
+          "new_text_delta": 0.51733815078375,
+          "new_theme_delta": 0.9974971791033409,
+          "new_overall_delta": 0.6613858592796272,
+          "analysis_used": "The analysis reveals a significant discrepancy between the predicted topic probabilities and the ground truth topic probabilities. The predicted topic probabilities strongly favor 'embracing diversity in tech' at nearly 100%, while the ground truth indicates a much more balanced distribution across multiple topics, particularly 'illusion of social media success', 'importance of rest for productivity', 'embracing failures as learning opportunities', and 'navigating remote work challenges', each around 25%. This indicates a potential overemphasis on the diversity aspect in the prediction model, possibly due to the author's known engagement in community and mentorship, overshadowing other relevant themes present in the post. | Where wrong: The model incorrectly prioritized the topic of 'embracing diversity in tech' while neglecting the broader context of community engagement and the multifaceted nature of the author's contributions, which include promoting various aspects of productivity and learning from failures. | Motives: Promote community engagement in tech education; Highlight student initiatives and achievements; Encourage mentorship and guidance for students; Foster a sense of belonging within tech communities",
+          "topic_logprobs": {
+            "embracing diversity in tech": {
+              "logprob_yes": -0.00861468818038702,
+              "logprob_no": -4.758614540100098
+            },
+            "illusion of social media success": {
+              "logprob_yes": -10.0,
+              "logprob_no": 0.0
+            },
+            "importance of rest for productivity": {
+              "logprob_yes": -10.0,
+              "logprob_no": 0.0
+            },
+            "embracing failures as learning opportunities": {
+              "logprob_yes": -10.0,
+              "logprob_no": 0.0
+            },
+            "navigating remote work challenges": {
+              "logprob_yes": -10.0,
+              "logprob_no": 0.0
+            }
+          }
+        },
+        {
+          "iteration": 2,
+          "corrected_prediction_data": {
+            "review_text": "As we continue to bridge the gap between education and technology, I want to take a moment to reflect on the importance of community engagement in our local schools. 🌟 Recently, I had the privilege to collaborate with students at a local university, discussing how we can empower the next generation of tech leaders. \n\nWhile diversity in tech is crucial, we must also acknowledge the real-world challenges these aspiring professionals face. It’s vital that we share our knowledge and actively mentor them, helping them navigate their paths in this ever-evolving industry. \n\nI encourage everyone involved in educational outreach to share your experiences and insights. How can we further engage our communities and support these future leaders? Let’s keep this conversation going! Together, we can make a meaningful impact! #CommunityEngagement #Mentorship #TechEducation #LearningOpportunities #WorkLifeBalance",
+            "predicted_themes": {
+              "embracing diversity in tech": 0.9998176913528332,
+              "illusion of social media success": 4.557716179174339e-05,
+              "importance of rest for productivity": 4.557716179174339e-05,
+              "embracing failures as learning opportunities": 4.557716179174339e-05,
+              "navigating remote work challenges": 4.557716179174339e-05
+            }
+          },
+          "new_text_delta": 0.514648919529481,
+          "new_theme_delta": 0.9975023244780648,
+          "new_overall_delta": 0.6595049410140561,
+          "analysis_used": "The analysis of the topic-attention distributions reveals a significant gap between the predicted and ground truth topic probabilities. The predicted distribution strongly emphasizes 'embracing diversity in tech' at nearly 100%, while the ground truth reflects a more balanced distribution across multiple topics, particularly 'illusion of social media success', 'importance of rest for productivity', 'embracing failures as learning opportunities', and 'navigating remote work challenges', each receiving approximately 25%. This discrepancy indicates a misalignment in the perceived focus of the post, which is primarily about community engagement in educational institutions, a theme that aligns closely with diversity in tech but does not encompass the broader range of topics reflected in the ground truth. The high Jensen-Shannon divergence (JSD) value of 0.997 suggests a substantial difference in the distributions, indicating that the predicted model may be overly focused on a singular narrative rather than capturing the multifaceted nature of the post's content. | Where wrong: The predicted topic probabilities overly concentrated on 'embracing diversity in tech' while neglecting the equally relevant themes of social media success, productivity, and learning from failures that were present in the ground truth. | Motives: Promote community engagement; Support student initiatives; Highlight diversity in tech; Encourage mentorship; Foster collaboration in education",
+          "topic_logprobs": {
+            "embracing diversity in tech": {
+              "logprob_yes": -0.0040785204619169235,
+              "logprob_no": -5.504078388214111
+            },
+            "illusion of social media success": {
+              "logprob_yes": -10.0,
+              "logprob_no": 0.0
+            },
+            "importance of rest for productivity": {
+              "logprob_yes": -10.0,
+              "logprob_no": 0.0
+            },
+            "embracing failures as learning opportunities": {
+              "logprob_yes": -10.0,
+              "logprob_no": 0.0
+            },
+            "navigating remote work challenges": {
+              "logprob_yes": -10.0,
+              "logprob_no": 0.0
+            }
+          }
+        },
+        {
+          "iteration": 3,
+          "corrected_prediction_data": {
+            "review_text": "As we continue to bridge the gap between education and technology, I want to reflect on the importance of community engagement in our local schools. 🌟 Recently, I had the privilege of collaborating with students at a local university, discussing how we can empower the next generation of tech leaders. \n\nWhile embracing diversity in tech is crucial, we must also acknowledge the real-world challenges these aspiring professionals face. It’s vital that we share our knowledge and actively mentor them, helping them navigate their paths in this ever-evolving industry. \n\nMoreover, I believe that sharing our experiences of overcoming failures can be incredibly valuable. Each setback is an opportunity to learn and grow, and it's essential that we foster an environment where students feel safe to take risks. \n\nI encourage everyone involved in educational outreach to share your experiences and insights. How can we further engage our communities and support these future leaders? Let’s keep this conversation going! Together, we can make a meaningful impact! #CommunityEngagement #Mentorship #TechEducation #LearningOpportunities #WorkLifeBalance",
+            "predicted_themes": {
+              "embracing diversity in tech": 0.49996592256380745,
+              "illusion of social media success": 2.2698424868469557e-05,
+              "importance of rest for productivity": 2.2698424868469557e-05,
+              "embracing failures as learning opportunities": 0.499965982161587,
+              "navigating remote work challenges": 2.2698424868469557e-05
+            }
+          },
+          "new_text_delta": 0.5344103669969276,
+          "new_theme_delta": 0.6540327176734728,
+          "new_overall_delta": 0.5702970721998911,
+          "analysis_used": "The analysis reveals a significant gap between the predicted topic probabilities and the ground truth topic probabilities for the LinkedIn post. The predicted model strongly emphasizes 'embracing diversity in tech' with a probability of 99.98%, while the ground truth indicates a near-equal distribution among several topics, particularly 'illusion of social media success', 'importance of rest for productivity', 'embracing failures as learning opportunities', and 'navigating remote work challenges', each around 24.99%. This discrepancy suggests that the model may have overemphasized the diversity aspect of the post, likely due to the author's involvement in community engagement and mentorship, while neglecting the broader themes present in the content. | Where wrong: The model incorrectly predicted the post's primary focus, failing to recognize the multifaceted nature of the content, which includes elements of community, mentorship, and broader themes beyond just diversity. | Motives: Promote community engagement; Highlight student initiatives; Encourage diversity in tech; Foster mentorship and guidance; Celebrate collaborative efforts",
+          "topic_logprobs": {
+            "embracing diversity in tech": {
+              "logprob_yes": -3.128163257315464e-07,
+              "logprob_no": -16.25
+            },
+            "illusion of social media success": {
+              "logprob_yes": -10.0,
+              "logprob_no": 0.0
+            },
+            "importance of rest for productivity": {
+              "logprob_yes": -10.0,
+              "logprob_no": 0.0
+            },
+            "embracing failures as learning opportunities": {
+              "logprob_yes": -1.9361264946837764e-07,
+              "logprob_no": -19.625
+            },
+            "navigating remote work challenges": {
+              "logprob_yes": -10.0,
+              "logprob_no": 0.0
+            }
+          }
+        },
+        {
+          "iteration": 4,
+          "corrected_prediction_data": {
+            "review_text": "As we continue to bridge the gap between education and technology, I want to reflect on the importance of community engagement in our local schools. 🌟 Recently, I had the privilege of collaborating with students at a local university, discussing how we can empower the next generation of tech leaders. \n\nWhile embracing diversity in tech is crucial, we must also acknowledge the real-world challenges these aspiring professionals face. It’s vital that we share our knowledge and actively mentor them, helping them navigate their paths in this ever-evolving industry. \n\nMoreover, I believe that sharing our experiences of overcoming failures can be incredibly valuable. Each setback is an opportunity to learn and grow, and it's essential that we foster an environment where students feel safe to take risks. \n\nI encourage everyone involved in educational outreach to share your experiences and insights. How can we further engage our communities and support these future leaders? Let’s keep this conversation going! Together, we can make a meaningful impact! #CommunityEngagement #Mentorship #TechEducation #LearningOpportunities #WorkLifeBalance",
+            "predicted_themes": {
+              "embracing diversity in tech": 0.4999659523647264,
+              "illusion of social media success": 2.2698423515693915e-05,
+              "importance of rest for productivity": 2.2698423515693915e-05,
+              "embracing failures as learning opportunities": 0.4999659523647264,
+              "navigating remote work challenges": 2.2698423515693915e-05
+            }
+          },
+          "new_text_delta": 0.5297276975134404,
+          "new_theme_delta": 0.654032726407326,
+          "new_overall_delta": 0.5670192061816061,
+          "analysis_used": "The analysis reveals a significant gap between the predicted topic probabilities and the ground truth topic probabilities, particularly in the context of community engagement and diversity in tech. The predicted probabilities suggest a strong emphasis on 'embracing diversity in tech' and 'embracing failures as learning opportunities', which aligns with the author's focus on community involvement and mentorship at Rowan University. However, the ground truth probabilities indicate a more balanced distribution across multiple topics, with a notable emphasis on the 'illusion of social media success', 'importance of rest for productivity', and 'navigating remote work challenges'. This discrepancy suggests that while the author is indeed highlighting diversity and community engagement, the broader context of their message may also encompass themes related to productivity and the challenges of social media, which were not captured in the predictions. | Where wrong: The predicted topic probabilities overemphasize 'embracing diversity in tech' and 'embracing failures as learning opportunities' while neglecting the importance of other relevant themes such as productivity and social media challenges, which are reflected in the ground truth probabilities. | Motives: Promote community engagement in tech education; Highlight student-led initiatives; Encourage mentorship and guidance; Foster diversity and inclusion in technology; Celebrate collaborative efforts in tech",
+          "topic_logprobs": {
+            "embracing diversity in tech": {
+              "logprob_yes": -1.9361264946837764e-07,
+              "logprob_no": -16.625
+            },
+            "illusion of social media success": {
+              "logprob_yes": -10.0,
+              "logprob_no": 0.0
+            },
+            "importance of rest for productivity": {
+              "logprob_yes": -10.0,
+              "logprob_no": 0.0
+            },
+            "embracing failures as learning opportunities": {
+              "logprob_yes": -1.9361264946837764e-07,
+              "logprob_no": -19.375
+            },
+            "navigating remote work challenges": {
+              "logprob_yes": -10.0,
+              "logprob_no": 0.0
+            }
+          }
+        },
+        {
+          "iteration": 5,
+          "corrected_prediction_data": {
+            "review_text": "As I reflect on my recent experiences collaborating with students at a local university, I am reminded of the vital role community engagement plays in shaping the future of technology. 🌟 It's not just about embracing diversity in tech; it's about actively mentoring and empowering the next generation of innovators. \n\nWe often talk about the importance of sharing our knowledge, but we must also acknowledge the real challenges these aspiring professionals face. Each conversation we have can help them navigate their paths in this rapidly evolving industry. \n\nI believe that sharing our stories of overcoming setbacks is crucial. Every failure is a stepping stone to success, and we need to create an environment where students feel safe to take risks and learn from their experiences. \n\nI invite everyone involved in educational outreach to share your insights and experiences. How can we further engage our communities and support these future leaders? Let's keep this conversation going! Together, we can make a meaningful impact! #CommunityEngagement #Mentorship #TechEducation #LearningOpportunities",
+            "predicted_themes": {
+              "embracing diversity in tech": 0.4999658927628921,
+              "illusion of social media success": 2.2698426221245037e-05,
+              "importance of rest for productivity": 2.2698426221245037e-05,
+              "embracing failures as learning opportunities": 0.49996601195844403,
+              "navigating remote work challenges": 2.2698426221245037e-05
+            }
+          },
+          "new_text_delta": 0.5464571532659542,
+          "new_theme_delta": 0.6540327089396211,
+          "new_overall_delta": 0.5787298199680542,
+          "analysis_used": "The analysis reveals a significant gap between the predicted topic probabilities and the ground truth topic probabilities. The predicted model emphasizes 'embracing diversity in tech' and 'embracing failures as learning opportunities' with high confidence, while the ground truth reflects a strong inclination towards 'illusion of social media success', 'importance of rest for productivity', and 'navigating remote work challenges'. This discrepancy suggests a misalignment in understanding the primary focus of the post, which centers on community engagement and mentorship in an educational context. | Where wrong: The predicted model failed to recognize the primary theme of community engagement and mentorship in the educational setting, leading to an overemphasis on topics that are less relevant to the content of the post. | Motives: Promote community engagement; Highlight student initiatives; Encourage mentorship and guidance; Celebrate diversity in tech education",
+          "topic_logprobs": {
+            "embracing diversity in tech": {
+              "logprob_yes": -4.320199877838604e-07,
+              "logprob_no": -15.0
+            },
+            "illusion of social media success": {
+              "logprob_yes": -10.0,
+              "logprob_no": 0.0
+            },
+            "importance of rest for productivity": {
+              "logprob_yes": -10.0,
+              "logprob_no": 0.0
+            },
+            "embracing failures as learning opportunities": {
+              "logprob_yes": -1.9361264946837764e-07,
+              "logprob_no": -10.0
+            },
+            "navigating remote work challenges": {
+              "logprob_yes": -10.0,
+              "logprob_no": 0.0
+            }
+          }
+        },
+        {
+          "iteration": 6,
+          "corrected_prediction_data": {
+            "review_text": "Reflecting on my recent collaborations with students at a local university, I’m reminded of the significant impact community engagement has on shaping the future of technology. 🌍 It's essential to not only embrace diversity in tech but also to actively mentor and empower the next generation of innovators. \n\nIn our discussions, we often highlight the importance of sharing knowledge, yet we must also recognize the real challenges these aspiring professionals encounter. Every conversation we have can guide them through their paths in this rapidly evolving landscape. \n\nMoreover, it's crucial to share our stories of overcoming setbacks. Each failure is indeed a stepping stone to success, and we must foster an environment where students feel safe to take risks and learn from their experiences. \n\nI encourage everyone involved in educational outreach to share your insights and experiences. How can we further engage our communities and support these future leaders? Let’s keep this conversation going! Together, we can make a meaningful impact! #CommunityEngagement #Mentorship #TechEducation #LearningOpportunities #RestForProductivity",
+            "predicted_themes": {
+              "embracing diversity in tech": 0.4999772877729953,
+              "illusion of social media success": 2.2698938142532793e-05,
+              "importance of rest for productivity": 2.657772408469112e-08,
+              "embracing failures as learning opportunities": 0.4999772877729953,
+              "navigating remote work challenges": 2.2698938142532793e-05
+            }
+          },
+          "new_text_delta": 0.35673094376521763,
+          "new_theme_delta": 0.6541978317386505,
+          "new_overall_delta": 0.4459710101572475,
+          "analysis_used": "The analysis reveals a significant discrepancy between the predicted topic probabilities and the ground truth topic probabilities for the LinkedIn post. The predicted probabilities suggest a strong focus on 'embracing diversity in tech' and 'embracing failures as learning opportunities,' which aligns with the author's engagement in community building and mentorship. However, the ground truth indicates a more balanced distribution among multiple topics, particularly highlighting the 'illusion of social media success,' 'importance of rest for productivity,' and 'navigating remote work challenges.' This indicates a potential misalignment in the author's intended message versus the model's interpretation, suggesting that the model may not fully capture the nuances of the author's community engagement and educational focus. | Where wrong: The model overemphasizes the topics of 'embracing diversity in tech' and 'embracing failures as learning opportunities' while neglecting the importance of other relevant themes such as the 'illusion of social media success' and 'importance of rest for productivity,' which are crucial to the author's overall message. | Motives: Promote community engagement; Support student initiatives; Encourage diversity in tech; Mentorship and guidance; Highlight collaborative efforts",
+          "topic_logprobs": {
+            "embracing diversity in tech": {
+              "logprob_yes": -1.9361264946837764e-07,
+              "logprob_no": -19.75
+            },
+            "illusion of social media success": {
+              "logprob_yes": -10.0,
+              "logprob_no": 0.0
+            },
+            "importance of rest for productivity": {
+              "logprob_yes": -16.75,
+              "logprob_no": 0.0
+            },
+            "embracing failures as learning opportunities": {
+              "logprob_yes": -1.9361264946837764e-07,
+              "logprob_no": -20.25
+            },
+            "navigating remote work challenges": {
+              "logprob_yes": -10.0,
+              "logprob_no": 0.0
+            }
+          }
+        }
+      ]
+    },
+    "dc0b5d74-87d9-4fe3-8883-aef9d0924114_review_2": {
+      "user_id": "dc0b5d74-87d9-4fe3-8883-aef9d0924114",
+      "review_idx": 2,
+      "product_description": "Centralized customer payments in ERP systems",
+      "category": "Business Operations and Strategy",
+      "actual_review_data": {
+        "review_text": "Centralized Customer Payments for Headquarters and Subsidiaries by Komathi T SAP Labs India \n\nWelcome to the SAP S/4HANA Cloud Two-tier ERP blog series. \n\nIn this blog, let’s look at centralized customer payments in a Two-tier deployment model.\n\nS/4HANA customer payments is a public cloud solution delivered in the SAP Cloud Platform, which provides a self-service offering to enable our customers to deploy electronic bill presentment and payment processes. In this Two-tier scenario, where headquarters is running On-Premise (ECC6+ or S/4HANA On-premise) and the subsidiary is running on S/4HANA cloud, SAP S/4HANA cloud for customer payment serves as a centralized customer payment solution for both headquarter as well as subsidiary.\n\nWhile running in such two-tier landscape, processing repetitive customer inquiries regarding invoice copies, underpayment, dispute cases, matching incoming payments with open items because of Time zone issues, Language barriers, Large numbers of documents would be a great challenge to the accounts team.\n\nCheck out the full blog here",
+        "predicted_themes": {
+          "building systems for autonomous operations": 0.0007510995654104441,
+          "understanding customer journeys in business": 4.801618876997725e-05,
+          "building adaptive learning platforms": 0.49958759151601334,
+          "power of simplicity in technology": 2.570121379305552e-05,
+          "navigating uncertainty in professional growth": 0.49958759151601334
+        },
+        "topic_probabilities": {
+          "building systems for autonomous operations": 0.0007510995654104441,
+          "understanding customer journeys in business": 4.801618876997725e-05,
+          "building adaptive learning platforms": 0.49958759151601334,
+          "power of simplicity in technology": 2.570121379305552e-05,
+          "navigating uncertainty in professional growth": 0.49958759151601334
+        },
+        "product_description": "Centralized customer payments in ERP systems",
+        "category": "Business Operations and Strategy"
+      },
+      "initial_prediction_deltas": {
+        "text_delta": 0.31034076140909717,
+        "theme_delta": 0.39193935828795445,
+        "overall_delta": 0.33482034047275433
+      },
+      "initial_prediction_data": {
+        "review_text": "Centralized customer payments in ERP systems can significantly streamline financial operations and enhance cash flow management. 💰\n\nAs I've worked with SAP S/4HANA, I've seen firsthand how effective integration of centralized payments can reduce discrepancies and improve reporting accuracy. If you're navigating this landscape, I recommend diving into the configuration of the Material Ledger and ensuring your MM-FI integration is robust. \n\nFor those looking for resources, I’ve compiled some step-by-step guides and best practices on my SlideShare. Let’s make ERP systems work smarter for us! #SAP #S4HANA #Finance #ERP #Integration",
+        "predicted_themes": {
+          "building systems for autonomous operations": 0.2,
+          "understanding customer journeys in business": 0.2,
+          "building adaptive learning platforms": 0.2,
+          "power of simplicity in technology": 0.2,
+          "navigating uncertainty in professional growth": 0.2
+        }
+      },
+      "correction_journey": [
+        {
+          "iteration": 1,
+          "corrected_prediction_data": {
+            "review_text": "Centralized customer payments in ERP systems are not just a technical upgrade; they are a game-changer for financial operations. 💡\n\nHaving worked extensively with SAP S/4HANA, I've witnessed how a well-implemented centralized payment process can streamline cash flow management and enhance reporting accuracy. It’s crucial to ensure that your Material Ledger is configured correctly and that your MM-FI integration is seamless to avoid discrepancies.\n\nFor anyone diving into this area, I’ve put together some detailed guides and best practices on my SlideShare to help you navigate these complexities. Let’s leverage ERP systems to their fullest potential! #SAP #S4HANA #Finance #ERP #Integration",
+            "predicted_themes": {
+              "building systems for autonomous operations": 0.2,
+              "understanding customer journeys in business": 0.2,
+              "building adaptive learning platforms": 0.2,
+              "power of simplicity in technology": 0.2,
+              "navigating uncertainty in professional growth": 0.2
+            }
+          },
+          "new_text_delta": 0.37306777479104747,
+          "new_theme_delta": 0.39193935828795445,
+          "new_overall_delta": 0.3787292498401196,
+          "analysis_used": "The analysis of the topic-attention distributions reveals a significant gap between the predicted and ground truth topic probabilities. The predicted probabilities are uniformly distributed across all topics, indicating a lack of specificity and focus in the predictions. In contrast, the ground truth probabilities show a strong emphasis on 'building adaptive learning platforms' and 'navigating uncertainty in professional growth', suggesting that the content is deeply rooted in educational technology and personal development themes. This discrepancy highlights a misalignment in understanding the core themes of the post, which centers around centralized customer payments in an ERP context, a topic that is not adequately reflected in the predicted distribution. | Where wrong: The predicted topic probabilities are overly generalized and do not capture the specific focus on ERP systems and centralized payment processes, leading to a misrepresentation of the content's intent. | Motives: Educate peers on ERP systems; Share practical insights on SAP functionalities; Highlight challenges in financial processes; Promote community learning and resource sharing",
+          "topic_logprobs": {
+            "building systems for autonomous operations": {
+              "logprob_yes": -10.0,
+              "logprob_no": 0.0
+            },
+            "understanding customer journeys in business": {
+              "logprob_yes": -10.0,
+              "logprob_no": 0.0
+            },
+            "building adaptive learning platforms": {
+              "logprob_yes": -10.0,
+              "logprob_no": -1.9361264946837764e-07
+            },
+            "power of simplicity in technology": {
+              "logprob_yes": -10.0,
+              "logprob_no": 0.0
+            },
+            "navigating uncertainty in professional growth": {
+              "logprob_yes": -10.0,
+              "logprob_no": 0.0
+            }
+          }
+        },
+        {
+          "iteration": 2,
+          "corrected_prediction_data": {
+            "review_text": "Centralized customer payments in ERP systems are not just a technical upgrade; they represent a pivotal shift in how we manage financial operations. 💡\n\nIn my experience with SAP S/4HANA, I've seen firsthand how a well-implemented centralized payment process can significantly streamline cash flow management and enhance reporting accuracy. It's essential to ensure your Material Ledger is configured correctly and that your MM-FI integration is seamless to avoid discrepancies that can lead to operational inefficiencies.\n\nFor those venturing into this area, I've compiled detailed guides and best practices on my SlideShare to help you navigate these complexities effectively. Let's harness the full potential of ERP systems to drive financial excellence! #SAP #S4HANA #Finance #ERP #Integration",
+            "predicted_themes": {
+              "building systems for autonomous operations": 0.2,
+              "understanding customer journeys in business": 0.2,
+              "building adaptive learning platforms": 0.2,
+              "power of simplicity in technology": 0.2,
+              "navigating uncertainty in professional growth": 0.2
+            }
+          },
+          "new_text_delta": 0.35070721737571875,
+          "new_theme_delta": 0.39193935828795445,
+          "new_overall_delta": 0.3630768596493894,
+          "analysis_used": "The analysis reveals a significant gap between the predicted topic probabilities and the ground truth topic probabilities for the LinkedIn post. The predicted probabilities suggest an equal distribution across all topics, indicating a lack of specificity and focus. In contrast, the ground truth probabilities show a strong emphasis on 'building adaptive learning platforms' and 'navigating uncertainty in professional growth', which are not reflected in the predictions. This discrepancy suggests that the model may not be accurately capturing the nuances of the content, particularly the specific challenges and solutions related to centralized customer payments in a Two-tier ERP context. The high Jensen-Shannon divergence (JSD) value indicates a substantial difference between the two distributions, highlighting the need for improved topic modeling that aligns more closely with the content's actual themes and the author's expertise in SAP finance systems. | Where wrong: The predicted topic probabilities are overly generalized and fail to capture the specific focus on ERP systems and customer payment processes, leading to a misalignment with the actual content of the post. | Motives: To provide practical guidance on ERP systems; To share insights on centralized customer payments; To address common challenges in finance operations; To educate peers on SAP S/4HANA functionalities; To foster community engagement through shared resources",
+          "topic_logprobs": {
+            "building systems for autonomous operations": {
+              "logprob_yes": -10.0,
+              "logprob_no": 0.0
+            },
+            "understanding customer journeys in business": {
+              "logprob_yes": -10.0,
+              "logprob_no": 0.0
+            },
+            "building adaptive learning platforms": {
+              "logprob_yes": -10.0,
+              "logprob_no": 0.0
+            },
+            "power of simplicity in technology": {
+              "logprob_yes": -10.0,
+              "logprob_no": 0.0
+            },
+            "navigating uncertainty in professional growth": {
+              "logprob_yes": -10.0,
+              "logprob_no": 0.0
+            }
+          }
+        },
+        {
+          "iteration": 3,
+          "corrected_prediction_data": {
+            "review_text": "Centralized customer payments in ERP systems are more than just a technical upgrade; they are a transformative approach to financial operations. 🌟\n\nIn my journey with SAP S/4HANA, I've witnessed how a well-executed centralized payment process can revolutionize cash flow management and improve reporting accuracy. It's crucial to ensure that your Material Ledger is configured correctly and that the MM-FI integration is seamless to prevent discrepancies that could lead to operational inefficiencies.\n\nFor those exploring this area, I've put together comprehensive guides and best practices on my SlideShare to help you navigate these complexities effectively. Let's unlock the full potential of ERP systems together and drive financial excellence! #SAP #S4HANA #Finance #ERP #Integration",
+            "predicted_themes": {
+              "building systems for autonomous operations": 0.2,
+              "understanding customer journeys in business": 0.2,
+              "building adaptive learning platforms": 0.2,
+              "power of simplicity in technology": 0.2,
+              "navigating uncertainty in professional growth": 0.2
+            }
+          },
+          "new_text_delta": 0.40925130832166445,
+          "new_theme_delta": 0.39193935828795445,
+          "new_overall_delta": 0.40405772331155143,
+          "analysis_used": "The predicted topic probabilities show a significant deviation from the ground truth topic probabilities, particularly in the emphasis on 'building adaptive learning platforms' and 'navigating uncertainty in professional growth', which were both assigned a probability of approximately 0.5 in the ground truth. The predicted probabilities, however, distribute evenly across all topics at 0.2, indicating a lack of specificity and a failure to capture the nuanced focus of the post on centralized customer payments in the context of SAP S/4HANA. This suggests that the model may not have adequately understood the technical and operational context of the post, leading to a generalized and diluted representation of the actual content. The high Jensen-Shannon divergence (0.3919) further underscores the disparity between the predicted and actual topic distributions, highlighting a gap in the model's ability to accurately reflect the author's intent and the specific subject matter discussed in the post. | Where wrong: The model failed to recognize the specific focus on centralized customer payments within the SAP S/4HANA context, leading to an overly broad and inaccurate distribution of topic probabilities. | Motives: Educate peers on ERP systems; Share practical SAP knowledge; Highlight challenges in centralized payments; Promote community learning; Provide technical guidance",
+          "topic_logprobs": {
+            "building systems for autonomous operations": {
+              "logprob_yes": -10.0,
+              "logprob_no": 0.0
+            },
+            "understanding customer journeys in business": {
+              "logprob_yes": -10.0,
+              "logprob_no": 0.0
+            },
+            "building adaptive learning platforms": {
+              "logprob_yes": -10.0,
+              "logprob_no": -1.9361264946837764e-07
+            },
+            "power of simplicity in technology": {
+              "logprob_yes": -10.0,
+              "logprob_no": 0.0
+            },
+            "navigating uncertainty in professional growth": {
+              "logprob_yes": -10.0,
+              "logprob_no": 0.0
+            }
+          }
+        },
+        {
+          "iteration": 4,
+          "corrected_prediction_data": {
+            "review_text": "Navigating the complexities of centralized customer payments in ERP systems is crucial for operational efficiency, especially within the context of SAP S/4HANA. 🌐\n\nIn my experience, implementing a centralized payment process not only streamlines cash flow management but also enhances reporting accuracy. It's essential to ensure that your Material Ledger is properly configured and that the MM-FI integration is seamless to avoid discrepancies that can lead to inefficiencies.\n\nFor those of you diving into this topic, I've compiled detailed guides and best practices on my SlideShare that can help you tackle these challenges effectively. Let's work together to unlock the full potential of ERP systems and drive financial excellence! #SAP #S4HANA #Finance #ERP #Integration",
+            "predicted_themes": {
+              "building systems for autonomous operations": 0.2,
+              "understanding customer journeys in business": 0.2,
+              "building adaptive learning platforms": 0.2,
+              "power of simplicity in technology": 0.2,
+              "navigating uncertainty in professional growth": 0.2
+            }
+          },
+          "new_text_delta": 0.4591097678658784,
+          "new_theme_delta": 0.39193935828795445,
+          "new_overall_delta": 0.43895864499250126,
+          "analysis_used": "The analysis of the topic-attention distributions reveals a significant divergence between the predicted topic probabilities and the ground truth topic probabilities. The ground truth indicates a strong focus on 'building adaptive learning platforms' and 'navigating uncertainty in professional growth,' each with a probability of approximately 0.5, while the predicted probabilities distribute attention evenly across all topics at 0.2. This suggests a lack of specificity in the predictions, failing to capture the nuanced focus of the content on centralized customer payments within the context of SAP S/4HANA and its implications for operational efficiency in a two-tier ERP model. The high Jensen-Shannon divergence (0.39) further emphasizes the gap in understanding the core themes of the post, indicating a need for improved alignment between the predicted topics and the actual content being discussed. | Where wrong: The predicted topic probabilities failed to accurately reflect the specific focus on centralized customer payments and the operational challenges associated with two-tier ERP systems, leading to an overly generalized topic distribution. | Motives: Educate peers on SAP S/4HANA functionalities; Provide practical guidance for ERP implementation; Highlight challenges in centralized payment processing; Share insights on two-tier ERP deployment models; Encourage community engagement through resource sharing",
+          "topic_logprobs": {
+            "building systems for autonomous operations": {
+              "logprob_yes": -10.0,
+              "logprob_no": 0.0
+            },
+            "understanding customer journeys in business": {
+              "logprob_yes": -10.0,
+              "logprob_no": 0.0
+            },
+            "building adaptive learning platforms": {
+              "logprob_yes": -10.0,
+              "logprob_no": 0.0
+            },
+            "power of simplicity in technology": {
+              "logprob_yes": -10.0,
+              "logprob_no": 0.0
+            },
+            "navigating uncertainty in professional growth": {
+              "logprob_yes": -10.0,
+              "logprob_no": 0.0
+            }
+          }
+        },
+        {
+          "iteration": 5,
+          "corrected_prediction_data": {
+            "review_text": "Centralized customer payments in ERP systems are more than just a technical requirement; they are essential for driving operational efficiency and financial accuracy. 🌟\n\nIn my journey with SAP S/4HANA, I've seen firsthand how a well-implemented centralized payment process can transform cash flow management. It’s crucial to ensure that your Material Ledger is configured correctly and that the integration between MM and FI modules is seamless to prevent discrepancies that could hinder performance.\n\nFor anyone looking to enhance their understanding of this topic, I’ve put together a comprehensive guide on my SlideShare, detailing best practices and configuration tips. Let’s collaborate to maximize the potential of our ERP systems and achieve financial excellence together! #SAP #S4HANA #Finance #ERP #Integration",
+            "predicted_themes": {
+              "building systems for autonomous operations": 0.2,
+              "understanding customer journeys in business": 0.2,
+              "building adaptive learning platforms": 0.2,
+              "power of simplicity in technology": 0.2,
+              "navigating uncertainty in professional growth": 0.2
+            }
+          },
+          "new_text_delta": 0.4045033668159669,
+          "new_theme_delta": 0.39193935828795445,
+          "new_overall_delta": 0.40073416425756314,
+          "analysis_used": "The predicted topic probabilities show a significant divergence from the ground truth probabilities, indicating a lack of alignment between the content of the post and the expected topics based on the author's expertise and the group's focus. The predicted probabilities are evenly distributed across all topics, suggesting a generic approach, while the ground truth probabilities highlight a strong emphasis on 'building adaptive learning platforms' and 'navigating uncertainty in professional growth.' This misalignment could lead to confusion among the audience regarding the post's relevance and focus. | Where wrong: The predicted topic probabilities do not reflect the specific focus on ERP systems and centralized payments, which are critical to the author's expertise in SAP S/4HANA finance. Instead, they suggest a broad and unfocused approach that fails to capture the nuances of the topic. | Motives: Educate peers on centralized customer payments; Share practical insights on ERP systems; Highlight challenges in two-tier deployment models; Promote SAP S/4HANA solutions",
+          "topic_logprobs": {
+            "building systems for autonomous operations": {
+              "logprob_yes": -10.0,
+              "logprob_no": 0.0
+            },
+            "understanding customer journeys in business": {
+              "logprob_yes": -10.0,
+              "logprob_no": 0.0
+            },
+            "building adaptive learning platforms": {
+              "logprob_yes": -10.0,
+              "logprob_no": 0.0
+            },
+            "power of simplicity in technology": {
+              "logprob_yes": -10.0,
+              "logprob_no": 0.0
+            },
+            "navigating uncertainty in professional growth": {
+              "logprob_yes": -10.0,
+              "logprob_no": 0.0
+            }
+          }
+        },
+        {
+          "iteration": 6,
+          "corrected_prediction_data": {
+            "review_text": "Centralized customer payments in ERP systems are not just a technical necessity; they are pivotal for enhancing operational efficiency and ensuring financial accuracy. 🚀\n\nThroughout my experience with SAP S/4HANA, I've witnessed how a robust centralized payment process can revolutionize cash flow management. It's essential to configure your Material Ledger meticulously and ensure seamless integration between the MM and FI modules to avoid discrepancies that could impact performance.\n\nFor those eager to deepen their understanding of this crucial topic, I've compiled a detailed guide on my SlideShare, which covers best practices and configuration tips. Let's work together to unlock the full potential of our ERP systems and drive financial excellence! #SAP #S4HANA #Finance #ERP #Integration",
+            "predicted_themes": {
+              "building systems for autonomous operations": 0.2,
+              "understanding customer journeys in business": 0.2,
+              "building adaptive learning platforms": 0.2,
+              "power of simplicity in technology": 0.2,
+              "navigating uncertainty in professional growth": 0.2
+            }
+          },
+          "new_text_delta": 0.406722753280764,
+          "new_theme_delta": 0.39193935828795445,
+          "new_overall_delta": 0.4022877347829211,
+          "analysis_used": "The analysis reveals a significant discrepancy between the ground truth topic probabilities and the predicted topic probabilities. The ground truth indicates a strong focus on 'building adaptive learning platforms' and 'navigating uncertainty in professional growth', each with a probability of approximately 0.5, while the predicted probabilities distribute evenly across all topics at 0.2. This suggests a lack of specificity in the predictions, failing to capture the nuanced focus of the post on centralized customer payments within the context of ERP systems. The high Jensen-Shannon divergence (JSD) value of 0.39 indicates a substantial difference in the distributions, highlighting a potential misalignment in understanding the core themes of the content shared by the author. | Where wrong: The predicted topic probabilities are overly generalized and do not reflect the specific focus on ERP systems and centralized customer payments, leading to a misalignment with the author's expertise and the content of the post. | Motives: Educate peers on ERP systems; Share practical knowledge about SAP S/4HANA; Provide solutions for common challenges in finance operations; Promote community engagement through shared resources",
+          "topic_logprobs": {
+            "building systems for autonomous operations": {
+              "logprob_yes": -10.0,
+              "logprob_no": 0.0
+            },
+            "understanding customer journeys in business": {
+              "logprob_yes": -10.0,
+              "logprob_no": 0.0
+            },
+            "building adaptive learning platforms": {
+              "logprob_yes": -10.0,
+              "logprob_no": 0.0
+            },
+            "power of simplicity in technology": {
+              "logprob_yes": -10.0,
+              "logprob_no": 0.0
+            },
+            "navigating uncertainty in professional growth": {
+              "logprob_yes": -10.0,
+              "logprob_no": -1.9361264946837764e-07
+            }
+          }
+        }
+      ]
+    }
+  },
+  "meta": {
+    "contextual_json": "/media/samanvitha/Seagate HDD/Audience-workflow/scripts/LInkedin_Category_Topic_Extraction/tiered_posts_grouped/contextual_stimulus_extraction_with_topics.json",
+    "description_json": "/media/samanvitha/Seagate HDD/Audience-workflow/scripts/scripts_sgo/outputs/linkedin_tier1_sgo/my_run_v2/description.json",
+    "description_seed_json": "/media/samanvitha/Seagate HDD/Audience-workflow/scripts/Linkedin_Posts_Extraction/raw_profiles/description.json",
+    "mapping_json": "/media/samanvitha/Seagate HDD/Audience-workflow/scripts/LInkedin_Category_Topic_Extraction/tiered_posts_grouped/discovered_category_topic_mapping.json",
+    "work_dir": "/media/samanvitha/Seagate HDD/Audience-workflow/scripts/scripts_sgo/outputs/linkedin_tier1_sgo/my_run_v2",
+    "scoring_mode": "logprobs",
+    "feedback_loop": true,
+    "jsd_threshold": 0.2,
+    "prediction_include_post_body": false,
+    "gt_prob_threshold_for_actual_theme_list": 0.5,
+    "weight_text_delta": 0.7,
+    "weight_theme_delta": 0.3,
+    "total_delta_rows": 14,
+    "last_completed_iteration": 5,
+    "refinement_call_count": 9,
+    "shrink_call_count": 3,
+    "qual_refinement_call_count": 9,
+    "qual_shrink_call_count": 0,
+    "sync_description_json": true,
+    "full_delta_post_pipeline": true,
+    "correction_iterations": 6,
+    "correction_delta_threshold": 0.2,
+    "correction_feedback_on": "theme",
+    "topic_model": "gpt-4o-mini",
+    "pipeline": "linkedin_tier1_delta_method_predictions_full",
+    "precomputed_i0_json": "/media/samanvitha/Seagate HDD/Audience-workflow/Predictions/linkedin_i0_only.json",
+    "memory_jsd_threshold": 0.2,
+    "next_sweep_min_delta": 0.2,
+    "outer_sweep_post_filter": "full_then_best_delta_gt_next_sweep_min",
+    "memory_batch_size": 5,
+    "min_posts_for_memory_batch": 5,
+    "evolve_every_n_batches": 5,
+    "delta_style_predictions_output": "/media/samanvitha/Seagate HDD/Audience-workflow/scripts/scripts_sgo/outputs/linkedin_tier1_sgo/my_run_v2/delta_method_predictions.json"
+  }
+}

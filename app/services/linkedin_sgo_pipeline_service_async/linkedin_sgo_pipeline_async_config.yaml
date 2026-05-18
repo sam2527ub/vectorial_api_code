@@ -1,0 +1,63 @@
+# LinkedIn SGO delta-method async pipeline (tier1 / tier2). Production fills paths from S3 → temp dir.
+# See linkedin_sgo_pipeline_async_config.py. Env: LINKEDIN_SGO_PIPELINE_ASYNC_CONFIG / AUDIENCE_WORKFLOW_ROOT.
+
+tier_mode: tier1
+tier1_evolution_work_dir: ""
+
+contextual_json: ""
+description_json: ""
+mapping_json: ""
+profiles_root: ""
+precomputed_i0_json: ""
+work_dir: ""
+output: ""
+
+model_type_used: linkedin_tier1_delta_method
+
+gen_model: gpt-4o-mini
+topic_model: gpt-4o-mini
+delta_model: gpt-4o-mini
+linkedin_root_cause_model: ""
+refine_model: gpt-4o
+shrink_model: gpt-4o
+qual_schema_model: gpt-4o
+
+concurrent: 8
+max_posts: 0
+correction_iterations: 6
+delta_threshold: null
+feedback_on: theme
+weight_text: null
+weight_theme: null
+
+gt_prob_threshold: 0.5
+prob_threshold: 0.5
+max_retries: 3
+retry_delay: 1.0
+max_text_chars: 12000
+max_group_chars: 12000
+max_individual_chars: 6000
+max_qual_json_chars: 10000
+
+num_iterations: 5
+start_iteration: 1
+memory_batch_size: 5
+min_posts_for_memory_batch: 5
+evolve_every_n_batches: 5
+memory_jsd_threshold: null
+next_sweep_min_delta: 0.2
+
+refine_memory_batches: 12
+shrink_baseline_ratio: 1.22
+shrink_baseline_floor_ratio: 0.90
+shrink_floor_words: 200
+shrink_hard_max_words: 1600
+qual_shrink_every_n_refinements: 5
+
+linkedin_root_cause_memory: true
+disable_qual_schema: false
+disable_evolution_state_snapshots: false
+
+delta_style_predictions_output: ""
+sync_description_json: true
+sync_description_json_every_state_save: false

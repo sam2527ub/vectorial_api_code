@@ -1,0 +1,135 @@
+{
+  "categories": [
+    {
+      "category": "Career Development and Growth",
+      "topics": [
+        "navigating career transitions",
+        "value of mentorship and guidance",
+        "overcoming impostor syndrome",
+        "importance of mental health during transitions",
+        "importance of resilience during layoffs",
+        "transformative power of ambition",
+        "importance of timely feedback in teams"
+      ]
+    },
+    {
+      "category": "AI and Technology Integration",
+      "topics": [
+        "challenges of effective AI use",
+        "impact of AI on education accessibility",
+        "impact of automation on growth",
+        "redesigning customer support with AI",
+        "need for tool integration in businesses",
+        "impact of alignment in operations",
+        "collaboration over individual talent"
+      ]
+    },
+    {
+      "category": "Diversity and Inclusion in Tech",
+      "topics": [
+        "embracing diversity in tech",
+        "illusion of social media success",
+        "importance of rest for productivity",
+        "embracing failures as learning opportunities",
+        "navigating remote work challenges"
+      ]
+    },
+    {
+      "category": "Business Operations and Strategy",
+      "topics": [
+        "building systems for autonomous operations",
+        "understanding customer journeys in business",
+        "building adaptive learning platforms",
+        "power of simplicity in technology",
+        "navigating uncertainty in professional growth"
+      ]
+    },
+    {
+      "category": "Personal Development and Well-being",
+      "topics": [
+        "importance of rest for productivity",
+        "recovering from job rejection",
+        "importance of resilience during layoffs",
+        "embracing failures as learning opportunities",
+        "transformative power of ambition"
+      ]
+    }
+  ],
+  "metadata": {
+    "tier1_file": "/media/samanvitha/Seagate HDD/Audience-workflow/scripts/LInkedin_Category_Topic_Extraction/tiered_posts_grouped/filtered_kept.json",
+    "tier2_file": null,
+    "category_filter": null,
+    "num_tier1_texts": 179,
+    "num_tier2_texts": 0,
+    "num_raw_themes": 30,
+    "num_clean_themes": 25,
+    "model": "gpt-4o-mini",
+    "context_window_tokens": 128000,
+    "safety_margin": 2048,
+    "map_max_output": 2048,
+    "map_post_partitions": 5,
+    "map_api_calls": 5,
+    "max_rounds": 512,
+    "sample_size_per_round": 25,
+    "partition_validation": "duplicate topic: importance of rest for productivity"
+  },
+  "raw_themes": [
+    "impact of alignment in operations",
+    "navigating career transitions",
+    "importance of rest for productivity",
+    "challenges of using AI effectively",
+    "value of mentorship and guidance",
+    "overcoming impostor syndrome",
+    "the illusion of social media success",
+    "collaboration over individual talent",
+    "embracing diversity in tech",
+    "building systems for autonomous operations",
+    "value of career athleticism",
+    "importance of resilience in layoffs",
+    "impact of automation on growth",
+    "navigating remote work complexities",
+    "need for tool integration in businesses",
+    "transformative power of ambition",
+    "navigating job rejection recovery",
+    "importance of mental health during transitions",
+    "embracing failures as learning opportunities",
+    "building adaptive learning platforms",
+    "impact of AI on education accessibility",
+    "importance of timely feedback in teams",
+    "navigating uncertainty in professional growth",
+    "redesigning customer support with AI",
+    "building community-driven initiatives in tech",
+    "power of simplicity in technology",
+    "importance of structured technical conversations",
+    "impact of automation on personal freedom",
+    "value of understanding customer journeys",
+    "navigating the complexities of team dependencies"
+  ],
+  "clean_themes": [
+    "impact of alignment in operations",
+    "navigating career transitions",
+    "importance of rest for productivity",
+    "challenges of effective AI use",
+    "value of mentorship and guidance",
+    "overcoming impostor syndrome",
+    "illusion of social media success",
+    "collaboration over individual talent",
+    "embracing diversity in tech",
+    "building systems for autonomous operations",
+    "importance of resilience during layoffs",
+    "impact of automation on growth",
+    "navigating remote work challenges",
+    "need for tool integration in businesses",
+    "transformative power of ambition",
+    "recovering from job rejection",
+    "importance of mental health during transitions",
+    "embracing failures as learning opportunities",
+    "building adaptive learning platforms",
+    "impact of AI on education accessibility",
+    "importance of timely feedback in teams",
+    "navigating uncertainty in professional growth",
+    "redesigning customer support with AI",
+    "power of simplicity in technology",
+    "understanding customer journeys in business"
+  ]
+}

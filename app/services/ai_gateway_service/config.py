@@ -94,7 +94,38 @@ class GatewayConfig:
                 "openai/gpt-4o-mini",
             ],
         )
-        
+
+        # LinkedIn theme discovery (MAP/SHRINK/CATEGORIZE) — separate defaults for tier-1 vs tier-2
+        ltd1 = rotation_config.get("linkedin_theme_discovery_tier1", {})
+        self.linkedin_theme_discovery_tier1_default = ltd1.get("default", "openai/gpt-4o-mini")
+        self.linkedin_theme_discovery_tier1_fallbacks = ltd1.get(
+            "fallbacks",
+            [
+                "openai/gpt-4.1-mini",
+                "openai/gpt-4o-mini",
+            ],
+        )
+        ltd2 = rotation_config.get("linkedin_theme_discovery_tier2", {})
+        self.linkedin_theme_discovery_tier2_default = ltd2.get("default", "openai/gpt-4o-mini")
+        self.linkedin_theme_discovery_tier2_fallbacks = ltd2.get(
+            "fallbacks",
+            [
+                "openai/gpt-4.1-mini",
+                "openai/gpt-4o-mini",
+            ],
+        )
+
+        sext1 = rotation_config.get("linkedin_stimulus_extraction_tier1", {})
+        self.linkedin_stimulus_extraction_tier1_default = sext1.get("default", "openai/gpt-4o-mini")
+        self.linkedin_stimulus_extraction_tier1_fallbacks = sext1.get(
+            "fallbacks", ["openai/gpt-4.1-mini", "openai/gpt-4o-mini"]
+        )
+        sext2 = rotation_config.get("linkedin_stimulus_extraction_tier2", {})
+        self.linkedin_stimulus_extraction_tier2_default = sext2.get("default", "openai/gpt-4o-mini")
+        self.linkedin_stimulus_extraction_tier2_fallbacks = sext2.get(
+            "fallbacks", ["openai/gpt-4.1-mini", "openai/gpt-4o-mini"]
+        )
+
         # Legacy: general fallbacks (for backward compatibility)
         if rotation_str_env:
             # Parse from environment variable (comma-separated)

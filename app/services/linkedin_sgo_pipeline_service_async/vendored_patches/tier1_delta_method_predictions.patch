@@ -1,0 +1,343 @@
+--- linkedin/tier1_delta_method_predictions.py
++++ linkedin/tier1_delta_method_predictions.py
+@@ -2,8 +2,8 @@
+ """
+ LinkedIn tier-1 **delta-method** pipeline (SGO training from **i1** onward — **no on-line i0**).
+ 
+-**Production:** use only ``app.services.linkedin_sgo_pipeline_service_async`` (S3 I/O + ``vendored_sgo/``).
+-Deployed workers must **never** import or depend on ``scripts/``. This file is a **local development mirror** only.
++**Production:** ``app.services.linkedin_sgo_pipeline_service_async`` only (S3 I/O + ``vendored_sgo/``).
++Production workers must **not** import ``scripts/``; this vendored file is loaded via that package's sys-path shim.
+ 
+ **Initial predictions (i0)** must exist in ``--precomputed-i0-json`` (e.g. from ``run_linkedin_i0_only.py``).
+ This script loads them, then runs the same outer iterations as before: sweep **1** loads i0 from disk for
+@@ -62,10 +62,13 @@
+     load_dotenv = None  # type: ignore
+ 
+ SCRIPTS_SGO = Path(__file__).resolve().parent.parent
+-REPO_ROOT = SCRIPTS_SGO.parent.parent
+ if str(SCRIPTS_SGO) not in sys.path:
+     sys.path.insert(0, str(SCRIPTS_SGO))
+ 
++from _paths import repo_root as _linkedin_sgo_repo_root
++
++REPO_ROOT = _linkedin_sgo_repo_root()
++
+ if load_dotenv:
+     load_dotenv(REPO_ROOT / ".env", override=True)
+ 
+@@ -213,7 +216,8 @@
+ ensure_workdir_description_from_seed = t1.ensure_workdir_description_from_seed
+ save_state = t1.save_state
+ delta_bridge_analysis = t1.delta_bridge_analysis
+-iter_posts_tier1 = t1.iter_posts_tier1
++iter_posts_with_ground_truth = t1.iter_posts_with_ground_truth
++ensure_tier2_evolution_baseline_from_tier1_workdir = t1.ensure_tier2_evolution_baseline_from_tier1_workdir
+ load_or_init_state = t1.load_or_init_state
+ round_prob_dict = t1.round_prob_dict
+ write_delta_method_predictions_artifact = t1.write_delta_method_predictions_artifact
+@@ -400,13 +404,15 @@
+     work_dir: Path,
+     user_predictions: Dict[str, List[Dict[str, Any]]],
+     all_delta_rows: List[Dict[str, Any]],
++    *,
++    micro_cluster_id: str = "tier1",
+ ) -> Path:
+     work_dir.mkdir(parents=True, exist_ok=True)
+     deltas_path = work_dir / "linkedin_tier1_all_reviews_deltas.json"
+     io_utils.save_json_file(
+         {
+             "cluster_id": "linkedin",
+-            "micro_cluster_id": "tier1",
++            "micro_cluster_id": micro_cluster_id,
+             "total_reviews": sum(len(v) for v in user_predictions.values()),
+             "total_delta_rows": len(all_delta_rows),
+             "calculation_timestamp": time.time(),
+@@ -417,6 +423,55 @@
+     return deltas_path
+ 
+ 
++def _user_pred_map_to_jsonable(m: Dict[str, Dict[int, Dict[str, Any]]]) -> Dict[str, Any]:
++    out: Dict[str, Any] = {}
++    for uid, rows in (m or {}).items():
++        out[str(uid)] = {str(k): copy.deepcopy(v) for k, v in (rows or {}).items()}
++    return out
++
++
++def _user_pred_map_from_jsonable(raw: Any) -> Dict[str, Dict[int, Dict[str, Any]]]:
++    out: Dict[str, Dict[int, Dict[str, Any]]] = {}
++    if not isinstance(raw, dict):
++        return out
++    for uid, rows in raw.items():
++        if not isinstance(rows, dict):
++            continue
++        inner: Dict[int, Dict[str, Any]] = {}
++        for k, v in rows.items():
++            try:
++                ik = int(k)
++            except (TypeError, ValueError):
++                continue
++            inner[ik] = copy.deepcopy(v) if isinstance(v, dict) else {}
++        out[str(uid)] = inner
++    return out
++
++
++def _pred_snapshot_to_jsonable(snap: Dict[Tuple[str, int], Dict[str, Any]]) -> Dict[str, Any]:
++    out: Dict[str, Any] = {}
++    for (uid, ridx), v in (snap or {}).items():
++        out[f"{uid}|{int(ridx)}"] = copy.deepcopy(v)
++    return out
++
++
++def _pred_snapshot_from_jsonable(raw: Any) -> Dict[Tuple[str, int], Dict[str, Any]]:
++    out: Dict[Tuple[str, int], Dict[str, Any]] = {}
++    if not isinstance(raw, dict):
++        return out
++    for k, v in raw.items():
++        ks = str(k)
++        if "|" not in ks:
++            continue
++        a, b = ks.split("|", 1)
++        try:
++            ri = int(b)
++        except ValueError:
++            continue
++        out[(str(a), ri)] = copy.deepcopy(v) if isinstance(v, dict) else {}
++    return out
++
++
+ def _print_review_progress(
+     posts_done: int,
+     total_posts: int,
+@@ -822,7 +877,13 @@
+ 
+     _ensure_scoring_mode()
+ 
+-    default_run_dir = (SCRIPTS_SGO / "outputs" / "linkedin_tier1_sgo" / "default_run").resolve()
++    tier_mode = str(getattr(args, "tier_mode", "tier1") or "tier1").strip().lower()
++    if tier_mode not in ("tier1", "tier2"):
++        tier_mode = "tier1"
++    setattr(args, "tier_mode", tier_mode)
++
++    out_dir_name = "linkedin_tier2_sgo" if tier_mode == "tier2" else "linkedin_tier1_sgo"
++    default_run_dir = (SCRIPTS_SGO / "outputs" / out_dir_name / "default_run").resolve()
+     wd_raw = str(getattr(args, "work_dir", "") or "").strip()
+     work_dir = Path(wd_raw).expanduser().resolve() if wd_raw else default_run_dir
+     if not wd_raw:
+@@ -833,6 +894,18 @@
+     mapping_path = Path(args.mapping_json).expanduser().resolve()
+     profiles_root = Path(args.profiles_root).expanduser().resolve()
+     work_dir.mkdir(parents=True, exist_ok=True)
++    if tier_mode == "tier2":
++        tw = str(getattr(args, "tier1_evolution_work_dir", "") or "").strip()
++        if tw:
++            ensure_tier2_evolution_baseline_from_tier1_workdir(
++                work_dir,
++                Path(tw).expanduser().resolve(),
++            )
++        else:
++            logger.warning(
++                "[TIER2] tier_mode=tier2 but tier1_evolution_work_dir is empty; "
++                "evolution will init from description.json unless state already exists."
++            )
+     out_path = Path(args.output).expanduser().resolve()
+ 
+     weight_text = float(args.weight_text) if args.weight_text is not None else float(settings.WEIGHT_TEXT_DELTA)
+@@ -875,7 +948,7 @@
+     payload = load_contextual_payload(contextual_path)
+     if not str(payload.get("source_file") or "").strip():
+         payload["source_file"] = contextual_path.name
+-    all_posts = iter_posts_tier1(payload)
++    all_posts = iter_posts_with_ground_truth(payload, tier_hint=tier_mode)
+     if args.max_posts > 0:
+         all_posts = all_posts[: args.max_posts]
+ 
+@@ -894,7 +967,7 @@
+     )
+     if not precomputed_i0_path.is_file():
+         logger.error(
+-            "[I0] Precomputed i0 JSON not found: %s — run scripts_sgo/linkedin/run_linkedin_i0_only.py first.",
++            "[I0] Precomputed i0 JSON not found: %s — generate tier-matching i0 (initial prediction job / i0 script).",
+             precomputed_i0_path,
+         )
+         sys.exit(1)
+@@ -914,8 +987,9 @@
+         state_path,
+     )
+     logger.info(
+-        "[PIPELINE] num_iterations=%s | next_sweep_min_delta=%s (post-correction best_deltas) | "
++        "[PIPELINE] tier_mode=%s | num_iterations=%s | next_sweep_min_delta=%s (post-correction best_deltas) | "
+         "precomputed_i0=%s | i1 batch=%s (min_posts=%s) | evolve every %s memory batches | memory_gate=%s (%s) | correction_cap=%s",
++        tier_mode,
+         int(args.num_iterations),
+         next_sweep_thr,
+         precomputed_i0_path.name,
+@@ -928,17 +1002,20 @@
+     )
+ 
+     base_url = os.environ.get("OPENAI_BASE_URL")
++    openai_timeout = float(os.environ.get("LINKEDIN_SGO_OPENAI_TIMEOUT", "120"))
+     client = AsyncOpenAI(
+         api_key=os.environ["OPENAI_API_KEY"],
+         base_url=base_url if base_url and base_url.strip() else None,
+-        timeout=120.0,
++        timeout=openai_timeout,
+     )
+     sync_client = OpenAI(
+         api_key=os.environ["OPENAI_API_KEY"],
+         base_url=base_url if base_url and base_url.strip() else None,
+-        timeout=120.0,
++        timeout=openai_timeout,
+     )
+ 
++    trace_pipeline_name = f"linkedin_{tier_mode}_delta_method"
++
+     sem = asyncio.Semaphore(max(1, args.concurrent))
+     emb_cache: Dict[str, Any] = {}
+     emb_lock = Lock()
+@@ -966,7 +1043,7 @@
+     if not getattr(args, "disable_qual_schema", False):
+         persona_evolver = TribeSchemaEvolver(
+             cluster_id="linkedin",
+-            micro_id="tier1_delta",
++            micro_id=f"{tier_mode}_delta",
+             memory_dir=str(work_dir / "memory"),
+             refined_schema_dir=str(work_dir),
+             evolution_model=args.qual_schema_model,
+@@ -1014,7 +1091,8 @@
+                 args=args,
+                 model_type_used=str(args.model_type_used),
+                 meta_extra={
+-                    "pipeline": "linkedin_tier1_delta_method_predictions_full",
++                    "pipeline": f"linkedin_{tier_mode}_delta_method_predictions_full",
++                    "tier_mode": tier_mode,
+                     "precomputed_i0_json": str(precomputed_i0_path),
+                     "memory_jsd_threshold": memory_jsd_thr,
+                     "next_sweep_min_delta": next_sweep_thr,
+@@ -1036,7 +1114,7 @@
+             logger.warning("[OUTPUT] could not mirror delta bundle to --output: %s", e)
+         if rows:
+             flat = _flatten_user_predictions_for_aggregate(user_pred_by_idx)
+-            dp = _write_aggregate_deltas_json(work_dir, flat, rows)
++            dp = _write_aggregate_deltas_json(work_dir, flat, rows, micro_cluster_id=tier_mode)
+             print(f"[DELTAS] aggregate → {dp}", flush=True)
+         if not getattr(args, "disable_evolution_state_snapshots", False):
+             snap = append_evolution_state_snapshot(state_history_dir, state, state_snap_seq, reason)
+@@ -1052,8 +1130,30 @@
+     qualifying_keys_from_prev: Optional[Set[Tuple[str, str]]] = None
+     pred_snapshot_prev_outer: Dict[Tuple[str, int], Dict[str, Any]] = {}
+ 
++    _rq = getattr(args, "sgo_resume_qualifying_keys", None)
++    if _rq:
++        qualifying_keys_from_prev = set()
++        for item in _rq:
++            if isinstance(item, (list, tuple)) and len(item) >= 2:
++                qualifying_keys_from_prev.add((str(item[0]), str(item[1])))
++    _rs = getattr(args, "sgo_resume_pred_snapshot", None)
++    if isinstance(_rs, dict) and _rs:
++        pred_snapshot_prev_outer = _pred_snapshot_from_jsonable(_rs)
++
+     for iteration in range(start_it, num_it + 1):
+         user_pred_by_idx: Dict[str, Dict[int, Dict[str, Any]]] = {}
++        _seed_path = str(getattr(args, "sgo_user_pred_seed_json", "") or "").strip()
++        if _seed_path:
++            sp = Path(_seed_path)
++            if sp.is_file():
++                user_pred_by_idx = _user_pred_map_from_jsonable(
++                    json.loads(sp.read_text(encoding="utf-8"))
++                )
++                logger.info(
++                    "[SGO_RESUME] loaded user_pred seed %s rows=%s",
++                    sp,
++                    sum(len(v) for v in user_pred_by_idx.values()),
++                )
+         all_delta_rows: List[Dict[str, Any]] = []
+         iteration_jsds: List[float] = []
+         processed: Set[str] = set()
+@@ -1165,7 +1265,7 @@
+                 ) or {}
+                 gt = {k: float(v) for k, v in (p.get("topic_probabilities") or {}).items()}
+                 line: Dict[str, Any] = {
+-                    "pipeline": "linkedin_tier1_delta_method",
++                    "pipeline": trace_pipeline_name,
+                     "phase": "baseline",
+                     "outer_iteration": iteration,
+                     "post_id": post_id,
+@@ -1307,7 +1407,7 @@
+             ) or {}
+             gt = {k: float(v) for k, v in (p.get("topic_probabilities") or {}).items()}
+             line: Dict[str, Any] = {
+-                "pipeline": "linkedin_tier1_delta_method",
++                "pipeline": trace_pipeline_name,
+                 "phase": "i1",
+                 "outer_iteration": iteration,
+                 "post_id": post_id,
+@@ -1619,7 +1719,8 @@
+         stats_record: Dict[str, Any] = {
+             "iteration": iteration,
+             "num_iterations_planned": num_it,
+-            "pipeline": "linkedin_tier1_delta_method_predictions",
++            "pipeline": f"linkedin_{tier_mode}_delta_method_predictions",
++            "tier_mode": tier_mode,
+             "n_posts_in_sweep": n_posts,
+             "n_posts_i1_eligible": n_high,
+             "n_posts_scored": len(iteration_jsds),
+@@ -1670,6 +1771,36 @@
+         qualifying_keys_from_prev = next_qualifying
+         pred_snapshot_prev_outer = build_prediction_snapshot_for_memory(user_pred_by_idx)
+ 
++        _out_seed = str(getattr(args, "sgo_user_pred_seed_json_out", "") or "").strip()
++        if _out_seed:
++            outp = Path(_out_seed)
++            outp.parent.mkdir(parents=True, exist_ok=True)
++            outp.write_text(
++                json.dumps(_user_pred_map_to_jsonable(user_pred_by_idx), ensure_ascii=False, indent=2)
++                + "\n",
++                encoding="utf-8",
++            )
++            logger.info("[SGO_CHECKPOINT] wrote user_pred seed → %s", outp)
++
++        _hook = getattr(args, "sgo_on_outer_iteration_complete", None)
++        if _hook is not None:
++            _maybe = _hook(
++                iteration_completed=int(iteration),
++                num_iterations_planned=int(num_it),
++                work_dir=work_dir,
++                qualifying_keys_for_next=sorted(list(qualifying_keys_from_prev)),
++                pred_snapshot_jsonable=_pred_snapshot_to_jsonable(pred_snapshot_prev_outer),
++                user_pred_jsonable=_user_pred_map_to_jsonable(user_pred_by_idx),
++                state_path=state_path,
++                memory_path=memory_path,
++                trace_path=trace_path,
++                iteration_stats_path=iteration_stats_path,
++                out_path=out_path,
++                tier_mode=str(getattr(args, "tier_mode", "tier1") or "tier1"),
++            )
++            if asyncio.iscoroutine(_maybe):
++                await _maybe
++
+     print(
+         f"\n[DONE] state={state_path} | memory={memory_path} | traces={trace_path.name} | "
+         f"predictions={out_path}\n",
+@@ -1714,6 +1845,21 @@
+     p.add_argument("--mapping-json", type=str, default=str(default_mapping))
+     p.add_argument("--profiles-root", type=str, default=str(default_profiles))
+     p.add_argument(
++        "--tier-mode",
++        type=str,
++        choices=("tier1", "tier2"),
++        default="tier1",
++        dest="tier_mode",
++        help="tier2: optionally seed evolution from tier-1 work dir (--tier1-evolution-work-dir) before state load.",
++    )
++    p.add_argument(
++        "--tier1-evolution-work-dir",
++        type=str,
++        default="",
++        dest="tier1_evolution_work_dir",
++        help="Tier-1 pipeline work directory; tier-2 copies evolution/evolution_state.json when tier-2 state is missing.",
++    )
++    p.add_argument(
+         "--work-dir",
+         type=str,
+         default=str(default_work),

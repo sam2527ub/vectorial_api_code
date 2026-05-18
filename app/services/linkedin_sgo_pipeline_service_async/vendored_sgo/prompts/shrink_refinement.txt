@@ -1,0 +1,223 @@
+You are a Behavioral Schema Optimizer. Your goal is to **consolidate** a Group Persona 
+(remove redundancy and batch noise) while preserving **audience-room richness** in the 
+group summary and maintaining high-quality rationalizations on traits.
+
+**CRITICAL: This is the MERGE AND CONSOLIDATE step.** Your primary responsibilities are:
+1. **Consolidate the Group Summary** — dedupe and sharpen prose while honoring a **word band**; 
+   **enrich** overly short summaries using traits + baseline anchor (see RUNTIME CONSTRAINTS)
+2. **Merge duplicate traits** within each trait category
+3. **Delete low-confidence traits** to enforce the 20-item limit per category
+4. **Do NOT add new characteristics** — only merge, compress, and delete existing ones
+
+### INPUT CONTEXT
+**CURRENT GROUP PERSONA (To Shrink):** {current_group_persona_json}
+
+---
+
+### PART A: CONSOLIDATING THE GROUP SUMMARY (NOT “summarize to nothing”)
+
+**GOAL:** Produce a **nuanced, audience-room-caliber** group summary: concrete domains, 
+tools and platforms where they matter, cohort contrasts, and how this tribe shows up 
+on LinkedIn. It must stay **aligned with the five trait categories** in spirit (skills, 
+working style, motivations, pains, org/psychographic) while remaining **prose** — not a 
+trait list.
+
+**What tends to go wrong:**
+- The summary is **overshrunk** into a short generic paragraph that loses baseline specificity
+- Trait-level substance lives only in JSON while the summary becomes hollow
+- Batch-specific post trivia gets pasted into the summary (bad) — but **legitimate** 
+  cohort and platform detail gets stripped too (also bad)
+
+**STEP A1: REASONING**
+1. Read the Group Summary **and** skim the trait lists in the same JSON: what major 
+   themes must the summary **carry** at a tribe level?
+2. Compare implied length to the **baseline summary** provided in RUNTIME CONSTRAINTS: 
+   if the current summary is **much shorter**, treat this as a defect — you will **enrich** 
+   from traits + baseline anchor, not compress further.
+3. Find true redundancy (same idea repeated twice) and **merge**; find vague sentences 
+   and **replace** with sharper, still-generalized language grounded in existing persona data.
+
+**STEP A2: LENGTH & RICHNESS (follow RUNTIME word band)**
+- Respect **minimum and maximum word counts** from RUNTIME CONSTRAINTS.
+- If below the minimum: **expand** with synthesized detail already implied by traits 
+  and/or baseline anchor — **no new organizations or invented behaviors**.
+- If above the maximum: remove **duplication and batch trivia** first; preserve 
+  **named domains/tools** and cohort contrasts where they exist in the input.
+- **Generalization:** no stimulus-specific lines or quotes; tribe-level only.
+- **Prose:** one or more flowing paragraphs (multiple paragraphs allowed if clarity benefits).
+- **Trait overlap:** do not duplicate trait bullets verbatim; **compress** overlapping 
+  summary+trait content into clean summary prose.
+
+**STEP A3: PRESERVE**
+- Professional identity, flagship ecosystems, and distinctive sub-cohorts
+- How they teach, ship, recruit, debate ethics/governance, and signal credibility on LinkedIn
+- Specificity that matches the baseline’s evidentiary level
+
+**STEP A4: REMOVE**
+- Meta-language (“recent analyses show…”)
+- Post-level anecdotes or one-off scenarios
+- Repeated sentences that add no new tribe-level information
+
+---
+
+### PART B: SHRINKING THE GROUP TRAITS
+
+**GOAL:** Reduce each trait category to **MAXIMUM 20 trait descriptions** by merging 
+duplicates and deleting low-confidence items, while preserving the predictive power 
+of the group persona for LinkedIn post generation.
+
+**TRAIT CATEGORIES TO SHRINK:**
+- Skills & Expertise: MAXIMUM 20 descriptions
+- Working Style: MAXIMUM 20 descriptions
+- Motivations & Values: MAXIMUM 20 descriptions
+- Pain Points & Needs: MAXIMUM 20 descriptions
+- Organizational Leadership & Psychographic Profile: MAXIMUM 20 descriptions
+
+### STEP B1: REASONING STEP (BEGINNING)
+**Before making any changes, you MUST perform this reasoning step:**
+
+1. **Analyze Current State:** Count descriptions in each trait category. Identify 
+   which categories exceed 20 items.
+
+2. **Identify Merge Candidates:** For each category independently, identify 
+   descriptions that:
+   - Have similar behavioral triggers or focus areas
+   - Express the same underlying professional behavior or community norm
+   - Can be safely merged without losing predictive power for LinkedIn post generation
+
+3. **Assess Confidence Scores:** Review all confidence scores. Identify items with:
+   - Low confidence scores (< 0.6) that are candidates for deletion
+   - High confidence scores (> 0.8) that must be preserved
+
+4. **Plan Merges:** Decide which items to merge and how to combine their:
+   - Text (create a unified conditional behavioral description)
+   - Rationalizations (synthesize if they describe the same underlying community norm)
+   - Confidence scores (use the higher score, or weighted average if appropriate)
+
+5. **Plan Deletions:** If any category has >20 items after merging:
+   - Sort items by confidence_score (lowest to highest)
+   - Identify which items to delete (lowest confidence first)
+   - Ensure you delete enough to reach 20 or fewer items
+
+**Only after completing this reasoning step should you proceed to make changes.**
+
+---
+
+### STEP B2: MERGE AND DELETE PROCESS
+
+**Merge Process:**
+1. **Scan for Duplicates:** Identify descriptions **within each category** that 
+   express the same underlying professional behavior or community norm on LinkedIn
+2. **Merge Similar Items:** For descriptions with similar behavioral triggers AND 
+   similar rationalizations **within the same category:**
+   - Combine the text into a unified conditional behavioral description
+   - Synthesize the rationalizations (only if they describe the same underlying 
+     community norm)
+   - Use the HIGHER confidence score (or weighted average if merging multiple items)
+3. **Preserve Distinct Behaviors:** If two descriptions have similar text but 
+   DIFFERENT underlying behaviors (different rationalizations), DO NOT merge them — 
+   they represent distinct behavioral patterns
+4. **Each category is independent:** Merge duplicates within each category 
+   separately. Do not require merging across categories.
+
+**Delete Process (If >20 items exist after merging):**
+1. **Sort by Confidence:** Sort all items in the category by confidence_score 
+   (lowest to highest)
+2. **Delete Lowest Confidence:** DELETE items with lowest confidence/relevance 
+   until you have 20 or fewer items
+3. **DO NOT Summarize:** Simply delete the lowest-confidence items
+4. **Preserve High-Confidence:** Always preserve items with confidence_score >= 0.8
+
+---
+
+### STEP B3: RATIONALIZATION QUALITY RULES
+
+**What is Rationalization?**
+Rationalization = the underlying professional norm or community behavior that 
+explains WHY this group posts or engages this way on LinkedIn. It is the internal 
+logic that connects the behavioral evidence.
+
+**When Merging Trait Descriptions:**
+1. **DO NOT Hallucinate:** Only combine rationalizations that genuinely express the 
+   same underlying professional norm. Do NOT invent new community behaviors.
+2. **Synthesize, Don't Concatenate:** When merging two descriptions:
+   - If their rationalizations describe the SAME underlying norm → Create ONE 
+     unified rationalization that captures the essence
+   - If their rationalizations describe DIFFERENT underlying norms → DO NOT merge 
+     them, even if the text triggers seem similar
+3. **Preserve Quality:** The merged rationalization must be:
+   - Grounded in the original rationalizations (no new concepts)
+   - More general than the originals (synthesis, not combination)
+   - Still explain the "why" behind this community's LinkedIn behavior
+
+**Example of Good Merge:**
+- Original 1: "text": "When sharing technical achievements, they tag teammates 
+  and credit contributors publicly", "rationalization": "Community attribution 
+  as a trust-building norm", "confidence_score": 0.85
+- Original 2: "text": "When announcing product launches, they amplify colleagues' 
+  related work in the same post", "rationalization": "Collaborative visibility 
+  as a reciprocal professional norm", "confidence_score": 0.75
+- Merged: "text": "When posting about technical or product milestones, they 
+  consistently credit teammates and amplify related work by colleagues", 
+  "rationalization": "Community attribution and collaborative visibility as 
+  reciprocal professional norms — recognition is seen as a shared act, not an 
+  individual one.", "confidence_score": 0.85
+
+---
+
+### STEP B4: HARD LIMIT — MAXIMUM 20 ITEMS PER CATEGORY
+**CRITICAL RULE:** Each trait category has a **MAXIMUM of 20 descriptions.** 
+This is a hard limit.
+
+**If >20 items exist after merging:**
+1. Sort all items by confidence_score (lowest to highest)
+2. DELETE items with lowest confidence until you have exactly 20 or fewer
+3. DO NOT summarize — simply delete the lowest-confidence items
+4. DO NOT merge further to avoid deletion — if you're at the limit, delete
+
+---
+
+### STEP B5: ENSURE ALL TRAITS HAVE RATIONALIZATIONS
+**CRITICAL:** Every single trait description MUST have: text, rationalization, 
+confidence_score.
+
+- If any item is missing a rationalization, generate one based on the existing 
+  text — grounded in what the text describes, not invented
+- The rationalization must explain the underlying professional norm or community 
+  behavior that drives this LinkedIn posting pattern
+- It must be grounded in the original data, not invented
+
+---
+
+### STRICTLY NO HALLUCINATION:
+- **DO NOT invent** new professional norms, community behaviors, or rationalizations 
+  that don't exist in the input
+- **ONLY use** rationalizations and concepts already present in the original group 
+  persona data
+- **DO NOT add** new characteristics, traits, or behaviors that weren't in the 
+  input — only merge and consolidate existing ones
+- **DO NOT HALLUCINATE RATIONALIZATIONS:** When merging, synthesize existing 
+  rationalizations only — do not create new professional or psychological 
+  explanations not present in the original data
+
+---
+
+### OUTPUT FORMAT
+Return ONLY a valid JSON object (the shrunk group persona), maintaining the exact 
+schema of the input but with:
+
+**Group Summary:**
+- **Nuanced narrative** suitable for an audience-room brief — **not** a terse 3-sentence digest  
+- Honors the **RUNTIME word band** (minimum–maximum): if the draft is too short, **enrich** 
+  from traits + baseline anchor; if too long, **dedupe** and remove batch noise only  
+- No meta-language, no post-level anecdotes; **preserves** concrete domain/tool/cohort texture 
+  that appears in the input persona JSON or baseline anchor
+**Group Traits:**
+- All five categories maintained (5-category `qualitative_summary` schema)
+- MAXIMUM 20 items per category
+- Each item has: `text`, `rationalization`, `confidence_score`
+- All duplicates merged
+- Lowest-confidence items deleted if categories exceed 20 items
+- All rationalizations are high-quality, non-hallucinated, and grounded in the 
+  original data
+"""

@@ -185,6 +185,32 @@ def fetch_json_from_s3(key: str) -> Dict[str, Any]:
         raise HTTPException(status_code=500, detail=f"Failed to fetch data from S3: {str(e)}")
 
 
+def try_fetch_json_from_s3(key: str) -> Optional[Dict[str, Any]]:
+    """
+    Fetch JSON from S3; return None if the object is missing or S3 is not configured.
+    Does not raise HTTPException (for batch jobs where missing profile files are normal).
+    """
+    from botocore.exceptions import ClientError
+
+    if not s3_client or not s3_bucket:
+        logger.warning("try_fetch_json_from_s3: S3 not configured for key %s", key)
+        return None
+    try:
+        response = s3_client.get_object(Bucket=s3_bucket, Key=key)
+        content = response["Body"].read().decode("utf-8")
+        parsed: Dict[str, Any] = json.loads(content)
+        return parsed if isinstance(parsed, dict) else None
+    except ClientError as e:
+        code = e.response.get("Error", {}).get("Code", "")
+        if code in ("404", "NoSuchKey", "NotFound"):
+            return None
+        logger.warning("try_fetch_json_from_s3: ClientError for key %s: %s", key, e)
+        return None
+    except Exception as e:
+        logger.warning("try_fetch_json_from_s3: failed for key %s: %s", key, e)
+        return None
+
+
 from typing import List
 
 

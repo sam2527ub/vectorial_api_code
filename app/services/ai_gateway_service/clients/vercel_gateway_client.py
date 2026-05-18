@@ -45,17 +45,20 @@ class VercelGatewayClient(GatewayHandlerInterface):
         top_logprobs: Optional[int] = None,
         return_full_response: bool = False,
         response_format: Optional[Dict[str, str]] = None,
+        temperature: Optional[float] = None,
     ) -> Union[Dict[str, Any], str, Any]:
         normalized_model = utils.normalize_model_name(model, self.provider)
         normalized_fallbacks = [
             utils.normalize_model_name(m, self.provider) for m in (fallback_models or [])
         ]
-        request_params = {
+        request_params: Dict[str, Any] = {
             "model": normalized_model,
             "messages": messages,
             "max_tokens": max_tokens,
-            "temperature": 0.3,
+            "temperature": 0.3 if temperature is None else temperature,
         }
+        if response_format is not None:
+            request_params["response_format"] = response_format
         gateway_options = {}
         if normalized_fallbacks:
             gateway_options["models"] = normalized_fallbacks

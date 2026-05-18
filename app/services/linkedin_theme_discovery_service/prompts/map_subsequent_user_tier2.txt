@@ -1,0 +1,16 @@
+
+Analyze the following member replies. Identify new themes or topics 
+that are NOT already in this list: {previous_str}
+
+Cap the number of new themes at {max_new}. If no genuinely new themes are found, 
+return an empty array.
+
+Same rules: 4–8 word noun phrases, vary phrasing structure, no "the X of Y" templates, 
+no semantic duplicates of the existing list.
+
+Replies:
+"""
+{posts_block}
+"""
+
+Return JSON: {{"themes": ["...", ...]}} (empty list if nothing new).

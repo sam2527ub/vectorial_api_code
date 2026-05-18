@@ -1,0 +1,3004 @@
+{
+  "room_id": "91cd222b-8cc9-4ee4-bf06-c5e9ed2f6f74",
+  "source_file": "filtered_kept_tier2.json",
+  "results_by_user": {
+    "1db61e77-786d-4d4c-94e0-4dcc221af20b": {
+      "profile_info": {
+        "occupation": "Founder, CodingRippler | Helped 20+ businesses build the tech they needed"
+      },
+      "posts": [
+        {
+          "post_id": "1db61e77-786d-4d4c-94e0-4dcc221af20b_51",
+          "body_text": "Completely agree.\nHaving worked with traditional RPA on 50+ sites and more recently production-scale scraping across 250+ sites, the brittleness difference is very real.",
+          "stimulus": "Impact of AI on automation tools",
+          "category": "Technical Expertise and Capabilities",
+          "topics_ordered": [
+            "Cloud Infrastructure Management",
+            "AI and Machine Learning Operations",
+            "Full-Stack Engineering Practices",
+            "DevOps and IT Security",
+            "Developer Tools and Productivity Solutions",
+            "Database Management and Optimization",
+            "Cybersecurity Strategies",
+            "High-Performance Computing Techniques"
+          ],
+          "topic_probabilities": {
+            "Cloud Infrastructure Management": 0.016817102178093894,
+            "AI and Machine Learning Operations": 1.4263969287054767e-06,
+            "Full-Stack Engineering Practices": 7.634952576939937e-07,
+            "DevOps and IT Security": 0.016817102178093894,
+            "Developer Tools and Productivity Solutions": 0.9159122992173437,
+            "Database Management and Optimization": 0.016817102178093894,
+            "Cybersecurity Strategies": 0.016817102178093894,
+            "High-Performance Computing Techniques": 0.016817102178093894
+          },
+          "topic_probabilities_before_normalisation": {
+            "Cloud Infrastructure Management": 4.5397868702434395e-05,
+            "AI and Machine Learning Operations": 3.850741907939403e-09,
+            "Full-Stack Engineering Practices": 2.0611536181902033e-09,
+            "DevOps and IT Security": 4.5397868702434395e-05,
+            "Developer Tools and Productivity Solutions": 0.0024726229596571036,
+            "Database Management and Optimization": 4.5397868702434395e-05,
+            "Cybersecurity Strategies": 4.5397868702434395e-05,
+            "High-Performance Computing Techniques": 4.5397868702434395e-05
+          },
+          "topic_logprobs": {
+            "Cloud Infrastructure Management": {
+              "logprob_yes": -10.0,
+              "logprob_no": 0.0
+            },
+            "AI and Machine Learning Operations": {
+              "logprob_yes": -19.375,
+              "logprob_no": 0.0
+            },
+            "Full-Stack Engineering Practices": {
+              "logprob_yes": -20.0,
+              "logprob_no": 0.0
+            },
+            "DevOps and IT Security": {
+              "logprob_yes": -10.0,
+              "logprob_no": 0.0
+            },
+            "Developer Tools and Productivity Solutions": {
+              "logprob_yes": -6.002475738525391,
+              "logprob_no": -0.0024756586644798517
+            },
+            "Database Management and Optimization": {
+              "logprob_yes": -10.0,
+              "logprob_no": 0.0
+            },
+            "Cybersecurity Strategies": {
+              "logprob_yes": -10.0,
+              "logprob_no": 0.0
+            },
+            "High-Performance Computing Techniques": {
+              "logprob_yes": -10.0,
+              "logprob_no": 0.0
+            }
+          },
+          "predicted_themes": [],
+          "num_topics_classified": 8,
+          "classification_method": "per_topic_yes_no_logprobs",
+          "prediction_uses_post_body": true
+        },
+        {
+          "post_id": "1db61e77-786d-4d4c-94e0-4dcc221af20b_54",
+          "body_text": "Iffat Hafsa Absolutely. These shifts have been disruptive. At the same time, I’m already seeing many people come back stronger as they adapt and work with AI, which really reinforces why staying in touch with technology matters.",
+          "stimulus": "Adapting to disruptive technological change",
+          "category": "Values and Motivations",
+          "topics_ordered": [
+            "Impact Measurement and Real-World Outcomes",
+            "Inclusivity and Accessibility Initiatives",
+            "Responsible AI Development",
+            "Mentorship and Talent Growth",
+            "Community Engagement and Civic Initiatives"
+          ],
+          "topic_probabilities": {
+            "Impact Measurement and Real-World Outcomes": 5.064748686572887e-06,
+            "Inclusivity and Accessibility Initiatives": 0.4999705715707792,
+            "Responsible AI Development": 4.805299761574736e-05,
+            "Mentorship and Talent Growth": 5.739112139362308e-06,
+            "Community Engagement and Civic Initiatives": 0.4999705715707792
+          },
+          "topic_probabilities_before_normalisation": {
+            "Impact Measurement and Real-World Outcomes": 4.599055376537186e-10,
+            "Inclusivity and Accessibility Initiatives": 4.5397868702434395e-05,
+            "Responsible AI Development": 4.363462233903899e-09,
+            "Mentorship and Talent Growth": 5.211412485172657e-10,
+            "Community Engagement and Civic Initiatives": 4.5397868702434395e-05
+          },
+          "topic_logprobs": {
+            "Impact Measurement and Real-World Outcomes": {
+              "logprob_yes": -21.5,
+              "logprob_no": 0.0
+            },
+            "Inclusivity and Accessibility Initiatives": {
+              "logprob_yes": -10.0,
+              "logprob_no": 0.0
+            },
+            "Responsible AI Development": {
+              "logprob_yes": -19.25,
+              "logprob_no": 0.0
+            },
+            "Mentorship and Talent Growth": {
+              "logprob_yes": -21.375,
+              "logprob_no": 0.0
+            },
+            "Community Engagement and Civic Initiatives": {
+              "logprob_yes": -10.0,
+              "logprob_no": 0.0
+            }
+          },
+          "predicted_themes": [],
+          "num_topics_classified": 5,
+          "classification_method": "per_topic_yes_no_logprobs",
+          "prediction_uses_post_body": true
+        },
+        {
+          "post_id": "1db61e77-786d-4d4c-94e0-4dcc221af20b_55",
+          "body_text": "Fully agree.\nSaaS will just absorb AI by adding agentic layers so users can access features via prompts instead of complex workflows.",
+          "stimulus": "Evolution of SaaS with AI agents",
+          "category": "Organizational and Leadership Dynamics",
+          "topics_ordered": [
+            "Internal Advocacy for Technology Adoption",
+            "Bridging Tech and Business Perspectives",
+            "Pragmatic Leadership in Technology",
+            "Network-Driven Professional Relationships",
+            "Mission-Oriented Technology Development"
+          ],
+          "topic_probabilities": {
+            "Internal Advocacy for Technology Adoption": 1.2853884410289756e-05,
+            "Bridging Tech and Business Perspectives": 0.6791176990651268,
+            "Pragmatic Leadership in Technology": 4.4864464927483403e-05,
+            "Network-Driven Professional Relationships": 0.32082338698804264,
+            "Mission-Oriented Technology Development": 1.1955974927960122e-06
+          },
+          "topic_probabilities_before_normalisation": {
+            "Internal Advocacy for Technology Adoption": 1.8189616842444243e-09,
+            "Bridging Tech and Business Perspectives": 9.61023993032045e-05,
+            "Pragmatic Leadership in Technology": 6.348800075736417e-09,
+            "Network-Driven Professional Relationships": 4.5397868702434395e-05,
+            "Mission-Oriented Technology Development": 1.6918979223288786e-10
+          },
+          "topic_logprobs": {
+            "Internal Advocacy for Technology Adoption": {
+              "logprob_yes": -20.125,
+              "logprob_no": 0.0
+            },
+            "Bridging Tech and Business Perspectives": {
+              "logprob_yes": -9.250096321105957,
+              "logprob_no": -9.615255839889869e-05
+            },
+            "Pragmatic Leadership in Technology": {
+              "logprob_yes": -18.875,
+              "logprob_no": 0.0
+            },
+            "Network-Driven Professional Relationships": {
+              "logprob_yes": -10.0,
+              "logprob_no": 0.0
+            },
+            "Mission-Oriented Technology Development": {
+              "logprob_yes": -22.5,
+              "logprob_no": 0.0
+            }
+          },
+          "predicted_themes": [],
+          "num_topics_classified": 5,
+          "classification_method": "per_topic_yes_no_logprobs",
+          "prediction_uses_post_body": true
+        },
+        {
+          "post_id": "1db61e77-786d-4d4c-94e0-4dcc221af20b_56",
+          "body_text": "I’m doubling down on checker skills, catching bugs, missing constraints, and edge cases AI introduces due to incomplete prompts.\n AI can write code; engineers must protect outcomes.",
+          "stimulus": "Engineers' roles in the AI landscape",
+          "category": "Challenges and Pain Points",
+          "topics_ordered": [
+            "Scaling and Managing Operational Complexity",
+            "Talent Acquisition and Retention Challenges",
+            "Balancing Innovation with Stability",
+            "Cross-Platform Integration Issues",
+            "Burnout and Sustainable Work Practices"
+          ],
+          "topic_probabilities": {
+            "Scaling and Managing Operational Complexity": 0.07077122384870671,
+            "Talent Acquisition and Retention Challenges": 4.235547112426992e-05,
+            "Balancing Innovation with Stability": 0.9291440645016363,
+            "Cross-Platform Integration Issues": 4.235547112426992e-05,
+            "Burnout and Sustainable Work Practices": 7.074084055474461e-10
+          },
+          "topic_probabilities_before_normalisation": {
+            "Scaling and Managing Operational Complexity": 0.07585817584273653,
+            "Talent Acquisition and Retention Challenges": 4.5397868702434395e-05,
+            "Balancing Innovation with Stability": 0.9959298617480279,
+            "Cross-Platform Integration Issues": 4.5397868702434395e-05,
+            "Burnout and Sustainable Work Practices": 7.582560422162384e-10
+          },
+          "topic_logprobs": {
+            "Scaling and Managing Operational Complexity": {
+              "logprob_yes": -2.578889846801758,
+              "logprob_no": -0.07888978719711304
+            },
+            "Talent Acquisition and Retention Challenges": {
+              "logprob_yes": -10.0,
+              "logprob_no": 0.0
+            },
+            "Balancing Innovation with Stability": {
+              "logprob_yes": -0.0040785204619169235,
+              "logprob_no": -5.504078388214111
+            },
+            "Cross-Platform Integration Issues": {
+              "logprob_yes": -10.0,
+              "logprob_no": 0.0
+            },
+            "Burnout and Sustainable Work Practices": {
+              "logprob_yes": -21.0,
+              "logprob_no": 0.0
+            }
+          },
+          "predicted_themes": [
+            "Balancing Innovation with Stability"
+          ],
+          "num_topics_classified": 5,
+          "classification_method": "per_topic_yes_no_logprobs",
+          "prediction_uses_post_body": true
+        },
+        {
+          "post_id": "1db61e77-786d-4d4c-94e0-4dcc221af20b_58",
+          "body_text": "Alain V. Tools speed up coding. Teams deliver outcomes. We position ourselves as the execution team that leverages these tools to ship things reliably.",
+          "stimulus": "Execution focus in product development",
+          "category": "Working and Learning Styles",
+          "topics_ordered": [
+            "Hands-On Problem Solving",
+            "Community-Driven Education",
+            "Cross-Functional Collaboration",
+            "Rapid Prototyping and MVP Development",
+            "Knowledge Sharing and Documentation Practices"
+          ],
+          "topic_probabilities": {
+            "Hands-On Problem Solving": 0.9092038520568377,
+            "Community-Driven Education": 0.04530786168369424,
+            "Cross-Functional Collaboration": 6.811761500527274e-05,
+            "Rapid Prototyping and MVP Development": 0.00011230696076855538,
+            "Knowledge Sharing and Documentation Practices": 0.04530786168369424
+          },
+          "topic_probabilities_before_normalisation": {
+            "Hands-On Problem Solving": 0.0009110514016656498,
+            "Community-Driven Education": 4.5397868702434395e-05,
+            "Cross-Functional Collaboration": 6.825604231969389e-08,
+            "Rapid Prototyping and MVP Development": 1.1253518384332553e-07,
+            "Knowledge Sharing and Documentation Practices": 4.5397868702434395e-05
+          },
+          "topic_logprobs": {
+            "Hands-On Problem Solving": {
+              "logprob_yes": -7.000911235809326,
+              "logprob_no": -0.0009114635176956654
+            },
+            "Community-Driven Education": {
+              "logprob_yes": -10.0,
+              "logprob_no": 0.0
+            },
+            "Cross-Functional Collaboration": {
+              "logprob_yes": -16.5,
+              "logprob_no": -1.9361264946837764e-07
+            },
+            "Rapid Prototyping and MVP Development": {
+              "logprob_yes": -16.0,
+              "logprob_no": -1.9361264946837764e-07
+            },
+            "Knowledge Sharing and Documentation Practices": {
+              "logprob_yes": -10.0,
+              "logprob_no": 0.0
+            }
+          },
+          "predicted_themes": [],
+          "num_topics_classified": 5,
+          "classification_method": "per_topic_yes_no_logprobs",
+          "prediction_uses_post_body": true
+        },
+        {
+          "post_id": "1db61e77-786d-4d4c-94e0-4dcc221af20b_61",
+          "body_text": "Same realization here. The hype said agents would replace teams, but in reality AI works best when it supports people.",
+          "stimulus": "AI's role in supporting teams",
+          "category": "Challenges and Pain Points",
+          "topics_ordered": [
+            "Scaling and Managing Operational Complexity",
+            "Talent Acquisition and Retention Challenges",
+            "Balancing Innovation with Stability",
+            "Cross-Platform Integration Issues",
+            "Burnout and Sustainable Work Practices"
+          ],
+          "topic_probabilities": {
+            "Scaling and Managing Operational Complexity": 2.9065354036827545e-06,
+            "Talent Acquisition and Retention Challenges": 1.607563902328893e-09,
+            "Balancing Innovation with Stability": 0.9999516139851953,
+            "Cross-Platform Integration Issues": 4.54659934572342e-05,
+            "Burnout and Sustainable Work Practices": 1.1878379856924063e-08
+          },
+          "topic_probabilities_before_normalisation": {
+            "Scaling and Managing Operational Complexity": 2.9023122007764653e-06,
+            "Talent Acquisition and Retention Challenges": 1.6052280526088547e-09,
+            "Balancing Innovation with Stability": 0.9984988177952635,
+            "Cross-Platform Integration Issues": 4.5397868702434395e-05,
+            "Burnout and Sustainable Work Practices": 1.1861120010657661e-08
+          },
+          "topic_logprobs": {
+            "Scaling and Managing Operational Complexity": {
+              "logprob_yes": -12.75000286102295,
+              "logprob_no": -2.935296834039036e-06
+            },
+            "Talent Acquisition and Retention Challenges": {
+              "logprob_yes": -20.25,
+              "logprob_no": 0.0
+            },
+            "Balancing Innovation with Stability": {
+              "logprob_yes": -0.0015024791937321424,
+              "logprob_no": -6.501502513885498
+            },
+            "Cross-Platform Integration Issues": {
+              "logprob_yes": -10.0,
+              "logprob_no": 0.0
+            },
+            "Burnout and Sustainable Work Practices": {
+              "logprob_yes": -18.25,
+              "logprob_no": 0.0
+            }
+          },
+          "predicted_themes": [
+            "Balancing Innovation with Stability"
+          ],
+          "num_topics_classified": 5,
+          "classification_method": "per_topic_yes_no_logprobs",
+          "prediction_uses_post_body": true
+        },
+        {
+          "post_id": "1db61e77-786d-4d4c-94e0-4dcc221af20b_62",
+          "body_text": "Totally agree, Harsh Kumar — AI really shines only in the hands of experienced people.",
+          "stimulus": "Dependence of AI on human expertise",
+          "category": "Working and Learning Styles",
+          "topics_ordered": [
+            "Hands-On Problem Solving",
+            "Community-Driven Education",
+            "Cross-Functional Collaboration",
+            "Rapid Prototyping and MVP Development",
+            "Knowledge Sharing and Documentation Practices"
+          ],
+          "topic_probabilities": {
+            "Hands-On Problem Solving": 0.002158255658248764,
+            "Community-Driven Education": 0.24946043608543783,
+            "Cross-Functional Collaboration": 0.24946043608543783,
+            "Rapid Prototyping and MVP Development": 0.24946043608543783,
+            "Knowledge Sharing and Documentation Practices": 0.24946043608543783
+          },
+          "topic_probabilities_before_normalisation": {
+            "Hands-On Problem Solving": 3.927863699585036e-07,
+            "Community-Driven Education": 4.5397868702434395e-05,
+            "Cross-Functional Collaboration": 4.5397868702434395e-05,
+            "Rapid Prototyping and MVP Development": 4.5397868702434395e-05,
+            "Knowledge Sharing and Documentation Practices": 4.5397868702434395e-05
+          },
+          "topic_logprobs": {
+            "Hands-On Problem Solving": {
+              "logprob_yes": -14.75,
+              "logprob_no": -4.320199877838604e-07
+            },
+            "Community-Driven Education": {
+              "logprob_yes": -10.0,
+              "logprob_no": 0.0
+            },
+            "Cross-Functional Collaboration": {
+              "logprob_yes": -10.0,
+              "logprob_no": 0.0
+            },
+            "Rapid Prototyping and MVP Development": {
+              "logprob_yes": -10.0,
+              "logprob_no": 0.0
+            },
+            "Knowledge Sharing and Documentation Practices": {
+              "logprob_yes": -10.0,
+              "logprob_no": 0.0
+            }
+          },
+          "predicted_themes": [],
+          "num_topics_classified": 5,
+          "classification_method": "per_topic_yes_no_logprobs",
+          "prediction_uses_post_body": true
+        },
+        {
+          "post_id": "1db61e77-786d-4d4c-94e0-4dcc221af20b_64",
+          "body_text": "Congratulations! If you ever need remote n8n experts to support your automation roadmap, our team would be glad to assist.",
+          "stimulus": "Offering automation support services",
+          "category": "Technical Expertise and Capabilities",
+          "topics_ordered": [
+            "Cloud Infrastructure Management",
+            "AI and Machine Learning Operations",
+            "Full-Stack Engineering Practices",
+            "DevOps and IT Security",
+            "Developer Tools and Productivity Solutions",
+            "Database Management and Optimization",
+            "Cybersecurity Strategies",
+            "High-Performance Computing Techniques"
+          ],
+          "topic_probabilities": {
+            "Cloud Infrastructure Management": 5.152821649625596e-05,
+            "AI and Machine Learning Operations": 5.152821649625596e-05,
+            "Full-Stack Engineering Practices": 5.152821649625596e-05,
+            "DevOps and IT Security": 3.587551451047923e-10,
+            "Developer Tools and Productivity Solutions": 0.9996908303422671,
+            "Database Management and Optimization": 5.152821649625596e-05,
+            "Cybersecurity Strategies": 5.152821649625596e-05,
+            "High-Performance Computing Techniques": 5.152821649625596e-05
+          },
+          "topic_probabilities_before_normalisation": {
+            "Cloud Infrastructure Management": 4.5397868702434395e-05,
+            "AI and Machine Learning Operations": 4.5397868702434395e-05,
+            "Full-Stack Engineering Practices": 4.5397868702434395e-05,
+            "DevOps and IT Security": 3.160881453314576e-10,
+            "Developer Tools and Productivity Solutions": 0.8807970904940926,
+            "Database Management and Optimization": 4.5397868702434395e-05,
+            "Cybersecurity Strategies": 4.5397868702434395e-05,
+            "High-Performance Computing Techniques": 4.5397868702434395e-05
+          },
+          "topic_logprobs": {
+            "Cloud Infrastructure Management": {
+              "logprob_yes": -10.0,
+              "logprob_no": 0.0
+            },
+            "AI and Machine Learning Operations": {
+              "logprob_yes": -10.0,
+              "logprob_no": 0.0
+            },
+            "Full-Stack Engineering Practices": {
+              "logprob_yes": -10.0,
+              "logprob_no": 0.0
+            },
+            "DevOps and IT Security": {
+              "logprob_yes": -21.875,
+              "logprob_no": 0.0
+            },
+            "Developer Tools and Productivity Solutions": {
+              "logprob_yes": -0.1269282102584839,
+              "logprob_no": -2.1269283294677734
+            },
+            "Database Management and Optimization": {
+              "logprob_yes": -10.0,
+              "logprob_no": 0.0
+            },
+            "Cybersecurity Strategies": {
+              "logprob_yes": -10.0,
+              "logprob_no": 0.0
+            },
+            "High-Performance Computing Techniques": {
+              "logprob_yes": -10.0,
+              "logprob_no": 0.0
+            }
+          },
+          "predicted_themes": [
+            "Developer Tools and Productivity Solutions"
+          ],
+          "num_topics_classified": 8,
+          "classification_method": "per_topic_yes_no_logprobs",
+          "prediction_uses_post_body": true
+        },
+        {
+          "post_id": "1db61e77-786d-4d4c-94e0-4dcc221af20b_68",
+          "body_text": "Congratulations on the success of Phase One! Best wishes to Eli and look forward to hearing about your next venture.",
+          "stimulus": "Congratulating on business success",
+          "category": "Values and Motivations",
+          "topics_ordered": [
+            "Impact Measurement and Real-World Outcomes",
+            "Inclusivity and Accessibility Initiatives",
+            "Responsible AI Development",
+            "Mentorship and Talent Growth",
+            "Community Engagement and Civic Initiatives"
+          ],
+          "topic_probabilities": {
+            "Impact Measurement and Real-World Outcomes": 0.2,
+            "Inclusivity and Accessibility Initiatives": 0.2,
+            "Responsible AI Development": 0.2,
+            "Mentorship and Talent Growth": 0.2,
+            "Community Engagement and Civic Initiatives": 0.2
+          },
+          "topic_probabilities_before_normalisation": {
+            "Impact Measurement and Real-World Outcomes": 4.5397868702434395e-05,
+            "Inclusivity and Accessibility Initiatives": 4.5397868702434395e-05,
+            "Responsible AI Development": 4.5397868702434395e-05,
+            "Mentorship and Talent Growth": 4.5397868702434395e-05,
+            "Community Engagement and Civic Initiatives": 4.5397868702434395e-05
+          },
+          "topic_logprobs": {
+            "Impact Measurement and Real-World Outcomes": {
+              "logprob_yes": -10.0,
+              "logprob_no": 0.0
+            },
+            "Inclusivity and Accessibility Initiatives": {
+              "logprob_yes": -10.0,
+              "logprob_no": 0.0
+            },
+            "Responsible AI Development": {
+              "logprob_yes": -10.0,
+              "logprob_no": 0.0
+            },
+            "Mentorship and Talent Growth": {
+              "logprob_yes": -10.0,
+              "logprob_no": 0.0
+            },
+            "Community Engagement and Civic Initiatives": {
+              "logprob_yes": -10.0,
+              "logprob_no": 0.0
+            }
+          },
+          "predicted_themes": [],
+          "num_topics_classified": 5,
+          "classification_method": "per_topic_yes_no_logprobs",
+          "prediction_uses_post_body": true
+        },
+        {
+          "post_id": "1db61e77-786d-4d4c-94e0-4dcc221af20b_70",
+          "body_text": "Absolutely, Oleksandra Bielova , I completely agree. Many teams take up automation just to show progress, even when it’s not really needed. Often it’s more about keeping leadership happy than solving a real problem.",
+          "stimulus": "Critique of automation implementation",
+          "category": "Challenges and Pain Points",
+          "topics_ordered": [
+            "Scaling and Managing Operational Complexity",
+            "Talent Acquisition and Retention Challenges",
+            "Balancing Innovation with Stability",
+            "Cross-Platform Integration Issues",
+            "Burnout and Sustainable Work Practices"
+          ],
+          "topic_probabilities": {
+            "Scaling and Managing Operational Complexity": 0.0012132157668321322,
+            "Talent Acquisition and Retention Challenges": 6.578658355121054e-09,
+            "Balancing Innovation with Stability": 0.9975264628057989,
+            "Cross-Platform Integration Issues": 0.0012132713047137038,
+            "Burnout and Sustainable Work Practices": 4.704354399670878e-05
+          },
+          "topic_probabilities_before_normalisation": {
+            "Scaling and Managing Operational Complexity": 4.539785574814975e-05,
+            "Talent Acquisition and Retention Challenges": 2.4616969512093895e-10,
+            "Balancing Innovation with Stability": 0.037326883863690125,
+            "Cross-Platform Integration Issues": 4.5397868702434395e-05,
+            "Burnout and Sustainable Work Practices": 1.7603431343301488e-06
+          },
+          "topic_logprobs": {
+            "Scaling and Managing Operational Complexity": {
+              "logprob_yes": -10.000045776367188,
+              "logprob_no": -4.5491004129871726e-05
+            },
+            "Talent Acquisition and Retention Challenges": {
+              "logprob_yes": -22.125,
+              "logprob_no": 0.0
+            },
+            "Balancing Innovation with Stability": {
+              "logprob_yes": -3.288041591644287,
+              "logprob_no": -0.03804149478673935
+            },
+            "Cross-Platform Integration Issues": {
+              "logprob_yes": -10.0,
+              "logprob_no": 0.0
+            },
+            "Burnout and Sustainable Work Practices": {
+              "logprob_yes": -13.250001907348633,
+              "logprob_no": -1.8624639324116288e-06
+            }
+          },
+          "predicted_themes": [],
+          "num_topics_classified": 5,
+          "classification_method": "per_topic_yes_no_logprobs",
+          "prediction_uses_post_body": true
+        },
+        {
+          "post_id": "1db61e77-786d-4d4c-94e0-4dcc221af20b_74",
+          "body_text": "This really resonates, I made a similar move early in my career and started my own agency, would be great to connect and see if there’s an opportunity to create a win-win collaboration.",
+          "stimulus": "Connecting for collaboration opportunities",
+          "category": "Values and Motivations",
+          "topics_ordered": [
+            "Impact Measurement and Real-World Outcomes",
+            "Inclusivity and Accessibility Initiatives",
+            "Responsible AI Development",
+            "Mentorship and Talent Growth",
+            "Community Engagement and Civic Initiatives"
+          ],
+          "topic_probabilities": {
+            "Impact Measurement and Real-World Outcomes": 0.2499991870465402,
+            "Inclusivity and Accessibility Initiatives": 0.2499991870465402,
+            "Responsible AI Development": 0.2499991870465402,
+            "Mentorship and Talent Growth": 3.2518138391892744e-06,
+            "Community Engagement and Civic Initiatives": 0.2499991870465402
+          },
+          "topic_probabilities_before_normalisation": {
+            "Impact Measurement and Real-World Outcomes": 4.5397868702434395e-05,
+            "Inclusivity and Accessibility Initiatives": 4.5397868702434395e-05,
+            "Responsible AI Development": 4.5397868702434395e-05,
+            "Mentorship and Talent Growth": 5.905303995456778e-10,
+            "Community Engagement and Civic Initiatives": 4.5397868702434395e-05
+          },
+          "topic_logprobs": {
+            "Impact Measurement and Real-World Outcomes": {
+              "logprob_yes": -10.0,
+              "logprob_no": 0.0
+            },
+            "Inclusivity and Accessibility Initiatives": {
+              "logprob_yes": -10.0,
+              "logprob_no": 0.0
+            },
+            "Responsible AI Development": {
+              "logprob_yes": -10.0,
+              "logprob_no": 0.0
+            },
+            "Mentorship and Talent Growth": {
+              "logprob_yes": -21.25,
+              "logprob_no": 0.0
+            },
+            "Community Engagement and Civic Initiatives": {
+              "logprob_yes": -10.0,
+              "logprob_no": 0.0
+            }
+          },
+          "predicted_themes": [],
+          "num_topics_classified": 5,
+          "classification_method": "per_topic_yes_no_logprobs",
+          "prediction_uses_post_body": true
+        },
+        {
+          "post_id": "1db61e77-786d-4d4c-94e0-4dcc221af20b_75",
+          "body_text": "AI isn’t about disappearing people, it’s about making them superstars at what they do best!",
+          "stimulus": "AI enhancing employee performance",
+          "category": "Challenges and Pain Points",
+          "topics_ordered": [
+            "Scaling and Managing Operational Complexity",
+            "Talent Acquisition and Retention Challenges",
+            "Balancing Innovation with Stability",
+            "Cross-Platform Integration Issues",
+            "Burnout and Sustainable Work Practices"
+          ],
+          "topic_probabilities": {
+            "Scaling and Managing Operational Complexity": 0.33333070402012743,
+            "Talent Acquisition and Retention Challenges": 2.3207499350828958e-06,
+            "Balancing Innovation with Stability": 5.567189682746104e-06,
+            "Cross-Platform Integration Issues": 0.33333070402012743,
+            "Burnout and Sustainable Work Practices": 0.33333070402012743
+          },
+          "topic_probabilities_before_normalisation": {
+            "Scaling and Managing Operational Complexity": 4.5397868702434395e-05,
+            "Talent Acquisition and Retention Challenges": 3.160881453314576e-10,
+            "Balancing Innovation with Stability": 7.582560422162384e-10,
+            "Cross-Platform Integration Issues": 4.5397868702434395e-05,
+            "Burnout and Sustainable Work Practices": 4.5397868702434395e-05
+          },
+          "topic_logprobs": {
+            "Scaling and Managing Operational Complexity": {
+              "logprob_yes": -10.0,
+              "logprob_no": 0.0
+            },
+            "Talent Acquisition and Retention Challenges": {
+              "logprob_yes": -21.875,
+              "logprob_no": 0.0
+            },
+            "Balancing Innovation with Stability": {
+              "logprob_yes": -21.0,
+              "logprob_no": 0.0
+            },
+            "Cross-Platform Integration Issues": {
+              "logprob_yes": -10.0,
+              "logprob_no": 0.0
+            },
+            "Burnout and Sustainable Work Practices": {
+              "logprob_yes": -10.0,
+              "logprob_no": 0.0
+            }
+          },
+          "predicted_themes": [],
+          "num_topics_classified": 5,
+          "classification_method": "per_topic_yes_no_logprobs",
+          "prediction_uses_post_body": true
+        },
+        {
+          "post_id": "1db61e77-786d-4d4c-94e0-4dcc221af20b_79",
+          "body_text": "AI is a great tool, but if we stop thinking ourselves, it will end up replacing us",
+          "stimulus": "Critical thinking in the age of AI",
+          "category": "Working and Learning Styles",
+          "topics_ordered": [
+            "Hands-On Problem Solving",
+            "Community-Driven Education",
+            "Cross-Functional Collaboration",
+            "Rapid Prototyping and MVP Development",
+            "Knowledge Sharing and Documentation Practices"
+          ],
+          "topic_probabilities": {
+            "Hands-On Problem Solving": 1.6513854295283992e-05,
+            "Community-Driven Education": 0.24999587153642616,
+            "Cross-Functional Collaboration": 0.24999587153642616,
+            "Rapid Prototyping and MVP Development": 0.24999587153642616,
+            "Knowledge Sharing and Documentation Practices": 0.24999587153642616
+          },
+          "topic_probabilities_before_normalisation": {
+            "Hands-On Problem Solving": 2.998960815863541e-09,
+            "Community-Driven Education": 4.5397868702434395e-05,
+            "Cross-Functional Collaboration": 4.5397868702434395e-05,
+            "Rapid Prototyping and MVP Development": 4.5397868702434395e-05,
+            "Knowledge Sharing and Documentation Practices": 4.5397868702434395e-05
+          },
+          "topic_logprobs": {
+            "Hands-On Problem Solving": {
+              "logprob_yes": -19.625,
+              "logprob_no": 0.0
+            },
+            "Community-Driven Education": {
+              "logprob_yes": -10.0,
+              "logprob_no": 0.0
+            },
+            "Cross-Functional Collaboration": {
+              "logprob_yes": -10.0,
+              "logprob_no": 0.0
+            },
+            "Rapid Prototyping and MVP Development": {
+              "logprob_yes": -10.0,
+              "logprob_no": 0.0
+            },
+            "Knowledge Sharing and Documentation Practices": {
+              "logprob_yes": -10.0,
+              "logprob_no": 0.0
+            }
+          },
+          "predicted_themes": [],
+          "num_topics_classified": 5,
+          "classification_method": "per_topic_yes_no_logprobs",
+          "prediction_uses_post_body": true
+        },
+        {
+          "post_id": "1db61e77-786d-4d4c-94e0-4dcc221af20b_81",
+          "body_text": "Fatima Yusuf, We also developed a similar Virtual Try On Feature for a store. We can exchange our thoughts / insights in the LinkedIn Message Box",
+          "stimulus": "Virtual Try On Feature insights",
+          "category": "Technical Expertise and Capabilities",
+          "topics_ordered": [
+            "Cloud Infrastructure Management",
+            "AI and Machine Learning Operations",
+            "Full-Stack Engineering Practices",
+            "DevOps and IT Security",
+            "Developer Tools and Productivity Solutions",
+            "Database Management and Optimization",
+            "Cybersecurity Strategies",
+            "High-Performance Computing Techniques"
+          ],
+          "topic_probabilities": {
+            "Cloud Infrastructure Management": 0.19995537940110053,
+            "AI and Machine Learning Operations": 0.00012531737476906046,
+            "Full-Stack Engineering Practices": 1.1656331603365447e-05,
+            "DevOps and IT Security": 0.19995537940110053,
+            "Developer Tools and Productivity Solutions": 8.612928812500553e-05,
+            "Database Management and Optimization": 0.19995537940110053,
+            "Cybersecurity Strategies": 0.19995537940110053,
+            "High-Performance Computing Techniques": 0.19995537940110053
+          },
+          "topic_probabilities_before_normalisation": {
+            "Cloud Infrastructure Management": 4.5397868702434395e-05,
+            "AI and Machine Learning Operations": 2.8453347280241004e-08,
+            "Full-Stack Engineering Practices": 2.646573631904765e-09,
+            "DevOps and IT Security": 4.5397868702434395e-05,
+            "Developer Tools and Productivity Solutions": 1.955568070542584e-08,
+            "Database Management and Optimization": 4.5397868702434395e-05,
+            "Cybersecurity Strategies": 4.5397868702434395e-05,
+            "High-Performance Computing Techniques": 4.5397868702434395e-05
+          },
+          "topic_logprobs": {
+            "Cloud Infrastructure Management": {
+              "logprob_yes": -10.0,
+              "logprob_no": 0.0
+            },
+            "AI and Machine Learning Operations": {
+              "logprob_yes": -17.375,
+              "logprob_no": 0.0
+            },
+            "Full-Stack Engineering Practices": {
+              "logprob_yes": -19.75,
+              "logprob_no": 0.0
+            },
+            "DevOps and IT Security": {
+              "logprob_yes": -10.0,
+              "logprob_no": 0.0
+            },
+            "Developer Tools and Productivity Solutions": {
+              "logprob_yes": -17.75,
+              "logprob_no": 0.0
+            },
+            "Database Management and Optimization": {
+              "logprob_yes": -10.0,
+              "logprob_no": 0.0
+            },
+            "Cybersecurity Strategies": {
+              "logprob_yes": -10.0,
+              "logprob_no": 0.0
+            },
+            "High-Performance Computing Techniques": {
+              "logprob_yes": -10.0,
+              "logprob_no": 0.0
+            }
+          },
+          "predicted_themes": [],
+          "num_topics_classified": 8,
+          "classification_method": "per_topic_yes_no_logprobs",
+          "prediction_uses_post_body": true
+        },
+        {
+          "post_id": "1db61e77-786d-4d4c-94e0-4dcc221af20b_82",
+          "body_text": "Agentic AI takes AI to the next level by learning, adapting, and making smart decisions to boost business and customer experiences",
+          "stimulus": "Advancements in Agentic AI",
+          "category": "Technical Expertise and Capabilities",
+          "topics_ordered": [
+            "Cloud Infrastructure Management",
+            "AI and Machine Learning Operations",
+            "Full-Stack Engineering Practices",
+            "DevOps and IT Security",
+            "Developer Tools and Productivity Solutions",
+            "Database Management and Optimization",
+            "Cybersecurity Strategies",
+            "High-Performance Computing Techniques"
+          ],
+          "topic_probabilities": {
+            "Cloud Infrastructure Management": 4.58916462966296e-05,
+            "AI and Machine Learning Operations": 0.9997246474469826,
+            "Full-Stack Engineering Practices": 4.58916462966296e-05,
+            "DevOps and IT Security": 4.58916462966296e-05,
+            "Developer Tools and Productivity Solutions": 2.675238088917993e-09,
+            "Database Management and Optimization": 4.58916462966296e-05,
+            "Cybersecurity Strategies": 4.58916462966296e-05,
+            "High-Performance Computing Techniques": 4.58916462966296e-05
+          },
+          "topic_probabilities_before_normalisation": {
+            "Cloud Infrastructure Management": 4.5397868702434395e-05,
+            "AI and Machine Learning Operations": 0.9890130563371703,
+            "Full-Stack Engineering Practices": 4.5397868702434395e-05,
+            "DevOps and IT Security": 4.5397868702434395e-05,
+            "Developer Tools and Productivity Solutions": 2.646573631904765e-09,
+            "Database Management and Optimization": 4.5397868702434395e-05,
+            "Cybersecurity Strategies": 4.5397868702434395e-05,
+            "High-Performance Computing Techniques": 4.5397868702434395e-05
+          },
+          "topic_logprobs": {
+            "Cloud Infrastructure Management": {
+              "logprob_yes": -10.0,
+              "logprob_no": 0.0
+            },
+            "AI and Machine Learning Operations": {
+              "logprob_yes": -0.011047935113310814,
+              "logprob_no": -4.511047840118408
+            },
+            "Full-Stack Engineering Practices": {
+              "logprob_yes": -10.0,
+              "logprob_no": 0.0
+            },
+            "DevOps and IT Security": {
+              "logprob_yes": -10.0,
+              "logprob_no": 0.0
+            },
+            "Developer Tools and Productivity Solutions": {
+              "logprob_yes": -19.75,
+              "logprob_no": 0.0
+            },
+            "Database Management and Optimization": {
+              "logprob_yes": -10.0,
+              "logprob_no": 0.0
+            },
+            "Cybersecurity Strategies": {
+              "logprob_yes": -10.0,
+              "logprob_no": 0.0
+            },
+            "High-Performance Computing Techniques": {
+              "logprob_yes": -10.0,
+              "logprob_no": 0.0
+            }
+          },
+          "predicted_themes": [
+            "AI and Machine Learning Operations"
+          ],
+          "num_topics_classified": 8,
+          "classification_method": "per_topic_yes_no_logprobs",
+          "prediction_uses_post_body": true
+        },
+        {
+          "post_id": "1db61e77-786d-4d4c-94e0-4dcc221af20b_84",
+          "body_text": "Jonathan Coulter Exactly! Search today is about being findable across AI, agents, and humans. That’s why we focus on clear, factual, and crawlable content that shows up wherever your audience asks",
+          "stimulus": "SEO practices with AI agents",
+          "category": "Technical Expertise and Capabilities",
+          "topics_ordered": [
+            "Cloud Infrastructure Management",
+            "AI and Machine Learning Operations",
+            "Full-Stack Engineering Practices",
+            "DevOps and IT Security",
+            "Developer Tools and Productivity Solutions",
+            "Database Management and Optimization",
+            "Cybersecurity Strategies",
+            "High-Performance Computing Techniques"
+          ],
+          "topic_probabilities": {
+            "Cloud Infrastructure Management": 0.004032200324687065,
+            "AI and Machine Learning Operations": 0.9758065629961152,
+            "Full-Stack Engineering Practices": 0.004032200324687065,
+            "DevOps and IT Security": 0.004032200324687065,
+            "Developer Tools and Productivity Solutions": 2.3505576202313246e-07,
+            "Database Management and Optimization": 0.004032200324687065,
+            "Cybersecurity Strategies": 0.004032200324687065,
+            "High-Performance Computing Techniques": 0.004032200324687065
+          },
+          "topic_probabilities_before_normalisation": {
+            "Cloud Infrastructure Management": 4.5397868702434395e-05,
+            "AI and Machine Learning Operations": 0.010986942357354127,
+            "Full-Stack Engineering Practices": 4.5397868702434395e-05,
+            "DevOps and IT Security": 4.5397868702434395e-05,
+            "Developer Tools and Productivity Solutions": 2.646573631904765e-09,
+            "Database Management and Optimization": 4.5397868702434395e-05,
+            "Cybersecurity Strategies": 4.5397868702434395e-05,
+            "High-Performance Computing Techniques": 4.5397868702434395e-05
+          },
+          "topic_logprobs": {
+            "Cloud Infrastructure Management": {
+              "logprob_yes": -10.0,
+              "logprob_no": 0.0
+            },
+            "AI and Machine Learning Operations": {
+              "logprob_yes": -4.511047840118408,
+              "logprob_no": -0.011047814972698689
+            },
+            "Full-Stack Engineering Practices": {
+              "logprob_yes": -10.0,
+              "logprob_no": 0.0
+            },
+            "DevOps and IT Security": {
+              "logprob_yes": -10.0,
+              "logprob_no": 0.0
+            },
+            "Developer Tools and Productivity Solutions": {
+              "logprob_yes": -19.75,
+              "logprob_no": 0.0
+            },
+            "Database Management and Optimization": {
+              "logprob_yes": -10.0,
+              "logprob_no": 0.0
+            },
+            "Cybersecurity Strategies": {
+              "logprob_yes": -10.0,
+              "logprob_no": 0.0
+            },
+            "High-Performance Computing Techniques": {
+              "logprob_yes": -10.0,
+              "logprob_no": 0.0
+            }
+          },
+          "predicted_themes": [],
+          "num_topics_classified": 8,
+          "classification_method": "per_topic_yes_no_logprobs",
+          "prediction_uses_post_body": true
+        },
+        {
+          "post_id": "1db61e77-786d-4d4c-94e0-4dcc221af20b_87",
+          "body_text": "Jonathan Coulter Exactly! Search today is about being findable across AI, agents, and humans. That’s why we focus on clear, factual, and crawlable content that shows up wherever your audience asks",
+          "stimulus": "SEO practices and AI visibility",
+          "category": "Technical Expertise and Capabilities",
+          "topics_ordered": [
+            "Cloud Infrastructure Management",
+            "AI and Machine Learning Operations",
+            "Full-Stack Engineering Practices",
+            "DevOps and IT Security",
+            "Developer Tools and Productivity Solutions",
+            "Database Management and Optimization",
+            "Cybersecurity Strategies",
+            "High-Performance Computing Techniques"
+          ],
+          "topic_probabilities": {
+            "Cloud Infrastructure Management": 0.0031668414292658864,
+            "AI and Machine Learning Operations": 0.980998766814448,
+            "Full-Stack Engineering Practices": 0.0031668414292658864,
+            "DevOps and IT Security": 0.0031668414292658864,
+            "Developer Tools and Productivity Solutions": 1.8460995620803882e-07,
+            "Database Management and Optimization": 0.0031668414292658864,
+            "Cybersecurity Strategies": 0.0031668414292658864,
+            "High-Performance Computing Techniques": 0.0031668414292658864
+          },
+          "topic_probabilities_before_normalisation": {
+            "Cloud Infrastructure Management": 4.5397868702434395e-05,
+            "AI and Machine Learning Operations": 0.014063627262776185,
+            "Full-Stack Engineering Practices": 4.5397868702434395e-05,
+            "DevOps and IT Security": 4.5397868702434395e-05,
+            "Developer Tools and Productivity Solutions": 2.646573631904765e-09,
+            "Database Management and Optimization": 4.5397868702434395e-05,
+            "Cybersecurity Strategies": 4.5397868702434395e-05,
+            "High-Performance Computing Techniques": 4.5397868702434395e-05
+          },
+          "topic_logprobs": {
+            "Cloud Infrastructure Management": {
+              "logprob_yes": -10.0,
+              "logprob_no": 0.0
+            },
+            "AI and Machine Learning Operations": {
+              "logprob_yes": -4.264163494110107,
+              "logprob_no": -0.01416350994259119
+            },
+            "Full-Stack Engineering Practices": {
+              "logprob_yes": -10.0,
+              "logprob_no": 0.0
+            },
+            "DevOps and IT Security": {
+              "logprob_yes": -10.0,
+              "logprob_no": 0.0
+            },
+            "Developer Tools and Productivity Solutions": {
+              "logprob_yes": -19.75,
+              "logprob_no": 0.0
+            },
+            "Database Management and Optimization": {
+              "logprob_yes": -10.0,
+              "logprob_no": 0.0
+            },
+            "Cybersecurity Strategies": {
+              "logprob_yes": -10.0,
+              "logprob_no": 0.0
+            },
+            "High-Performance Computing Techniques": {
+              "logprob_yes": -10.0,
+              "logprob_no": 0.0
+            }
+          },
+          "predicted_themes": [],
+          "num_topics_classified": 8,
+          "classification_method": "per_topic_yes_no_logprobs",
+          "prediction_uses_post_body": true
+        },
+        {
+          "post_id": "1db61e77-786d-4d4c-94e0-4dcc221af20b_88",
+          "body_text": "Absolutely Ben Edwards I think boutique firms can really shine here because they can give very niche, specific answers to unique problems",
+          "stimulus": "Boutique firms solving niche problems",
+          "category": "Challenges and Pain Points",
+          "topics_ordered": [
+            "Scaling and Managing Operational Complexity",
+            "Talent Acquisition and Retention Challenges",
+            "Balancing Innovation with Stability",
+            "Cross-Platform Integration Issues",
+            "Burnout and Sustainable Work Practices"
+          ],
+          "topic_probabilities": {
+            "Scaling and Managing Operational Complexity": 0.0007479002832454098,
+            "Talent Acquisition and Retention Challenges": 2.899924101996128e-05,
+            "Balancing Innovation with Stability": 0.004303868971349479,
+            "Cross-Platform Integration Issues": 0.49745961575219266,
+            "Burnout and Sustainable Work Practices": 0.49745961575219266
+          },
+          "topic_probabilities_before_normalisation": {
+            "Scaling and Managing Operational Complexity": 6.825604231969389e-08,
+            "Talent Acquisition and Retention Challenges": 2.646573631904765e-09,
+            "Balancing Innovation with Stability": 3.927863699585036e-07,
+            "Cross-Platform Integration Issues": 4.5397868702434395e-05,
+            "Burnout and Sustainable Work Practices": 4.5397868702434395e-05
+          },
+          "topic_logprobs": {
+            "Scaling and Managing Operational Complexity": {
+              "logprob_yes": -16.5,
+              "logprob_no": -1.9361264946837764e-07
+            },
+            "Talent Acquisition and Retention Challenges": {
+              "logprob_yes": -19.75,
+              "logprob_no": 0.0
+            },
+            "Balancing Innovation with Stability": {
+              "logprob_yes": -14.75,
+              "logprob_no": -4.320199877838604e-07
+            },
+            "Cross-Platform Integration Issues": {
+              "logprob_yes": -10.0,
+              "logprob_no": 0.0
+            },
+            "Burnout and Sustainable Work Practices": {
+              "logprob_yes": -10.0,
+              "logprob_no": 0.0
+            }
+          },
+          "predicted_themes": [],
+          "num_topics_classified": 5,
+          "classification_method": "per_topic_yes_no_logprobs",
+          "prediction_uses_post_body": true
+        },
+        {
+          "post_id": "1db61e77-786d-4d4c-94e0-4dcc221af20b_89",
+          "body_text": "Great post Panagiotis Spiliotopoulos! AI in pharma can really help make work faster and more accurate. I like your idea about AI agents working together like a team, it feels like the future!\n\nAt CodingRippler, we build AI tools like Sales Rep Assistants and smart automations. Would love to connect and see how we can work together on your AI projects",
+          "stimulus": "AI in pharmaceuticals and collaboration",
+          "category": "Technical Expertise and Capabilities",
+          "topics_ordered": [
+            "Cloud Infrastructure Management",
+            "AI and Machine Learning Operations",
+            "Full-Stack Engineering Practices",
+            "DevOps and IT Security",
+            "Developer Tools and Productivity Solutions",
+            "Database Management and Optimization",
+            "Cybersecurity Strategies",
+            "High-Performance Computing Techniques"
+          ],
+          "topic_probabilities": {
+            "Cloud Infrastructure Management": 2.2697139016167867e-05,
+            "AI and Machine Learning Operations": 0.4999269921014811,
+            "Full-Stack Engineering Practices": 2.2697139016167867e-05,
+            "DevOps and IT Security": 2.2697139016167867e-05,
+            "Developer Tools and Productivity Solutions": 0.4999368250644222,
+            "Database Management and Optimization": 2.2697139016167867e-05,
+            "Cybersecurity Strategies": 2.2697139016167867e-05,
+            "High-Performance Computing Techniques": 2.2697139016167867e-05
+          },
+          "topic_probabilities_before_normalisation": {
+            "Cloud Infrastructure Management": 4.5397868702434395e-05,
+            "AI and Machine Learning Operations": 0.9999785550602307,
+            "Full-Stack Engineering Practices": 4.5397868702434395e-05,
+            "DevOps and IT Security": 4.5397868702434395e-05,
+            "Developer Tools and Productivity Solutions": 0.9999982396568657,
+            "Database Management and Optimization": 4.5397868702434395e-05,
+            "Cybersecurity Strategies": 4.5397868702434395e-05,
+            "High-Performance Computing Techniques": 4.5397868702434395e-05
+          },
+          "topic_logprobs": {
+            "Cloud Infrastructure Management": {
+              "logprob_yes": -10.0,
+              "logprob_no": 0.0
+            },
+            "AI and Machine Learning Operations": {
+              "logprob_yes": -2.15310683415737e-05,
+              "logprob_no": -10.750021934509277
+            },
+            "Full-Stack Engineering Practices": {
+              "logprob_yes": -10.0,
+              "logprob_no": 0.0
+            },
+            "DevOps and IT Security": {
+              "logprob_yes": -10.0,
+              "logprob_no": 0.0
+            },
+            "Developer Tools and Productivity Solutions": {
+              "logprob_yes": -1.8624639324116288e-06,
+              "logprob_no": -13.250001907348633
+            },
+            "Database Management and Optimization": {
+              "logprob_yes": -10.0,
+              "logprob_no": 0.0
+            },
+            "Cybersecurity Strategies": {
+              "logprob_yes": -10.0,
+              "logprob_no": 0.0
+            },
+            "High-Performance Computing Techniques": {
+              "logprob_yes": -10.0,
+              "logprob_no": 0.0
+            }
+          },
+          "predicted_themes": [
+            "AI and Machine Learning Operations",
+            "Developer Tools and Productivity Solutions"
+          ],
+          "num_topics_classified": 8,
+          "classification_method": "per_topic_yes_no_logprobs",
+          "prediction_uses_post_body": true
+        },
+        {
+          "post_id": "1db61e77-786d-4d4c-94e0-4dcc221af20b_90",
+          "body_text": "So true Kyri Chrysandreas! Too much data can create confusion instead of clarity. At CodingRippler, we help businesses focus on the right metrics by building smart dashboards and automation, so leaders can make quick, confident decisions without drowning in numbers",
+          "stimulus": "Data management for decision making",
+          "category": "Organizational and Leadership Dynamics",
+          "topics_ordered": [
+            "Internal Advocacy for Technology Adoption",
+            "Bridging Tech and Business Perspectives",
+            "Pragmatic Leadership in Technology",
+            "Network-Driven Professional Relationships",
+            "Mission-Oriented Technology Development"
+          ],
+          "topic_probabilities": {
+            "Internal Advocacy for Technology Adoption": 9.28227314226217e-08,
+            "Bridging Tech and Business Perspectives": 0.5002757625253375,
+            "Pragmatic Leadership in Technology": 0.4997014285022022,
+            "Network-Driven Professional Relationships": 2.271297350984407e-05,
+            "Mission-Oriented Technology Development": 3.17621920583127e-09
+          },
+          "topic_probabilities_before_normalisation": {
+            "Internal Advocacy for Technology Adoption": 1.8553915987649156e-07,
+            "Bridging Tech and Business Perspectives": 0.9999785550602307,
+            "Pragmatic Leadership in Technology": 0.9988304896566145,
+            "Network-Driven Professional Relationships": 4.5397868702434395e-05,
+            "Mission-Oriented Technology Development": 6.348800075736417e-09
+          },
+          "topic_logprobs": {
+            "Internal Advocacy for Technology Adoption": {
+              "logprob_yes": -15.5,
+              "logprob_no": -3.128163257315464e-07
+            },
+            "Bridging Tech and Business Perspectives": {
+              "logprob_yes": -2.15310683415737e-05,
+              "logprob_no": -10.750021934509277
+            },
+            "Pragmatic Leadership in Technology": {
+              "logprob_yes": -0.001170225441455841,
+              "logprob_no": -6.7511701583862305
+            },
+            "Network-Driven Professional Relationships": {
+              "logprob_yes": -10.0,
+              "logprob_no": 0.0
+            },
+            "Mission-Oriented Technology Development": {
+              "logprob_yes": -18.875,
+              "logprob_no": 0.0
+            }
+          },
+          "predicted_themes": [
+            "Bridging Tech and Business Perspectives",
+            "Pragmatic Leadership in Technology"
+          ],
+          "num_topics_classified": 5,
+          "classification_method": "per_topic_yes_no_logprobs",
+          "prediction_uses_post_body": true
+        },
+        {
+          "post_id": "1db61e77-786d-4d4c-94e0-4dcc221af20b_91",
+          "body_text": "Hi Trent Gillespie,\nSounds like a great opportunity! I help companies build and launch real AI solutions, not just hype. Would love to connect and explore how we can work together",
+          "stimulus": "AI solutions and collaboration opportunities",
+          "category": "Technical Expertise and Capabilities",
+          "topics_ordered": [
+            "Cloud Infrastructure Management",
+            "AI and Machine Learning Operations",
+            "Full-Stack Engineering Practices",
+            "DevOps and IT Security",
+            "Developer Tools and Productivity Solutions",
+            "Database Management and Optimization",
+            "Cybersecurity Strategies",
+            "High-Performance Computing Techniques"
+          ],
+          "topic_probabilities": {
+            "Cloud Infrastructure Management": 4.538793129097824e-05,
+            "AI and Machine Learning Operations": 0.9997276571862992,
+            "Full-Stack Engineering Practices": 4.538793129097824e-05,
+            "DevOps and IT Security": 4.538793129097824e-05,
+            "Developer Tools and Productivity Solutions": 1.5225954705930207e-08,
+            "Database Management and Optimization": 4.538793129097824e-05,
+            "Cybersecurity Strategies": 4.538793129097824e-05,
+            "High-Performance Computing Techniques": 4.538793129097824e-05
+          },
+          "topic_probabilities_before_normalisation": {
+            "Cloud Infrastructure Management": 4.5397868702434395e-05,
+            "AI and Machine Learning Operations": 0.9999921107340083,
+            "Full-Stack Engineering Practices": 4.5397868702434395e-05,
+            "DevOps and IT Security": 4.5397868702434395e-05,
+            "Developer Tools and Productivity Solutions": 1.522997951276035e-08,
+            "Database Management and Optimization": 4.5397868702434395e-05,
+            "Cybersecurity Strategies": 4.5397868702434395e-05,
+            "High-Performance Computing Techniques": 4.5397868702434395e-05
+          },
+          "topic_logprobs": {
+            "Cloud Infrastructure Management": {
+              "logprob_yes": -10.0,
+              "logprob_no": 0.0
+            },
+            "AI and Machine Learning Operations": {
+              "logprob_yes": -8.061054359131958e-06,
+              "logprob_no": -11.750007629394531
+            },
+            "Full-Stack Engineering Practices": {
+              "logprob_yes": -10.0,
+              "logprob_no": 0.0
+            },
+            "DevOps and IT Security": {
+              "logprob_yes": -10.0,
+              "logprob_no": 0.0
+            },
+            "Developer Tools and Productivity Solutions": {
+              "logprob_yes": -18.0,
+              "logprob_no": 0.0
+            },
+            "Database Management and Optimization": {
+              "logprob_yes": -10.0,
+              "logprob_no": 0.0
+            },
+            "Cybersecurity Strategies": {
+              "logprob_yes": -10.0,
+              "logprob_no": 0.0
+            },
+            "High-Performance Computing Techniques": {
+              "logprob_yes": -10.0,
+              "logprob_no": 0.0
+            }
+          },
+          "predicted_themes": [
+            "AI and Machine Learning Operations"
+          ],
+          "num_topics_classified": 8,
+          "classification_method": "per_topic_yes_no_logprobs",
+          "prediction_uses_post_body": true
+        },
+        {
+          "post_id": "1db61e77-786d-4d4c-94e0-4dcc221af20b_94",
+          "body_text": "Totally agree! Ojassvi Pradhan,\n\nAt Coding Rippler, we’ve seen how AI isn’t just improving existing products but creating completely new opportunities. It’s exciting to help businesses build solutions that customers didn’t even know they needed and then watch those ideas turn into whole new markets!",
+          "stimulus": "Creating new markets with AI",
+          "category": "Values and Motivations",
+          "topics_ordered": [
+            "Impact Measurement and Real-World Outcomes",
+            "Inclusivity and Accessibility Initiatives",
+            "Responsible AI Development",
+            "Mentorship and Talent Growth",
+            "Community Engagement and Civic Initiatives"
+          ],
+          "topic_probabilities": {
+            "Impact Measurement and Real-World Outcomes": 3.0851499177302575e-05,
+            "Inclusivity and Accessibility Initiatives": 0.24999228712520566,
+            "Responsible AI Development": 0.24999228712520566,
+            "Mentorship and Talent Growth": 0.24999228712520566,
+            "Community Engagement and Civic Initiatives": 0.24999228712520566
+          },
+          "topic_probabilities_before_normalisation": {
+            "Impact Measurement and Real-World Outcomes": 5.60279640614594e-09,
+            "Inclusivity and Accessibility Initiatives": 4.5397868702434395e-05,
+            "Responsible AI Development": 4.5397868702434395e-05,
+            "Mentorship and Talent Growth": 4.5397868702434395e-05,
+            "Community Engagement and Civic Initiatives": 4.5397868702434395e-05
+          },
+          "topic_logprobs": {
+            "Impact Measurement and Real-World Outcomes": {
+              "logprob_yes": -19.0,
+              "logprob_no": 0.0
+            },
+            "Inclusivity and Accessibility Initiatives": {
+              "logprob_yes": -10.0,
+              "logprob_no": 0.0
+            },
+            "Responsible AI Development": {
+              "logprob_yes": -10.0,
+              "logprob_no": 0.0
+            },
+            "Mentorship and Talent Growth": {
+              "logprob_yes": -10.0,
+              "logprob_no": 0.0
+            },
+            "Community Engagement and Civic Initiatives": {
+              "logprob_yes": -10.0,
+              "logprob_no": 0.0
+            }
+          },
+          "predicted_themes": [],
+          "num_topics_classified": 5,
+          "classification_method": "per_topic_yes_no_logprobs",
+          "prediction_uses_post_body": true
+        },
+        {
+          "post_id": "1db61e77-786d-4d4c-94e0-4dcc221af20b_98",
+          "body_text": "Totally agree! In startups, things are always moving fast and it can feel messy. \n\nAt CodingRippler , we help startups do just that automating workflows and building smart solutions so teams can focus on moving fast with confidence!",
+          "stimulus": "Navigating startup challenges and self-direction",
+          "category": "Working and Learning Styles",
+          "topics_ordered": [
+            "Hands-On Problem Solving",
+            "Community-Driven Education",
+            "Cross-Functional Collaboration",
+            "Rapid Prototyping and MVP Development",
+            "Knowledge Sharing and Documentation Practices"
+          ],
+          "topic_probabilities": {
+            "Hands-On Problem Solving": 0.6354607254893178,
+            "Community-Driven Education": 0.18209137066060693,
+            "Cross-Functional Collaboration": 0.00035151903966314154,
+            "Rapid Prototyping and MVP Development": 5.014149805221838e-06,
+            "Knowledge Sharing and Documentation Practices": 0.18209137066060693
+          },
+          "topic_probabilities_before_normalisation": {
+            "Hands-On Problem Solving": 0.0001584362468454316,
+            "Community-Driven Education": 4.5397868702434395e-05,
+            "Cross-Functional Collaboration": 8.76424914819242e-08,
+            "Rapid Prototyping and MVP Development": 1.2501528648238603e-09,
+            "Knowledge Sharing and Documentation Practices": 4.5397868702434395e-05
+          },
+          "topic_logprobs": {
+            "Hands-On Problem Solving": {
+              "logprob_yes": -8.750158309936523,
+              "logprob_no": -0.0001584850688232109
+            },
+            "Community-Driven Education": {
+              "logprob_yes": -10.0,
+              "logprob_no": 0.0
+            },
+            "Cross-Functional Collaboration": {
+              "logprob_yes": -16.25,
+              "logprob_no": -1.9361264946837764e-07
+            },
+            "Rapid Prototyping and MVP Development": {
+              "logprob_yes": -20.5,
+              "logprob_no": 0.0
+            },
+            "Knowledge Sharing and Documentation Practices": {
+              "logprob_yes": -10.0,
+              "logprob_no": 0.0
+            }
+          },
+          "predicted_themes": [],
+          "num_topics_classified": 5,
+          "classification_method": "per_topic_yes_no_logprobs",
+          "prediction_uses_post_body": true
+        },
+        {
+          "post_id": "1db61e77-786d-4d4c-94e0-4dcc221af20b_100",
+          "body_text": "Great insights! Choosing the right way to test LLMs can make or break AI success",
+          "stimulus": "Effective testing methods for LLMs",
+          "category": "Technical Expertise and Capabilities",
+          "topics_ordered": [
+            "Cloud Infrastructure Management",
+            "AI and Machine Learning Operations",
+            "Full-Stack Engineering Practices",
+            "DevOps and IT Security",
+            "Developer Tools and Productivity Solutions",
+            "Database Management and Optimization",
+            "Cybersecurity Strategies",
+            "High-Performance Computing Techniques"
+          ],
+          "topic_probabilities": {
+            "Cloud Infrastructure Management": 4.5387334367408786e-05,
+            "AI and Machine Learning Operations": 0.9997223744022685,
+            "Full-Stack Engineering Practices": 1.6914285359249922e-10,
+            "DevOps and IT Security": 4.5387334367408786e-05,
+            "Developer Tools and Productivity Solutions": 9.607573304324917e-05,
+            "Database Management and Optimization": 4.5387334367408786e-05,
+            "Cybersecurity Strategies": 4.5387334367408786e-05,
+            "High-Performance Computing Techniques": 3.5807542386523606e-10
+          },
+          "topic_probabilities_before_normalisation": {
+            "Cloud Infrastructure Management": 4.5397868702434395e-05,
+            "AI and Machine Learning Operations": 0.999999922655772,
+            "Full-Stack Engineering Practices": 1.6918979223288786e-10,
+            "DevOps and IT Security": 4.5397868702434395e-05,
+            "Developer Tools and Productivity Solutions": 9.61023993032045e-05,
+            "Database Management and Optimization": 4.5397868702434395e-05,
+            "Cybersecurity Strategies": 4.5397868702434395e-05,
+            "High-Performance Computing Techniques": 3.581747929000289e-10
+          },
+          "topic_logprobs": {
+            "Cloud Infrastructure Management": {
+              "logprob_yes": -10.0,
+              "logprob_no": 0.0
+            },
+            "AI and Machine Learning Operations": {
+              "logprob_yes": -1.9361264946837764e-07,
+              "logprob_no": -16.375
+            },
+            "Full-Stack Engineering Practices": {
+              "logprob_yes": -22.5,
+              "logprob_no": 0.0
+            },
+            "DevOps and IT Security": {
+              "logprob_yes": -10.0,
+              "logprob_no": 0.0
+            },
+            "Developer Tools and Productivity Solutions": {
+              "logprob_yes": -9.250096321105957,
+              "logprob_no": -9.615255839889869e-05
+            },
+            "Database Management and Optimization": {
+              "logprob_yes": -10.0,
+              "logprob_no": 0.0
+            },
+            "Cybersecurity Strategies": {
+              "logprob_yes": -10.0,
+              "logprob_no": 0.0
+            },
+            "High-Performance Computing Techniques": {
+              "logprob_yes": -21.75,
+              "logprob_no": 0.0
+            }
+          },
+          "predicted_themes": [
+            "AI and Machine Learning Operations"
+          ],
+          "num_topics_classified": 8,
+          "classification_method": "per_topic_yes_no_logprobs",
+          "prediction_uses_post_body": true
+        },
+        {
+          "post_id": "1db61e77-786d-4d4c-94e0-4dcc221af20b_101",
+          "body_text": "Seeing things from both sides really helps you grow and solve problems better.\n\nWe follow the same at CodingRippler and it has helped us build stronger solutions for our clients",
+          "stimulus": "Understanding different perspectives in problem-solving",
+          "category": "Organizational and Leadership Dynamics",
+          "topics_ordered": [
+            "Internal Advocacy for Technology Adoption",
+            "Bridging Tech and Business Perspectives",
+            "Pragmatic Leadership in Technology",
+            "Network-Driven Professional Relationships",
+            "Mission-Oriented Technology Development"
+          ],
+          "topic_probabilities": {
+            "Internal Advocacy for Technology Adoption": 4.541310380474697e-05,
+            "Bridging Tech and Business Perspectives": 0.999954551495788,
+            "Pragmatic Leadership in Technology": 3.225122323997942e-08,
+            "Network-Driven Professional Relationships": 2.999831056085765e-09,
+            "Mission-Oriented Technology Development": 1.493527938813835e-10
+          },
+          "topic_probabilities_before_normalisation": {
+            "Internal Advocacy for Technology Adoption": 4.5397868702434395e-05,
+            "Bridging Tech and Business Perspectives": 0.9996646499058479,
+            "Pragmatic Leadership in Technology": 3.2241866333029355e-08,
+            "Network-Driven Professional Relationships": 2.998960815863541e-09,
+            "Mission-Oriented Technology Development": 1.493094675974231e-10
+          },
+          "topic_logprobs": {
+            "Internal Advocacy for Technology Adoption": {
+              "logprob_yes": -10.0,
+              "logprob_no": 0.0
+            },
+            "Bridging Tech and Business Perspectives": {
+              "logprob_yes": -0.00033558503491804004,
+              "logprob_no": -8.000335693359375
+            },
+            "Pragmatic Leadership in Technology": {
+              "logprob_yes": -17.25,
+              "logprob_no": 0.0
+            },
+            "Network-Driven Professional Relationships": {
+              "logprob_yes": -19.625,
+              "logprob_no": 0.0
+            },
+            "Mission-Oriented Technology Development": {
+              "logprob_yes": -22.625,
+              "logprob_no": 0.0
+            }
+          },
+          "predicted_themes": [
+            "Bridging Tech and Business Perspectives"
+          ],
+          "num_topics_classified": 5,
+          "classification_method": "per_topic_yes_no_logprobs",
+          "prediction_uses_post_body": true
+        }
+      ]
+    },
+    "22288d07-4cdf-4ea0-8242-70c9e9426b58": {
+      "profile_info": {
+        "occupation": "Senior Software Engineer at Microsoft"
+      },
+      "posts": [
+        {
+          "post_id": "22288d07-4cdf-4ea0-8242-70c9e9426b58_5",
+          "body_text": "Thanks Jeff. I think the team at Infor (specially you, Mesfin and Bill) helped me build a strong foundation and I owe it to you guys. Let's catchup sometime :)",
+          "stimulus": "Acknowledgment of team support and foundation",
+          "category": "Values and Motivations",
+          "topics_ordered": [
+            "Impact Measurement and Real-World Outcomes",
+            "Inclusivity and Accessibility Initiatives",
+            "Responsible AI Development",
+            "Mentorship and Talent Growth",
+            "Community Engagement and Civic Initiatives"
+          ],
+          "topic_probabilities": {
+            "Impact Measurement and Real-World Outcomes": 0.0015393028503344916,
+            "Inclusivity and Accessibility Initiatives": 0.0015393028503344916,
+            "Responsible AI Development": 0.0015393028503344916,
+            "Mentorship and Talent Growth": 0.9938427885986619,
+            "Community Engagement and Civic Initiatives": 0.0015393028503344916
+          },
+          "topic_probabilities_before_normalisation": {
+            "Impact Measurement and Real-World Outcomes": 4.5397868702434395e-05,
+            "Inclusivity and Accessibility Initiatives": 4.5397868702434395e-05,
+            "Responsible AI Development": 4.5397868702434395e-05,
+            "Mentorship and Talent Growth": 0.02931222788947056,
+            "Community Engagement and Civic Initiatives": 4.5397868702434395e-05
+          },
+          "topic_logprobs": {
+            "Impact Measurement and Real-World Outcomes": {
+              "logprob_yes": -10.0,
+              "logprob_no": 0.0
+            },
+            "Inclusivity and Accessibility Initiatives": {
+              "logprob_yes": -10.0,
+              "logprob_no": 0.0
+            },
+            "Responsible AI Development": {
+              "logprob_yes": -10.0,
+              "logprob_no": 0.0
+            },
+            "Mentorship and Talent Growth": {
+              "logprob_yes": -3.5297505855560303,
+              "logprob_no": -0.029750484973192215
+            },
+            "Community Engagement and Civic Initiatives": {
+              "logprob_yes": -10.0,
+              "logprob_no": 0.0
+            }
+          },
+          "predicted_themes": [],
+          "num_topics_classified": 5,
+          "classification_method": "per_topic_yes_no_logprobs",
+          "prediction_uses_post_body": true
+        },
+        {
+          "post_id": "22288d07-4cdf-4ea0-8242-70c9e9426b58_11",
+          "body_text": "Shreyash Gupta Thanks so much! I've been very happy to see your great success over the last few years - keep on doing what you're doing!",
+          "stimulus": "Acknowledgment of colleague's success",
+          "category": "Values and Motivations",
+          "topics_ordered": [
+            "Impact Measurement and Real-World Outcomes",
+            "Inclusivity and Accessibility Initiatives",
+            "Responsible AI Development",
+            "Mentorship and Talent Growth",
+            "Community Engagement and Civic Initiatives"
+          ],
+          "topic_probabilities": {
+            "Impact Measurement and Real-World Outcomes": 0.24984517393282113,
+            "Inclusivity and Accessibility Initiatives": 0.24984517393282113,
+            "Responsible AI Development": 0.24984517393282113,
+            "Mentorship and Talent Growth": 0.0006193042687155653,
+            "Community Engagement and Civic Initiatives": 0.24984517393282113
+          },
+          "topic_probabilities_before_normalisation": {
+            "Impact Measurement and Real-World Outcomes": 4.5397868702434395e-05,
+            "Inclusivity and Accessibility Initiatives": 4.5397868702434395e-05,
+            "Responsible AI Development": 4.5397868702434395e-05,
+            "Mentorship and Talent Growth": 1.1253518384332553e-07,
+            "Community Engagement and Civic Initiatives": 4.5397868702434395e-05
+          },
+          "topic_logprobs": {
+            "Impact Measurement and Real-World Outcomes": {
+              "logprob_yes": -10.0,
+              "logprob_no": 0.0
+            },
+            "Inclusivity and Accessibility Initiatives": {
+              "logprob_yes": -10.0,
+              "logprob_no": 0.0
+            },
+            "Responsible AI Development": {
+              "logprob_yes": -10.0,
+              "logprob_no": 0.0
+            },
+            "Mentorship and Talent Growth": {
+              "logprob_yes": -16.0,
+              "logprob_no": -1.9361264946837764e-07
+            },
+            "Community Engagement and Civic Initiatives": {
+              "logprob_yes": -10.0,
+              "logprob_no": 0.0
+            }
+          },
+          "predicted_themes": [],
+          "num_topics_classified": 5,
+          "classification_method": "per_topic_yes_no_logprobs",
+          "prediction_uses_post_body": true
+        },
+        {
+          "post_id": "22288d07-4cdf-4ea0-8242-70c9e9426b58_12",
+          "body_text": "Thanks Jeff. I think the team at Infor (specially you, Mesfin and Bill) helped me build a strong foundation and I owe it to you guys. Let's catchup sometime :)",
+          "stimulus": "Recognition of team contribution",
+          "category": "Values and Motivations",
+          "topics_ordered": [
+            "Impact Measurement and Real-World Outcomes",
+            "Inclusivity and Accessibility Initiatives",
+            "Responsible AI Development",
+            "Mentorship and Talent Growth",
+            "Community Engagement and Civic Initiatives"
+          ],
+          "topic_probabilities": {
+            "Impact Measurement and Real-World Outcomes": 0.0015393028503344916,
+            "Inclusivity and Accessibility Initiatives": 0.0015393028503344916,
+            "Responsible AI Development": 0.0015393028503344916,
+            "Mentorship and Talent Growth": 0.9938427885986619,
+            "Community Engagement and Civic Initiatives": 0.0015393028503344916
+          },
+          "topic_probabilities_before_normalisation": {
+            "Impact Measurement and Real-World Outcomes": 4.5397868702434395e-05,
+            "Inclusivity and Accessibility Initiatives": 4.5397868702434395e-05,
+            "Responsible AI Development": 4.5397868702434395e-05,
+            "Mentorship and Talent Growth": 0.02931222788947056,
+            "Community Engagement and Civic Initiatives": 4.5397868702434395e-05
+          },
+          "topic_logprobs": {
+            "Impact Measurement and Real-World Outcomes": {
+              "logprob_yes": -10.0,
+              "logprob_no": 0.0
+            },
+            "Inclusivity and Accessibility Initiatives": {
+              "logprob_yes": -10.0,
+              "logprob_no": 0.0
+            },
+            "Responsible AI Development": {
+              "logprob_yes": -10.0,
+              "logprob_no": 0.0
+            },
+            "Mentorship and Talent Growth": {
+              "logprob_yes": -3.5297505855560303,
+              "logprob_no": -0.029750484973192215
+            },
+            "Community Engagement and Civic Initiatives": {
+              "logprob_yes": -10.0,
+              "logprob_no": 0.0
+            }
+          },
+          "predicted_themes": [],
+          "num_topics_classified": 5,
+          "classification_method": "per_topic_yes_no_logprobs",
+          "prediction_uses_post_body": true
+        },
+        {
+          "post_id": "22288d07-4cdf-4ea0-8242-70c9e9426b58_13",
+          "body_text": "Shreyash Gupta I'd love to catch up one of these days, it's been too long! I'll message you and we can go from there.\n\nWe had a heck of a team at Infor, didn't we? I'm so glad that we were able to help you get to where you are now - and I feel the same way. I don't think I would be where I am today without learning every single day from you, Bill, Mesfin, Hung, Michelle and the rest of the great team that we rolled with.",
+          "stimulus": "Reflection on learning from teamwork",
+          "category": "Values and Motivations",
+          "topics_ordered": [
+            "Impact Measurement and Real-World Outcomes",
+            "Inclusivity and Accessibility Initiatives",
+            "Responsible AI Development",
+            "Mentorship and Talent Growth",
+            "Community Engagement and Civic Initiatives"
+          ],
+          "topic_probabilities": {
+            "Impact Measurement and Real-World Outcomes": 4.5391695431752806e-05,
+            "Inclusivity and Accessibility Initiatives": 4.5391695431752806e-05,
+            "Responsible AI Development": 4.5391695431752806e-05,
+            "Mentorship and Talent Growth": 0.9998184332182729,
+            "Community Engagement and Civic Initiatives": 4.5391695431752806e-05
+          },
+          "topic_probabilities_before_normalisation": {
+            "Impact Measurement and Real-World Outcomes": 4.5397868702434395e-05,
+            "Inclusivity and Accessibility Initiatives": 4.5397868702434395e-05,
+            "Responsible AI Development": 4.5397868702434395e-05,
+            "Mentorship and Talent Growth": 0.9999999895325963,
+            "Community Engagement and Civic Initiatives": 4.5397868702434395e-05
+          },
+          "topic_logprobs": {
+            "Impact Measurement and Real-World Outcomes": {
+              "logprob_yes": -10.0,
+              "logprob_no": 0.0
+            },
+            "Inclusivity and Accessibility Initiatives": {
+              "logprob_yes": -10.0,
+              "logprob_no": 0.0
+            },
+            "Responsible AI Development": {
+              "logprob_yes": -10.0,
+              "logprob_no": 0.0
+            },
+            "Mentorship and Talent Growth": {
+              "logprob_yes": -1.9361264946837764e-07,
+              "logprob_no": -18.375
+            },
+            "Community Engagement and Civic Initiatives": {
+              "logprob_yes": -10.0,
+              "logprob_no": 0.0
+            }
+          },
+          "predicted_themes": [
+            "Mentorship and Talent Growth"
+          ],
+          "num_topics_classified": 5,
+          "classification_method": "per_topic_yes_no_logprobs",
+          "prediction_uses_post_body": true
+        },
+        {
+          "post_id": "22288d07-4cdf-4ea0-8242-70c9e9426b58_15",
+          "body_text": "Congratulations Aakash on your new job! Wishing you success and fulfillment in this exciting chapter of your career",
+          "stimulus": "Congratulations on career transition",
+          "category": "Values and Motivations",
+          "topics_ordered": [
+            "Impact Measurement and Real-World Outcomes",
+            "Inclusivity and Accessibility Initiatives",
+            "Responsible AI Development",
+            "Mentorship and Talent Growth",
+            "Community Engagement and Civic Initiatives"
+          ],
+          "topic_probabilities": {
+            "Impact Measurement and Real-World Outcomes": 0.24999970093052076,
+            "Inclusivity and Accessibility Initiatives": 0.24999970093052076,
+            "Responsible AI Development": 0.24999970093052076,
+            "Mentorship and Talent Growth": 1.1962779169496857e-06,
+            "Community Engagement and Civic Initiatives": 0.24999970093052076
+          },
+          "topic_probabilities_before_normalisation": {
+            "Impact Measurement and Real-World Outcomes": 4.5397868702434395e-05,
+            "Inclusivity and Accessibility Initiatives": 4.5397868702434395e-05,
+            "Responsible AI Development": 4.5397868702434395e-05,
+            "Mentorship and Talent Growth": 2.1724399346070676e-10,
+            "Community Engagement and Civic Initiatives": 4.5397868702434395e-05
+          },
+          "topic_logprobs": {
+            "Impact Measurement and Real-World Outcomes": {
+              "logprob_yes": -10.0,
+              "logprob_no": 0.0
+            },
+            "Inclusivity and Accessibility Initiatives": {
+              "logprob_yes": -10.0,
+              "logprob_no": 0.0
+            },
+            "Responsible AI Development": {
+              "logprob_yes": -10.0,
+              "logprob_no": 0.0
+            },
+            "Mentorship and Talent Growth": {
+              "logprob_yes": -22.25,
+              "logprob_no": 0.0
+            },
+            "Community Engagement and Civic Initiatives": {
+              "logprob_yes": -10.0,
+              "logprob_no": 0.0
+            }
+          },
+          "predicted_themes": [],
+          "num_topics_classified": 5,
+          "classification_method": "per_topic_yes_no_logprobs",
+          "prediction_uses_post_body": true
+        }
+      ]
+    },
+    "2e4a00af-909d-4ee2-9aa6-52eee25d18e9": {
+      "profile_info": {
+        "occupation": "Senior Software Engineer at Microsoft"
+      },
+      "posts": [
+        {
+          "post_id": "2e4a00af-909d-4ee2-9aa6-52eee25d18e9_24",
+          "body_text": "Jeffery Galbraith people like you and the Army taught me a lot. Forced me to be better.",
+          "stimulus": "Learning from Mentorship and Leadership",
+          "category": "Values and Motivations",
+          "topics_ordered": [
+            "Impact Measurement and Real-World Outcomes",
+            "Inclusivity and Accessibility Initiatives",
+            "Responsible AI Development",
+            "Mentorship and Talent Growth",
+            "Community Engagement and Civic Initiatives"
+          ],
+          "topic_probabilities": {
+            "Impact Measurement and Real-World Outcomes": 2.7893463366991323e-10,
+            "Inclusivity and Accessibility Initiatives": 1.49302950481579e-10,
+            "Responsible AI Development": 4.539794812248299e-05,
+            "Mentorship and Talent Growth": 0.9999544890933771,
+            "Community Engagement and Civic Initiatives": 1.1253026272479114e-07
+          },
+          "topic_probabilities_before_normalisation": {
+            "Impact Measurement and Real-World Outcomes": 2.7894680920908113e-10,
+            "Inclusivity and Accessibility Initiatives": 1.493094675974231e-10,
+            "Responsible AI Development": 4.5397868702434395e-05,
+            "Mentorship and Talent Growth": 0.9999982396568657,
+            "Community Engagement and Civic Initiatives": 1.1253518384332553e-07
+          },
+          "topic_logprobs": {
+            "Impact Measurement and Real-World Outcomes": {
+              "logprob_yes": -22.0,
+              "logprob_no": 0.0
+            },
+            "Inclusivity and Accessibility Initiatives": {
+              "logprob_yes": -22.625,
+              "logprob_no": 0.0
+            },
+            "Responsible AI Development": {
+              "logprob_yes": -10.0,
+              "logprob_no": 0.0
+            },
+            "Mentorship and Talent Growth": {
+              "logprob_yes": -1.8624639324116288e-06,
+              "logprob_no": -13.250001907348633
+            },
+            "Community Engagement and Civic Initiatives": {
+              "logprob_yes": -16.0,
+              "logprob_no": -1.9361264946837764e-07
+            }
+          },
+          "predicted_themes": [
+            "Mentorship and Talent Growth"
+          ],
+          "num_topics_classified": 5,
+          "classification_method": "per_topic_yes_no_logprobs",
+          "prediction_uses_post_body": true
+        },
+        {
+          "post_id": "2e4a00af-909d-4ee2-9aa6-52eee25d18e9_30",
+          "body_text": "David Urbizo Shawn Pratt 5 square 155 is about 100 pounds...RAP ARE 125ish. Fucking copperhead are monstrous and require 2 people at 200 pounds. Sustained direct rates requires 5 rounds per minute for 3 minutes. That's 1500 pounds over 3 minutes or more technically... a fuck ton of suck",
+          "stimulus": "Military Fitness Test Challenges",
+          "category": "Challenges and Pain Points",
+          "topics_ordered": [
+            "Scaling and Managing Operational Complexity",
+            "Talent Acquisition and Retention Challenges",
+            "Balancing Innovation with Stability",
+            "Cross-Platform Integration Issues",
+            "Burnout and Sustainable Work Practices"
+          ],
+          "topic_probabilities": {
+            "Scaling and Managing Operational Complexity": 3.0851499177302575e-05,
+            "Talent Acquisition and Retention Challenges": 0.24999228712520566,
+            "Balancing Innovation with Stability": 0.24999228712520566,
+            "Cross-Platform Integration Issues": 0.24999228712520566,
+            "Burnout and Sustainable Work Practices": 0.24999228712520566
+          },
+          "topic_probabilities_before_normalisation": {
+            "Scaling and Managing Operational Complexity": 5.60279640614594e-09,
+            "Talent Acquisition and Retention Challenges": 4.5397868702434395e-05,
+            "Balancing Innovation with Stability": 4.5397868702434395e-05,
+            "Cross-Platform Integration Issues": 4.5397868702434395e-05,
+            "Burnout and Sustainable Work Practices": 4.5397868702434395e-05
+          },
+          "topic_logprobs": {
+            "Scaling and Managing Operational Complexity": {
+              "logprob_yes": -19.0,
+              "logprob_no": 0.0
+            },
+            "Talent Acquisition and Retention Challenges": {
+              "logprob_yes": -10.0,
+              "logprob_no": 0.0
+            },
+            "Balancing Innovation with Stability": {
+              "logprob_yes": -10.0,
+              "logprob_no": 0.0
+            },
+            "Cross-Platform Integration Issues": {
+              "logprob_yes": -10.0,
+              "logprob_no": 0.0
+            },
+            "Burnout and Sustainable Work Practices": {
+              "logprob_yes": -10.0,
+              "logprob_no": 0.0
+            }
+          },
+          "predicted_themes": [],
+          "num_topics_classified": 5,
+          "classification_method": "per_topic_yes_no_logprobs",
+          "prediction_uses_post_body": true
+        },
+        {
+          "post_id": "2e4a00af-909d-4ee2-9aa6-52eee25d18e9_32",
+          "body_text": "Tyler La Vay You are right! Slinging rounds for multiple fire missions can be taxing. I am sure this comes from a majority of individuals in suits and not OCPs.",
+          "stimulus": "Concerns About Fitness Testing",
+          "category": "Challenges and Pain Points",
+          "topics_ordered": [
+            "Scaling and Managing Operational Complexity",
+            "Talent Acquisition and Retention Challenges",
+            "Balancing Innovation with Stability",
+            "Cross-Platform Integration Issues",
+            "Burnout and Sustainable Work Practices"
+          ],
+          "topic_probabilities": {
+            "Scaling and Managing Operational Complexity": 0.000275901153834353,
+            "Talent Acquisition and Retention Challenges": 0.4988409883298773,
+            "Balancing Innovation with Stability": 3.4730829693185e-06,
+            "Cross-Platform Integration Issues": 0.4988409883298773,
+            "Burnout and Sustainable Work Practices": 0.002038649103441729
+          },
+          "topic_probabilities_before_normalisation": {
+            "Scaling and Managing Operational Complexity": 2.5109990926928157e-08,
+            "Talent Acquisition and Retention Challenges": 4.5397868702434395e-05,
+            "Balancing Innovation with Stability": 3.160881453314576e-10,
+            "Cross-Platform Integration Issues": 4.5397868702434395e-05,
+            "Burnout and Sustainable Work Practices": 1.8553915987649156e-07
+          },
+          "topic_logprobs": {
+            "Scaling and Managing Operational Complexity": {
+              "logprob_yes": -17.5,
+              "logprob_no": 0.0
+            },
+            "Talent Acquisition and Retention Challenges": {
+              "logprob_yes": -10.0,
+              "logprob_no": 0.0
+            },
+            "Balancing Innovation with Stability": {
+              "logprob_yes": -21.875,
+              "logprob_no": 0.0
+            },
+            "Cross-Platform Integration Issues": {
+              "logprob_yes": -10.0,
+              "logprob_no": 0.0
+            },
+            "Burnout and Sustainable Work Practices": {
+              "logprob_yes": -15.5,
+              "logprob_no": -3.128163257315464e-07
+            }
+          },
+          "predicted_themes": [],
+          "num_topics_classified": 5,
+          "classification_method": "per_topic_yes_no_logprobs",
+          "prediction_uses_post_body": true
+        },
+        {
+          "post_id": "2e4a00af-909d-4ee2-9aa6-52eee25d18e9_39",
+          "body_text": "Ashley Kostan it works but it’s not correct. The author is declaring the variable in the wrong spot to add lines of code. It’s also best practice to use implicit type when declaring a variable",
+          "stimulus": "Coding Errors and Best Practices",
+          "category": "Technical Expertise and Capabilities",
+          "topics_ordered": [
+            "Cloud Infrastructure Management",
+            "AI and Machine Learning Operations",
+            "Full-Stack Engineering Practices",
+            "DevOps and IT Security",
+            "Developer Tools and Productivity Solutions",
+            "Database Management and Optimization",
+            "Cybersecurity Strategies",
+            "High-Performance Computing Techniques"
+          ],
+          "topic_probabilities": {
+            "Cloud Infrastructure Management": 0.000935723527310416,
+            "AI and Machine Learning Operations": 0.000935723527310416,
+            "Full-Stack Engineering Practices": 0.9774796320089235,
+            "DevOps and IT Security": 7.936641826507077e-08,
+            "Developer Tools and Productivity Solutions": 0.018777391028299655,
+            "Database Management and Optimization": 3.4871170512400047e-09,
+            "Cybersecurity Strategies": 0.000935723527310416,
+            "High-Performance Computing Techniques": 0.000935723527310416
+          },
+          "topic_probabilities_before_normalisation": {
+            "Cloud Infrastructure Management": 4.5397868702434395e-05,
+            "AI and Machine Learning Operations": 4.5397868702434395e-05,
+            "Full-Stack Engineering Practices": 0.047425875365417064,
+            "DevOps and IT Security": 3.850741907939403e-09,
+            "Developer Tools and Productivity Solutions": 0.0009110514016656498,
+            "Database Management and Optimization": 1.6918979223288786e-10,
+            "Cybersecurity Strategies": 4.5397868702434395e-05,
+            "High-Performance Computing Techniques": 4.5397868702434395e-05
+          },
+          "topic_logprobs": {
+            "Cloud Infrastructure Management": {
+              "logprob_yes": -10.0,
+              "logprob_no": 0.0
+            },
+            "AI and Machine Learning Operations": {
+              "logprob_yes": -10.0,
+              "logprob_no": 0.0
+            },
+            "Full-Stack Engineering Practices": {
+              "logprob_yes": -3.0485873222351074,
+              "logprob_no": -0.0485873706638813
+            },
+            "DevOps and IT Security": {
+              "logprob_yes": -19.375,
+              "logprob_no": 0.0
+            },
+            "Developer Tools and Productivity Solutions": {
+              "logprob_yes": -7.000911235809326,
+              "logprob_no": -0.0009114635176956654
+            },
+            "Database Management and Optimization": {
+              "logprob_yes": -22.5,
+              "logprob_no": 0.0
+            },
+            "Cybersecurity Strategies": {
+              "logprob_yes": -10.0,
+              "logprob_no": 0.0
+            },
+            "High-Performance Computing Techniques": {
+              "logprob_yes": -10.0,
+              "logprob_no": 0.0
+            }
+          },
+          "predicted_themes": [],
+          "num_topics_classified": 8,
+          "classification_method": "per_topic_yes_no_logprobs",
+          "prediction_uses_post_body": true
+        },
+        {
+          "post_id": "2e4a00af-909d-4ee2-9aa6-52eee25d18e9_41",
+          "body_text": "Ashley Kostan it works but it’s not correct. The author is declaring the variable in the wrong spot to add lines of code. It’s also best practice to use implicit type when declaring a variable",
+          "stimulus": "Coding Errors and Best Practices",
+          "category": "Technical Expertise and Capabilities",
+          "topics_ordered": [
+            "Cloud Infrastructure Management",
+            "AI and Machine Learning Operations",
+            "Full-Stack Engineering Practices",
+            "DevOps and IT Security",
+            "Developer Tools and Productivity Solutions",
+            "Database Management and Optimization",
+            "Cybersecurity Strategies",
+            "High-Performance Computing Techniques"
+          ],
+          "topic_probabilities": {
+            "Cloud Infrastructure Management": 0.0008940485519232806,
+            "AI and Machine Learning Operations": 0.0008940485519232806,
+            "Full-Stack Engineering Practices": 0.9339449356841573,
+            "DevOps and IT Security": 7.583162039879391e-08,
+            "Developer Tools and Productivity Solutions": 0.06247879133621808,
+            "Database Management and Optimization": 2.9403110095590853e-09,
+            "Cybersecurity Strategies": 0.0008940485519232806,
+            "High-Performance Computing Techniques": 0.0008940485519232806
+          },
+          "topic_probabilities_before_normalisation": {
+            "Cloud Infrastructure Management": 4.5397868702434395e-05,
+            "AI and Machine Learning Operations": 4.5397868702434395e-05,
+            "Full-Stack Engineering Practices": 0.047425875365417064,
+            "DevOps and IT Security": 3.850741907939403e-09,
+            "Developer Tools and Productivity Solutions": 0.0031726830663368548,
+            "Database Management and Optimization": 1.493094675974231e-10,
+            "Cybersecurity Strategies": 4.5397868702434395e-05,
+            "High-Performance Computing Techniques": 4.5397868702434395e-05
+          },
+          "topic_logprobs": {
+            "Cloud Infrastructure Management": {
+              "logprob_yes": -10.0,
+              "logprob_no": 0.0
+            },
+            "AI and Machine Learning Operations": {
+              "logprob_yes": -10.0,
+              "logprob_no": 0.0
+            },
+            "Full-Stack Engineering Practices": {
+              "logprob_yes": -3.0485873222351074,
+              "logprob_no": -0.0485873706638813
+            },
+            "DevOps and IT Security": {
+              "logprob_yes": -19.375,
+              "logprob_no": 0.0
+            },
+            "Developer Tools and Productivity Solutions": {
+              "logprob_yes": -5.753177642822266,
+              "logprob_no": -0.0031777136027812958
+            },
+            "Database Management and Optimization": {
+              "logprob_yes": -22.625,
+              "logprob_no": 0.0
+            },
+            "Cybersecurity Strategies": {
+              "logprob_yes": -10.0,
+              "logprob_no": 0.0
+            },
+            "High-Performance Computing Techniques": {
+              "logprob_yes": -10.0,
+              "logprob_no": 0.0
+            }
+          },
+          "predicted_themes": [],
+          "num_topics_classified": 8,
+          "classification_method": "per_topic_yes_no_logprobs",
+          "prediction_uses_post_body": true
+        }
+      ]
+    },
+    "30e90503-bef8-4da2-8ffb-f47487b0e1de": {
+      "profile_info": {
+        "occupation": "Software Engineer"
+      },
+      "posts": [
+        {
+          "post_id": "30e90503-bef8-4da2-8ffb-f47487b0e1de_3",
+          "body_text": "Hey Liam, prepare some Prussian blue for yourself! \nYou do not know you're already the hero to millions of people like me who seek JUSTICE FOR ZHULING! Move on and we're firmly behind you and The Australian!",
+          "stimulus": "Public reaction to justice issues",
+          "category": "Values and Motivations",
+          "topics_ordered": [
+            "Impact Measurement and Real-World Outcomes",
+            "Inclusivity and Accessibility Initiatives",
+            "Responsible AI Development",
+            "Mentorship and Talent Growth",
+            "Community Engagement and Civic Initiatives"
+          ],
+          "topic_probabilities": {
+            "Impact Measurement and Real-World Outcomes": 0.00047523737350941235,
+            "Inclusivity and Accessibility Initiatives": 0.00047523737350941235,
+            "Responsible AI Development": 0.00047523737350941235,
+            "Mentorship and Talent Growth": 0.00047523737350941235,
+            "Community Engagement and Civic Initiatives": 0.9980990505059624
+          },
+          "topic_probabilities_before_normalisation": {
+            "Impact Measurement and Real-World Outcomes": 4.5397868702434395e-05,
+            "Inclusivity and Accessibility Initiatives": 4.5397868702434395e-05,
+            "Responsible AI Development": 4.5397868702434395e-05,
+            "Mentorship and Talent Growth": 4.5397868702434395e-05,
+            "Community Engagement and Civic Initiatives": 0.09534947004048375
+          },
+          "topic_logprobs": {
+            "Impact Measurement and Real-World Outcomes": {
+              "logprob_yes": -10.0,
+              "logprob_no": 0.0
+            },
+            "Inclusivity and Accessibility Initiatives": {
+              "logprob_yes": -10.0,
+              "logprob_no": 0.0
+            },
+            "Responsible AI Development": {
+              "logprob_yes": -10.0,
+              "logprob_no": 0.0
+            },
+            "Mentorship and Talent Growth": {
+              "logprob_yes": -10.0,
+              "logprob_no": 0.0
+            },
+            "Community Engagement and Civic Initiatives": {
+              "logprob_yes": -2.3502066135406494,
+              "logprob_no": -0.10020667314529419
+            }
+          },
+          "predicted_themes": [],
+          "num_topics_classified": 5,
+          "classification_method": "per_topic_yes_no_logprobs",
+          "prediction_uses_post_body": true
+        },
+        {
+          "post_id": "30e90503-bef8-4da2-8ffb-f47487b0e1de_4",
+          "body_text": "Hi Shaikot, would you like to consider one of our WSU undergraduate alumni? I was his TA and knew him for a long time. A pretty good candidate for your team!",
+          "stimulus": "Job candidate recommendation",
+          "category": "Technical Expertise and Capabilities",
+          "topics_ordered": [
+            "Cloud Infrastructure Management",
+            "AI and Machine Learning Operations",
+            "Full-Stack Engineering Practices",
+            "DevOps and IT Security",
+            "Developer Tools and Productivity Solutions",
+            "Database Management and Optimization",
+            "Cybersecurity Strategies",
+            "High-Performance Computing Techniques"
+          ],
+          "topic_probabilities": {
+            "Cloud Infrastructure Management": 0.125,
+            "AI and Machine Learning Operations": 0.125,
+            "Full-Stack Engineering Practices": 0.125,
+            "DevOps and IT Security": 0.125,
+            "Developer Tools and Productivity Solutions": 0.125,
+            "Database Management and Optimization": 0.125,
+            "Cybersecurity Strategies": 0.125,
+            "High-Performance Computing Techniques": 0.125
+          },
+          "topic_probabilities_before_normalisation": {
+            "Cloud Infrastructure Management": 4.5397868702434395e-05,
+            "AI and Machine Learning Operations": 4.5397868702434395e-05,
+            "Full-Stack Engineering Practices": 4.5397868702434395e-05,
+            "DevOps and IT Security": 4.5397868702434395e-05,
+            "Developer Tools and Productivity Solutions": 4.5397868702434395e-05,
+            "Database Management and Optimization": 4.5397868702434395e-05,
+            "Cybersecurity Strategies": 4.5397868702434395e-05,
+            "High-Performance Computing Techniques": 4.5397868702434395e-05
+          },
+          "topic_logprobs": {
+            "Cloud Infrastructure Management": {
+              "logprob_yes": -10.0,
+              "logprob_no": 0.0
+            },
+            "AI and Machine Learning Operations": {
+              "logprob_yes": -10.0,
+              "logprob_no": 0.0
+            },
+            "Full-Stack Engineering Practices": {
+              "logprob_yes": -10.0,
+              "logprob_no": 0.0
+            },
+            "DevOps and IT Security": {
+              "logprob_yes": -10.0,
+              "logprob_no": 0.0
+            },
+            "Developer Tools and Productivity Solutions": {
+              "logprob_yes": -10.0,
+              "logprob_no": 0.0
+            },
+            "Database Management and Optimization": {
+              "logprob_yes": -10.0,
+              "logprob_no": 0.0
+            },
+            "Cybersecurity Strategies": {
+              "logprob_yes": -10.0,
+              "logprob_no": 0.0
+            },
+            "High-Performance Computing Techniques": {
+              "logprob_yes": -10.0,
+              "logprob_no": 0.0
+            }
+          },
+          "predicted_themes": [],
+          "num_topics_classified": 8,
+          "classification_method": "per_topic_yes_no_logprobs",
+          "prediction_uses_post_body": true
+        },
+        {
+          "post_id": "30e90503-bef8-4da2-8ffb-f47487b0e1de_5",
+          "body_text": "I am sincerely grateful for what you investigated so far for justice! Many thanks Liam Mendes",
+          "stimulus": "Gratitude for investigative work",
+          "category": "Values and Motivations",
+          "topics_ordered": [
+            "Impact Measurement and Real-World Outcomes",
+            "Inclusivity and Accessibility Initiatives",
+            "Responsible AI Development",
+            "Mentorship and Talent Growth",
+            "Community Engagement and Civic Initiatives"
+          ],
+          "topic_probabilities": {
+            "Impact Measurement and Real-World Outcomes": 1.2162782251406002e-08,
+            "Inclusivity and Accessibility Initiatives": 0.0015416759377775997,
+            "Responsible AI Development": 0.0015416759377775997,
+            "Mentorship and Talent Growth": 0.0015416759377775997,
+            "Community Engagement and Civic Initiatives": 0.995374960023885
+          },
+          "topic_probabilities_before_normalisation": {
+            "Impact Measurement and Real-World Outcomes": 3.581747929000289e-10,
+            "Inclusivity and Accessibility Initiatives": 4.5397868702434395e-05,
+            "Responsible AI Development": 4.5397868702434395e-05,
+            "Mentorship and Talent Growth": 4.5397868702434395e-05,
+            "Community Engagement and Civic Initiatives": 0.02931222788947056
+          },
+          "topic_logprobs": {
+            "Impact Measurement and Real-World Outcomes": {
+              "logprob_yes": -21.75,
+              "logprob_no": 0.0
+            },
+            "Inclusivity and Accessibility Initiatives": {
+              "logprob_yes": -10.0,
+              "logprob_no": 0.0
+            },
+            "Responsible AI Development": {
+              "logprob_yes": -10.0,
+              "logprob_no": 0.0
+            },
+            "Mentorship and Talent Growth": {
+              "logprob_yes": -10.0,
+              "logprob_no": 0.0
+            },
+            "Community Engagement and Civic Initiatives": {
+              "logprob_yes": -3.5297505855560303,
+              "logprob_no": -0.029750484973192215
+            }
+          },
+          "predicted_themes": [],
+          "num_topics_classified": 5,
+          "classification_method": "per_topic_yes_no_logprobs",
+          "prediction_uses_post_body": true
+        }
+      ]
+    },
+    "313325f0-0334-45f7-93b3-e65adcc597e9": {
+      "profile_info": {
+        "occupation": "Software Development Engineer 2 (SDE) at Microsoft"
+      },
+      "posts": [
+        {
+          "post_id": "313325f0-0334-45f7-93b3-e65adcc597e9_19",
+          "body_text": "Aketh T.M No pre-built Windows binaries yet. You can install Node.js, then: git clone && cd merged-polygpt && npm install && npm start\n\n Or run npm run build to create a Windows .exe.",
+          "stimulus": "Technical instructions for software setup",
+          "category": "Technical Expertise and Capabilities",
+          "topics_ordered": [
+            "Cloud Infrastructure Management",
+            "AI and Machine Learning Operations",
+            "Full-Stack Engineering Practices",
+            "DevOps and IT Security",
+            "Developer Tools and Productivity Solutions",
+            "Database Management and Optimization",
+            "Cybersecurity Strategies",
+            "High-Performance Computing Techniques"
+          ],
+          "topic_probabilities": {
+            "Cloud Infrastructure Management": 4.409205760031838e-05,
+            "AI and Machine Learning Operations": 4.409205760031838e-05,
+            "Full-Stack Engineering Practices": 0.028467805065800402,
+            "DevOps and IT Security": 0.00011983989486574924,
+            "Developer Tools and Productivity Solutions": 0.9711918947513326,
+            "Database Management and Optimization": 4.409205760031838e-05,
+            "Cybersecurity Strategies": 4.409205760031838e-05,
+            "High-Performance Computing Techniques": 4.409205760031838e-05
+          },
+          "topic_probabilities_before_normalisation": {
+            "Cloud Infrastructure Management": 4.5397868702434395e-05,
+            "AI and Machine Learning Operations": 4.5397868702434395e-05,
+            "Full-Stack Engineering Practices": 0.02931222788947056,
+            "DevOps and IT Security": 0.00012339462766699962,
+            "Developer Tools and Productivity Solutions": 0.9999998144608401,
+            "Database Management and Optimization": 4.5397868702434395e-05,
+            "Cybersecurity Strategies": 4.5397868702434395e-05,
+            "High-Performance Computing Techniques": 4.5397868702434395e-05
+          },
+          "topic_logprobs": {
+            "Cloud Infrastructure Management": {
+              "logprob_yes": -10.0,
+              "logprob_no": 0.0
+            },
+            "AI and Machine Learning Operations": {
+              "logprob_yes": -10.0,
+              "logprob_no": 0.0
+            },
+            "Full-Stack Engineering Practices": {
+              "logprob_yes": -3.5297505855560303,
+              "logprob_no": -0.029750484973192215
+            },
+            "DevOps and IT Security": {
+              "logprob_yes": -9.000123023986816,
+              "logprob_no": -0.0001234428636962548
+            },
+            "Developer Tools and Productivity Solutions": {
+              "logprob_yes": -3.128163257315464e-07,
+              "logprob_no": -15.5
+            },
+            "Database Management and Optimization": {
+              "logprob_yes": -10.0,
+              "logprob_no": 0.0
+            },
+            "Cybersecurity Strategies": {
+              "logprob_yes": -10.0,
+              "logprob_no": 0.0
+            },
+            "High-Performance Computing Techniques": {
+              "logprob_yes": -10.0,
+              "logprob_no": 0.0
+            }
+          },
+          "predicted_themes": [
+            "Developer Tools and Productivity Solutions"
+          ],
+          "num_topics_classified": 8,
+          "classification_method": "per_topic_yes_no_logprobs",
+          "prediction_uses_post_body": true
+        },
+        {
+          "post_id": "313325f0-0334-45f7-93b3-e65adcc597e9_21",
+          "body_text": "In five years, we will know.\n\nMany here point that Java didn’t kill anything, but Rust unlike Java has no GC.",
+          "stimulus": "Future predictions in programming",
+          "category": "Challenges and Pain Points",
+          "topics_ordered": [
+            "Scaling and Managing Operational Complexity",
+            "Talent Acquisition and Retention Challenges",
+            "Balancing Innovation with Stability",
+            "Cross-Platform Integration Issues",
+            "Burnout and Sustainable Work Practices"
+          ],
+          "topic_probabilities": {
+            "Scaling and Managing Operational Complexity": 3.898652613146645e-06,
+            "Talent Acquisition and Retention Challenges": 0.2334284790578685,
+            "Balancing Innovation with Stability": 0.2997106641737813,
+            "Cross-Platform Integration Issues": 0.2334284790578685,
+            "Burnout and Sustainable Work Practices": 0.2334284790578685
+          },
+          "topic_probabilities_before_normalisation": {
+            "Scaling and Managing Operational Complexity": 7.582560422162384e-10,
+            "Talent Acquisition and Retention Challenges": 4.5397868702434395e-05,
+            "Balancing Innovation with Stability": 5.8291276786344415e-05,
+            "Cross-Platform Integration Issues": 4.5397868702434395e-05,
+            "Burnout and Sustainable Work Practices": 4.5397868702434395e-05
+          },
+          "topic_logprobs": {
+            "Scaling and Managing Operational Complexity": {
+              "logprob_yes": -21.0,
+              "logprob_no": 0.0
+            },
+            "Talent Acquisition and Retention Challenges": {
+              "logprob_yes": -10.0,
+              "logprob_no": 0.0
+            },
+            "Balancing Innovation with Stability": {
+              "logprob_yes": -9.7500581741333,
+              "logprob_no": -5.836499985889532e-05
+            },
+            "Cross-Platform Integration Issues": {
+              "logprob_yes": -10.0,
+              "logprob_no": 0.0
+            },
+            "Burnout and Sustainable Work Practices": {
+              "logprob_yes": -10.0,
+              "logprob_no": 0.0
+            }
+          },
+          "predicted_themes": [],
+          "num_topics_classified": 5,
+          "classification_method": "per_topic_yes_no_logprobs",
+          "prediction_uses_post_body": true
+        },
+        {
+          "post_id": "313325f0-0334-45f7-93b3-e65adcc597e9_22",
+          "body_text": "It may take more than 5 years, Aketh. But Rust introduces a significant paradigm shift with its ownership and borrow checker system, which may potentially redefine how memory is managed and safety is ensured in software development.",
+          "stimulus": "Programming language comparison and advancement",
+          "category": "Technical Expertise and Capabilities",
+          "topics_ordered": [
+            "Cloud Infrastructure Management",
+            "AI and Machine Learning Operations",
+            "Full-Stack Engineering Practices",
+            "DevOps and IT Security",
+            "Developer Tools and Productivity Solutions",
+            "Database Management and Optimization",
+            "Cybersecurity Strategies",
+            "High-Performance Computing Techniques"
+          ],
+          "topic_probabilities": {
+            "Cloud Infrastructure Management": 0.12956771910122603,
+            "AI and Machine Learning Operations": 0.12956771910122603,
+            "Full-Stack Engineering Practices": 2.452134698904323e-06,
+            "DevOps and IT Security": 7.025483537834065e-07,
+            "Developer Tools and Productivity Solutions": 0.35215824981081717,
+            "Database Management and Optimization": 0.12956771910122603,
+            "Cybersecurity Strategies": 0.12956771910122603,
+            "High-Performance Computing Techniques": 0.12956771910122603
+          },
+          "topic_probabilities_before_normalisation": {
+            "Cloud Infrastructure Management": 4.5397868702434395e-05,
+            "AI and Machine Learning Operations": 4.5397868702434395e-05,
+            "Full-Stack Engineering Practices": 8.592166611791576e-10,
+            "DevOps and IT Security": 2.4616969512093895e-10,
+            "Developer Tools and Productivity Solutions": 0.00012339462766699962,
+            "Database Management and Optimization": 4.5397868702434395e-05,
+            "Cybersecurity Strategies": 4.5397868702434395e-05,
+            "High-Performance Computing Techniques": 4.5397868702434395e-05
+          },
+          "topic_logprobs": {
+            "Cloud Infrastructure Management": {
+              "logprob_yes": -10.0,
+              "logprob_no": 0.0
+            },
+            "AI and Machine Learning Operations": {
+              "logprob_yes": -10.0,
+              "logprob_no": 0.0
+            },
+            "Full-Stack Engineering Practices": {
+              "logprob_yes": -20.875,
+              "logprob_no": 0.0
+            },
+            "DevOps and IT Security": {
+              "logprob_yes": -22.125,
+              "logprob_no": 0.0
+            },
+            "Developer Tools and Productivity Solutions": {
+              "logprob_yes": -9.000123023986816,
+              "logprob_no": -0.0001234428636962548
+            },
+            "Database Management and Optimization": {
+              "logprob_yes": -10.0,
+              "logprob_no": 0.0
+            },
+            "Cybersecurity Strategies": {
+              "logprob_yes": -10.0,
+              "logprob_no": 0.0
+            },
+            "High-Performance Computing Techniques": {
+              "logprob_yes": -10.0,
+              "logprob_no": 0.0
+            }
+          },
+          "predicted_themes": [],
+          "num_topics_classified": 8,
+          "classification_method": "per_topic_yes_no_logprobs",
+          "prediction_uses_post_body": true
+        },
+        {
+          "post_id": "313325f0-0334-45f7-93b3-e65adcc597e9_25",
+          "body_text": "If you do know max amount of data you are likely to push into the array, you could hardcode it as well",
+          "stimulus": "Dynamic array management in programming",
+          "category": "Technical Expertise and Capabilities",
+          "topics_ordered": [
+            "Cloud Infrastructure Management",
+            "AI and Machine Learning Operations",
+            "Full-Stack Engineering Practices",
+            "DevOps and IT Security",
+            "Developer Tools and Productivity Solutions",
+            "Database Management and Optimization",
+            "Cybersecurity Strategies",
+            "High-Performance Computing Techniques"
+          ],
+          "topic_probabilities": {
+            "Cloud Infrastructure Management": 7.68572926215563e-06,
+            "AI and Machine Learning Operations": 0.3583857741804016,
+            "Full-Stack Engineering Practices": 0.0001202250336094337,
+            "DevOps and IT Security": 6.782632267956131e-06,
+            "Developer Tools and Productivity Solutions": 0.003981302527857593,
+            "Database Management and Optimization": 0.27910127304610827,
+            "Cybersecurity Strategies": 0.3583857741804016,
+            "High-Performance Computing Techniques": 1.1182670091516323e-05
+          },
+          "topic_probabilities_before_normalisation": {
+            "Cloud Infrastructure Management": 9.736200303530205e-10,
+            "AI and Machine Learning Operations": 4.5397868702434395e-05,
+            "Full-Stack Engineering Practices": 1.522997951276035e-08,
+            "DevOps and IT Security": 8.592166611791576e-10,
+            "Developer Tools and Productivity Solutions": 5.043472052266442e-07,
+            "Database Management and Optimization": 3.5356257528032616e-05,
+            "Cybersecurity Strategies": 4.5397868702434395e-05,
+            "High-Performance Computing Techniques": 1.4166087846364157e-09
+          },
+          "topic_logprobs": {
+            "Cloud Infrastructure Management": {
+              "logprob_yes": -20.75,
+              "logprob_no": 0.0
+            },
+            "AI and Machine Learning Operations": {
+              "logprob_yes": -10.0,
+              "logprob_no": 0.0
+            },
+            "Full-Stack Engineering Practices": {
+              "logprob_yes": -18.0,
+              "logprob_no": 0.0
+            },
+            "DevOps and IT Security": {
+              "logprob_yes": -20.875,
+              "logprob_no": 0.0
+            },
+            "Developer Tools and Productivity Solutions": {
+              "logprob_yes": -14.500000953674316,
+              "logprob_no": -5.512236498361744e-07
+            },
+            "Database Management and Optimization": {
+              "logprob_yes": -10.250035285949707,
+              "logprob_no": -3.547789674485102e-05
+            },
+            "Cybersecurity Strategies": {
+              "logprob_yes": -10.0,
+              "logprob_no": 0.0
+            },
+            "High-Performance Computing Techniques": {
+              "logprob_yes": -20.375,
+              "logprob_no": 0.0
+            }
+          },
+          "predicted_themes": [],
+          "num_topics_classified": 8,
+          "classification_method": "per_topic_yes_no_logprobs",
+          "prediction_uses_post_body": true
+        },
+        {
+          "post_id": "313325f0-0334-45f7-93b3-e65adcc597e9_31",
+          "body_text": "Would this be possible even without competing offers? \n\nAsking purely to try and understand how the market forces work in tech though.",
+          "stimulus": "Understanding job offer negotiations",
+          "category": "Values and Motivations",
+          "topics_ordered": [
+            "Impact Measurement and Real-World Outcomes",
+            "Inclusivity and Accessibility Initiatives",
+            "Responsible AI Development",
+            "Mentorship and Talent Growth",
+            "Community Engagement and Civic Initiatives"
+          ],
+          "topic_probabilities": {
+            "Impact Measurement and Real-World Outcomes": 0.2,
+            "Inclusivity and Accessibility Initiatives": 0.2,
+            "Responsible AI Development": 0.2,
+            "Mentorship and Talent Growth": 0.2,
+            "Community Engagement and Civic Initiatives": 0.2
+          },
+          "topic_probabilities_before_normalisation": {
+            "Impact Measurement and Real-World Outcomes": 4.5397868702434395e-05,
+            "Inclusivity and Accessibility Initiatives": 4.5397868702434395e-05,
+            "Responsible AI Development": 4.5397868702434395e-05,
+            "Mentorship and Talent Growth": 4.5397868702434395e-05,
+            "Community Engagement and Civic Initiatives": 4.5397868702434395e-05
+          },
+          "topic_logprobs": {
+            "Impact Measurement and Real-World Outcomes": {
+              "logprob_yes": -10.0,
+              "logprob_no": 0.0
+            },
+            "Inclusivity and Accessibility Initiatives": {
+              "logprob_yes": -10.0,
+              "logprob_no": 0.0
+            },
+            "Responsible AI Development": {
+              "logprob_yes": -10.0,
+              "logprob_no": 0.0
+            },
+            "Mentorship and Talent Growth": {
+              "logprob_yes": -10.0,
+              "logprob_no": 0.0
+            },
+            "Community Engagement and Civic Initiatives": {
+              "logprob_yes": -10.0,
+              "logprob_no": 0.0
+            }
+          },
+          "predicted_themes": [],
+          "num_topics_classified": 5,
+          "classification_method": "per_topic_yes_no_logprobs",
+          "prediction_uses_post_body": true
+        },
+        {
+          "post_id": "313325f0-0334-45f7-93b3-e65adcc597e9_39",
+          "body_text": "Yup. Especially in a globalized world where it’s easy for people to misinterpret ours and everyone else”s behaviors and signals.",
+          "stimulus": "Emotional intelligence in professional growth",
+          "category": "Values and Motivations",
+          "topics_ordered": [
+            "Impact Measurement and Real-World Outcomes",
+            "Inclusivity and Accessibility Initiatives",
+            "Responsible AI Development",
+            "Mentorship and Talent Growth",
+            "Community Engagement and Civic Initiatives"
+          ],
+          "topic_probabilities": {
+            "Impact Measurement and Real-World Outcomes": 0.24999970093052076,
+            "Inclusivity and Accessibility Initiatives": 1.1962779169496857e-06,
+            "Responsible AI Development": 0.24999970093052076,
+            "Mentorship and Talent Growth": 0.24999970093052076,
+            "Community Engagement and Civic Initiatives": 0.24999970093052076
+          },
+          "topic_probabilities_before_normalisation": {
+            "Impact Measurement and Real-World Outcomes": 4.5397868702434395e-05,
+            "Inclusivity and Accessibility Initiatives": 2.1724399346070676e-10,
+            "Responsible AI Development": 4.5397868702434395e-05,
+            "Mentorship and Talent Growth": 4.5397868702434395e-05,
+            "Community Engagement and Civic Initiatives": 4.5397868702434395e-05
+          },
+          "topic_logprobs": {
+            "Impact Measurement and Real-World Outcomes": {
+              "logprob_yes": -10.0,
+              "logprob_no": 0.0
+            },
+            "Inclusivity and Accessibility Initiatives": {
+              "logprob_yes": -22.25,
+              "logprob_no": 0.0
+            },
+            "Responsible AI Development": {
+              "logprob_yes": -10.0,
+              "logprob_no": 0.0
+            },
+            "Mentorship and Talent Growth": {
+              "logprob_yes": -10.0,
+              "logprob_no": 0.0
+            },
+            "Community Engagement and Civic Initiatives": {
+              "logprob_yes": -10.0,
+              "logprob_no": 0.0
+            }
+          },
+          "predicted_themes": [],
+          "num_topics_classified": 5,
+          "classification_method": "per_topic_yes_no_logprobs",
+          "prediction_uses_post_body": true
+        },
+        {
+          "post_id": "313325f0-0334-45f7-93b3-e65adcc597e9_47",
+          "body_text": "You upload your own B&W images to the site colourise.com. There's a link in my comment",
+          "stimulus": "AI in image processing projects",
+          "category": "Technical Expertise and Capabilities",
+          "topics_ordered": [
+            "Cloud Infrastructure Management",
+            "AI and Machine Learning Operations",
+            "Full-Stack Engineering Practices",
+            "DevOps and IT Security",
+            "Developer Tools and Productivity Solutions",
+            "Database Management and Optimization",
+            "Cybersecurity Strategies",
+            "High-Performance Computing Techniques"
+          ],
+          "topic_probabilities": {
+            "Cloud Infrastructure Management": 0.14285492026376662,
+            "AI and Machine Learning Operations": 1.5558153633670428e-05,
+            "Full-Stack Engineering Practices": 0.14285492026376662,
+            "DevOps and IT Security": 0.14285492026376662,
+            "Developer Tools and Productivity Solutions": 0.14285492026376662,
+            "Database Management and Optimization": 0.14285492026376662,
+            "Cybersecurity Strategies": 0.14285492026376662,
+            "High-Performance Computing Techniques": 0.14285492026376662
+          },
+          "topic_probabilities_before_normalisation": {
+            "Cloud Infrastructure Management": 4.5397868702434395e-05,
+            "AI and Machine Learning Operations": 4.944450477491054e-09,
+            "Full-Stack Engineering Practices": 4.5397868702434395e-05,
+            "DevOps and IT Security": 4.5397868702434395e-05,
+            "Developer Tools and Productivity Solutions": 4.5397868702434395e-05,
+            "Database Management and Optimization": 4.5397868702434395e-05,
+            "Cybersecurity Strategies": 4.5397868702434395e-05,
+            "High-Performance Computing Techniques": 4.5397868702434395e-05
+          },
+          "topic_logprobs": {
+            "Cloud Infrastructure Management": {
+              "logprob_yes": -10.0,
+              "logprob_no": 0.0
+            },
+            "AI and Machine Learning Operations": {
+              "logprob_yes": -19.125,
+              "logprob_no": 0.0
+            },
+            "Full-Stack Engineering Practices": {
+              "logprob_yes": -10.0,
+              "logprob_no": 0.0
+            },
+            "DevOps and IT Security": {
+              "logprob_yes": -10.0,
+              "logprob_no": 0.0
+            },
+            "Developer Tools and Productivity Solutions": {
+              "logprob_yes": -10.0,
+              "logprob_no": 0.0
+            },
+            "Database Management and Optimization": {
+              "logprob_yes": -10.0,
+              "logprob_no": 0.0
+            },
+            "Cybersecurity Strategies": {
+              "logprob_yes": -10.0,
+              "logprob_no": 0.0
+            },
+            "High-Performance Computing Techniques": {
+              "logprob_yes": -10.0,
+              "logprob_no": 0.0
+            }
+          },
+          "predicted_themes": [],
+          "num_topics_classified": 8,
+          "classification_method": "per_topic_yes_no_logprobs",
+          "prediction_uses_post_body": true
+        }
+      ]
+    },
+    "3347a9f3-5493-4be8-9df0-f0e7663bc6dd": {
+      "profile_info": {
+        "occupation": "Principal Software Engineer at Microsoft"
+      },
+      "posts": []
+    },
+    "351405ab-deb1-45b5-810c-d32798c95f40": {
+      "profile_info": {
+        "occupation": "Ordinary human"
+      },
+      "posts": []
+    },
+    "3a0a7529-16a1-48d1-b987-c60e4260ad46": {
+      "profile_info": {
+        "occupation": "Principal Software Engineer Lead - Istio TOC"
+      },
+      "posts": []
+    },
+    "493cb77a-819e-4e20-9364-2cf9c5b733a6": {
+      "profile_info": {
+        "occupation": "Senior Software Engineer | GenAI Evaluation Platform @ Microsoft"
+      },
+      "posts": []
+    },
+    "54c19b05-7985-47be-b2f2-6a2f8360cf89": {
+      "profile_info": {
+        "occupation": "Software Engineer at Microsoft"
+      },
+      "posts": []
+    },
+    "56d7e3b2-8a5b-4647-ada8-33898383fad8": {
+      "profile_info": {
+        "occupation": "Software Engineer 2 at Microsoft"
+      },
+      "posts": []
+    },
+    "583f07ae-71cc-42ed-982b-67b6c6d6a3ff": {
+      "profile_info": {
+        "occupation": "Senior Software Engineer at Microsoft"
+      },
+      "posts": []
+    },
+    "5b792818-ac34-4256-97f8-cdce43bde7f0": {
+      "profile_info": {
+        "occupation": "Senior software engineer (SDE-III) at Microsoft | Ex-Adobe | Ex-Amazon"
+      },
+      "posts": []
+    },
+    "6217bbbb-06c5-4c5d-b3a1-f30fb9a169bd": {
+      "profile_info": {
+        "occupation": "Software Engineer at Microsoft"
+      },
+      "posts": []
+    },
+    "7333df73-63cf-4f92-b724-caefc9171b63": {
+      "profile_info": {
+        "occupation": "Software Engineer"
+      },
+      "posts": []
+    },
+    "77a8e5f8-0a16-456a-a634-c30cecdf356b": {
+      "profile_info": {
+        "occupation": "SWE-2 @ Microsoft | Windows AI"
+      },
+      "posts": []
+    },
+    "8774ee3b-19ab-45ca-8197-b68720c4b1b8": {
+      "profile_info": {
+        "occupation": "Principal Software Engineer Manager at Microsoft"
+      },
+      "posts": []
+    },
+    "881ba53e-5c01-4ae4-bc09-59d059c315a5": {
+      "profile_info": {
+        "occupation": "Software Engineer III at Microsoft | AI Engineer | Product Engineer | Python, C#, GenAI , Cloud Computing, Backend & Data Engineering"
+      },
+      "posts": []
+    },
+    "937353b2-546c-41e3-ae57-4b7507de8a1d": {
+      "profile_info": {
+        "occupation": "Software Engineer @Xbox | TEDx Speaker | Tech Enthusiast | Maker | Adventurer | Mentor | Polymath"
+      },
+      "posts": []
+    },
+    "97d44170-c93f-48f4-b33f-c5655fb0bfcb": {
+      "profile_info": {
+        "occupation": "Senior Strategic Client Advisor – Agentic AI | DevX | Governance | Software"
+      },
+      "posts": []
+    },
+    "9d0711b8-17ae-44cc-adbd-f2e39f25571b": {
+      "profile_info": {
+        "occupation": "Engineering | Systems and Software Design | Networking Software | Microsoft | Co-founder and Advisor @Vahati for Women in STEM Empowerment"
+      },
+      "posts": []
+    },
+    "ab1fb966-d14e-4639-b504-00f7b6f9084b": {
+      "profile_info": {
+        "occupation": "Principal Software Engineer @ Microsoft| Leading Edge AI & Cloud Transformational Solutions | Brazil Community Lead @The WIT Network"
+      },
+      "posts": []
+    },
+    "ab9d0a34-906e-4d05-9992-ae4fbd70cd87": {
+      "profile_info": {
+        "occupation": "Software Engineer at Microsoft"
+      },
+      "posts": []
+    },
+    "b897cdbe-ca1b-40fe-b087-ef4c1958425c": {
+      "profile_info": {
+        "occupation": "Senior Software Engineer at Microsoft"
+      },
+      "posts": []
+    },
+    "c788cdc0-2b0a-4a32-bf4e-de67621560ce": {
+      "profile_info": {
+        "occupation": "Senior Software Professional"
+      },
+      "posts": []
+    },
+    "c802671d-8fd2-4a18-8fe8-689b72f7c268": {
+      "profile_info": {
+        "occupation": "Senior Software Engineer at Microsoft | Responsible and Ethical AI Advocate | D&I | Holistic Health"
+      },
+      "posts": []
+    },
+    "e249e2eb-055f-40b5-8401-ae42ecb24ef8": {
+      "profile_info": {
+        "occupation": "Master's Student in Computer Software Engineering | BEng in Electrical Engineering"
+      },
+      "posts": []
+    },
+    "e42e36c2-5f88-47f2-b75b-537252ea0ce8": {
+      "profile_info": {
+        "occupation": "Senior Software Engineer | Microsoft | Ex- Oracle | Azure Cloud | Scaled Systems for Millions | Full-Stack (Backend-Heavy) | Open to New Opportunities"
+      },
+      "posts": []
+    },
+    "e8e645ed-2c14-4a7e-ac8f-e42993ae794a": {
+      "profile_info": {
+        "occupation": "Senior Software Engineer at Microsoft"
+      },
+      "posts": []
+    },
+    "e9e811b0-6759-473a-aed2-8a84e5566a8c": {
+      "profile_info": {
+        "occupation": "Software Engineer @ Microsoft"
+      },
+      "posts": []
+    },
+    "f20ab826-b48b-42cf-be34-de640b4befa1": {
+      "profile_info": {
+        "occupation": "Principal Software Engineering Manager at Microsoft"
+      },
+      "posts": []
+    },
+    "fa8cec49-9e7b-44e2-b2ce-7b6a324697f1": {
+      "profile_info": {
+        "occupation": "Senior Software Engineer | Technical lead for Engineering Systems | C++ | C# | Release Manager | AI practitioner | Master’s in Software Engineering"
+      },
+      "posts": []
+    }
+  },
+  "total_posts_processed": 45,
+  "total_prompt_tokens": 15539,
+  "total_completion_tokens": 2155,
+  "cost_usd": 0.003624,
+  "ground_truth_extraction_meta": {
+    "model": "gpt-4o-mini",
+    "tier": "tier2",
+    "prob_threshold": 0.5,
+    "classification_method": "per_topic_yes_no_logprobs",
+    "topic_llm_scheduling": "sequential_topics_parallel_posts",
+    "concurrency": {
+      "max_concurrent_llm": 6,
+      "max_concurrent_posts": 6
+    },
+    "counts": {
+      "total_posts": 45,
+      "pending_llm": 0,
+      "terminal_empty_body": 0,
+      "terminal_unknown_category": 0,
+      "with_successful_topic_labels": 45
+    },
+    "schema_note": "topic_probabilities = softmax(logprob_yes) over category topics; topic_probabilities_before_normalisation = P_yes after each call's yes/no normalize",
+    "run_at": "2026-05-17T14:25:49.193657+00:00",
+    "input_file": "/media/samanvitha/Seagate HDD/Audience-workflow/scripts/LInkedin_Category_Topic_Extraction/tiered_posts_grouped/tier2_interaction_category.json",
+    "mapping_file": "/media/samanvitha/Seagate HDD/Audience-workflow/scripts/LInkedin_Category_Topic_Extraction/tiered_posts_grouped/category_topic_mapping.json",
+    "output_file": "/media/samanvitha/Seagate HDD/Audience-workflow/scripts/LInkedin_Category_Topic_Extraction/tiered_posts_grouped/ground_truth_extraction_tier2.json",
+    "local_config": "/media/samanvitha/Seagate HDD/Audience-workflow/scripts/LInkedin_Category_Topic_Extraction/post_topic_classification/ground_truth_extraction_local.yaml",
+    "preset": "tier2"
+  },
+  "topic_classification_meta": {
+    "model": "gpt-4o-mini",
+    "tier": "tier2",
+    "prob_threshold": 0.5,
+    "classification_method": "per_topic_yes_no_logprobs",
+    "topic_llm_scheduling": "sequential_topics_parallel_posts",
+    "concurrency": {
+      "max_concurrent_llm": 6,
+      "max_concurrent_posts": 6
+    },
+    "counts": {
+      "total_posts": 45,
+      "pending_llm": 0,
+      "terminal_empty_body": 0,
+      "terminal_unknown_category": 0,
+      "with_successful_topic_labels": 45
+    },
+    "schema_note": "topic_probabilities = softmax(logprob_yes) over category topics; topic_probabilities_before_normalisation = P_yes after each call's yes/no normalize",
+    "run_at": "2026-05-17T14:25:49.193657+00:00",
+    "input_file": "/media/samanvitha/Seagate HDD/Audience-workflow/scripts/LInkedin_Category_Topic_Extraction/tiered_posts_grouped/tier2_interaction_category.json",
+    "mapping_file": "/media/samanvitha/Seagate HDD/Audience-workflow/scripts/LInkedin_Category_Topic_Extraction/tiered_posts_grouped/category_topic_mapping.json",
+    "output_file": "/media/samanvitha/Seagate HDD/Audience-workflow/scripts/LInkedin_Category_Topic_Extraction/tiered_posts_grouped/ground_truth_extraction_tier2.json",
+    "local_config": "/media/samanvitha/Seagate HDD/Audience-workflow/scripts/LInkedin_Category_Topic_Extraction/post_topic_classification/ground_truth_extraction_local.yaml",
+    "preset": "tier2"
+  }
+}

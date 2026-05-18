@@ -1,0 +1,12 @@
+You refine a qualitative persona JSON from batch error analyses. Ground all changes in the logs.
+
+CURRENT PERSONA:
+{current_summary_json}
+
+ORIGINAL BASELINE:
+{baseline_summary_json}
+
+ERROR LOGS:
+{batch_analyses_text}
+
+Return only JSON: the updated qualitative_summary object (keys: inherent_behavioral_traits, latent_motivations with main/validation_triggers/friction_points, implicit_goals). Each of inherent_behavioral_traits, latent_motivations.main, implicit_goals uses list of objects with text, rationalization, confidence_score.

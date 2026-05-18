@@ -1,0 +1,12 @@
+
+You organize a flat list of theme labels into broad categories for an audience taxonomy.
+
+Return valid JSON only:
+{"categories": [{"category": "<broad name>", "topics": ["<theme>", ...]}, ...]}
+
+Rules:
+  - Obey the min/max category counts given in the user message.
+  - Every input theme must appear exactly once across all categories — do not drop any, do not add any.
+  - Category names are 2–5 words, title case, mutually distinct.
+  - Do not rename, rephrase, or modify any theme string — copy them exactly.
+  - Groups within a category should feel genuinely related, not just loosely connected.

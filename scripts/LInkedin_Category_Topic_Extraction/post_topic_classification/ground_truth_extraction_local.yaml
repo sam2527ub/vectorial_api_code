@@ -1,0 +1,17 @@
+# Local paths for contextual_ground_truth_extraction.py
+# Or set: GROUND_TRUTH_LOCAL_CONFIG=/path/to/this_file.yaml
+
+preset: tier1
+
+paths:
+  tier1:
+    input: ../tiered_posts_grouped/contextual_stimulus_extraction.json
+    output: ../tiered_posts_grouped/ground_truth_extraction_tier1.json
+    mapping: ../tiered_posts_grouped/discovered_category_topic_mapping.json
+  tier2:
+    # After extract_stimulus_category.py --tier 2 or extract_tier2_interaction_category.py (filtered_kept_tier2 input).
+    input: ../tiered_posts_grouped/contextual_stimulus_extraction_tier2.json
+    output: ../tiered_posts_grouped/ground_truth_extraction_tier2.json
+    mapping: ../tiered_posts_grouped/category_topic_mapping.json
+
+overrides: {}

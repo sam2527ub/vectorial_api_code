@@ -1,0 +1,89 @@
+**CRITICAL TASK: Root Cause Analysis of LinkedIn Post Prediction Failures (Batch)**
+
+You are a **deep analytical expert** in professional behavior, personal branding, 
+and persona psychology on LinkedIn. Your mission is to identify the **ROOT CAUSE** 
+of why each post prediction failed, even if relevant characteristics already exist 
+in the group summary and traits.
+
+**Context:**
+- **Group Summary:** {group_summary}
+- **Group Traits:** {group_traits}
+- **Past Learnings:** {past_learnings}
+
+**Posts:**
+{posts_section}
+
+---
+**INSTRUCTIONS**
+---
+**For EACH post in the batch, perform:**
+
+**STEP 1: Identify What Was Actually Missed**
+- Carefully read the **Actual Post Text** and identify ALL themes, angles, tones, 
+  values, and motivations present in how this person chose to respond to the stimulus.
+- Compare this to the **Failed Prediction Text** and **Predicted Post Type**.
+- **Crucial:** Look at the *Failed Prediction Text* — how did the tone, focus, 
+  structure, angle, or specific details differ from the *Actual Post Text*?
+- Be specific: What exact characteristics, concerns, values, or motivations from 
+  the actual post were completely absent from the prediction?
+- Consider LinkedIn-specific signals that were missed: Did the actual post use a 
+  personal story the prediction ignored? Did it take a technical angle when a 
+  thought leadership angle was predicted? Did it celebrate community when the 
+  prediction focused on product? Was the hook, structure, or CTA style wrong?
+
+**STEP 2: Analyze Why It Was Missed (Critical Analysis)**
+- Check the **Group Summary**, **Group Traits**, and **Past Learnings** — do any 
+  existing characteristics relate to what was missed?
+- **CRITICAL: Check Group Summary and Group Traits thoroughly before suggesting 
+  new characteristics**
+- **IF a related characteristic already exists in the group summary or traits:**
+  - Why did the prediction system FAIL to apply it correctly?
+  - Was the right trait present but given the wrong weight relative to the stimulus?
+  - What is the SPECIFIC GAP or missing nuance — is the existing characteristic 
+    too vague, missing a contextual trigger, or not connected to this type of 
+    stimulus?
+  - For example: Group traits may mention "community-driven educators" but the 
+    prediction missed that this specific stimulus would trigger a personal mentorship 
+    story rather than a technical tutorial
+- **IF no related characteristic exists in the group summary or traits:**
+  - What NEW key characteristic or behavioral pattern must be added?
+  - What specific LinkedIn behavior, posting tendency, value, or motivation from 
+    the actual post is completely missing from the group context?
+
+**STEP 3: Determine What to Add to Memory**
+- Identify 1-2 KEY characteristics or behavioral patterns that, if added or 
+  refined, would prevent this prediction failure in future batches.
+- **DO NOT suggest characteristics that already exist in Group Summary or 
+  Group Traits.**
+- These should be SPECIFIC and ACTIONABLE — directly addressing the gap between 
+  what the group context predicts and what the person actually posted.
+- If refining existing characteristics: specify exactly what nuance, contextual 
+  trigger, or LinkedIn-specific behavior detail is missing.
+- If adding new characteristics: specify the exact posting behavior, motivation, 
+  or value from the actual post that is completely unrepresented in the group 
+  context.
+
+**CRITICAL FOCUS:**
+- Find the SPECIFIC gap between what the group summary and traits predict and 
+  what the person actually posted.
+- Explain WHY the prediction failed even if related characteristics exist in the 
+  group traits — the gap is often in how a trait activates in response to a 
+  specific type of stimulus, not whether the trait exists at all.
+- Identify ACTIONABLE characteristics that will prevent future failures.
+- Focus on THEMES, ANGLES, MOTIVATIONS, and POSTING BEHAVIOR — not grammar 
+  or surface-level style differences.
+- **AVOID DUPLICATES**: Do not suggest characteristics already present in Group 
+  Summary or Group Traits.
+
+**Output Format:** For each post, provide an analysis string in the exact format:
+`[Characteristic 1, Characteristic 2] [One-line explanation of the root cause — 
+why the prediction failed and what specific gap in the group summary or group 
+traits needs to be addressed]`
+
+---
+**OUTPUT (machine-readable — required)**
+
+Return **only** valid JSON (no markdown fences, no commentary). Provide **exactly one** string in ``analyses`` **per post listed above**, **same order** (first post in **Posts** → first string).
+
+{{"analyses": ["[Characteristic 1, Characteristic 2] One-line root cause…", "..."]}}
+

@@ -1,0 +1,309 @@
+{
+  "group_summary": "This group consists of technology professionals bridging enterprise-scale engineering at Microsoft with entrepreneurial ventures in education technology and automation. They excel in Microsoft's ecosystem, showcasing expertise in cloud infrastructure (Azure, AKS, Kubernetes), AI and machine learning (Copilot, Azure AI Foundry), developer tools (GitHub, Visual Studio), and domains like cybersecurity and high-performance computing. They blend technical depth—sharing tutorials and open-source contributions—with community-building through recruiting, mentorship, and event organization. Balancing product evangelism with personal storytelling, they celebrate team wins, diversity, and career milestones. A smaller cohort from CodingRippler and College Match LLC adds startup energy, focusing on automation, no-code orchestration, and college planning tools, emphasizing affordability and rapid delivery. Posts favor actionable, resource-rich content over abstract commentary, focusing on inclusivity, responsible AI, and real-world impact. They operate as educators and problem-solvers, leveraging platforms and human-centered leadership to drive innovation and democratize technology access. Emphasizing community support, collaboration, and ambition, they recognize AI's broader implications on education and customer support redesign. They focus on career transitions, mentorship, and mental health, promoting a culture of learning and support. The group acknowledges the emotional aspects of career development, such as overcoming impostor syndrome, and emphasizes practical applications and technical skills, particularly in cloud networking and AI's role in healthcare diagnostics, while promoting inclusivity and global collaboration in AI innovation.",
+  "baseline_group_summary": "This group represents a fascinating cross-section of technology professionals who bridge enterprise-scale engineering at Microsoft with entrepreneurial ventures in education technology and automation. The overwhelming majority work within Microsoft's vast ecosystem, where they demonstrate deep technical expertise across cloud infrastructure (Azure networking, AKS, Kubernetes), AI and machine learning platforms (Copilot, Azure AI Foundry, model monitoring), developer tooling (GitHub, Visual Studio, Fluent UI), and specialized domains like cybersecurity, observability, database engines, and high-performance computing. A common thread is the blend of hands-on technical depth—sharing step-by-step tutorials, configuration guides, debugging tips, and open-source contributions—with strong community-building behaviors including active recruiting, mentorship, event organization, and amplification of colleagues' work. These professionals consistently balance product evangelism and thought leadership with authentic personal storytelling, celebrating team wins, diversity initiatives, career milestones, and even parallel passions like music or fitness. The smaller cohort from CodingRippler and College Match LLC brings a contrasting startup energy focused on practical automation, no-code orchestration, and accessible college planning tools, emphasizing affordability, rapid delivery, and grassroots growth strategies. Across all four organizations, posting styles favor actionable, resource-rich content—linking to repos, blogs, job postings, and learning materials—over abstract commentary, and there is a pronounced emphasis on inclusivity, responsible AI practices, and real-world impact metrics. Collectively, this group showcases how modern tech professionals operate as educators, connectors, and problem-solvers who leverage both cutting-edge platforms and human-centered leadership to drive innovation, build communities, and democratize access to technology and education.",
+  "qualitative_summary": {
+    "inherent_behavioral_traits": [
+      {
+        "text": "When posting about technical advancements, they often emphasize practical applications and the accessibility of tools and resources to a broad audience.\n\nThey focus on making technical content accessible and actionable, highlighting the practical benefits and applications of tools and resources.\n\nThey emphasize scenario-based approaches in AI implementation, showcasing the shift in accessibility and affordability of agency services.",
+        "rationalization": "Why: Logs frequently show a focus on practical applications and accessibility of tools, particularly in technical posts about Azure and SAP functionalities.",
+        "confidence_score": 0.9,
+        "linkedin_packaging": {
+          "title": "When posting about technical advancements, they often emphasize practical applications and the accessibility of tools and resources to a broad audience.",
+          "keywordTags": [],
+          "description_segments": [
+            "They focus on making technical content accessible and actionable, highlighting the practical benefits and applications of tools and resources.",
+            "They emphasize scenario-based approaches in AI implementation, showcasing the shift in accessibility and affordability of agency services."
+          ]
+        }
+      },
+      {
+        "text": "When discussing career development, they tend to highlight the emotional and psychological aspects, such as mental health and resilience, alongside mentorship and guidance.\n\nThey emphasize the importance of mental health and resilience in career transitions, often in conjunction with mentorship and guidance.\n\nThey highlight the role of community support and shared experiences in fostering personal growth and adaptability during career changes.",
+        "rationalization": "Why: Multiple logs indicate a focus on the emotional and psychological aspects of career transitions, suggesting a broader theme of personal growth.",
+        "confidence_score": 0.9,
+        "linkedin_packaging": {
+          "title": "When discussing career development, they tend to highlight the emotional and psychological aspects, such as mental health and resilience, alongside mentorship and guidance.",
+          "keywordTags": [],
+          "description_segments": [
+            "They emphasize the importance of mental health and resilience in career transitions, often in conjunction with mentorship and guidance.",
+            "They highlight the role of community support and shared experiences in fostering personal growth and adaptability during career changes."
+          ]
+        }
+      },
+      {
+        "text": "When addressing AI and technology integration, they often focus on the broader implications and societal impacts, rather than just the technical challenges.\n\nTheir discussions on AI and technology integration emphasize societal impacts and broader implications, beyond just technical challenges.\n\nThey address the specific challenges of effective AI use and tool integration, focusing on practical applications and community engagement.",
+        "rationalization": "Why: Logs show a consistent emphasis on the broader implications of AI, such as its impact on education and customer support, rather than just technical challenges.",
+        "confidence_score": 0.9,
+        "linkedin_packaging": {
+          "title": "When addressing AI and technology integration, they often focus on the broader implications and societal impacts, rather than just the technical challenges.",
+          "keywordTags": [],
+          "description_segments": [
+            "Their discussions on AI and technology integration emphasize societal impacts and broader implications, beyond just technical challenges.",
+            "They address the specific challenges of effective AI use and tool integration, focusing on practical applications and community engagement."
+          ]
+        }
+      },
+      {
+        "text": "When sharing personal stories, they often blend emotional intelligence with professional insights, fostering community engagement.\n\nPersonal stories are shared with a blend of emotional intelligence and professional insights to foster community engagement.\n\nThey use personal narratives to connect with the audience, emphasizing shared experiences and professional growth.",
+        "rationalization": "Why: Logs highlight a narrative-driven approach that combines personal storytelling with professional themes, engaging the community.",
+        "confidence_score": 0.8,
+        "linkedin_packaging": {
+          "title": "When sharing personal stories, they often blend emotional intelligence with professional insights, fostering community engagement.",
+          "keywordTags": [],
+          "description_segments": [
+            "Personal stories are shared with a blend of emotional intelligence and professional insights to foster community engagement.",
+            "They use personal narratives to connect with the audience, emphasizing shared experiences and professional growth."
+          ]
+        }
+      }
+    ],
+    "latent_motivations": {
+      "main": [
+        {
+          "text": "When engaging with the community, they are motivated by the desire to foster connections and support through shared experiences and mentorship.",
+          "rationalization": "Why: Logs reveal a strong emphasis on community support and mentorship, indicating a motivation to build connections through shared experiences.",
+          "confidence_score": 0.9
+        },
+        {
+          "text": "When discussing career development, they are motivated by the opportunity to highlight the role of resilience and adaptability in personal growth.",
+          "rationalization": "Why: Logs consistently emphasize resilience and adaptability during career transitions, suggesting a motivation to advocate for these qualities.",
+          "confidence_score": 0.9
+        },
+        {
+          "text": "When addressing AI and technology, they are motivated by the potential to showcase practical applications and transformative impacts across industries.",
+          "rationalization": "Why: Logs show a focus on practical applications and transformative impacts of AI, indicating a motivation to highlight these aspects.",
+          "confidence_score": 0.9
+        }
+      ],
+      "validation_triggers": [
+        "Emphasis on community support",
+        "Focus on resilience and adaptability",
+        "Highlighting practical AI applications",
+        "Narrative-driven storytelling",
+        "Mentorship and guidance",
+        "Accessibility of tools and resources",
+        "Emotional and psychological aspects of career transitions"
+      ],
+      "friction_points": [
+        "Misalignment with abstract discussions",
+        "Overemphasis on individual achievements",
+        "Lack of focus on practical solutions",
+        "Neglect of community support themes",
+        "Underrepresentation of mentorship importance",
+        "Ignoring emotional aspects of career transitions",
+        "Overlooking societal impacts of AI"
+      ]
+    },
+    "implicit_goals": [
+      {
+        "text": "When posting about career development, they aim to foster a supportive community that emphasizes resilience and adaptability.",
+        "rationalization": "Why: Logs consistently show a focus on resilience and adaptability, suggesting an implicit goal of fostering a supportive community.",
+        "confidence_score": 0.9
+      },
+      {
+        "text": "When discussing AI and technology, they aim to educate their audience on practical applications and transformative impacts, enhancing understanding and application.",
+        "rationalization": "Why: Logs consistently show a focus on practical applications and transformative impacts, suggesting an implicit goal of educating the audience.",
+        "confidence_score": 0.9
+      },
+      {
+        "text": "When engaging with the community, they seek to build connections through shared experiences and mentorship, promoting collective growth.",
+        "rationalization": "Why: Logs highlight a focus on community support and mentorship, indicating an implicit goal of building connections through shared experiences.",
+        "confidence_score": 0.9
+      }
+    ]
+  },
+  "baseline_qualitative_summary": {
+    "inherent_behavioral_traits": [
+      {
+        "text": "Skills & Expertise\n\nKeywords: Cloud & AI Infrastructure, Full-Stack & Platform Engineering, DevOps & Security, Data Engineering & ML Operations, Developer Tools & Productivity\n\nDeep expertise in Azure, AWS, and cloud-native architectures including Kubernetes, service mesh, container networking, and AI/ML infrastructure at hyperscale, with hands-on experience deploying LLMs, model optimization, and GPU-accelerated workloads.\n\nStrong full-stack capabilities spanning backend services, frontend frameworks (React, Blazor), API development, database internals (PostgreSQL, SAP S/4HANA), and system-level programming in C++, Rust, and Python.\n\nComprehensive DevOps and security knowledge including CI/CD pipelines, GitHub Copilot integration, observability (OpenTelemetry), compliance automation (STIG, DoD), and cloud security (Defender for Cloud, Azure Firewall, network security).\n\nProven data engineering and MLOps skills encompassing model evaluation pipelines, data science workflows, automation orchestration (n8n, Zapier), and enterprise data platforms with focus on reproducibility and governance.\n\nExpertise in developer experience tooling including Visual Studio, .NET, design systems (Fluent UI), agentic AI workflows, code generation, and productivity platforms that accelerate software delivery and reduce friction.",
+        "rationalization": "Seeded from LinkedIn audience-room description.json (traits block).",
+        "confidence_score": 0.85,
+        "linkedin_packaging": {
+          "title": "Skills & Expertise",
+          "keywordTags": [
+            "Cloud & AI Infrastructure",
+            "Full-Stack & Platform Engineering",
+            "DevOps & Security",
+            "Data Engineering & ML Operations",
+            "Developer Tools & Productivity"
+          ],
+          "description_segments": [
+            "Deep expertise in Azure, AWS, and cloud-native architectures including Kubernetes, service mesh, container networking, and AI/ML infrastructure at hyperscale, with hands-on experience deploying LLMs, model optimization, and GPU-accelerated workloads.",
+            "Strong full-stack capabilities spanning backend services, frontend frameworks (React, Blazor), API development, database internals (PostgreSQL, SAP S/4HANA), and system-level programming in C++, Rust, and Python.",
+            "Comprehensive DevOps and security knowledge including CI/CD pipelines, GitHub Copilot integration, observability (OpenTelemetry), compliance automation (STIG, DoD), and cloud security (Defender for Cloud, Azure Firewall, network security).",
+            "Proven data engineering and MLOps skills encompassing model evaluation pipelines, data science workflows, automation orchestration (n8n, Zapier), and enterprise data platforms with focus on reproducibility and governance.",
+            "Expertise in developer experience tooling including Visual Studio, .NET, design systems (Fluent UI), agentic AI workflows, code generation, and productivity platforms that accelerate software delivery and reduce friction."
+          ]
+        }
+      },
+      {
+        "text": "Working Style\n\nKeywords: Hands-On Problem Solvers, Community-Driven Educators, Cross-Functional Collaborators, Rapid Prototypers, Documentation & Knowledge Sharers\n\nPreference for diving into technical challenges directly through code, configuration, and experimentation—building demos, troubleshooting kernel issues, running local models, and implementing proof-of-concepts to validate solutions before scaling.\n\nStrong commitment to teaching and upskilling others through tutorial series, step-by-step walkthroughs, conference talks, meetups, and open-source contributions that make complex topics accessible to practitioners at all levels.\n\nComfortable working across disciplines—partnering with designers, data scientists, product managers, security teams, and customers to co-develop solutions, emphasizing alignment, transparency, and shared ownership of outcomes.\n\nBias toward fast iteration and delivery, leveraging hackathons, MVPs, and agile sprints to ship working software quickly, gather feedback, and adapt—valuing speed and learning over perfection in early stages.\n\nConsistent pattern of creating and sharing resources including GitHub repos, blog posts, SlideShare decks, video tutorials, and technical documentation to preserve institutional knowledge and enable peer learning.",
+        "rationalization": "Seeded from LinkedIn audience-room description.json (traits block).",
+        "confidence_score": 0.85,
+        "linkedin_packaging": {
+          "title": "Working Style",
+          "keywordTags": [
+            "Hands-On Problem Solvers",
+            "Community-Driven Educators",
+            "Cross-Functional Collaborators",
+            "Rapid Prototypers",
+            "Documentation & Knowledge Sharers"
+          ],
+          "description_segments": [
+            "Preference for diving into technical challenges directly through code, configuration, and experimentation—building demos, troubleshooting kernel issues, running local models, and implementing proof-of-concepts to validate solutions before scaling.",
+            "Strong commitment to teaching and upskilling others through tutorial series, step-by-step walkthroughs, conference talks, meetups, and open-source contributions that make complex topics accessible to practitioners at all levels.",
+            "Comfortable working across disciplines—partnering with designers, data scientists, product managers, security teams, and customers to co-develop solutions, emphasizing alignment, transparency, and shared ownership of outcomes.",
+            "Bias toward fast iteration and delivery, leveraging hackathons, MVPs, and agile sprints to ship working software quickly, gather feedback, and adapt—valuing speed and learning over perfection in early stages.",
+            "Consistent pattern of creating and sharing resources including GitHub repos, blog posts, SlideShare decks, video tutorials, and technical documentation to preserve institutional knowledge and enable peer learning."
+          ]
+        }
+      },
+      {
+        "text": "Motivations & Values\n\nKeywords: Impact & Real-World Outcomes, Inclusion & Accessibility, Transparency & Responsible AI, Mentorship & Talent Development, Community & Civic Engagement\n\nDriven by measurable impact on users and customers—whether protecting identities from fraud, reducing college costs for families, enabling frontline workers, or solving industry-specific problems with AI—prioritizing outcomes over vanity metrics.\n\nDeep commitment to inclusive hiring practices, accessibility testing and remediation, language localization, support for people with disabilities, and creating pathways for underrepresented groups including veterans, women in tech, and international talent.\n\nStrong emphasis on responsible AI practices including red teaming, model provenance, reproducibility, safety evaluations, governance frameworks, and transparent communication about limitations and risks of AI systems.\n\nPassion for growing the next generation through mentorship, campus outreach, internship programs, career coaching, interview preparation, and creating learning opportunities that help juniors and mid-level engineers advance.\n\nActive participation in tech communities, user groups, open-source projects, civic tech initiatives (like VoteMate), regional conferences (BSides, KubeCon), and volunteer efforts that extend impact beyond corporate boundaries.",
+        "rationalization": "Seeded from LinkedIn audience-room description.json (traits block).",
+        "confidence_score": 0.85,
+        "linkedin_packaging": {
+          "title": "Motivations & Values",
+          "keywordTags": [
+            "Impact & Real-World Outcomes",
+            "Inclusion & Accessibility",
+            "Transparency & Responsible AI",
+            "Mentorship & Talent Development",
+            "Community & Civic Engagement"
+          ],
+          "description_segments": [
+            "Driven by measurable impact on users and customers—whether protecting identities from fraud, reducing college costs for families, enabling frontline workers, or solving industry-specific problems with AI—prioritizing outcomes over vanity metrics.",
+            "Deep commitment to inclusive hiring practices, accessibility testing and remediation, language localization, support for people with disabilities, and creating pathways for underrepresented groups including veterans, women in tech, and international talent.",
+            "Strong emphasis on responsible AI practices including red teaming, model provenance, reproducibility, safety evaluations, governance frameworks, and transparent communication about limitations and risks of AI systems.",
+            "Passion for growing the next generation through mentorship, campus outreach, internship programs, career coaching, interview preparation, and creating learning opportunities that help juniors and mid-level engineers advance.",
+            "Active participation in tech communities, user groups, open-source projects, civic tech initiatives (like VoteMate), regional conferences (BSides, KubeCon), and volunteer efforts that extend impact beyond corporate boundaries."
+          ]
+        }
+      },
+      {
+        "text": "Pain Points & Needs\n\nKeywords: Scaling & Operational Complexity, Talent Acquisition & Retention, Balancing Innovation & Stability, Cross-Platform Integration Challenges, Burnout & Sustainable Performance\n\nOngoing challenges managing complexity at enterprise scale including multi-region deployments, fleet-wide monitoring, zero-downtime migrations, heterogeneous hardware, and maintaining performance/cost efficiency as AI workloads grow exponentially.\n\nPersistent need to attract, hire, and retain specialized talent across cloud engineering, AI/ML, security, and platform roles—especially in competitive markets and for niche skills like kernel engineering, RDMA networking, and model optimization.\n\nTension between adopting cutting-edge AI capabilities (LLMs, agents, generative UX) and ensuring production readiness, security, compliance, and reliability—requiring careful governance, testing, and phased rollouts to manage risk.\n\nFriction integrating diverse technology stacks, legacy systems (SAP, two-tier ERP), open-source tools, and proprietary platforms while maintaining interoperability, data consistency, and developer productivity across hybrid and multi-cloud environments.\n\nRecognition of burnout risks from high-pressure delivery, always-on culture, and juggling multiple passions or roles—leading to explicit focus on time management, energy protection, work-life balance, and sustainable high performance.",
+        "rationalization": "Seeded from LinkedIn audience-room description.json (traits block).",
+        "confidence_score": 0.85,
+        "linkedin_packaging": {
+          "title": "Pain Points & Needs",
+          "keywordTags": [
+            "Scaling & Operational Complexity",
+            "Talent Acquisition & Retention",
+            "Balancing Innovation & Stability",
+            "Cross-Platform Integration Challenges",
+            "Burnout & Sustainable Performance"
+          ],
+          "description_segments": [
+            "Ongoing challenges managing complexity at enterprise scale including multi-region deployments, fleet-wide monitoring, zero-downtime migrations, heterogeneous hardware, and maintaining performance/cost efficiency as AI workloads grow exponentially.",
+            "Persistent need to attract, hire, and retain specialized talent across cloud engineering, AI/ML, security, and platform roles—especially in competitive markets and for niche skills like kernel engineering, RDMA networking, and model optimization.",
+            "Tension between adopting cutting-edge AI capabilities (LLMs, agents, generative UX) and ensuring production readiness, security, compliance, and reliability—requiring careful governance, testing, and phased rollouts to manage risk.",
+            "Friction integrating diverse technology stacks, legacy systems (SAP, two-tier ERP), open-source tools, and proprietary platforms while maintaining interoperability, data consistency, and developer productivity across hybrid and multi-cloud environments.",
+            "Recognition of burnout risks from high-pressure delivery, always-on culture, and juggling multiple passions or roles—leading to explicit focus on time management, energy protection, work-life balance, and sustainable high performance."
+          ]
+        }
+      },
+      {
+        "text": "Organizational Leadership & Psychographic Profile\n\nKeywords: Enterprise Evangelists & Internal Advocates, Bridge Builders Between Tech & Business, Pragmatic Thought Leaders, Network-Driven Connectors, Mission-Oriented Builders\n\nServe as internal champions for Microsoft platforms, Azure capabilities, and developer tools—amplifying product launches, sharing customer success stories, and driving adoption through demos, workshops, and direct engagement with engineering and business stakeholders.\n\nSkilled at translating technical complexity into business value, whether explaining AI ROI to executives, aligning platform investments with customer pain points, or framing security and compliance in terms of risk mitigation and competitive advantage.\n\nBlend technical credibility with actionable guidance—offering concrete architectures, migration playbooks, and operational best practices rather than abstract theory, and openly discussing tradeoffs, limitations, and when not to use certain technologies.\n\nLeverage extensive professional networks to facilitate hiring, referrals, partnerships, and knowledge exchange—actively tagging colleagues, promoting peers' work, organizing events, and mobilizing communities to solve problems collaboratively.\n\nMotivated by a sense of purpose beyond code—whether democratizing education, advancing healthcare AI, supporting veterans, promoting open science, or building civic tech—viewing technology as a means to create positive societal impact.",
+        "rationalization": "Seeded from LinkedIn audience-room description.json (traits block).",
+        "confidence_score": 0.85,
+        "linkedin_packaging": {
+          "title": "Organizational Leadership & Psychographic Profile",
+          "keywordTags": [
+            "Enterprise Evangelists & Internal Advocates",
+            "Bridge Builders Between Tech & Business",
+            "Pragmatic Thought Leaders",
+            "Network-Driven Connectors",
+            "Mission-Oriented Builders"
+          ],
+          "description_segments": [
+            "Serve as internal champions for Microsoft platforms, Azure capabilities, and developer tools—amplifying product launches, sharing customer success stories, and driving adoption through demos, workshops, and direct engagement with engineering and business stakeholders.",
+            "Skilled at translating technical complexity into business value, whether explaining AI ROI to executives, aligning platform investments with customer pain points, or framing security and compliance in terms of risk mitigation and competitive advantage.",
+            "Blend technical credibility with actionable guidance—offering concrete architectures, migration playbooks, and operational best practices rather than abstract theory, and openly discussing tradeoffs, limitations, and when not to use certain technologies.",
+            "Leverage extensive professional networks to facilitate hiring, referrals, partnerships, and knowledge exchange—actively tagging colleagues, promoting peers' work, organizing events, and mobilizing communities to solve problems collaboratively.",
+            "Motivated by a sense of purpose beyond code—whether democratizing education, advancing healthcare AI, supporting veterans, promoting open science, or building civic tech—viewing technology as a means to create positive societal impact."
+          ]
+        }
+      }
+    ],
+    "latent_motivations": {
+      "main": [],
+      "validation_triggers": [],
+      "friction_points": []
+    },
+    "implicit_goals": []
+  },
+  "refinement_call_count": 4,
+  "shrink_call_count": 4,
+  "qual_refinement_call_count": 4,
+  "qual_shrink_call_count": 0,
+  "batch_seq": 7,
+  "last_completed_iteration": 2,
+  "processed_post_ids": [
+    "1db61e77-786d-4d4c-94e0-4dcc221af20b_2",
+    "1db61e77-786d-4d4c-94e0-4dcc221af20b_27",
+    "1db61e77-786d-4d4c-94e0-4dcc221af20b_28",
+    "1db61e77-786d-4d4c-94e0-4dcc221af20b_35",
+    "1db61e77-786d-4d4c-94e0-4dcc221af20b_39",
+    "1db61e77-786d-4d4c-94e0-4dcc221af20b_5",
+    "1db61e77-786d-4d4c-94e0-4dcc221af20b_8",
+    "2d60701b-70df-4c28-877a-eadcf31eca3f_1",
+    "313325f0-0334-45f7-93b3-e65adcc597e9_10",
+    "313325f0-0334-45f7-93b3-e65adcc597e9_17",
+    "351405ab-deb1-45b5-810c-d32798c95f40_12",
+    "351405ab-deb1-45b5-810c-d32798c95f40_19",
+    "351405ab-deb1-45b5-810c-d32798c95f40_26",
+    "351405ab-deb1-45b5-810c-d32798c95f40_34",
+    "351405ab-deb1-45b5-810c-d32798c95f40_38",
+    "351405ab-deb1-45b5-810c-d32798c95f40_40",
+    "351405ab-deb1-45b5-810c-d32798c95f40_41",
+    "351405ab-deb1-45b5-810c-d32798c95f40_46",
+    "351405ab-deb1-45b5-810c-d32798c95f40_6",
+    "351405ab-deb1-45b5-810c-d32798c95f40_9",
+    "3a0a7529-16a1-48d1-b987-c60e4260ad46_23",
+    "3a0a7529-16a1-48d1-b987-c60e4260ad46_34",
+    "3a0a7529-16a1-48d1-b987-c60e4260ad46_9",
+    "54c19b05-7985-47be-b2f2-6a2f8360cf89_1",
+    "54c19b05-7985-47be-b2f2-6a2f8360cf89_3",
+    "583f07ae-71cc-42ed-982b-67b6c6d6a3ff_8",
+    "5b792818-ac34-4256-97f8-cdce43bde7f0_13",
+    "5b792818-ac34-4256-97f8-cdce43bde7f0_16",
+    "5b792818-ac34-4256-97f8-cdce43bde7f0_6",
+    "7333df73-63cf-4f92-b724-caefc9171b63_12",
+    "7333df73-63cf-4f92-b724-caefc9171b63_28",
+    "7333df73-63cf-4f92-b724-caefc9171b63_3",
+    "7333df73-63cf-4f92-b724-caefc9171b63_6",
+    "7333df73-63cf-4f92-b724-caefc9171b63_7",
+    "8774ee3b-19ab-45ca-8197-b68720c4b1b8_10",
+    "8774ee3b-19ab-45ca-8197-b68720c4b1b8_12",
+    "8774ee3b-19ab-45ca-8197-b68720c4b1b8_6",
+    "8774ee3b-19ab-45ca-8197-b68720c4b1b8_9",
+    "881ba53e-5c01-4ae4-bc09-59d059c315a5_2",
+    "881ba53e-5c01-4ae4-bc09-59d059c315a5_8",
+    "881ba53e-5c01-4ae4-bc09-59d059c315a5_9",
+    "937353b2-546c-41e3-ae57-4b7507de8a1d_43",
+    "9d0711b8-17ae-44cc-adbd-f2e39f25571b_12",
+    "9d0711b8-17ae-44cc-adbd-f2e39f25571b_45",
+    "ab1fb966-d14e-4639-b504-00f7b6f9084b_15",
+    "ab1fb966-d14e-4639-b504-00f7b6f9084b_21",
+    "ab1fb966-d14e-4639-b504-00f7b6f9084b_35",
+    "ab1fb966-d14e-4639-b504-00f7b6f9084b_43",
+    "b897cdbe-ca1b-40fe-b087-ef4c1958425c_8",
+    "b897cdbe-ca1b-40fe-b087-ef4c1958425c_9",
+    "dc0b5d74-87d9-4fe3-8883-aef9d0924114_12",
+    "dc0b5d74-87d9-4fe3-8883-aef9d0924114_7",
+    "dc0b5d74-87d9-4fe3-8883-aef9d0924114_8",
+    "e9e811b0-6759-473a-aed2-8a84e5566a8c_21",
+    "e9e811b0-6759-473a-aed2-8a84e5566a8c_24",
+    "e9e811b0-6759-473a-aed2-8a84e5566a8c_30",
+    "e9e811b0-6759-473a-aed2-8a84e5566a8c_40",
+    "e9e811b0-6759-473a-aed2-8a84e5566a8c_41",
+    "e9e811b0-6759-473a-aed2-8a84e5566a8c_51",
+    "f20ab826-b48b-42cf-be34-de640b4befa1_10",
+    "f20ab826-b48b-42cf-be34-de640b4befa1_16",
+    "f20ab826-b48b-42cf-be34-de640b4befa1_18",
+    "f20ab826-b48b-42cf-be34-de640b4befa1_2",
+    "f20ab826-b48b-42cf-be34-de640b4befa1_21",
+    "f20ab826-b48b-42cf-be34-de640b4befa1_23",
+    "f20ab826-b48b-42cf-be34-de640b4befa1_3",
+    "f20ab826-b48b-42cf-be34-de640b4befa1_4"
+  ]
+}

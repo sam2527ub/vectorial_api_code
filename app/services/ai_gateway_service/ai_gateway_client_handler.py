@@ -78,6 +78,8 @@ class AIGatewayClient:
         return_text: bool = False,
         legacy_model_handler: Optional[Callable[[Optional[str], str], Optional[str]]] = None,
         direct_api_fallback_model: Optional[str] = None,
+        response_format: Optional[Dict[str, str]] = None,
+        temperature: Optional[float] = None,
     ) -> Union[Dict[str, Any], str]:
         if not self.enabled:
             fallback_model = direct_api_fallback_model or model or hardcoded_default
@@ -96,6 +98,8 @@ class AIGatewayClient:
                 max_tokens,
                 fallback_model,
                 validate_summary=validate_summary,
+                response_format=response_format,
+                temperature=0.3 if temperature is None else temperature,
             )
 
         if default_model is None:
@@ -127,6 +131,8 @@ class AIGatewayClient:
                 fallback_models=fallback_models_final,
                 validate_summary=validate_summary,
                 return_text=return_text,
+                response_format=response_format,
+                temperature=temperature,
             )
         except Exception as e:
             logger.error(
@@ -153,6 +159,8 @@ class AIGatewayClient:
                 max_tokens,
                 fallback_model,
                 validate_summary=validate_summary,
+                response_format=response_format,
+                temperature=0.3 if temperature is None else temperature,
             )
         if return_text:
             return result if isinstance(result, str) else str(result)

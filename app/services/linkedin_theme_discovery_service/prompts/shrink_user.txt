@@ -1,0 +1,16 @@
+
+Consolidate the following list of themes extracted from professional LinkedIn posts.
+
+Merge similar themes, eliminate near-duplicates, and remove redundant ones to produce 
+a final concise list of 10 to 25 distinct themes.
+
+The final themes should:
+  - Represent the most important and frequently occurring professional experiences
+  - Be high-level enough to group multiple posts under them
+  - Each be a 4–8 word noun phrase with tension baked in — no "the X of Y" templates
+  - Cover genuinely different territory from each other
+
+Raw themes to consolidate:
+{themes_json}
+
+Return JSON: {{"themes": ["...", ...]}} with 10–25 items.

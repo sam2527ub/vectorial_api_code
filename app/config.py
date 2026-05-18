@@ -2,7 +2,22 @@
 import os
 import logging
 from typing import Optional, TYPE_CHECKING
+
 from dotenv import load_dotenv
+
+# Load .env before any app import that reads os.environ (e.g. DATABASE_URL, AUDIENCE_BUCKET_NAME).
+load_dotenv()
+
+from app.runtime_settings import get_runtime_settings
+
+_rs = get_runtime_settings()
+
+_log_level = getattr(logging, _rs.logging.level.upper(), logging.INFO)
+if not isinstance(_log_level, int):
+    _log_level = logging.INFO
+logging.basicConfig(level=_log_level)
+logger = logging.getLogger(__name__)
+
 from apify_client import ApifyClient
 from openai import OpenAI
 import boto3
@@ -13,17 +28,10 @@ if TYPE_CHECKING:
     from peopledatalabs import PDLPY
     from anthropic import Anthropic
 
-# Load environment variables
-load_dotenv()
-
-# Logging setup
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
-
-# Constants
-POST_SCRAPER_ACTOR_ID = "curious_coder/linkedin-post-search-scraper"
-PROFILE_SCRAPER_ACTOR_ID = "2SyF0bVxmgGr8IVCZ"  # LinkedIn Profile Scraper
-LINKEDIN_COMMENTS_ACTOR_ID = "harvestapi/linkedin-profile-comments"
+# Constants (defaults from ``config/runtime.yaml``; override scrapers/models there)
+POST_SCRAPER_ACTOR_ID = _rs.scrapers.linkedin_post_actor_id
+PROFILE_SCRAPER_ACTOR_ID = _rs.scrapers.linkedin_profile_actor_id
+LINKEDIN_COMMENTS_ACTOR_ID = _rs.scrapers.linkedin_comments_actor_id
 
 # Initialize Clients (Global variables - will be set during initialization)
 pdl_client: Optional["PDLPY"] = None
@@ -34,7 +42,7 @@ anthropic_client: Optional["Anthropic"] = None
 dynamodb_resource = None
 s3_client = None
 s3_bucket = os.getenv("AUDIENCE_BUCKET_NAME") or os.getenv("VECTOR_BUCKET_NAME")
-s3_region = os.getenv("AWS_REGION", "us-west-2")
+s3_region = os.getenv("AWS_REGION") or _rs.aws.region_default
 
 # Database availability flags
 main_db_available = database.is_main_db_available()
@@ -44,7 +52,7 @@ logger.info(f"Main DB available: {main_db_available}, Audience DB available: {au
 
 def initialize_clients():
     """Initialize all third-party clients."""
-    global pdl_client, apify_client, openai_client, groq_client, anthropic_client, dynamodb_resource, s3_client
+    global pdl_client, apify_client, openai_client, groq_client, anthropic_client, dynamodb_resource, s3_client, s3_bucket
     
     # Initialize PDL client (lazy import to avoid Pydantic compatibility issues)
     try:
@@ -75,7 +83,7 @@ def initialize_clients():
     # Initialize Groq client
     try:
         groq_api_key = os.getenv("GROQ_API_KEY")
-        groq_model = os.getenv("GROQ_MODEL", "llama-3.3-70b-versatile")
+        groq_model = os.getenv("GROQ_MODEL") or _rs.api_clients.groq_default_model
         if groq_api_key:
             groq_client = Groq(api_key=groq_api_key)
             logger.info(f"Groq client initialized successfully with model: {groq_model}")
@@ -103,12 +111,15 @@ def initialize_clients():
     
     # Initialize DynamoDB (optional)
     try:
-        dynamodb_resource = boto3.resource('dynamodb', region_name=os.getenv('AWS_REGION', 'us-west-2'))
+        dynamodb_resource = boto3.resource(
+            "dynamodb", region_name=os.getenv("AWS_REGION") or _rs.aws.region_default
+        )
     except Exception as e:
         logger.warning(f"DynamoDB not initialized: {e}")
     
-    # Initialize S3 client
+    # Initialize S3 client (re-read bucket from env so reload / late .env edits match client)
     try:
+        s3_bucket = os.getenv("AUDIENCE_BUCKET_NAME") or os.getenv("VECTOR_BUCKET_NAME")
         s3_client = boto3.client("s3", region_name=s3_region) if s3_bucket else None
         if s3_client and s3_bucket:
             logger.info(f"S3 client initialized for bucket {s3_bucket}")

@@ -1,0 +1,32 @@
+# Stimulus + category extraction (S3, batched LLM). Tune here; code reads this at runtime.
+# Env override: set STIMULUS_EXTRACTION_CONFIG path to a custom YAML (optional).
+
+default_model: gpt-4o
+
+# Items per LLM call batch (rows batched per request)
+batch_size: 5
+
+llm:
+  # OpenAI response_format (JSON object mode)
+  response_format:
+    type: json_object
+  temperature: 0.25
+
+# Legacy cost metadata (USD per 1M tokens) — for job payload only, not billing
+pricing:
+  price_input_per_1m: 0.15
+  price_output_per_1m: 0.60
+
+# Per /async/process invocation: how many *batches* of size batch_size to run (then self-trigger)
+tier1:
+  completion_max_tokens: 4096
+  batches_per_process_invocation: 3
+  max_concurrency: 3
+
+tier2:
+  completion_max_tokens: 4096
+  batches_per_process_invocation: 5
+  max_concurrency: 3
+
+# Cap how many post_ids we store in job status sample
+failed_post_ids_sample_max: 50
