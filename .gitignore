@@ -1,6 +1,17 @@
 __pycache__/
 *.pyc
+
+# Secrets and local env (never commit)
 .env
+.env.*
+.env*.local
+**/.env
+**/.env.*
+
+# Setup docs that may contain API keys/tokens
+VERCEL_SETUP.md
+**/VERCEL_SETUP.md
+
 venv/
 .venv/
 
@@ -21,8 +32,10 @@ Dockerfile
 
 node_modules/
 
-# Standalone repo (see https://github.com/sam2527ub/vectorial_sgo_linkedin_testing)
-apps/vectorial_sgo_linkedin_testing/
+# App subprojects (local / separate repos)
+apps/
+
+# Reddit Vercel workflow (local copy)
+reddit-vercel-worflow/
 
 .vercel
-.env*.local
