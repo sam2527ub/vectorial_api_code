@@ -12,6 +12,9 @@ __pycache__/
 VERCEL_SETUP.md
 **/VERCEL_SETUP.md
 
+# One-off scripts that previously had hardcoded API keys
+upload_summary_prompts_safe.py
+
 venv/
 .venv/
 

@@ -15,7 +15,7 @@ def get_base_url() -> str:
     2. **VERCEL_URL** — Auto-set on Vercel; defaults callbacks to this deployment's
        ``https://<deployment>.vercel.app`` host.
 
-    3. Hardcoded fallback for legacy deployments.
+    3. Hardcoded fallback — production FastAPI on Vercel (``vectorial-api-code``).
     """
     explicit = (os.getenv("AUDIENCE_API_BASE_URL") or "").strip()
     if explicit:
@@ -25,4 +25,4 @@ def get_base_url() -> str:
     if vercel_url:
         return f"https://{vercel_url.rstrip('/')}"
 
-    return "https://audience-workflow.vercel.app"
+    return "https://vectorial-api-code.vercel.app"

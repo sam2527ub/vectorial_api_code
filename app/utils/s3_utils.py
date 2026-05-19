@@ -185,6 +185,26 @@ def fetch_json_from_s3(key: str) -> Dict[str, Any]:
         raise HTTPException(status_code=500, detail=f"Failed to fetch data from S3: {str(e)}")
 
 
+def s3_object_exists(key: str) -> bool:
+    """Return True if the S3 object exists (head_object); False if missing or S3 unavailable."""
+    from botocore.exceptions import ClientError
+
+    if not s3_client or not s3_bucket:
+        return False
+    try:
+        s3_client.head_object(Bucket=s3_bucket, Key=key)
+        return True
+    except ClientError as e:
+        code = e.response.get("Error", {}).get("Code", "")
+        if code in ("404", "NoSuchKey", "NotFound"):
+            return False
+        logger.warning("s3_object_exists: ClientError for key %s: %s", key, e)
+        return False
+    except Exception as e:
+        logger.warning("s3_object_exists: failed for key %s: %s", key, e)
+        return False
+
+
 def try_fetch_json_from_s3(key: str) -> Optional[Dict[str, Any]]:
     """
     Fetch JSON from S3; return None if the object is missing or S3 is not configured.

@@ -26,6 +26,7 @@ APIFY_API_TOKEN=your_actual_apify_token
 OPENAI_API_KEY=your_actual_openai_key
 
 AWS_REGION=us-west-2
+AUDIENCE_API_BASE_URL=https://vectorial-api-code.vercel.app
 ```
 
 **Important**: 
@@ -224,6 +225,7 @@ prisma migrate deploy
 | `PDL_API_KEY` | ✅ Yes | People Data Labs API key |
 | `APIFY_API_TOKEN` | ✅ Yes | Apify API token |
 | `OPENAI_API_KEY` | ✅ Yes | OpenAI API key |
+| `AUDIENCE_API_BASE_URL` | ✅ Yes (async pipelines) | Public FastAPI URL for chunked job callbacks (e.g. `https://vectorial-api-code.vercel.app`) |
 | `AWS_REGION` | ⚠️ Optional | AWS region (if using DynamoDB) |
 
 ---
