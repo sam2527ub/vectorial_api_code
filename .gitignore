@@ -42,3 +42,6 @@ apps/
 reddit-vercel-worflow/
 
 .vercel
+# Local script trees (removed from remote; keep on disk only)
+scripts/LInkedin_Category_Topic_Extraction/
+scripts/scripts_sgo/
