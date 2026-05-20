@@ -26,8 +26,9 @@ same keys as batch correction, and **best_deltas** / **best_prediction_data** se
 default 5); each batch runs the delta feedback loop (i1..iN), delta analyses into traces, and memory
 when the resolved gate exceeds ``--memory-jsd-threshold`` (default ``--next-sweep-min-delta``).
 ``memory/batch_analyses.json`` flushes when the buffer reaches ``--min-posts-for-memory-batch``; each flush
-runs the LinkedIn **batch root-cause** memory prompt (``prompts/part_b_memory_analysis.txt``)
-unless ``--no-linkedin-root-cause-memory`` is set (then preliminary per-post delta notes are stored as before).
+runs the LinkedIn **batch pattern-extraction** prompt (``prompts/part_b_memory_analysis.txt`` →
+``patterns`` + ``outliers`` JSON) unless ``--no-linkedin-root-cause-memory`` is set (then preliminary
+per-post delta notes are stored only).
 **(3)** After ``--evolve-every-n-batches`` full memory batches, runs group_summary refine + shrink and
 qualitative (traits) refine/shrink (same prompts as ``tier1_sgo_feedback_loop``). **(4)** persists
 ``evolution/evolution_state.json``, optional
@@ -1595,10 +1596,15 @@ async def run_all(args: argparse.Namespace) -> None:
                 mem_buffer = mem_buffer[min_mem_posts:]
                 batch_key = memory_batch_key(iteration, int(state["batch_seq"]))
                 revs = [t[0] for t in slice_rows]
-                ans = [t[1] for t in slice_rows]
+                prelim_notes = [t[1] for t in slice_rows]
+                memory_batch_payload: Dict[str, Any] = {
+                    "patterns": [],
+                    "outliers": [],
+                    "preliminary_delta_notes": prelim_notes,
+                }
                 if (
                     getattr(args, "linkedin_root_cause_memory", True)
-                    and len(slice_rows) == len(ans)
+                    and len(slice_rows) == len(prelim_notes)
                 ):
                     rc_items: List[Dict[str, Any]] = []
                     rc_ok = True
@@ -1650,20 +1656,27 @@ async def run_all(args: argparse.Namespace) -> None:
                                 "preliminary_delta_notes": str(prelim),
                             }
                         )
-                    if rc_ok and len(rc_items) == len(ans):
+                    if rc_ok and len(rc_items) == len(prelim_notes):
                         rc_model = (
                             str(getattr(args, "linkedin_root_cause_model", "") or "").strip()
                             or args.delta_model
                         )
-                        ans = await linkedin_memory_batch_root_cause_analyses(
+                        memory_batch_payload = await linkedin_memory_batch_root_cause_analyses(
                             client,
                             rc_model,
                             state=state,
                             memory=memory,
                             pending_memory_keys=set(),
                             review_items=rc_items,
-                            fallback_analyses=ans,
+                            fallback_analyses=prelim_notes,
                         )
+                elif not getattr(args, "linkedin_root_cause_memory", True):
+                    memory_batch_payload = {
+                        "patterns": [],
+                        "outliers": [],
+                        "preliminary_delta_notes": prelim_notes,
+                        "analyses": prelim_notes,
+                    }
                 cats_slice = sorted({t[2] for t in slice_rows if t[2]})
                 if len(cats_slice) == 1:
                     category_field = cats_slice[0]
@@ -1673,7 +1686,10 @@ async def run_all(args: argparse.Namespace) -> None:
                     category_field = ""
                 refine_accumulator[batch_key] = {
                     "reviews": revs,
-                    "analyses": ans,
+                    "patterns": memory_batch_payload.get("patterns") or [],
+                    "outliers": memory_batch_payload.get("outliers") or [],
+                    "preliminary_delta_notes": memory_batch_payload.get("preliminary_delta_notes")
+                    or prelim_notes,
                     "category": category_field,
                 }
                 memory[batch_key] = refine_accumulator[batch_key]
@@ -2076,20 +2092,20 @@ def main() -> None:
         type=str,
         default="",
         dest="linkedin_root_cause_model",
-        help="Model for batch memory root-cause prompt (default: same as --delta-model)",
+        help="Model for batch memory pattern-extraction prompt (default: same as --delta-model)",
     )
     _rcm = p.add_mutually_exclusive_group()
     _rcm.add_argument(
         "--linkedin-root-cause-memory",
         dest="linkedin_root_cause_memory",
         action="store_true",
-        help="Use LinkedIn batch root-cause prompt for memory analyses (default on)",
+        help="Use LinkedIn batch pattern-extraction prompt for memory (default on)",
     )
     _rcm.add_argument(
         "--no-linkedin-root-cause-memory",
         dest="linkedin_root_cause_memory",
         action="store_false",
-        help="Legacy: per-post delta_bridge / memory analysis in memory (disables batch root-cause prompt)",
+        help="Legacy: store per-post preliminary deltas only (disables batch pattern-extraction prompt)",
     )
     _rcm.set_defaults(linkedin_root_cause_memory=True)
     p.add_argument("--concurrent", type=int, default=8)

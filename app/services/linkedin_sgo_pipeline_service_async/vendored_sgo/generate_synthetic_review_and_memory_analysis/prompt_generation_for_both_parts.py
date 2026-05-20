@@ -1,8 +1,9 @@
 import json
 import os
+import re
 import sys
 from pathlib import Path
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Optional, Tuple
 
 # Repo prompt assets live under ``scripts/scripts_sgo/prompts`` (config may point elsewhere).
 _SCRIPTS_SGO_PROMPTS = Path(__file__).resolve().parent.parent / "prompts"
@@ -321,6 +322,207 @@ _PART_A_LINKEDIN_GROUP_LOGPROBS = "part_a_individual_prompt_logprobs"
 _LINKEDIN_TIER1_POSTS_SECTION_MAX_CHARS = 16000
 
 
+def _normalize_confidence_label(raw: Any) -> str:
+    s = str(raw or "").strip().upper()
+    if s.startswith("HIGH"):
+        return "HIGH"
+    if s.startswith("MED"):
+        return "MEDIUM"
+    if s.startswith("LOW"):
+        return "LOW"
+    return s or "LOW"
+
+
+def _normalize_memory_pattern_row(row: Any) -> Optional[Dict[str, Any]]:
+    if not isinstance(row, dict):
+        return None
+    behavior = str(row.get("behavior") or "").strip()
+    if len(behavior) < 8:
+        return None
+    why_raw = row.get("why")
+    why: Optional[str]
+    if why_raw is None or str(why_raw).strip().lower() in ("", "null", "none"):
+        why = None
+    else:
+        why = str(why_raw).strip()
+    evidence = str(row.get("evidence") or "").strip()
+    confidence = _normalize_confidence_label(row.get("confidence"))
+    return {
+        "behavior": behavior,
+        "why": why,
+        "evidence": evidence,
+        "confidence": confidence,
+    }
+
+
+def _normalize_memory_outlier_row(row: Any) -> Optional[Dict[str, Any]]:
+    if not isinstance(row, dict):
+        return None
+    behavior = str(row.get("behavior") or "").strip()
+    if len(behavior) < 8:
+        return None
+    return {
+        "behavior": behavior,
+        "confidence": _normalize_confidence_label(row.get("confidence") or "LOW"),
+    }
+
+
+def parse_linkedin_memory_batch_patterns_response(
+    data: Any,
+    *,
+    batch_size: int,
+    fallback_preliminary_notes: Optional[List[str]] = None,
+) -> Dict[str, Any]:
+    """
+    Parse Part B ``part_b_memory_analysis.txt`` JSON (``patterns`` + ``outliers``).
+    On failure, returns empty pattern lists and preserves preliminary per-post notes.
+    """
+    fb = list(fallback_preliminary_notes or [])
+    empty: Dict[str, Any] = {
+        "patterns": [],
+        "outliers": [],
+        "preliminary_delta_notes": fb[: max(0, int(batch_size))],
+        "parse_ok": False,
+    }
+    if not isinstance(data, dict):
+        return empty
+
+    patterns: List[Dict[str, Any]] = []
+    for row in data.get("patterns") or []:
+        norm = _normalize_memory_pattern_row(row)
+        if norm:
+            patterns.append(norm)
+
+    outliers: List[Dict[str, Any]] = []
+    for row in data.get("outliers") or []:
+        norm = _normalize_memory_outlier_row(row)
+        if norm:
+            outliers.append(norm)
+
+    # Legacy per-post ``analyses`` — fold into one LOW-confidence pattern if new fields absent
+    if not patterns and not outliers:
+        legacy = data.get("analyses")
+        if isinstance(legacy, list):
+            merged = "\n\n".join(str(x).strip() for x in legacy if str(x).strip())
+            if len(merged) >= 12:
+                patterns.append(
+                    {
+                        "behavior": merged[:4000],
+                        "why": None,
+                        "evidence": f"{len(legacy)}/{max(1, batch_size)} posts",
+                        "confidence": "LOW",
+                    }
+                )
+
+    if not patterns and not outliers and fb:
+        merged_fb = "\n\n---\n\n".join(str(x).strip() for x in fb if str(x).strip())
+        if merged_fb:
+            patterns.append(
+                {
+                    "behavior": merged_fb[:4000],
+                    "why": None,
+                    "evidence": f"{len([x for x in fb if str(x).strip()])}/{max(1, batch_size)} posts",
+                    "confidence": "LOW",
+                }
+            )
+
+    return {
+        "patterns": patterns,
+        "outliers": outliers,
+        "preliminary_delta_notes": fb[: max(0, int(batch_size))],
+        "parse_ok": bool(patterns or outliers),
+    }
+
+
+def format_memory_batch_entry_lines(
+    batch_key: str,
+    data: Dict[str, Any],
+    *,
+    max_chars_per_line: int = 1200,
+) -> List[str]:
+    """Human-readable lines for one ``memory/batch_analyses.json`` batch entry."""
+    cap = max(400, int(max_chars_per_line))
+    lines: List[str] = [f"--- {batch_key} ---"]
+    cat = (data.get("category") or "").strip()
+    if cat:
+        lines.append(f"category: {cat}")
+    revs = data.get("reviews")
+    if revs is None:
+        revs = data.get("post_ids") or []
+    if revs:
+        lines.append("reviews: " + ", ".join(str(x) for x in revs))
+
+    patterns = data.get("patterns") or []
+    if patterns:
+        lines.append("patterns:")
+        for p in patterns:
+            if not isinstance(p, dict):
+                continue
+            conf = _normalize_confidence_label(p.get("confidence"))
+            beh = str(p.get("behavior") or "").strip()
+            if len(beh) > cap:
+                beh = beh[: cap - 3].rstrip() + "..."
+            ev = str(p.get("evidence") or "").strip()
+            why = p.get("why")
+            why_s = ""
+            if why is not None and str(why).strip().lower() not in ("", "null", "none"):
+                why_s = f" | why: {str(why).strip()}"
+            ev_s = f" ({ev})" if ev else ""
+            lines.append(f"- [{conf}]{ev_s} {beh}{why_s}")
+
+    outliers = data.get("outliers") or []
+    if outliers:
+        lines.append("outliers:")
+        for o in outliers:
+            if not isinstance(o, dict):
+                continue
+            conf = _normalize_confidence_label(o.get("confidence") or "LOW")
+            beh = str(o.get("behavior") or "").strip()
+            if len(beh) > cap:
+                beh = beh[: cap - 3].rstrip() + "..."
+            lines.append(f"- [{conf}] {beh}")
+
+    if not patterns and not outliers:
+        for a in data.get("analyses") or []:
+            s = str(a).strip()
+            if not s:
+                continue
+            if len(s) > cap:
+                s = s[: cap - 3].rstrip() + "..."
+            lines.append(f"- {s}")
+
+    if not patterns and not outliers and not (data.get("analyses") or []):
+        prelim = data.get("preliminary_delta_notes") or []
+        if prelim:
+            lines.append("preliminary_delta_notes:")
+            for note in prelim:
+                s = str(note).strip()
+                if not s:
+                    continue
+                if len(s) > cap:
+                    s = s[: cap - 3].rstrip() + "..."
+                lines.append(f"- {s}")
+
+    return lines
+
+
+_MEM_KEY_NEW = re.compile(r"^iteration_(\d+)_batch_(\d+)$")
+_MEM_KEY_LEGACY = re.compile(r"^i(\d+)_batch_(\d+)$")
+
+
+def _sort_memory_batch_keys(keys: List[str]) -> List[str]:
+    def sort_key(k: str) -> Tuple[int, int, int, str]:
+        m = _MEM_KEY_NEW.match(k)
+        if m:
+            return (0, int(m.group(1)), int(m.group(2)), k)
+        m = _MEM_KEY_LEGACY.match(k)
+        if m:
+            return (1, int(m.group(1)), int(m.group(2)), k)
+        return (2, 99999, 99999, k)
+
+    return sorted(keys, key=sort_key)
+
+
 def format_batch_analyses_memory_for_part_a(memory: Dict[str, Any], max_chars: int = 14000) -> str:
     """
     Serialize persisted ``memory/batch_analyses.json`` for Part A ``past_learnings``
@@ -331,13 +533,17 @@ def format_batch_analyses_memory_for_part_a(memory: Dict[str, Any], max_chars: i
             "None — no persisted batch analyses yet "
             "(early iterations or empty memory/batch_analyses.json)."
         )
-    try:
-        s = json.dumps(memory, ensure_ascii=False, indent=2)
-    except (TypeError, ValueError):
-        s = str(memory)
-    if len(s) > max_chars:
-        return s[: max_chars - 40].rstrip() + "\n... [truncated]"
-    return s
+
+    lines: List[str] = []
+    for batch_key in _sort_memory_batch_keys(list(memory.keys())):
+        data = memory.get(batch_key)
+        if not isinstance(data, dict):
+            continue
+        lines.extend(format_memory_batch_entry_lines(str(batch_key), data))
+    blob = "\n".join(lines) if lines else "(no memory batches yet)"
+    if len(blob) > max_chars:
+        return blob[: max_chars - 40].rstrip() + "\n... [truncated]"
+    return blob
 
 
 def _topic_probability_lines(theme_probs: Dict[str, float], *, limit: int = 12) -> str:
@@ -503,11 +709,10 @@ def generate_part_b_linkedin_group_memory_prompt(
     *,
     group_summary: str,
     group_traits: str,
-    past_learnings: str,
     posts_section: str,
 ) -> str:
     """
-    Fill ``prompts/part_b_memory_analysis.txt`` for LinkedIn **group** batch memory (Part B root-cause).
+    Fill ``prompts/part_b_memory_analysis.txt`` for LinkedIn **group** batch memory (Part B).
     Used by ``linkedin_memory_batch_root_cause_analyses`` in ``tier1_sgo_feedback_loop``.
     """
     tpl = io_utils.load_prompt(_PART_B_LINKEDIN_GROUP_MEMORY, settings.PROMPT_DIR_PART_B)
@@ -521,7 +726,6 @@ def generate_part_b_linkedin_group_memory_prompt(
     return tpl.format(
         group_summary=(group_summary or "").strip() or "(none)",
         group_traits=(group_traits or "").strip() or "(none)",
-        past_learnings=(past_learnings or "").strip() or "(none)",
         posts_section=(posts_section or "").strip() or "(none)",
     )
 

@@ -16,21 +16,25 @@ only re-score posts whose **post-correction** ``best_deltas`` from the **previou
 **text** delta via embeddings, **overall** delta from ``settings`` weights, **correction_journey** with the
 same keys as batch correction, and **best_deltas** / **best_prediction_data** selection.
 
+**Tier:** pass ``--tier 2`` (or explicit paths) for tier-2 GT + mapping + i0 under
+``outputs/linkedin_tier2_sgo/``. Tier **1** remains the default.
+
 **Mandatory run directory (``--work-dir``):** if empty, defaults to
-``scripts_sgo/outputs/linkedin_tier1_sgo/default_run``. Each outer iteration (default **5** via
+``scripts_sgo/outputs/linkedin_tier{N}_sgo/default_run``. Each outer iteration (default **5** via
 ``--num-iterations``): **(1)** sweep **all** posts — **hydrate i0 from --precomputed-i0-json** (no LLM i0).
 **(2)** **i1+:** posts whose **loaded i0** gate delta (``--feedback-on``) exceeds ``--delta-threshold`` are batched (``--memory-batch-size``,
 default 5); each batch runs the delta feedback loop (i1..iN), delta analyses into traces, and memory
 when the resolved gate exceeds ``--memory-jsd-threshold`` (default ``--next-sweep-min-delta``).
 ``memory/batch_analyses.json`` flushes when the buffer reaches ``--min-posts-for-memory-batch``; each flush
-runs the LinkedIn **batch root-cause** memory prompt (``prompts/part_b_memory_analysis.txt``)
-unless ``--no-linkedin-root-cause-memory`` is set (then preliminary per-post delta notes are stored as before).
+runs the LinkedIn **batch pattern-extraction** prompt (``prompts/part_b_memory_analysis.txt`` →
+``patterns`` + ``outliers`` JSON) unless ``--no-linkedin-root-cause-memory`` is set (then preliminary
+per-post delta notes are stored only).
 **(3)** After ``--evolve-every-n-batches`` full memory batches, runs group_summary refine + shrink and
 qualitative (traits) refine/shrink (same prompts as ``tier1_sgo_feedback_loop``). **(4)** persists
 ``evolution/evolution_state.json``, optional
 ``evolution/state_history/NNNNNN_<reason>.json`` snapshots, ``<work-dir>/description.json`` (working
 copy; seed ``--description-json`` stays read-only when sync is on), ``post_traces.jsonl``,
-``iteration_stats.jsonl``, ``linkedin_tier1_all_reviews_deltas.json``, ``delta_method_predictions.json``,
+``iteration_stats.jsonl``, ``linkedin_tier{N}_all_reviews_deltas.json``, ``delta_method_predictions.json``,
 per-iteration ``delta_method_predictions_iteration_<n>.json``, and mirrors the latest bundle to
 ``--output``.
 
@@ -105,6 +109,39 @@ def _ensure_scoring_mode() -> None:
     if getattr(settings, "SCORING_MODE", None) in (None, ""):
         settings.SCORING_MODE = "logprobs"
         logger.info("[CONFIG] SCORING_MODE was unset; forcing 'logprobs' for JSD theme deltas.")
+
+
+_TIERED = REPO_ROOT / "scripts/LInkedin_Category_Topic_Extraction/tiered_posts_grouped"
+_RAW_PROFILES = REPO_ROOT / "scripts/Linkedin_Posts_Extraction/raw_profiles"
+
+
+def _default_paths(tier: int) -> Dict[str, Path]:
+    """Tier-aware defaults (aligned with ``run_linkedin_initial_prediction_local.py``)."""
+    if int(tier) == 2:
+        work = SCRIPTS_SGO / "outputs" / "linkedin_tier2_sgo" / "default_run"
+        return {
+            "contextual": _TIERED / "ground_truth_extraction_tier2.json",
+            "mapping": _TIERED / "discovered_category_topic_mapping_tier2.json",
+            "work": work,
+            "output": work / "delta_method_predictions.json",
+            "precomputed_i0": work / "linkedin_i0_only.json",
+            "model_type": "linkedin_tier2_delta_method",
+        }
+    work = SCRIPTS_SGO / "outputs" / "linkedin_tier1_sgo" / "default_run"
+    return {
+        "contextual": _TIERED / "contextual_stimulus_extraction_with_topics.json",
+        "mapping": _TIERED / "discovered_category_topic_mapping.json",
+        "work": work,
+        "output": work / "delta_method_predictions.json",
+        "precomputed_i0": REPO_ROOT / "Predictions" / "linkedin_i0_only.json",
+        "model_type": "linkedin_tier1_delta_method",
+    }
+
+
+def _tier_pipeline_names(tier: int) -> Tuple[str, str, str]:
+    label = f"tier{int(tier)}"
+    base = f"linkedin_{label}_delta_method"
+    return label, base, f"{base}_predictions"
 
 
 def _load_precomputed_i0_index(path: Path) -> Dict[Tuple[str, int], Dict[str, Any]]:
@@ -214,6 +251,7 @@ ensure_workdir_description_from_seed = t1.ensure_workdir_description_from_seed
 save_state = t1.save_state
 delta_bridge_analysis = t1.delta_bridge_analysis
 iter_posts_tier1 = t1.iter_posts_tier1
+iter_posts_with_ground_truth = t1.iter_posts_with_ground_truth
 load_or_init_state = t1.load_or_init_state
 round_prob_dict = t1.round_prob_dict
 write_delta_method_predictions_artifact = t1.write_delta_method_predictions_artifact
@@ -229,7 +267,6 @@ compute_group_summary_shrink_band = t1.compute_group_summary_shrink_band
 hard_truncate_words = t1.hard_truncate_words
 build_refine_analyses_text = t1.build_refine_analyses_text
 merge_batch_logs_dict = t1.merge_batch_logs_dict
-memory_logs_for_refine = t1.memory_logs_for_refine
 normalize_group_summary_refinement = t1.normalize_group_summary_refinement
 sort_memory_batch_keys = t1.sort_memory_batch_keys
 word_count_t1 = t1._word_count
@@ -408,13 +445,16 @@ def _write_aggregate_deltas_json(
     work_dir: Path,
     user_predictions: Dict[str, List[Dict[str, Any]]],
     all_delta_rows: List[Dict[str, Any]],
+    *,
+    tier: int,
 ) -> Path:
     work_dir.mkdir(parents=True, exist_ok=True)
-    deltas_path = work_dir / "linkedin_tier1_all_reviews_deltas.json"
+    tier_label = f"tier{int(tier)}"
+    deltas_path = work_dir / f"linkedin_{tier_label}_all_reviews_deltas.json"
     io_utils.save_json_file(
         {
             "cluster_id": "linkedin",
-            "micro_cluster_id": "tier1",
+            "micro_cluster_id": tier_label,
             "total_reviews": sum(len(v) for v in user_predictions.values()),
             "total_delta_rows": len(all_delta_rows),
             "calculation_timestamp": time.time(),
@@ -423,6 +463,104 @@ def _write_aggregate_deltas_json(
         str(deltas_path),
     )
     return deltas_path
+
+
+def _user_pred_by_idx_from_predictions_doc(doc: Dict[str, Any]) -> Dict[str, Dict[int, Dict[str, Any]]]:
+    out: Dict[str, Dict[int, Dict[str, Any]]] = {}
+    up = doc.get("user_predictions") or {}
+    if not isinstance(up, dict):
+        return out
+    for uid, rows in up.items():
+        if not isinstance(rows, list):
+            continue
+        inner: Dict[int, Dict[str, Any]] = {}
+        for row in rows:
+            if not isinstance(row, dict):
+                continue
+            try:
+                ridx = int(row.get("review_idx", 0))
+            except (TypeError, ValueError):
+                continue
+            inner[ridx] = copy.deepcopy(row)
+        if inner:
+            out[str(uid)] = inner
+    return out
+
+
+def _qualifying_keys_from_predictions_doc(
+    doc: Dict[str, Any],
+    next_sweep_thr: float,
+    feedback_on: str,
+) -> Set[Tuple[str, str]]:
+    keys: Set[Tuple[str, str]] = set()
+    up = doc.get("user_predictions") or {}
+    if not isinstance(up, dict):
+        return keys
+    for uid, rows in up.items():
+        if not isinstance(rows, list):
+            continue
+        for row in rows:
+            if not isinstance(row, dict):
+                continue
+            post_id = str(row.get("post_id") or "")
+            if not post_id:
+                continue
+            g = _gate_delta_from_deltas(_resolved_deltas_for_gates(row), feedback_on)
+            if g > next_sweep_thr:
+                keys.add((str(uid), post_id))
+    return keys
+
+
+def _post_baseline_done_this_iteration(rec: Any, iteration: int) -> bool:
+    return isinstance(rec, dict) and int(rec.get("feedback_loop_iteration") or 0) == int(iteration)
+
+
+def _post_outer_iteration_complete(
+    rec: Any,
+    iteration: int,
+    correction_iterations: int,
+    delta_thr: float,
+    feedback_on: str,
+) -> bool:
+    if not isinstance(rec, dict):
+        return False
+    if int(rec.get("feedback_loop_iteration") or 0) != int(iteration):
+        return False
+    journey = rec.get("correction_journey") or []
+    if len(journey) >= int(correction_iterations):
+        return True
+    if journey and _gate_delta_from_deltas(_resolved_deltas_for_gates(rec), feedback_on) <= delta_thr:
+        return True
+    return False
+
+
+def _infer_resume_start_iteration_from_stats(work_dir: Path, tier: int, num_iterations: int) -> Optional[int]:
+    stats_path = work_dir / "iteration_stats.jsonl"
+    if not stats_path.is_file():
+        return None
+    tier_label = f"tier{int(tier)}"
+    pipeline_suffix = f"linkedin_{tier_label}_delta_method_predictions"
+    completed: List[int] = []
+    for line in stats_path.read_text(encoding="utf-8").splitlines():
+        line = line.strip()
+        if not line:
+            continue
+        try:
+            row = json.loads(line)
+        except json.JSONDecodeError:
+            continue
+        pipe = str(row.get("pipeline") or "")
+        if row.get("tier") == int(tier) or pipe == pipeline_suffix:
+            completed.append(int(row.get("iteration") or 0))
+    if not completed:
+        return None
+    last_done = max(completed)
+    if last_done >= int(num_iterations):
+        return None
+    partial = work_dir / "delta_method_predictions.json"
+    if partial.is_file():
+        return last_done + 1
+    return last_done + 1
 
 
 def _print_review_progress(
@@ -830,11 +968,14 @@ async def run_all(args: argparse.Namespace) -> None:
 
     _ensure_scoring_mode()
 
-    default_run_dir = (SCRIPTS_SGO / "outputs" / "linkedin_tier1_sgo" / "default_run").resolve()
+    tier = int(getattr(args, "tier", 1) or 1)
+    tier_label, pipeline_name, pipeline_predictions_name = _tier_pipeline_names(tier)
+    tier_defs = _default_paths(tier)
+    default_run_dir = tier_defs["work"].resolve()
     wd_raw = str(getattr(args, "work_dir", "") or "").strip()
     work_dir = Path(wd_raw).expanduser().resolve() if wd_raw else default_run_dir
     if not wd_raw:
-        logger.info("[CONFIG] empty --work-dir → using default %s", work_dir)
+        logger.info("[CONFIG] tier=%s empty --work-dir → using default %s", tier, work_dir)
 
     contextual_path = Path(args.contextual_json).expanduser().resolve()
     description_seed_path = Path(args.description_json).expanduser().resolve()
@@ -881,7 +1022,7 @@ async def run_all(args: argparse.Namespace) -> None:
     payload = load_contextual_payload(contextual_path)
     if not str(payload.get("source_file") or "").strip():
         payload["source_file"] = contextual_path.name
-    all_posts = iter_posts_tier1(payload)
+    all_posts = iter_posts_with_ground_truth(payload, tier_hint=tier_label)
     if args.max_posts > 0:
         all_posts = all_posts[: args.max_posts]
 
@@ -913,7 +1054,8 @@ async def run_all(args: argparse.Namespace) -> None:
     )
 
     logger.info(
-        "[DATA] contextual=%s | posts_with_GT=%s | work_dir=%s | evolution_state=%s",
+        "[DATA] tier=%s contextual=%s | posts_with_GT=%s | work_dir=%s | evolution_state=%s",
+        tier,
         contextual_path.name,
         len(all_posts),
         work_dir,
@@ -968,7 +1110,7 @@ async def run_all(args: argparse.Namespace) -> None:
     if not getattr(args, "disable_qual_schema", False):
         persona_evolver = TribeSchemaEvolver(
             cluster_id="linkedin",
-            micro_id="tier1_delta",
+            micro_id=f"{tier_label}_delta",
             memory_dir=str(work_dir / "memory"),
             refined_schema_dir=str(work_dir),
             evolution_model=args.qual_schema_model,
@@ -1015,7 +1157,8 @@ async def run_all(args: argparse.Namespace) -> None:
                 args=args,
                 model_type_used=str(args.model_type_used),
                 meta_extra={
-                    "pipeline": "linkedin_tier1_delta_method_predictions_full",
+                    "tier": tier,
+                    "pipeline": f"{pipeline_predictions_name}_full",
                     "precomputed_i0_json": str(precomputed_i0_path),
                     "memory_jsd_threshold": memory_jsd_thr,
                     "next_sweep_min_delta": next_sweep_thr,
@@ -1037,7 +1180,7 @@ async def run_all(args: argparse.Namespace) -> None:
             logger.warning("[OUTPUT] could not mirror delta bundle to --output: %s", e)
         if rows:
             flat = _flatten_user_predictions_for_aggregate(user_pred_by_idx)
-            dp = _write_aggregate_deltas_json(work_dir, flat, rows)
+            dp = _write_aggregate_deltas_json(work_dir, flat, rows, tier=tier)
             print(f"[DELTAS] aggregate → {dp}", flush=True)
         if not getattr(args, "disable_evolution_state_snapshots", False):
             snap = append_evolution_state_snapshot(state_history_dir, state, state_snap_seq, reason)
@@ -1046,6 +1189,17 @@ async def run_all(args: argparse.Namespace) -> None:
 
     start_it = max(1, int(args.start_iteration))
     num_it = int(args.num_iterations)
+    if getattr(args, "resume", False):
+        inferred = _infer_resume_start_iteration_from_stats(work_dir, tier, num_it)
+        if inferred is not None and int(args.start_iteration) == 1:
+            start_it = inferred
+            logger.info("[RESUME] inferred --start-iteration=%s from work_dir artifacts", start_it)
+        elif inferred is not None and start_it != inferred:
+            logger.warning(
+                "[RESUME] --start-iteration=%s differs from inferred %s; using explicit value.",
+                start_it,
+                inferred,
+            )
     if start_it > num_it:
         logger.error("--start-iteration (%s) > --num-iterations (%s)", start_it, num_it)
         sys.exit(1)
@@ -1054,12 +1208,83 @@ async def run_all(args: argparse.Namespace) -> None:
     pred_snapshot_prev_outer: Dict[Tuple[str, int], Dict[str, Any]] = {}
     refine_accumulator: Dict[str, Any] = {}
 
+    if start_it > 1:
+        prev_iter_path = work_dir / f"delta_method_predictions_iteration_{start_it - 1}.json"
+        if prev_iter_path.is_file():
+            try:
+                prev_doc = json.loads(prev_iter_path.read_text(encoding="utf-8"))
+                qualifying_keys_from_prev = _qualifying_keys_from_predictions_doc(
+                    prev_doc, next_sweep_thr, args.feedback_on
+                )
+                pred_snapshot_prev_outer = build_prediction_snapshot_for_memory(
+                    _user_pred_by_idx_from_predictions_doc(prev_doc)
+                )
+                logger.info(
+                    "[RESUME] loaded %s qualifying posts from %s",
+                    len(qualifying_keys_from_prev),
+                    prev_iter_path.name,
+                )
+            except (OSError, json.JSONDecodeError) as e:
+                logger.error("[RESUME] could not load %s: %s", prev_iter_path, e)
+                sys.exit(1)
+        else:
+            logger.error(
+                "[RESUME] missing %s (required when --start-iteration > 1). "
+                "Run iteration %s first or use --start-iteration 1.",
+                prev_iter_path,
+                start_it - 1,
+            )
+            sys.exit(1)
+
+    resume_seed_path = Path(
+        str(getattr(args, "resume_user_pred_seed", "") or "").strip()
+    ).expanduser()
+    if getattr(args, "resume", False) and not str(getattr(args, "resume_user_pred_seed", "") or "").strip():
+        resume_seed_path = work_dir / "delta_method_predictions.json"
+
     for iteration in range(start_it, num_it + 1):
         user_pred_by_idx: Dict[str, Dict[int, Dict[str, Any]]] = {}
+        if getattr(args, "resume", False) and resume_seed_path.is_file():
+            try:
+                seed_doc = json.loads(resume_seed_path.read_text(encoding="utf-8"))
+                user_pred_by_idx = _user_pred_by_idx_from_predictions_doc(seed_doc)
+                logger.info(
+                    "[RESUME] loaded user predictions from %s (%s review rows)",
+                    resume_seed_path,
+                    sum(len(v) for v in user_pred_by_idx.values()),
+                )
+            except (OSError, json.JSONDecodeError) as e:
+                logger.error("[RESUME] could not load seed predictions %s: %s", resume_seed_path, e)
+                sys.exit(1)
         all_delta_rows: List[Dict[str, Any]] = []
+        if getattr(args, "resume", False):
+            tier_label = f"tier{int(tier)}"
+            deltas_path = work_dir / f"linkedin_{tier_label}_all_reviews_deltas.json"
+            if deltas_path.is_file():
+                try:
+                    existing = json.loads(deltas_path.read_text(encoding="utf-8"))
+                    prior_rows = existing.get("deltas") or []
+                    if isinstance(prior_rows, list):
+                        all_delta_rows.extend(copy.deepcopy(prior_rows))
+                        logger.info("[RESUME] restored %s prior delta rows from %s", len(prior_rows), deltas_path.name)
+                except (OSError, json.JSONDecodeError) as e:
+                    logger.warning("[RESUME] could not load prior deltas %s: %s", deltas_path, e)
         iteration_jsds: List[float] = []
-        processed: Set[str] = set()
-        state["batch_seq"] = 0
+        resume_same_outer = bool(
+            getattr(args, "resume", False)
+            and int(state.get("last_completed_iteration") or 0) == int(iteration)
+        )
+        if resume_same_outer:
+            processed = {str(x) for x in (state.get("processed_post_ids") or [])}
+            logger.info(
+                "[RESUME] continuing outer iteration %s | batch_seq=%s | processed_posts=%s",
+                iteration,
+                state.get("batch_seq"),
+                len(processed),
+            )
+        else:
+            processed = set()
+            state["batch_seq"] = 0
 
         if qualifying_keys_from_prev is None:
             pending = list(all_posts)
@@ -1121,6 +1346,8 @@ async def run_all(args: argparse.Namespace) -> None:
                 topics = list(p.get("topics_ordered") or [])
                 post_id = p.get("post_id")
                 prev = user_pred_by_idx.get(pid, {}).get(ridx)
+                if getattr(args, "resume", False) and _post_baseline_done_this_iteration(prev, iteration):
+                    return str(post_id) if post_id is not None else None
                 slim = precomputed_i0_index.get((str(pid), int(ridx)))
                 if not isinstance(slim, dict):
                     logger.error("[I0] internal: missing row for %s review_%s", pid, ridx)
@@ -1166,7 +1393,7 @@ async def run_all(args: argparse.Namespace) -> None:
                 ) or {}
                 gt = {k: float(v) for k, v in (p.get("topic_probabilities") or {}).items()}
                 line: Dict[str, Any] = {
-                    "pipeline": "linkedin_tier1_delta_method",
+                    "pipeline": pipeline_name,
                     "phase": "baseline",
                     "outer_iteration": iteration,
                     "post_id": post_id,
@@ -1210,6 +1437,14 @@ async def run_all(args: argparse.Namespace) -> None:
             ridx, rkey = post_key_to_meta.get(_pk, (0, f"{pid}_review_0"))
             row = user_pred_by_idx.get(pid, {}).get(ridx)
             if not isinstance(row, dict):
+                continue
+            if getattr(args, "resume", False) and _post_outer_iteration_complete(
+                row,
+                iteration,
+                int(args.correction_iterations),
+                delta_thr,
+                args.feedback_on,
+            ):
                 continue
             # Use the *current baseline* deltas before starting this iteration's correction rounds:
             # i1 gates from i0; i2 gates from prior i1 best; etc.
@@ -1308,7 +1543,7 @@ async def run_all(args: argparse.Namespace) -> None:
             ) or {}
             gt = {k: float(v) for k, v in (p.get("topic_probabilities") or {}).items()}
             line: Dict[str, Any] = {
-                "pipeline": "linkedin_tier1_delta_method",
+                "pipeline": pipeline_name,
                 "phase": "i1",
                 "outer_iteration": iteration,
                 "post_id": post_id,
@@ -1361,10 +1596,15 @@ async def run_all(args: argparse.Namespace) -> None:
                 mem_buffer = mem_buffer[min_mem_posts:]
                 batch_key = memory_batch_key(iteration, int(state["batch_seq"]))
                 revs = [t[0] for t in slice_rows]
-                ans = [t[1] for t in slice_rows]
+                prelim_notes = [t[1] for t in slice_rows]
+                memory_batch_payload: Dict[str, Any] = {
+                    "patterns": [],
+                    "outliers": [],
+                    "preliminary_delta_notes": prelim_notes,
+                }
                 if (
                     getattr(args, "linkedin_root_cause_memory", True)
-                    and len(slice_rows) == len(ans)
+                    and len(slice_rows) == len(prelim_notes)
                 ):
                     rc_items: List[Dict[str, Any]] = []
                     rc_ok = True
@@ -1416,20 +1656,27 @@ async def run_all(args: argparse.Namespace) -> None:
                                 "preliminary_delta_notes": str(prelim),
                             }
                         )
-                    if rc_ok and len(rc_items) == len(ans):
+                    if rc_ok and len(rc_items) == len(prelim_notes):
                         rc_model = (
                             str(getattr(args, "linkedin_root_cause_model", "") or "").strip()
                             or args.delta_model
                         )
-                        ans = await linkedin_memory_batch_root_cause_analyses(
+                        memory_batch_payload = await linkedin_memory_batch_root_cause_analyses(
                             client,
                             rc_model,
                             state=state,
                             memory=memory,
                             pending_memory_keys=set(),
                             review_items=rc_items,
-                            fallback_analyses=ans,
+                            fallback_analyses=prelim_notes,
                         )
+                elif not getattr(args, "linkedin_root_cause_memory", True):
+                    memory_batch_payload = {
+                        "patterns": [],
+                        "outliers": [],
+                        "preliminary_delta_notes": prelim_notes,
+                        "analyses": prelim_notes,
+                    }
                 cats_slice = sorted({t[2] for t in slice_rows if t[2]})
                 if len(cats_slice) == 1:
                     category_field = cats_slice[0]
@@ -1439,7 +1686,10 @@ async def run_all(args: argparse.Namespace) -> None:
                     category_field = ""
                 refine_accumulator[batch_key] = {
                     "reviews": revs,
-                    "analyses": ans,
+                    "patterns": memory_batch_payload.get("patterns") or [],
+                    "outliers": memory_batch_payload.get("outliers") or [],
+                    "preliminary_delta_notes": memory_batch_payload.get("preliminary_delta_notes")
+                    or prelim_notes,
                     "category": category_field,
                 }
                 memory[batch_key] = refine_accumulator[batch_key]
@@ -1721,7 +1971,8 @@ async def run_all(args: argparse.Namespace) -> None:
         stats_record: Dict[str, Any] = {
             "iteration": iteration,
             "num_iterations_planned": num_it,
-            "pipeline": "linkedin_tier1_delta_method_predictions",
+            "pipeline": pipeline_predictions_name,
+            "tier": tier,
             "n_posts_in_sweep": n_posts,
             "n_posts_i1_eligible": n_high,
             "n_posts_scored": len(iteration_jsds),
@@ -1790,45 +2041,48 @@ def _flatten_user_predictions_for_aggregate(
     return out
 
 def main() -> None:
-    default_ctx = (
-        REPO_ROOT
-        / "scripts/LInkedin_Category_Topic_Extraction/tiered_posts_grouped/contextual_stimulus_extraction_with_topics.json"
-    )
-    default_desc = REPO_ROOT / "scripts/Linkedin_Posts_Extraction/raw_profiles/description.json"
-    default_profiles = REPO_ROOT / "scripts/Linkedin_Posts_Extraction/raw_profiles/profiles"
-    default_work = SCRIPTS_SGO / "outputs" / "linkedin_tier1_sgo" / "default_run"
-    default_out = default_work / "delta_method_predictions.json"
-    default_mapping = (
-        REPO_ROOT
-        / "scripts/LInkedin_Category_Topic_Extraction/tiered_posts_grouped/discovered_category_topic_mapping.json"
-    )
+    default_desc = _RAW_PROFILES / "description.json"
+    default_profiles = _RAW_PROFILES / "profiles"
 
     p = argparse.ArgumentParser(description=__doc__)
-    p.add_argument("--contextual-json", type=str, default=str(default_ctx))
+    p.add_argument(
+        "--tier",
+        type=int,
+        default=1,
+        choices=(1, 2),
+        help="Select tier-1 or tier-2 defaults for contextual/mapping/work-dir/i0 when paths are omitted.",
+    )
+    p.add_argument(
+        "--contextual-json",
+        type=str,
+        default=None,
+        help="GT contextual JSON. Default: tier-1 stimulus JSON or tier-2 ground_truth_extraction_tier2.json.",
+    )
     p.add_argument(
         "--precomputed-i0-json",
         type=str,
-        default=str(REPO_ROOT / "Predictions" / "linkedin_i0_only.json"),
+        default=None,
         dest="precomputed_i0_json",
-        help="Slim i0 JSON from run_linkedin_i0_only.py (required). Default: repo Predictions/linkedin_i0_only.json",
+        help="Slim i0 JSON from run_linkedin_i0_only.py / initial prediction. "
+        "Default: outputs/linkedin_tier{N}_sgo/default_run/linkedin_i0_only.json (tier 1 also checks Predictions/).",
     )
     p.add_argument("--description-json", type=str, default=str(default_desc))
-    p.add_argument("--mapping-json", type=str, default=str(default_mapping))
+    p.add_argument("--mapping-json", type=str, default=None)
     p.add_argument("--profiles-root", type=str, default=str(default_profiles))
     p.add_argument(
         "--work-dir",
         type=str,
-        default=str(default_work),
-        help="Run directory. Empty → hardcoded default scripts_sgo/outputs/linkedin_tier1_sgo/default_run. "
+        default="",
+        help="Run directory. Empty → scripts_sgo/outputs/linkedin_tier{N}_sgo/default_run. "
         "Writes evolution/, memory/, traces, predictions.",
     )
-    p.add_argument("--output", type=str, default=str(default_out))
+    p.add_argument("--output", type=str, default=None)
     p.add_argument(
         "--model-type-used",
         type=str,
-        default="linkedin_tier1_delta_method",
+        default=None,
         dest="model_type_used",
-        help="Written as model_type_used in the output JSON",
+        help="Written as model_type_used in the output JSON (default: linkedin_tier{N}_delta_method).",
     )
     p.add_argument("--gen-model", type=str, default=os.environ.get("OPENAI_MODEL", "gpt-4o-mini"))
     p.add_argument("--topic-model", type=str, default=os.environ.get("OPENAI_MODEL", "gpt-4o-mini"))
@@ -1838,20 +2092,20 @@ def main() -> None:
         type=str,
         default="",
         dest="linkedin_root_cause_model",
-        help="Model for batch memory root-cause prompt (default: same as --delta-model)",
+        help="Model for batch memory pattern-extraction prompt (default: same as --delta-model)",
     )
     _rcm = p.add_mutually_exclusive_group()
     _rcm.add_argument(
         "--linkedin-root-cause-memory",
         dest="linkedin_root_cause_memory",
         action="store_true",
-        help="Use LinkedIn batch root-cause prompt for memory analyses (default on)",
+        help="Use LinkedIn batch pattern-extraction prompt for memory (default on)",
     )
     _rcm.add_argument(
         "--no-linkedin-root-cause-memory",
         dest="linkedin_root_cause_memory",
         action="store_false",
-        help="Legacy: per-post delta_bridge / memory analysis in memory (disables batch root-cause prompt)",
+        help="Legacy: store per-post preliminary deltas only (disables batch pattern-extraction prompt)",
     )
     _rcm.set_defaults(linkedin_root_cause_memory=True)
     p.add_argument("--concurrent", type=int, default=8)
@@ -1906,6 +2160,19 @@ def main() -> None:
         type=int,
         default=1,
         help="First outer iteration index (inclusive). Use with --num-iterations to resume mid-run.",
+    )
+    p.add_argument(
+        "--resume",
+        action="store_true",
+        help="Resume an interrupted run in --work-dir: reload evolution/memory, prior deltas, "
+        "qualifying posts from iteration N-1, and skip posts already finished in the current sweep.",
+    )
+    p.add_argument(
+        "--resume-user-pred-seed",
+        type=str,
+        default="",
+        dest="resume_user_pred_seed",
+        help="JSON with partial user_predictions (default: <work-dir>/delta_method_predictions.json when --resume).",
     )
     p.add_argument(
         "--memory-batch-size",
@@ -2061,6 +2328,23 @@ def main() -> None:
     )
     p.set_defaults(sync_description_json=True, sync_description_json_every_state_save=False)
     args = p.parse_args()
+
+    tier = int(args.tier)
+    defs = _default_paths(tier)
+    if not str(args.contextual_json or "").strip():
+        args.contextual_json = str(defs["contextual"])
+    if not str(args.mapping_json or "").strip():
+        args.mapping_json = str(defs["mapping"])
+    if not str(args.work_dir or "").strip():
+        args.work_dir = str(defs["work"])
+    if not str(args.output or "").strip():
+        args.output = str(defs["output"])
+    if not str(args.precomputed_i0_json or "").strip():
+        args.precomputed_i0_json = str(defs["precomputed_i0"])
+    if not str(args.model_type_used or "").strip():
+        args.model_type_used = str(defs["model_type"])
+    args.tier = tier
+
     try:
         asyncio.run(run_all(args))
     except KeyboardInterrupt:

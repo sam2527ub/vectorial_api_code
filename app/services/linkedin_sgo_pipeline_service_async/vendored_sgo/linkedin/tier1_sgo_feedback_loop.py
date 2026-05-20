@@ -2,7 +2,8 @@
 """
 Curated **helper library** for ``tier1_delta_method_predictions.py``.
 
-This module holds shared implementations for evolution state, ``memory/batch_analyses.json``,
+This module holds shared implementations for evolution state, ``memory/batch_analyses.json``
+(``patterns`` / ``outliers`` per batch, plus ``preliminary_delta_notes``),
 group-summary refine/shrink, batch Part B root-cause memory, qualitative-summary seeding/sync,
 ``delta_method_predictions.json`` artifact writes, and ``TribeSchemaEvolver`` wiring.
 
@@ -71,7 +72,9 @@ from linkedin.i0_linkedin_context import (
 from generate_synthetic_review_and_memory_analysis.prompt_generation_for_both_parts import (
     format_batch_analyses_memory_for_part_a,
     format_linkedin_group_memory_posts_section,
+    format_memory_batch_entry_lines,
     generate_part_b_linkedin_group_memory_prompt,
+    parse_linkedin_memory_batch_patterns_response,
 )
 
 
@@ -1415,25 +1418,19 @@ def format_batch_logs_for_prompt(
     max_chars_per_analysis: int = REFINE_ANALYSIS_LINE_MAX_CHARS,
 ) -> str:
     """
-    Human-readable blob for refine prompts. Expects Amazon-style entries:
-    ``reviews``, ``analyses``, ``category`` (legacy ``post_ids`` still supported).
+    Human-readable blob for refine prompts. Expects memory entries with
+    ``patterns`` / ``outliers`` (Part B v2) or legacy per-post ``analyses``.
     """
     lines: List[str] = []
     cap_a = max(400, int(max_chars_per_analysis))
     for batch_key in sort_memory_batch_keys(list(batch_logs.keys())):
         data = batch_logs[batch_key]
-        lines.append(f"--- {batch_key} ---")
-        cat = (data.get("category") or "").strip()
-        if cat:
-            lines.append(f"category: {cat}")
-        revs = data.get("reviews")
-        if revs is None:
-            revs = data.get("post_ids") or []
-        if revs:
-            lines.append("reviews: " + ", ".join(str(x) for x in revs))
-        for a in data.get("analyses") or []:
-            lines.append(f"- {_truncate_for_refine_prompt(str(a), cap_a, what='analysis line')}")
-    return "\n".join(lines) if lines else "(no analyses this window)"
+        if not isinstance(data, dict):
+            continue
+        lines.extend(
+            format_memory_batch_entry_lines(str(batch_key), data, max_chars_per_line=cap_a)
+        )
+    return "\n".join(lines) if lines else "(no memory batches this window)"
 
 
 def build_refine_analyses_text(
@@ -1528,29 +1525,19 @@ async def linkedin_memory_batch_root_cause_analyses(
     pending_memory_keys: Optional[Set[str]],
     review_items: List[Dict[str, Any]],
     fallback_analyses: List[str],
-) -> List[str]:
+) -> Dict[str, Any]:
     """
-    One LinkedIn-specific batch call: root-cause strings for ``memory/batch_analyses.json`` ``analyses``.
-    Uses ``part_b_memory_analysis.txt`` (group summary + traits + past learnings + posts section).
-    Pipeline assigns ``reviews`` by position (same order as ``review_items``); LLM returns ``analyses`` only.
-    Falls back to ``fallback_analyses`` (per-post delta notes) on any failure or invalid slot.
+    One LinkedIn batch call: behavioral patterns for ``memory/batch_analyses.json``.
+    Uses ``part_b_memory_analysis.txt`` (group summary + traits + posts section).
+    Returns ``patterns``, ``outliers``, and ``preliminary_delta_notes`` (per-post fallbacks).
     """
+    _ = memory, pending_memory_keys  # reserved for future cross-batch dedupe in prompt
     n = len(review_items)
     if n == 0:
-        return []
+        return {"patterns": [], "outliers": [], "preliminary_delta_notes": [], "parse_ok": False}
     fb = list(fallback_analyses[:n])
     while len(fb) < n:
         fb.append("")
-    expected_review_keys = [
-        str(it.get("review_key") or "") if isinstance(it, dict) else ""
-        for it in review_items
-    ]
-    past = memory_past_learnings_for_prompt(
-        memory,
-        exclude_keys=pending_memory_keys or set(),
-        tail_batches=6,
-        max_chars=12000,
-    )
     slim: List[Dict[str, Any]] = []
     for it in review_items:
         if not isinstance(it, dict):
@@ -1592,18 +1579,21 @@ async def linkedin_memory_batch_root_cause_analyses(
         load_linkedin_memory_batch_root_cause_template()
     except FileNotFoundError as e:
         logger.error("[MEMORY_RC] %s", e)
-        return fb
+        return parse_linkedin_memory_batch_patterns_response(
+            {}, batch_size=n, fallback_preliminary_notes=fb
+        )
 
     try:
         full_prompt = generate_part_b_linkedin_group_memory_prompt(
             group_summary=gs_part_b,
             group_traits=group_traits_str,
-            past_learnings=past,
             posts_section=posts_section,
         )
     except FileNotFoundError as e:
         logger.error("[MEMORY_RC] prompt build failed: %s", e)
-        return fb
+        return parse_linkedin_memory_batch_patterns_response(
+            {}, batch_size=n, fallback_preliminary_notes=fb
+        )
 
     if len(full_prompt) > 115000:
         full_prompt = full_prompt[:115000] + "\n... [PROMPT_TRUNCATED]"
@@ -1619,41 +1609,21 @@ async def linkedin_memory_batch_root_cause_analyses(
         )
         raw = (resp.choices[0].message.content or "").strip()
         data = json.loads(raw)
-        rv_llm = data.get("reviews")
-        if isinstance(rv_llm, list):
-            norm_llm = [str(x).strip() for x in rv_llm]
-            exp = expected_review_keys[:n]
-            if norm_llm != exp:
-                logger.warning(
-                    "[MEMORY_RC] ignoring JSON reviews field (expected pipeline keys); "
-                    "got_len=%s expected_len=%s match=%s",
-                    len(norm_llm),
-                    len(exp),
-                    norm_llm == exp,
-                )
-        arr = data.get("analyses")
-        if not isinstance(arr, list):
-            logger.warning("[MEMORY_RC] analyses is not a list — using preliminary deltas")
-            return fb
-        if len(arr) != n:
-            logger.warning(
-                "[MEMORY_RC] expected analyses length %s, got %s — merging slots with fallbacks",
-                n,
-                len(arr),
-            )
-        out: List[str] = []
-        for i in range(n):
-            row = arr[i] if i < len(arr) else None
-            s = str(row).strip() if row is not None else ""
-            if len(s) >= 12 and "[" in s and "]" in s:
-                out.append(s)
-            else:
-                out.append(fb[i])
-        logger.info("[MEMORY_RC] wrote %s root-cause memory lines (batch)", len(out))
-        return out
+        parsed = parse_linkedin_memory_batch_patterns_response(
+            data, batch_size=n, fallback_preliminary_notes=fb
+        )
+        logger.info(
+            "[MEMORY_RC] batch patterns=%s outliers=%s parse_ok=%s",
+            len(parsed.get("patterns") or []),
+            len(parsed.get("outliers") or []),
+            parsed.get("parse_ok"),
+        )
+        return parsed
     except Exception as e:
         logger.error("[MEMORY_RC] batch LLM failed: %s", e)
-        return fb
+        return parse_linkedin_memory_batch_patterns_response(
+            {}, batch_size=n, fallback_preliminary_notes=fb
+        )
 
 
 def hard_truncate_words(text: str, max_words: int) -> str:

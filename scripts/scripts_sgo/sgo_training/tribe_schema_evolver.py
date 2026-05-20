@@ -173,12 +173,31 @@ class TribeSchemaEvolver:
         if batch_analyses_text is not None:
             logs_text = batch_analyses_text
         else:
-            formatted_logs = []
-            for batch_key, data in batch_logs.items():
-                formatted_logs.append(f"--- {batch_key} ---")
-                for analysis in data.get("analyses", []):
-                    formatted_logs.append(f"- {analysis}")
-            logs_text = "\n".join(formatted_logs)
+            try:
+                from generate_synthetic_review_and_memory_analysis.prompt_generation_for_both_parts import (
+                    format_memory_batch_entry_lines,
+                    _sort_memory_batch_keys,
+                )
+
+                formatted_logs: list = []
+                for batch_key in _sort_memory_batch_keys(list(batch_logs.keys())):
+                    data = batch_logs.get(batch_key)
+                    if not isinstance(data, dict):
+                        continue
+                    formatted_logs.extend(
+                        format_memory_batch_entry_lines(str(batch_key), data)
+                    )
+                logs_text = "\n".join(formatted_logs) if formatted_logs else "(no memory batches)"
+            except ImportError:
+                formatted_logs = []
+                for batch_key, data in batch_logs.items():
+                    formatted_logs.append(f"--- {batch_key} ---")
+                    for analysis in data.get("analyses", []):
+                        formatted_logs.append(f"- {analysis}")
+                    for p in data.get("patterns") or []:
+                        if isinstance(p, dict):
+                            formatted_logs.append(f"- {p.get('behavior', p)}")
+                logs_text = "\n".join(formatted_logs)
 
         template = _load_prompt(self.refine_prompt_basename)
         persona_json = json.dumps(
