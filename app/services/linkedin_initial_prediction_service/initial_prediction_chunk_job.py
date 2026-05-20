@@ -192,6 +192,12 @@ async def run_initial_prediction_process_chunk(
     from .i0.contextual_payload import coalesce_contextual_payload
     from .stimulus_posts import iter_posts_with_ground_truth
 
+    base = ""
+    rel = ""
+    save_partial = False
+    user_pred: Dict[str, Dict[int, Dict[str, Any]]] = {}
+    td: Optional[tempfile.TemporaryDirectory] = None
+
     if not s3_client or not s3_bucket:
         update_linkedin_room_pipeline_job(
             job_id, enterprise_name=enterprise_name, status="FAILED", error="S3 not configured"
@@ -240,7 +246,6 @@ async def run_initial_prediction_process_chunk(
     ).rstrip("/")
     rel = art.initial_prediction_tier2 if tier_n == 2 else art.initial_prediction_tier1
 
-    user_pred: Dict[str, Dict[int, Dict[str, Any]]] = {}
     errors: List[Dict[str, Any]] = []
 
     partial_raw = try_fetch_json_from_s3(partial_s3_key_for_artifact(base, rel))
@@ -260,8 +265,6 @@ async def run_initial_prediction_process_chunk(
                 _count_preds(user_pred),
                 rel,
             )
-
-    td: Optional[tempfile.TemporaryDirectory] = None
 
     try:
         stim, mapping, desc = fetch_s3_inputs_for_initial_prediction(
@@ -443,6 +446,7 @@ async def run_initial_prediction_process_chunk(
         update_linkedin_room_pipeline_job(
             job_id, enterprise_name=enterprise_name, status="FAILED", error=str(e)
         )
+        raise
     finally:
         if td is not None:
             td.cleanup()

@@ -85,10 +85,20 @@ def load_initial_prediction_config(force_reload: bool = False) -> InitialPredict
             return _CFG
         raw = yaml.safe_load(path.read_text(encoding="utf-8")) or {}
         batch_raw = raw.get("batch") or {}
+        posts_per = max(1, int(batch_raw.get("posts_per_process_invocation", 4)))
+        env_posts = os.environ.get("INITIAL_PREDICTION_POSTS_PER_CHUNK", "").strip()
+        if env_posts:
+            posts_per = max(1, int(env_posts))
+        elif os.environ.get("VERCEL"):
+            # Keep each /async/process invocation within serverless time limits.
+            posts_per = min(posts_per, 2)
+        max_conc = max(1, int(raw.get("max_concurrent_posts", 8)))
+        if os.environ.get("VERCEL"):
+            max_conc = min(max_conc, 4)
         _CFG = InitialPredictionConfig(
             default_gen_model=str(raw.get("default_gen_model", "gpt-4o-mini")).strip(),
             default_topic_model=str(raw.get("default_topic_model", "gpt-4o-mini")).strip(),
-            max_concurrent_posts=max(1, int(raw.get("max_concurrent_posts", 8))),
+            max_concurrent_posts=max_conc,
             checkpoint_every=max(0, int(raw.get("checkpoint_every", 5))),
             prob_threshold=float(raw.get("prob_threshold", 0.5)),
             gt_prob_threshold=float(raw.get("gt_prob_threshold", 0.5)),
@@ -101,9 +111,7 @@ def load_initial_prediction_config(force_reload: bool = False) -> InitialPredict
             embedding_model=str(raw.get("embedding_model", "text-embedding-3-small")).strip(),
             embedding_min_interval_sec=float(raw.get("embedding_min_interval_sec", 0.05)),
             batch=InitialPredictionBatchConfig(
-                posts_per_process_invocation=max(
-                    1, int(batch_raw.get("posts_per_process_invocation", 4))
-                ),
+                posts_per_process_invocation=posts_per,
                 save_partial_after_each_chunk=bool(
                     batch_raw.get("save_partial_after_each_chunk", True)
                 ),

@@ -1,0 +1,18 @@
+**Taxonomy category:** {category}
+
+**Topic to check:** {topic}
+
+Below is a LinkedIn post body (synthetic — generated to imitate a specific author). Read it carefully.
+
+Does this post **discuss or clearly center on** the topic above? Count as Yes if the topic is a main theme, argument, or explicit focus — not if it is only a vague related mention or a single keyword without substance.
+
+---
+Post:
+"""
+{post_body}
+"""
+---
+
+Question: Does this post discuss the topic "{topic}"?
+
+Answer with ONLY "Yes" or "No".

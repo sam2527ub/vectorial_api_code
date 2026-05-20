@@ -594,14 +594,23 @@ async def process_linkedin_initial_prediction_async(
             base_url = str(request.base_url).rstrip("/")
         except Exception:
             pass
-    await request_handler.process_initial_prediction_job_chunk(
-        job_id=jobId,
-        audience_room_id=audience_room_id,
-        enterprise_name=enterpriseName,
-        model=model,
-        base_url=base_url,
-        workflow_orchestrated=workflowOrchestrated,
-    )
+    try:
+        await request_handler.process_initial_prediction_job_chunk(
+            job_id=jobId,
+            audience_room_id=audience_room_id,
+            enterprise_name=enterpriseName,
+            model=model,
+            base_url=base_url,
+            workflow_orchestrated=workflowOrchestrated,
+        )
+    except Exception as e:
+        logger.error(
+            "linkedin-initial-prediction async process failed job %s: %s",
+            jobId,
+            e,
+            exc_info=True,
+        )
+        raise HTTPException(status_code=500, detail=str(e)) from e
     return build_process_chunk_response(
         job_id=jobId,
         enterprise_name=enterpriseName,
