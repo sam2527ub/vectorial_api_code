@@ -43,6 +43,9 @@ reddit-vercel-worflow/
 
 .vercel
 
+# Local prediction artifacts (i0 / run outputs)
+Predictions/
+
 # Local LinkedIn / SGO script trees (large data + experiments; keep on disk only)
 scripts/scripts_sgo/
 scripts/Linkedin_Posts_Extraction/
