@@ -161,6 +161,7 @@ class TribeSchemaEvolver:
         batch_analyses_text: Optional[str] = None,
         *,
         group_summary: str = "",
+        refine_prompt_basename: Optional[str] = None,
     ) -> Optional[Dict[str, Any]]:
         """
         Run one refinement step: evolve qualitative_summary using the given batch error logs.
@@ -170,14 +171,28 @@ class TribeSchemaEvolver:
         ``baseline_summary_block`` is kept for API compatibility; refine prompt does not embed it.
         """
         _ = baseline_summary_block
+        try:
+            from generate_synthetic_review_and_memory_analysis.prompt_generation_for_both_parts import (
+                _fill_named_placeholders,
+                format_memory_batch_entry_lines,
+                _sort_memory_batch_keys,
+            )
+        except ImportError:
+            def _fill_named_placeholders(template: str, **values: str) -> str:
+                out = template
+                for key, val in values.items():
+                    out = out.replace("{" + key + "}", str(val))
+                return out
+
+            format_memory_batch_entry_lines = None  # type: ignore
+            _sort_memory_batch_keys = None  # type: ignore
+
         if batch_analyses_text is not None:
             logs_text = batch_analyses_text
         else:
             try:
-                from generate_synthetic_review_and_memory_analysis.prompt_generation_for_both_parts import (
-                    format_memory_batch_entry_lines,
-                    _sort_memory_batch_keys,
-                )
+                if format_memory_batch_entry_lines is None:
+                    raise ImportError
 
                 formatted_logs: list = []
                 for batch_key in _sort_memory_batch_keys(list(batch_logs.keys())):
@@ -185,7 +200,13 @@ class TribeSchemaEvolver:
                     if not isinstance(data, dict):
                         continue
                     formatted_logs.extend(
-                        format_memory_batch_entry_lines(str(batch_key), data)
+                        format_memory_batch_entry_lines(
+                            str(batch_key),
+                            data,
+                            include_gaps=True,
+                            include_outliers=False,
+                            include_gap_metadata=False,
+                        )
                     )
                 logs_text = "\n".join(formatted_logs) if formatted_logs else "(no memory batches)"
             except ImportError:
@@ -194,18 +215,32 @@ class TribeSchemaEvolver:
                     formatted_logs.append(f"--- {batch_key} ---")
                     for analysis in data.get("analyses", []):
                         formatted_logs.append(f"- {analysis}")
+                    for g in data.get("gaps") or []:
+                        if isinstance(g, dict):
+                            formatted_logs.append(
+                                f"- {g.get('behavioral_gap', g)}"
+                            )
+                    for o in data.get("outliers") or []:
+                        if isinstance(o, dict):
+                            pid = str(o.get("post_id") or "").strip()
+                            prefix = f"[outlier {pid}] " if pid else "[outlier] "
+                            formatted_logs.append(
+                                prefix + str(o.get("behavioral_gap") or o)
+                            )
                     for p in data.get("patterns") or []:
                         if isinstance(p, dict):
                             formatted_logs.append(f"- {p.get('behavior', p)}")
                 logs_text = "\n".join(formatted_logs)
 
-        template = _load_prompt(self.refine_prompt_basename)
+        prompt_name = refine_prompt_basename or self.refine_prompt_basename
+        template = _load_prompt(prompt_name)
         persona_json = json.dumps(
             persona_dict_for_prompt(group_summary, current_summary_block),
             ensure_ascii=False,
             indent=2,
         )
-        full_prompt = template.format(
+        full_prompt = _fill_named_placeholders(
+            template,
             current_group_persona_json=persona_json,
             batch_analyses_text=logs_text,
         )
@@ -229,7 +264,22 @@ class TribeSchemaEvolver:
             ensure_ascii=False,
             indent=2,
         )
-        full_prompt = template.format(current_group_persona_json=persona_json)
+        try:
+            from generate_synthetic_review_and_memory_analysis.prompt_generation_for_both_parts import (
+                _fill_named_placeholders,
+            )
+        except ImportError:
+
+            def _fill_named_placeholders(template: str, **values: str) -> str:
+                out = template
+                for key, val in values.items():
+                    out = out.replace("{" + key + "}", str(val))
+                return out
+
+        full_prompt = _fill_named_placeholders(
+            template,
+            current_group_persona_json=persona_json,
+        )
         shrunk = self._call_llm(full_prompt, temperature=0.3)
         if not shrunk:
             return None
@@ -245,6 +295,7 @@ class TribeSchemaEvolver:
         batch_analyses_text: Optional[str] = None,
         *,
         group_summary: str = "",
+        refine_prompt_basename: Optional[str] = None,
     ) -> Optional[Dict[str, Any]]:
         """
         Run one refinement step on the given batch logs and return updated qualitative_summary.
@@ -257,4 +308,5 @@ class TribeSchemaEvolver:
             baseline_qualitative_summary,
             batch_analyses_text=batch_analyses_text,
             group_summary=group_summary,
+            refine_prompt_basename=refine_prompt_basename,
         )

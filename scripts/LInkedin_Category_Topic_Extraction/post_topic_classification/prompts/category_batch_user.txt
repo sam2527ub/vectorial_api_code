@@ -1,0 +1,20 @@
+For each post below, output exactly one classification.
+
+Posts (JSON array). Each item has "post_id" and "text":
+{posts_json}
+
+Return JSON in this exact shape:
+{{
+  "results": [
+    {{
+      "post_id": "<same as input>",
+      "category": "<exactly one string, copied verbatim from the allowed categories list>",
+      "category_confidence": <number from 0 to 1>,
+      "brief_rationale": "<one short phrase, optional>"
+    }}
+  ]
+}}
+
+Requirements:
+- "results" MUST have the same length and order as the input posts array; every input post_id appears exactly once.
+- "category" MUST be one allowed category string only (the single best match). Never null or empty.

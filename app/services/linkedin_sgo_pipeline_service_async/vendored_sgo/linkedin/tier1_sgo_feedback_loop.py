@@ -3,8 +3,10 @@
 Curated **helper library** for ``tier1_delta_method_predictions.py``.
 
 This module holds shared implementations for evolution state, ``memory/batch_analyses.json``
-(``patterns`` / ``outliers`` per batch, plus ``preliminary_delta_notes``),
-group-summary refine/shrink, batch Part B root-cause memory, qualitative-summary seeding/sync,
+(``batch_id``, ``gaps[]``, ``outliers[]``, ``batch_verdict``, ``prior_gap_confirmations[]``,
+plus ``preliminary_delta_notes``),
+group-summary refine/shrink (window refines use gaps only; end-of-iteration outlier consolidate),
+batch Part B root-cause memory, qualitative-summary seeding/sync,
 ``delta_method_predictions.json`` artifact writes, and ``TribeSchemaEvolver`` wiring.
 
 **Runner:** production uses ``app.services.linkedin_sgo_pipeline_service_async``; this file is the dev/CLI mirror under ``scripts/scripts_sgo``.
@@ -70,11 +72,14 @@ from linkedin.i0_linkedin_context import (
 )
 
 from generate_synthetic_review_and_memory_analysis.prompt_generation_for_both_parts import (
+    _fill_named_placeholders,
+    count_outliers_for_iteration,
     format_batch_analyses_memory_for_part_a,
     format_linkedin_group_memory_posts_section,
     format_memory_batch_entry_lines,
     generate_part_b_linkedin_group_memory_prompt,
-    parse_linkedin_memory_batch_patterns_response,
+    memory_batches_outliers_only_for_iteration,
+    parse_linkedin_memory_batch_gaps_response,
 )
 
 
@@ -150,6 +155,14 @@ def load_group_summary_refine_template() -> str:
 def load_group_summary_shrink_template() -> str:
     """Same unified shrink prompt as ``TribeSchemaEvolver.shrink_step`` (``shrink_refinement.txt``)."""
     path = PROMPTS_DIR / "shrink_refinement.txt"
+    if not path.is_file():
+        raise FileNotFoundError(f"Missing prompt: {path}")
+    return path.read_text(encoding="utf-8")
+
+
+def load_outlier_refine_template() -> str:
+    """End-of-iteration outlier consolidation (``refine_outliers.txt``)."""
+    path = PROMPTS_DIR / "refine_outliers.txt"
     if not path.is_file():
         raise FileNotFoundError(f"Missing prompt: {path}")
     return path.read_text(encoding="utf-8")
@@ -677,65 +690,6 @@ def build_prediction_context(
     )
 
 
-async def delta_bridge_analysis(
-    client: AsyncOpenAI,
-    model: str,
-    post_text: str,
-    stimulus: str,
-    category: str,
-    group_summary_excerpt: str,
-    qualitative_excerpt: str,
-    individual_author_excerpt: str,
-    topics_ordered: List[str],
-    ground_truth: Dict[str, float],
-    predicted: Dict[str, float],
-    jsd: float,
-) -> str:
-    payload = {
-        "evolving_group_summary_excerpt": group_summary_excerpt[:6000],
-        "evolving_qualitative_persona_excerpt": (qualitative_excerpt or "")[:6000],
-        "individual_author_context_excerpt": individual_author_excerpt[:6000],
-        "stimulus": stimulus,
-        "category": category,
-        "post_text": post_text[:8000],
-        "topics_ordered": topics_ordered,
-        "ground_truth_topic_probabilities": ground_truth,
-        "predicted_topic_probabilities": predicted,
-        "jsd": jsd,
-    }
-    system = (
-        "You analyze gaps between two topic-attention distributions for one LinkedIn post. "
-        "Predictions used the evolving GROUP SUMMARY, trait **descriptions** (narrative text only), "
-        "and individual author context. "
-        "Return JSON: analysis (string), motives (array of short strings), where_wrong (string)."
-    )
-    user = json.dumps(payload, ensure_ascii=False, indent=2)
-    resp = await client.chat.completions.create(
-        model=model,
-        messages=[
-            {"role": "system", "content": system},
-            {"role": "user", "content": user},
-        ],
-        response_format={"type": "json_object"},
-        temperature=0.25,
-        max_tokens=1200,
-        timeout=90.0,
-    )
-    raw = (resp.choices[0].message.content or "").strip()
-    try:
-        data = json.loads(raw)
-    except json.JSONDecodeError:
-        return raw
-    analysis = data.get("analysis") or ""
-    motives = data.get("motives") or []
-    where = data.get("where_wrong") or ""
-    if isinstance(motives, list):
-        mstr = "; ".join(str(m) for m in motives[:12])
-    else:
-        mstr = str(motives)
-    return f"{analysis} | Where wrong: {where} | Motives: {mstr}"
-
-
 def _word_count(s: str) -> int:
     return len(s.split())
 
@@ -775,7 +729,25 @@ def qualitative_summary_regression(prior: Dict[str, Any], candidate: Dict[str, A
     return False
 
 
-def _best_trait_match_index(rows: List[Any], candidate_text: str) -> Optional[int]:
+def _trait_trigger_signature(text: str) -> Set[str]:
+    """Token signature of the trigger clause (after leading ``When``) for dedupe vs new-trait detection."""
+    t = " ".join(str(text or "").strip().lower().split())
+    if t.startswith("when "):
+        head = t[5:]
+        for sep in (" — ", " - ", ", ", "; "):
+            if sep in head:
+                head = head.split(sep, 1)[0]
+                break
+        return _trait_tokens(head[:220])
+    return _trait_tokens(t[:120])
+
+
+def _best_trait_match_index(
+    rows: List[Any],
+    candidate_text: str,
+    *,
+    min_overlap: float = 0.28,
+) -> Optional[int]:
     cand_tok = _trait_tokens(candidate_text)
     if not cand_tok:
         return None
@@ -791,7 +763,32 @@ def _best_trait_match_index(rows: List[Any], candidate_text: str) -> Optional[in
         if overlap > best_score:
             best_score = overlap
             best_i = i
-    return best_i if best_score >= 0.28 else None
+    return best_i if best_score >= float(min_overlap) else None
+
+
+def _should_merge_into_existing_trait(existing_text: str, candidate_text: str) -> bool:
+    """
+    True only when candidate is substantively the same move as an existing trait.
+    Different ``When [trigger]`` clauses → append as NEW trait, not in-place merge.
+    """
+    ex = str(existing_text or "").strip()
+    cand = str(candidate_text or "").strip()
+    if not ex or not cand:
+        return False
+    match_i_overlap = 0.0
+    ex_tok = _trait_tokens(ex)
+    cand_tok = _trait_tokens(cand)
+    if ex_tok and cand_tok:
+        match_i_overlap = len(ex_tok & cand_tok) / max(len(ex_tok | cand_tok), 1)
+    if match_i_overlap < 0.38:
+        return False
+    sig_e = _trait_trigger_signature(ex)
+    sig_c = _trait_trigger_signature(cand)
+    if sig_e and sig_c:
+        trig_overlap = len(sig_e & sig_c) / max(len(sig_e | sig_c), 1)
+        if trig_overlap < 0.32:
+            return False
+    return True
 
 
 def _looks_like_error_log_paraphrase(text: str) -> bool:
@@ -878,13 +875,15 @@ def merge_qualitative_refinement(
     baseline: Dict[str, Any],
     prior: Dict[str, Any],
     candidate: Dict[str, Any],
-    max_new_per_category: int = 5,
+    max_new_per_category: int = 10,
+    prefer_new_traits: bool = True,
 ) -> Dict[str, Any]:
     """
     Merge LLM refine/shrink output into evolving traits without dropping audience-room baseline rows.
 
-    - Baseline (seeded) traits are kept; matching candidate rows may enrich them.
-    - Genuinely new, non-duplicate behaviors are appended (capped per category).
+    - Baseline (seeded) traits are kept; matching candidate rows may enrich them in place.
+    - Distinct behavioral moves (different triggers) are appended as new list items.
+    - ``prefer_new_traits`` uses stricter same-move detection so refine passes add rows, not only stretch text.
     """
     out = copy.deepcopy(prior if isinstance(prior, dict) else empty_qualitative_summary())
     base = baseline if isinstance(baseline, dict) else empty_qualitative_summary()
@@ -902,6 +901,8 @@ def merge_qualitative_refinement(
             if _is_seeded_trait(r) and str(r.get("text") or "").strip()
         }
         added_new = 0
+        merge_min_overlap = 0.42 if prefer_new_traits else 0.28
+        near_dup_threshold = 0.78 if prefer_new_traits else 0.55
 
         for row in cand.get(key) or []:
             if not isinstance(row, dict):
@@ -910,8 +911,11 @@ def merge_qualitative_refinement(
             if not text or text.lower() in seeded_texts:
                 continue
 
-            match_i = _best_trait_match_index(merged, text)
-            if match_i is not None:
+            match_i = _best_trait_match_index(merged, text, min_overlap=merge_min_overlap)
+            if match_i is not None and (
+                not prefer_new_traits
+                or _should_merge_into_existing_trait(str(merged[match_i].get("text") or ""), text)
+            ):
                 cur = merged[match_i]
                 cur_text = str(cur.get("text") or "").strip()
                 if _is_seeded_trait(cur):
@@ -947,7 +951,7 @@ def merge_qualitative_refinement(
             if any(
                 len(_trait_tokens(text) & _trait_tokens(str(r.get("text") or "")))
                 / max(len(_trait_tokens(text) | _trait_tokens(str(r.get("text") or ""))), 1)
-                > 0.55
+                > near_dup_threshold
                 for r in merged
                 if isinstance(r, dict)
             ):
@@ -1416,10 +1420,16 @@ def format_batch_logs_for_prompt(
     batch_logs: Dict[str, Any],
     *,
     max_chars_per_analysis: int = REFINE_ANALYSIS_LINE_MAX_CHARS,
+    include_gaps: bool = True,
+    include_outliers: bool = False,
+    include_gap_metadata: bool = True,
 ) -> str:
     """
     Human-readable blob for refine prompts. Expects memory entries with
-    ``patterns`` / ``outliers`` (Part B v2) or legacy per-post ``analyses``.
+    ``gaps`` (Part B) or legacy ``patterns`` / ``outliers`` / per-post ``analyses``.
+
+    Window refines use ``include_outliers=False``; end-of-iteration outlier refines
+    pass ``include_gaps=False``, ``include_outliers=True``.
     """
     lines: List[str] = []
     cap_a = max(400, int(max_chars_per_analysis))
@@ -1428,7 +1438,14 @@ def format_batch_logs_for_prompt(
         if not isinstance(data, dict):
             continue
         lines.extend(
-            format_memory_batch_entry_lines(str(batch_key), data, max_chars_per_line=cap_a)
+            format_memory_batch_entry_lines(
+                str(batch_key),
+                data,
+                max_chars_per_line=cap_a,
+                include_gaps=include_gaps,
+                include_outliers=include_outliers,
+                include_gap_metadata=include_gap_metadata,
+            )
         )
     return "\n".join(lines) if lines else "(no memory batches this window)"
 
@@ -1451,7 +1468,15 @@ def build_refine_analyses_text(
         "### CURRENT REFINEMENT WINDOW (last memory batches — primary evidence; "
         "rewrite group_summary from current persona + these analyses)\n"
     )
-    parts.append(format_batch_logs_for_prompt(window_logs, max_chars_per_analysis=max_chars_per_analysis))
+    parts.append(
+        format_batch_logs_for_prompt(
+            window_logs,
+            max_chars_per_analysis=max_chars_per_analysis,
+            include_gaps=True,
+            include_outliers=False,
+            include_gap_metadata=False,
+        )
+    )
     if window_only:
         blob = "\n".join(parts)
         cap = max(8000, int(max_total_chars))
@@ -1464,7 +1489,15 @@ def build_refine_analyses_text(
         tail = prior_sorted[-max_history_batches :]
         hist = {k: full_memory[k] for k in tail}
         parts.append("\n### RECENT MEMORY (rolling context — avoid contradicting; dedupe themes)\n")
-        parts.append(format_batch_logs_for_prompt(hist, max_chars_per_analysis=max_chars_per_analysis))
+        parts.append(
+            format_batch_logs_for_prompt(
+                hist,
+                max_chars_per_analysis=max_chars_per_analysis,
+                include_gaps=True,
+                include_outliers=False,
+                include_gap_metadata=False,
+            )
+        )
     blob = "\n".join(parts)
     cap = max(8000, int(max_total_chars))
     if len(blob) > cap:
@@ -1474,6 +1507,41 @@ def build_refine_analyses_text(
             cap,
         )
         blob = blob[: cap - 80].rstrip() + "\n\n... [MEMORY_BLOB_TAIL_TRUNCATED_FOR_CONTEXT_LIMIT]"
+    return blob
+
+
+def build_outlier_refine_analyses_text(
+    full_memory: Dict[str, Any],
+    iteration: int,
+    *,
+    max_chars_per_analysis: int = REFINE_ANALYSIS_LINE_MAX_CHARS,
+    max_total_chars: int = REFINE_ANALYSES_BLOB_MAX_CHARS,
+) -> str:
+    """All Part B outliers for one outer iteration (end-of-iteration consolidation pass)."""
+    subset = memory_batches_outliers_only_for_iteration(full_memory, int(iteration))
+    parts: List[str] = [
+        f"### OUTLIER CONSOLIDATION — iteration {int(iteration)} "
+        "(all per-post divergences from this iteration's memory batches; "
+        "gaps were already applied in window refines)\n"
+    ]
+    parts.append(
+        format_batch_logs_for_prompt(
+            subset,
+            max_chars_per_analysis=max_chars_per_analysis,
+            include_gaps=False,
+            include_outliers=True,
+            include_gap_metadata=False,
+        )
+    )
+    blob = "\n".join(parts)
+    cap = max(8000, int(max_total_chars))
+    if len(blob) > cap:
+        logger.warning(
+            "[OUTLIER_REFINE] blob %s chars exceeds cap %s — truncating",
+            len(blob),
+            cap,
+        )
+        blob = blob[: cap - 80].rstrip() + "\n\n... [OUTLIER_BLOB_TRUNCATED]"
     return blob
 
 
@@ -1495,6 +1563,70 @@ def split_linkedin_memory_review_key(review_key: str) -> Tuple[Optional[str], Op
     return s[:i], s[i + len(sep) :]
 
 
+def _preview_part_b_text(text: str, max_len: int = 100) -> str:
+    s = " ".join(str(text or "").split())
+    if not s:
+        return "(empty)"
+    if len(s) <= max_len:
+        return s
+    return s[: max_len - 1].rstrip() + "…"
+
+
+def log_part_b_posts_payload(
+    review_items: List[Dict[str, Any]],
+    posts_section: str,
+    *,
+    full_prompt_chars: int = 0,
+) -> None:
+    """Log whether each post's actual + failed text made it into the Part B prompt."""
+    n = len(review_items)
+    truncated = "[posts_section truncated]" in (posts_section or "")
+    logger.info(
+        "[MEMORY_RC] Part B → LLM: %s posts | posts_section=%s chars%s | full_prompt≈%s chars",
+        n,
+        len(posts_section or ""),
+        " | TRUNCATED" if truncated else "",
+        full_prompt_chars or "?",
+    )
+    for idx, it in enumerate(review_items):
+        if not isinstance(it, dict):
+            logger.warning("[MEMORY_RC]   post[%s] invalid item (not a dict) — skipped in section", idx)
+            continue
+        rk = str(it.get("review_key") or "").strip() or "(no review_key)"
+        actual = str(it.get("actual_review_text") or "").strip()
+        failed = str(it.get("failed_prediction_text") or "").strip()
+        stim = str(it.get("stimulus") or "").strip()
+        missing: List[str] = []
+        if len(actual) < 20:
+            missing.append("actual_post")
+        if len(failed) < 20:
+            missing.append("failed_prediction")
+        if "topic distribution prediction only" in failed.lower():
+            missing.append("failed_prediction_text_only_placeholder")
+        status = "OK" if not missing else f"WARN missing/incomplete: {', '.join(missing)}"
+        logger.info(
+            "[MEMORY_RC]   post[%s] %s | %s | actual=%s chars | failed=%s chars | stimulus=%s chars",
+            idx,
+            rk,
+            status,
+            len(actual),
+            len(failed),
+            len(stim),
+        )
+        logger.info(
+            "[MEMORY_RC]     actual_preview: %s",
+            _preview_part_b_text(actual),
+        )
+        logger.info(
+            "[MEMORY_RC]     failed_preview: %s",
+            _preview_part_b_text(failed),
+        )
+    if truncated:
+        logger.warning(
+            "[MEMORY_RC] posts_section was truncated — tail posts may be dropped from LLM context"
+        )
+
+
 def memory_past_learnings_for_prompt(
     memory: Dict[str, Any],
     *,
@@ -1510,10 +1642,61 @@ def memory_past_learnings_for_prompt(
     tail = keys[-tb:] if tb else keys
     sub = {k: memory[k] for k in tail}
     return _truncate_for_refine_prompt(
-        format_batch_logs_for_prompt(sub),
+        format_batch_logs_for_prompt(
+            sub,
+            include_gaps=True,
+            include_outliers=True,
+        ),
         max_chars,
         what="past_learnings",
     )
+
+
+def memory_prior_batch_gaps_for_prompt(
+    memory: Dict[str, Any],
+    *,
+    exclude_keys: Optional[Set[str]] = None,
+    tail_batches: int = 12,
+    max_chars: int = 8000,
+) -> str:
+    """Dedupe list of ``behavioral_gap`` strings from prior memory for Part B anti-repeat."""
+    exclude_keys = exclude_keys or set()
+    keys = [k for k in sort_memory_batch_keys(list(memory.keys())) if k not in exclude_keys]
+    if not keys:
+        return "(no prior batch gaps yet — first memory batch for this run)"
+    tb = max(0, int(tail_batches))
+    tail = keys[-tb:] if tb else keys
+    lines: List[str] = []
+    seen: Set[str] = set()
+    for batch_key in tail:
+        data = memory.get(batch_key)
+        if not isinstance(data, dict):
+            continue
+        for g in data.get("gaps") or []:
+            if not isinstance(g, dict):
+                continue
+            gap_txt = str(g.get("behavioral_gap") or g.get("behavior") or "").strip()
+            if len(gap_txt) < 8:
+                continue
+            norm = gap_txt.lower()
+            if norm in seen:
+                continue
+            seen.add(norm)
+            conf = str(g.get("confidence") or "").strip()
+            ev = str(g.get("evidence") or "").strip()
+            meta = f" [{conf}]" if conf else ""
+            if ev:
+                meta += f" ({ev})"
+            lines.append(f"- [{batch_key}]{meta} {gap_txt}")
+        for c in data.get("prior_gap_confirmations") or []:
+            t = str(c or "").strip()
+            if len(t) < 8:
+                continue
+            lines.append(f"- [{batch_key}] (confirmed prior gap) {t}")
+    if not lines:
+        return "(no prior batch gaps yet — prior memory may only have outliers or legacy analyses)"
+    blob = "\n".join(lines)
+    return _truncate_for_refine_prompt(blob, max_chars, what="prior_batch_gaps")
 
 
 async def linkedin_memory_batch_root_cause_analyses(
@@ -1525,16 +1708,25 @@ async def linkedin_memory_batch_root_cause_analyses(
     pending_memory_keys: Optional[Set[str]],
     review_items: List[Dict[str, Any]],
     fallback_analyses: List[str],
+    batch_key: str = "",
 ) -> Dict[str, Any]:
     """
-    One LinkedIn batch call: behavioral patterns for ``memory/batch_analyses.json``.
-    Uses ``part_b_memory_analysis.txt`` (group summary + traits + posts section).
-    Returns ``patterns``, ``outliers``, and ``preliminary_delta_notes`` (per-post fallbacks).
+    One LinkedIn batch call: behavioral gaps for ``memory/batch_analyses.json``.
+    Uses ``part_b_memory_analysis.txt`` (group summary + traits + past learnings + posts).
+    Returns ``batch_id``, ``gaps[]``, ``outliers[]``, ``batch_verdict``, ``prior_gap_confirmations``,
+    and ``preliminary_delta_notes`` (queue markers).
     """
-    _ = memory, pending_memory_keys  # reserved for future cross-batch dedupe in prompt
     n = len(review_items)
     if n == 0:
-        return {"patterns": [], "outliers": [], "preliminary_delta_notes": [], "parse_ok": False}
+        return {
+            "batch_id": str(batch_key or "").strip(),
+            "gaps": [],
+            "outliers": [],
+            "batch_verdict": None,
+            "prior_gap_confirmations": [],
+            "preliminary_delta_notes": [],
+            "parse_ok": False,
+        }
     fb = list(fallback_analyses[:n])
     while len(fb) < n:
         fb.append("")
@@ -1546,6 +1738,7 @@ async def linkedin_memory_batch_root_cause_analyses(
         slim.append(
             {
                 "review_key": str(it.get("review_key") or ""),
+                "post_id": str(it.get("post_id") or ""),
                 "category": str(it.get("category") or ""),
                 "stimulus": _truncate_for_refine_prompt(str(it.get("stimulus") or ""), 4000, what="stimulus"),
                 "actual_review_text": _truncate_for_refine_prompt(
@@ -1563,6 +1756,22 @@ async def linkedin_memory_batch_root_cause_analyses(
             }
         )
     posts_section = format_linkedin_group_memory_posts_section(slim)
+    bk = str(batch_key or "").strip()
+    if bk:
+        posts_section = f"### Pipeline batch key\n`{bk}`\n\n{posts_section}"
+    pending = pending_memory_keys or set()
+    past = memory_past_learnings_for_prompt(
+        memory,
+        exclude_keys=pending,
+        tail_batches=6,
+        max_chars=12000,
+    )
+    prior_gaps = memory_prior_batch_gaps_for_prompt(
+        memory,
+        exclude_keys=pending,
+        tail_batches=12,
+        max_chars=8000,
+    )
     gs_part_b = _truncate_for_refine_prompt(
         (state.get("group_summary") or "").strip(),
         8000,
@@ -1579,24 +1788,32 @@ async def linkedin_memory_batch_root_cause_analyses(
         load_linkedin_memory_batch_root_cause_template()
     except FileNotFoundError as e:
         logger.error("[MEMORY_RC] %s", e)
-        return parse_linkedin_memory_batch_patterns_response(
-            {}, batch_size=n, fallback_preliminary_notes=fb
+        return parse_linkedin_memory_batch_gaps_response(
+            {}, batch_size=n, batch_key=bk, fallback_preliminary_notes=fb
         )
 
     try:
         full_prompt = generate_part_b_linkedin_group_memory_prompt(
             group_summary=gs_part_b,
             group_traits=group_traits_str,
+            past_learnings=past,
+            prior_batch_gaps=prior_gaps,
             posts_section=posts_section,
         )
     except FileNotFoundError as e:
         logger.error("[MEMORY_RC] prompt build failed: %s", e)
-        return parse_linkedin_memory_batch_patterns_response(
-            {}, batch_size=n, fallback_preliminary_notes=fb
+        return parse_linkedin_memory_batch_gaps_response(
+            {}, batch_size=n, batch_key=bk, fallback_preliminary_notes=fb
         )
 
+    prompt_truncated = False
     if len(full_prompt) > 115000:
         full_prompt = full_prompt[:115000] + "\n... [PROMPT_TRUNCATED]"
+        prompt_truncated = True
+
+    log_part_b_posts_payload(slim, posts_section, full_prompt_chars=len(full_prompt))
+    if prompt_truncated:
+        logger.warning("[MEMORY_RC] full Part B prompt truncated to 115000 chars")
 
     try:
         resp = await client.chat.completions.create(
@@ -1609,20 +1826,25 @@ async def linkedin_memory_batch_root_cause_analyses(
         )
         raw = (resp.choices[0].message.content or "").strip()
         data = json.loads(raw)
-        parsed = parse_linkedin_memory_batch_patterns_response(
-            data, batch_size=n, fallback_preliminary_notes=fb
+        parsed = parse_linkedin_memory_batch_gaps_response(
+            data, batch_size=n, batch_key=bk, fallback_preliminary_notes=fb
         )
+        if not str(parsed.get("batch_id") or "").strip():
+            parsed["batch_id"] = bk
         logger.info(
-            "[MEMORY_RC] batch patterns=%s outliers=%s parse_ok=%s",
-            len(parsed.get("patterns") or []),
+            "[MEMORY_RC] batch_id=%s verdict=%s gaps=%s outliers=%s confirmations=%s parse_ok=%s",
+            parsed.get("batch_id"),
+            parsed.get("batch_verdict"),
+            len(parsed.get("gaps") or []),
             len(parsed.get("outliers") or []),
+            len(parsed.get("prior_gap_confirmations") or []),
             parsed.get("parse_ok"),
         )
         return parsed
     except Exception as e:
         logger.error("[MEMORY_RC] batch LLM failed: %s", e)
-        return parse_linkedin_memory_batch_patterns_response(
-            {}, batch_size=n, fallback_preliminary_notes=fb
+        return parse_linkedin_memory_batch_gaps_response(
+            {}, batch_size=n, batch_key=bk, fallback_preliminary_notes=fb
         )
 
 
@@ -1706,7 +1928,8 @@ async def refine_group_summary(
     persona_json = json.dumps(persona, ensure_ascii=False, indent=2)
     if len(persona_json) > 28000:
         persona_json = persona_json[:27960].rstrip() + '\n... [truncated persona JSON]'
-    full_prompt = template.format(
+    full_prompt = _fill_named_placeholders(
+        template,
         current_group_persona_json=persona_json,
         batch_analyses_text=analyses_blob,
     )
@@ -1724,8 +1947,9 @@ async def refine_group_summary(
         "- **Do NOT** return the input summary unchanged or with only an appended closing sentence.\n"
         "- **Preserve** named orgs, platforms, cohort contrasts, and technical domains from the current "
         "summary and baseline anchor unless error logs supersede them.\n"
-        "- **Traits:** enrich existing bullets in place when error logs add nuance; add new conditional "
-        "`When …` rules when genuinely distinct (max 10 new traits total).\n\n"
+        "- **Traits:** You MUST add new list items for distinct moves (different ``When [trigger]`` + action) "
+        "not already in trait texts — not only edit existing rows. Max 10 new traits total across categories. "
+        "Judge coverage only from persona trait ``text`` fields, not from log metadata.\n\n"
         "### RUNTIME — ORIGINAL AUDIENCE-ROOM BASELINE SUMMARY (anchor for specificity)\n"
         f"{baseline_anchor}\n"
     )
@@ -1746,12 +1970,17 @@ async def refine_group_summary(
         if _trait_item_count_persona(new_qual) == 0:
             new_qual = None
         elif baseline_qualitative_summary is not None:
+            prior_count = _trait_item_count_persona(qualitative_summary)
             new_qual = merge_qualitative_refinement(
                 baseline=baseline_qualitative_summary,
                 prior=qualitative_summary,
                 candidate=new_qual,
-                max_new_per_category=5,
+                max_new_per_category=10,
+                prefer_new_traits=True,
             )
+            added = _trait_item_count_persona(new_qual) - prior_count
+            if added > 0:
+                logger.info("[REFINE] merged traits: +%s new list items (total=%s)", added, _trait_item_count_persona(new_qual))
         if new_s:
             new_s = normalize_group_summary_refinement(
                 baseline=baseline_summary,
@@ -1770,6 +1999,101 @@ async def refine_group_summary(
         return None, None
 
 
+async def refine_outliers_at_iteration_end(
+    client: AsyncOpenAI,
+    model: str,
+    current_summary: str,
+    baseline_summary: str,
+    full_memory: Dict[str, Any],
+    iteration: int,
+    qualitative_summary: Dict[str, Any],
+    baseline_qualitative_summary: Optional[Dict[str, Any]] = None,
+) -> Tuple[Optional[str], Optional[Dict[str, Any]], bool]:
+    """
+    End-of-outer-iteration pass: consolidate Part B ``outliers[]`` for this iteration only.
+
+    Window refines already applied ``gaps``; this pass may add nuance to existing traits or
+    promote repeated outlier themes (see ``refine_outliers.txt``).
+
+    Returns ``(group_summary, qualitative_summary, llm_ok)``.
+    """
+    n_out = count_outliers_for_iteration(full_memory, int(iteration))
+    if n_out <= 0:
+        logger.info(
+            "[OUTLIER_REFINE] iteration=%s — no outliers in memory; skipping",
+            iteration,
+        )
+        return None, None, False
+
+    analyses_blob = build_outlier_refine_analyses_text(full_memory, int(iteration))
+    template = load_outlier_refine_template()
+    persona = persona_dict_for_prompt_evolver(current_summary, qualitative_summary)
+    persona_json = json.dumps(persona, ensure_ascii=False, indent=2)
+    if len(persona_json) > 28000:
+        persona_json = persona_json[:27960].rstrip() + '\n... [truncated persona JSON]'
+    full_prompt = _fill_named_placeholders(
+        template,
+        current_group_persona_json=persona_json,
+        batch_analyses_text=analyses_blob,
+    )
+    baseline_anchor = _truncate_for_refine_prompt(
+        (baseline_summary or "").strip(),
+        12000,
+        what="baseline_group_summary_anchor",
+    )
+    cw = _word_count(current_summary)
+    full_prompt += (
+        "\n\n### RUNTIME — OUTLIER REFINE CONTRACT (pipeline)\n"
+        f"- **Outer iteration:** {int(iteration)} | **Outlier rows in memory:** {int(n_out)}\n"
+        f"- **Current `group_summary` word count:** {int(cw)} — integrate only **repeated or "
+        f"high-confidence outlier themes**; do not overfit single-post noise.\n"
+        "- **Max 5 new trait list items** across all categories (refining existing rows does not count).\n"
+        "- Judge coverage from persona trait text only — ignore any context flags in the outlier log.\n\n"
+        "### RUNTIME — ORIGINAL AUDIENCE-ROOM BASELINE SUMMARY (anchor for specificity)\n"
+        f"{baseline_anchor}\n"
+    )
+    try:
+        resp = await client.chat.completions.create(
+            model=model,
+            messages=[{"role": "user", "content": full_prompt}],
+            response_format={"type": "json_object"},
+            temperature=0.2,
+            max_tokens=6144,
+            timeout=120.0,
+        )
+        raw = (resp.choices[0].message.content or "").strip()
+        data = json.loads(raw)
+        new_s = (data.get("group_summary") or data.get("summary") or "").strip()
+        new_qual = qualitative_slice_from_persona_response_evolver(data)
+        enforce_hard_limit_preserve_seeded(new_qual, max_items=DEFAULT_MAX_TRAITS_PER_CATEGORY)
+        if _trait_item_count_persona(new_qual) == 0:
+            new_qual = None
+        elif baseline_qualitative_summary is not None:
+            new_qual = merge_qualitative_refinement(
+                baseline=baseline_qualitative_summary,
+                prior=qualitative_summary,
+                candidate=new_qual,
+                max_new_per_category=5,
+                prefer_new_traits=True,
+            )
+        if new_s:
+            new_s = normalize_group_summary_refinement(
+                baseline=baseline_summary,
+                prior=current_summary,
+                candidate=new_s,
+            )
+            new_s = guard_group_summary_text(
+                candidate=new_s,
+                prior=current_summary,
+                baseline=baseline_summary,
+                max_words=DEFAULT_GROUP_SUMMARY_MAX_WORDS,
+            )
+        return (new_s if new_s else None, new_qual, True)
+    except Exception as e:
+        logger.error("[OUTLIER_REFINE] iteration=%s LLM failed: %s", iteration, e)
+        return None, None, False
+
+
 async def shrink_group_summary(
     client: AsyncOpenAI,
     model: str,
@@ -1785,7 +2109,8 @@ async def shrink_group_summary(
     """
     template = load_group_summary_shrink_template()
     persona = persona_dict_for_prompt_evolver(text, qualitative_summary)
-    prompt = template.format(
+    prompt = _fill_named_placeholders(
+        template,
         current_group_persona_json=json.dumps(persona, ensure_ascii=False, indent=2),
     )
     cw = _word_count(text)

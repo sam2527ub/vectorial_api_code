@@ -1,0 +1,151 @@
+--- linkedin/tier1_delta_method_predictions.py
++++ linkedin/tier1_delta_method_predictions.py
+@@ -216,7 +219,8 @@
+ ensure_workdir_description_from_seed = t1.ensure_workdir_description_from_seed
+ save_state = t1.save_state
+ delta_bridge_analysis = t1.delta_bridge_analysis
+-iter_posts_tier1 = t1.iter_posts_tier1
++iter_posts_with_ground_truth = t1.iter_posts_with_ground_truth
++ensure_tier2_evolution_baseline_from_tier1_workdir = t1.ensure_tier2_evolution_baseline_from_tier1_workdir
+ load_or_init_state = t1.load_or_init_state
+ round_prob_dict = t1.round_prob_dict
+ write_delta_method_predictions_artifact = t1.write_delta_method_predictions_artifact
+@@ -403,13 +407,15 @@
+     work_dir: Path,
+     user_predictions: Dict[str, List[Dict[str, Any]]],
+     all_delta_rows: List[Dict[str, Any]],
++    *,
++    micro_cluster_id: str = "tier1",
+ ) -> Path:
+     work_dir.mkdir(parents=True, exist_ok=True)
+     deltas_path = work_dir / "linkedin_tier1_all_reviews_deltas.json"
+     io_utils.save_json_file(
+         {
+             "cluster_id": "linkedin",
+-            "micro_cluster_id": "tier1",
++            "micro_cluster_id": micro_cluster_id,
+             "total_reviews": sum(len(v) for v in user_predictions.values()),
+             "total_delta_rows": len(all_delta_rows),
+             "calculation_timestamp": time.time(),
+@@ -874,7 +929,13 @@
+ 
+     _ensure_scoring_mode()
+ 
+-    default_run_dir = (SCRIPTS_SGO / "outputs" / "linkedin_tier1_sgo" / "default_run").resolve()
++    tier_mode = str(getattr(args, "tier_mode", "tier1") or "tier1").strip().lower()
++    if tier_mode not in ("tier1", "tier2"):
++        tier_mode = "tier1"
++    setattr(args, "tier_mode", tier_mode)
++
++    out_dir_name = "linkedin_tier2_sgo" if tier_mode == "tier2" else "linkedin_tier1_sgo"
++    default_run_dir = (SCRIPTS_SGO / "outputs" / out_dir_name / "default_run").resolve()
+     wd_raw = str(getattr(args, "work_dir", "") or "").strip()
+     work_dir = Path(wd_raw).expanduser().resolve() if wd_raw else default_run_dir
+     if not wd_raw:
+@@ -939,7 +1012,7 @@
+     payload = load_contextual_payload(contextual_path)
+     if not str(payload.get("source_file") or "").strip():
+         payload["source_file"] = contextual_path.name
+-    all_posts = iter_posts_tier1(payload)
++    all_posts = iter_posts_with_ground_truth(payload, tier_hint=tier_mode)
+     if args.max_posts > 0:
+         all_posts = all_posts[: args.max_posts]
+ 
+@@ -978,8 +1051,9 @@
+         state_path,
+     )
+     logger.info(
+-        "[PIPELINE] num_iterations=%s | next_sweep_min_delta=%s (post-correction best_deltas) | "
++        "[PIPELINE] tier_mode=%s | num_iterations=%s | next_sweep_min_delta=%s (post-correction best_deltas) | "
+         "precomputed_i0=%s | i1 batch=%s (min_posts=%s) | evolve every %s memory batches | memory_gate=%s (%s) | correction_cap=%s",
++        tier_mode,
+         int(args.num_iterations),
+         next_sweep_thr,
+         precomputed_i0_path.name,
+@@ -1033,7 +1110,7 @@
+     if not getattr(args, "disable_qual_schema", False):
+         persona_evolver = TribeSchemaEvolver(
+             cluster_id="linkedin",
+-            micro_id="tier1_delta",
++            micro_id=f"{tier_mode}_delta",
+             memory_dir=str(work_dir / "memory"),
+             refined_schema_dir=str(work_dir),
+             evolution_model=args.qual_schema_model,
+@@ -1081,7 +1158,8 @@
+                 args=args,
+                 model_type_used=str(args.model_type_used),
+                 meta_extra={
+-                    "pipeline": "linkedin_tier1_delta_method_predictions_full",
++                    "pipeline": f"linkedin_{tier_mode}_delta_method_predictions_full",
++                    "tier_mode": tier_mode,
+                     "precomputed_i0_json": str(precomputed_i0_path),
+                     "memory_jsd_threshold": memory_jsd_thr,
+                     "next_sweep_min_delta": next_sweep_thr,
+@@ -1103,7 +1181,7 @@
+             logger.warning("[OUTPUT] could not mirror delta bundle to --output: %s", e)
+         if rows:
+             flat = _flatten_user_predictions_for_aggregate(user_pred_by_idx)
+-            dp = _write_aggregate_deltas_json(work_dir, flat, rows)
++            dp = _write_aggregate_deltas_json(work_dir, flat, rows, micro_cluster_id=tier_mode)
+             print(f"[DELTAS] aggregate → {dp}", flush=True)
+         if not getattr(args, "disable_evolution_state_snapshots", False):
+             snap = append_evolution_state_snapshot(state_history_dir, state, state_snap_seq, reason)
+@@ -1119,8 +1197,30 @@
+     qualifying_keys_from_prev: Optional[Set[Tuple[str, str]]] = None
+     pred_snapshot_prev_outer: Dict[Tuple[str, int], Dict[str, Any]] = {}
+ 
++    _rq = getattr(args, "sgo_resume_qualifying_keys", None)
++    if _rq:
++        qualifying_keys_from_prev = set()
++        for item in _rq:
++            if isinstance(item, (list, tuple)) and len(item) >= 2:
++                qualifying_keys_from_prev.add((str(item[0]), str(item[1])))
++    _rs = getattr(args, "sgo_resume_pred_snapshot", None)
++    if isinstance(_rs, dict) and _rs:
++        pred_snapshot_prev_outer = _pred_snapshot_from_jsonable(_rs)
++
+     for iteration in range(start_it, num_it + 1):
+         user_pred_by_idx: Dict[str, Dict[int, Dict[str, Any]]] = {}
++        _seed_path = str(getattr(args, "sgo_user_pred_seed_json", "") or "").strip()
++        if _seed_path:
++            sp = Path(_seed_path)
++            if sp.is_file():
++                user_pred_by_idx = _user_pred_map_from_jsonable(
++                    json.loads(sp.read_text(encoding="utf-8"))
++                )
++                logger.info(
++                    "[SGO_RESUME] loaded user_pred seed %s rows=%s",
++                    sp,
++                    sum(len(v) for v in user_pred_by_idx.values()),
++                )
+         all_delta_rows: List[Dict[str, Any]] = []
+         iteration_jsds: List[float] = []
+         processed: Set[str] = set()
+@@ -1232,7 +1332,7 @@
+                 ) or {}
+                 gt = {k: float(v) for k, v in (p.get("topic_probabilities") or {}).items()}
+                 line: Dict[str, Any] = {
+-                    "pipeline": "linkedin_tier1_delta_method",
++                    "pipeline": trace_pipeline_name,
+                     "phase": "baseline",
+                     "outer_iteration": iteration,
+                     "post_id": post_id,
+@@ -1374,7 +1474,7 @@
+             ) or {}
+             gt = {k: float(v) for k, v in (p.get("topic_probabilities") or {}).items()}
+             line: Dict[str, Any] = {
+-                "pipeline": "linkedin_tier1_delta_method",
++                "pipeline": trace_pipeline_name,
+                 "phase": "i1",
+                 "outer_iteration": iteration,
+                 "post_id": post_id,
+@@ -1686,7 +1786,8 @@
+         stats_record: Dict[str, Any] = {
+             "iteration": iteration,
+             "num_iterations_planned": num_it,
+-            "pipeline": "linkedin_tier1_delta_method_predictions",
++            "pipeline": f"linkedin_{tier_mode}_delta_method_predictions",
++            "tier_mode": tier_mode,
+             "n_posts_in_sweep": n_posts,
+             "n_posts_i1_eligible": n_high,
+             "n_posts_scored": len(iteration_jsds),

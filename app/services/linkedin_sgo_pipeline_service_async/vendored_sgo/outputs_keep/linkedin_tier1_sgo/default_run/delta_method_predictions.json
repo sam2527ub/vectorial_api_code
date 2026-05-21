@@ -1,0 +1,1072 @@
+{
+  "model_type_used": "linkedin_tier1_delta_method",
+  "user_predictions": {
+    "12707bb7-7e48-4c4e-b690-84fd28843105": [
+      {
+        "review_key": "12707bb7-7e48-4c4e-b690-84fd28843105_review_0",
+        "user_id": "12707bb7-7e48-4c4e-b690-84fd28843105",
+        "review_idx": 0,
+        "status": "success",
+        "product_description": "Accessibility tools and resources for digital environments",
+        "category": "Business Operations and Strategy",
+        "post_id": "12707bb7-7e48-4c4e-b690-84fd28843105_3",
+        "prediction": {
+          "review_text": "🌍 As we continue to build and innovate in the tech space, it's crucial to prioritize accessibility in our digital environments. At Microsoft, I've had the privilege of working on projects that not only push the boundaries of machine learning but also ensure that our tools are usable by everyone, regardless of their abilities. \n\nOne of the recent initiatives I'm excited about is the development of Accessibility Insights, an open-source tool designed to help developers identify and fix accessibility issues in their web and desktop applications. This tool is not just about compliance; it’s about creating a seamless experience for all users. \n\nIn addition to this, I’ve been experimenting with localized versions of popular games, like a Punjabi adaptation of Wordle, which emphasizes the importance of cultural relevance in tech. These projects have reinforced my belief that technology should be inclusive and accessible. \n\nI encourage everyone in our community to explore these resources and consider how we can all contribute to making our digital spaces more inclusive. Let’s share our experiences, tools, and tips to drive this mission forward! 💪 #Accessibility #OpenSource #MachineLearning #Localization #CommunityDriven",
+          "rating": 5,
+          "sentiment": "Positive",
+          "predicted_themes": {
+            "building systems for autonomous operations": 0.3333284211632073,
+            "understanding customer journeys in business": 0.3333284211632073,
+            "building adaptive learning platforms": 4.335701990630251e-06,
+            "power of simplicity in technology": 1.0400808387326873e-05,
+            "navigating uncertainty in professional growth": 0.3333284211632073
+          }
+        },
+        "initial_prediction_data": {
+          "review_text": "🌍 As we continue to build and innovate in the tech space, it's crucial to prioritize accessibility in our digital environments. At Microsoft, I've had the privilege of working on projects that not only push the boundaries of machine learning but also ensure that our tools are usable by everyone, regardless of their abilities. \n\nOne of the recent initiatives I'm excited about is the development of Accessibility Insights, an open-source tool designed to help developers identify and fix accessibility issues in their web and desktop applications. This tool is not just about compliance; it’s about creating a seamless experience for all users. \n\nIn addition to this, I’ve been experimenting with localized versions of popular games, like a Punjabi adaptation of Wordle, which emphasizes the importance of cultural relevance in tech. These projects have reinforced my belief that technology should be inclusive and accessible. \n\nI encourage everyone in our community to explore these resources and consider how we can all contribute to making our digital spaces more inclusive. Let’s share our experiences, tools, and tips to drive this mission forward! 💪 #Accessibility #OpenSource #MachineLearning #Localization #CommunityDriven",
+          "rating": 5,
+          "sentiment": "Positive",
+          "predicted_themes": {
+            "building systems for autonomous operations": 0.3333284211632073,
+            "understanding customer journeys in business": 0.3333284211632073,
+            "building adaptive learning platforms": 4.335701990630251e-06,
+            "power of simplicity in technology": 1.0400808387326873e-05,
+            "navigating uncertainty in professional growth": 0.3333284211632073
+          }
+        },
+        "actual": {
+          "review_text": "Last week our team released Accessibility Insights, a set of free & open-source tools that can help find accessibility issues in websites & desktop applications. It's an exciting milestone for us; if you are curious, feel free to try it out and contribute at",
+          "rating": 4.5,
+          "sentiment": "Positive",
+          "predicted_themes": {
+            "building systems for autonomous operations": 0.2499993668707535,
+            "understanding customer journeys in business": 0.2499993668707535,
+            "building adaptive learning platforms": 0.2499993668707535,
+            "power of simplicity in technology": 2.5325169859991507e-06,
+            "navigating uncertainty in professional growth": 0.2499993668707535
+          },
+          "topic_probabilities": {
+            "building systems for autonomous operations": 0.2499993668707535,
+            "understanding customer journeys in business": 0.2499993668707535,
+            "building adaptive learning platforms": 0.2499993668707535,
+            "power of simplicity in technology": 2.5325169859991507e-06,
+            "navigating uncertainty in professional growth": 0.2499993668707535
+          }
+        },
+        "metrics": {
+          "rating_score": 0.875,
+          "sentiment_score": 1.0,
+          "theme_jsd": 0.13789046330020766,
+          "num_actual_themes": 5,
+          "overall_accuracy": 0.9086328610099377,
+          "weights_used": {
+            "rating": 0.4,
+            "sentiment": 0.3,
+            "theme": 0.3
+          },
+          "recall@1": 1.0,
+          "recall@3": 1.0,
+          "recall@5": 1.0,
+          "recall@max(3,k)": 1.0,
+          "recall@max(3,k)_threshold_0.8": 1.0,
+          "num_themes_above_0.8": 0,
+          "num_additional_themes_0.8": 0,
+          "recall@max(3,k)_threshold_0.85": 1.0,
+          "num_themes_above_0.85": 0,
+          "num_additional_themes_0.85": 0
+        },
+        "deltas": {
+          "text_delta": 0.33108478498477345,
+          "theme_delta": 0.13789046330020766,
+          "overall_delta": 0.2731264884794037,
+          "theme_jsd": 0.13789046330020766,
+          "delta_weights": {
+            "text": 0.7,
+            "theme": 0.3
+          }
+        },
+        "initial_prediction_deltas": {
+          "text_delta": 0.33108478498477345,
+          "theme_delta": 0.13789046330020766,
+          "overall_delta": 0.2731264884794037
+        },
+        "initial_deltas": {
+          "text_delta": 0.33108478498477345,
+          "theme_delta": 0.13789046330020766,
+          "overall_delta": 0.2731264884794037
+        },
+        "i0_snapshot": {
+          "prediction": {
+            "review_text": "🌍 As we continue to build and innovate in the tech space, it's crucial to prioritize accessibility in our digital environments. At Microsoft, I've had the privilege of working on projects that not only push the boundaries of machine learning but also ensure that our tools are usable by everyone, regardless of their abilities. \n\nOne of the recent initiatives I'm excited about is the development of Accessibility Insights, an open-source tool designed to help developers identify and fix accessibility issues in their web and desktop applications. This tool is not just about compliance; it’s about creating a seamless experience for all users. \n\nIn addition to this, I’ve been experimenting with localized versions of popular games, like a Punjabi adaptation of Wordle, which emphasizes the importance of cultural relevance in tech. These projects have reinforced my belief that technology should be inclusive and accessible. \n\nI encourage everyone in our community to explore these resources and consider how we can all contribute to making our digital spaces more inclusive. Let’s share our experiences, tools, and tips to drive this mission forward! 💪 #Accessibility #OpenSource #MachineLearning #Localization #CommunityDriven",
+            "rating": 5,
+            "sentiment": "Positive",
+            "predicted_themes": {
+              "building systems for autonomous operations": 0.3333284211632073,
+              "understanding customer journeys in business": 0.3333284211632073,
+              "building adaptive learning platforms": 4.335701990630251e-06,
+              "power of simplicity in technology": 1.0400808387326873e-05,
+              "navigating uncertainty in professional growth": 0.3333284211632073
+            }
+          },
+          "deltas": {
+            "text_delta": 0.33108478498477345,
+            "theme_delta": 0.13789046330020766,
+            "overall_delta": 0.2731264884794037
+          },
+          "metrics": {
+            "rating_score": 0.875,
+            "sentiment_score": 1.0,
+            "theme_jsd": 0.13789046330020766,
+            "num_actual_themes": 5,
+            "overall_accuracy": 0.9086328610099377,
+            "weights_used": {
+              "rating": 0.4,
+              "sentiment": 0.3,
+              "theme": 0.3
+            },
+            "recall@1": 1.0,
+            "recall@3": 1.0,
+            "recall@5": 1.0,
+            "recall@max(3,k)": 1.0,
+            "recall@max(3,k)_threshold_0.8": 1.0,
+            "num_themes_above_0.8": 0,
+            "num_additional_themes_0.8": 0,
+            "recall@max(3,k)_threshold_0.85": 1.0,
+            "num_themes_above_0.85": 0,
+            "num_additional_themes_0.85": 0
+          }
+        },
+        "correction_journey": [],
+        "best_deltas": {
+          "overall_delta": 0.2731264884794037,
+          "theme_delta": 0.13789046330020766
+        },
+        "best_prediction_data": {
+          "review_text": "🌍 As we continue to build and innovate in the tech space, it's crucial to prioritize accessibility in our digital environments. At Microsoft, I've had the privilege of working on projects that not only push the boundaries of machine learning but also ensure that our tools are usable by everyone, regardless of their abilities. \n\nOne of the recent initiatives I'm excited about is the development of Accessibility Insights, an open-source tool designed to help developers identify and fix accessibility issues in their web and desktop applications. This tool is not just about compliance; it’s about creating a seamless experience for all users. \n\nIn addition to this, I’ve been experimenting with localized versions of popular games, like a Punjabi adaptation of Wordle, which emphasizes the importance of cultural relevance in tech. These projects have reinforced my belief that technology should be inclusive and accessible. \n\nI encourage everyone in our community to explore these resources and consider how we can all contribute to making our digital spaces more inclusive. Let’s share our experiences, tools, and tips to drive this mission forward! 💪 #Accessibility #OpenSource #MachineLearning #Localization #CommunityDriven",
+          "rating": 5,
+          "sentiment": "Positive",
+          "predicted_themes": {
+            "building systems for autonomous operations": 0.3333284211632073,
+            "understanding customer journeys in business": 0.3333284211632073,
+            "building adaptive learning platforms": 4.335701990630251e-06,
+            "power of simplicity in technology": 1.0400808387326873e-05,
+            "navigating uncertainty in professional growth": 0.3333284211632073
+          }
+        },
+        "feedback_loop_iteration": 1
+      }
+    ],
+    "1db61e77-786d-4d4c-94e0-4dcc221af20b": [
+      {
+        "review_key": "1db61e77-786d-4d4c-94e0-4dcc221af20b_review_0",
+        "user_id": "1db61e77-786d-4d4c-94e0-4dcc221af20b",
+        "review_idx": 0,
+        "status": "success",
+        "product_description": "Use of AI tools in business processes and delivery",
+        "category": "AI and Technology Integration",
+        "post_id": "1db61e77-786d-4d4c-94e0-4dcc221af20b_2",
+        "prediction": {
+          "review_text": "As we continue to integrate AI tools into our business processes, I've seen firsthand how they can transform operations and enhance delivery. At CodingRippler, we've been leveraging platforms like n8n and Make to automate workflows that were once manual and time-consuming. For instance, imagine extracting data from Gmail, processing it through AI, and seamlessly sending it to Google Sheets—all automated! This not only saves time but also reduces human error, allowing teams to focus on strategic tasks. \n\nIt's crucial to remember that while AI offers incredible capabilities, the implementation must be thoughtful. I often advise founders to prioritize reliability and repeatability in their AI applications. This means planning for post-launch changes and ensuring that your team is equipped to handle the outputs consistently. \n\nIf you're considering how AI can streamline your operations, let's connect! I'd love to share insights and explore how we can tackle your unique challenges together. #AI #Automation #NoCode #BusinessProcess #TechStrategy",
+          "rating": 5,
+          "sentiment": "Positive",
+          "predicted_themes": {
+            "challenges of effective AI use": 0.33318126597466774,
+            "impact of AI on education accessibility": 1.512652800869878e-05,
+            "impact of automation on growth": 0.3325419419613792,
+            "redesigning customer support with AI": 1.512652800869878e-05,
+            "need for tool integration in businesses": 0.333183887269168,
+            "impact of alignment in operations": 0.0010570870956212325,
+            "collaboration over individual talent": 5.56464314645391e-06
+          }
+        },
+        "initial_prediction_data": {
+          "review_text": "As we continue to integrate AI tools into our business processes, I've seen firsthand how they can transform operations and enhance delivery. At CodingRippler, we've been leveraging platforms like n8n and Make to automate workflows that were once manual and time-consuming. For instance, imagine extracting data from Gmail, processing it through AI, and seamlessly sending it to Google Sheets—all automated! This not only saves time but also reduces human error, allowing teams to focus on strategic tasks. \n\nIt's crucial to remember that while AI offers incredible capabilities, the implementation must be thoughtful. I often advise founders to prioritize reliability and repeatability in their AI applications. This means planning for post-launch changes and ensuring that your team is equipped to handle the outputs consistently. \n\nIf you're considering how AI can streamline your operations, let's connect! I'd love to share insights and explore how we can tackle your unique challenges together. #AI #Automation #NoCode #BusinessProcess #TechStrategy",
+          "rating": 5,
+          "sentiment": "Positive",
+          "predicted_themes": {
+            "challenges of effective AI use": 0.33318126597466774,
+            "impact of AI on education accessibility": 1.512652800869878e-05,
+            "impact of automation on growth": 0.3325419419613792,
+            "redesigning customer support with AI": 1.512652800869878e-05,
+            "need for tool integration in businesses": 0.333183887269168,
+            "impact of alignment in operations": 0.0010570870956212325,
+            "collaboration over individual talent": 5.56464314645391e-06
+          }
+        },
+        "actual": {
+          "review_text": "AI tools aren't the edge.\n\nThe instructions are.\n\nEveryone has access to the same AI tools now.\n\nWhat makes the difference is how you instruct them.\n\nAt CodingRippler, we're heavily investing in building scenario-based instructions for our engineering team.\n\n→ Check this before delivery\n→ Flag this if it breaks\n→ Don't miss this\n\nAI runs through them. Every time.\n\nThe tool didn't change. The way we use it did.\n\nFaster delivery. Consistent quality.\n\nIf you've been waiting to build because \"agencies cost too much\" that's changed.\n\n \n\n#AI #Startup #Founder #Entrepreneur #SmallBusiness #Agency",
+          "rating": 4.5,
+          "sentiment": "Positive",
+          "predicted_themes": {
+            "challenges of effective AI use": 0.9754445681035767,
+            "impact of AI on education accessibility": 5.416646265688694e-05,
+            "impact of automation on growth": 0.007985212311293175,
+            "redesigning customer support with AI": 5.416646265688694e-05,
+            "need for tool integration in businesses": 0.010233760704195346,
+            "impact of alignment in operations": 0.006228109919925198,
+            "collaboration over individual talent": 1.603569581539283e-08
+          },
+          "topic_probabilities": {
+            "challenges of effective AI use": 0.9754445681035767,
+            "impact of AI on education accessibility": 5.416646265688694e-05,
+            "impact of automation on growth": 0.007985212311293175,
+            "redesigning customer support with AI": 5.416646265688694e-05,
+            "need for tool integration in businesses": 0.010233760704195346,
+            "impact of alignment in operations": 0.006228109919925198,
+            "collaboration over individual talent": 1.603569581539283e-08
+          }
+        },
+        "metrics": {
+          "rating_score": 0.875,
+          "sentiment_score": 1.0,
+          "theme_jsd": 0.40170467273437205,
+          "num_actual_themes": 7,
+          "overall_accuracy": 0.8294885981796885,
+          "weights_used": {
+            "rating": 0.4,
+            "sentiment": 0.3,
+            "theme": 0.3
+          },
+          "recall@1": 0.0,
+          "recall@3": 1.0,
+          "recall@5": 1.0,
+          "recall@max(3,k)": 1.0,
+          "recall@max(3,k)_threshold_0.8": 0.0,
+          "num_themes_above_0.8": 0,
+          "num_additional_themes_0.8": 0,
+          "recall@max(3,k)_threshold_0.85": 0.0,
+          "num_themes_above_0.85": 0,
+          "num_additional_themes_0.85": 0
+        },
+        "deltas": {
+          "text_delta": 0.34626849819225847,
+          "theme_delta": 0.40170467273437205,
+          "overall_delta": 0.36289935055489253,
+          "theme_jsd": 0.40170467273437205,
+          "delta_weights": {
+            "text": 0.7,
+            "theme": 0.3
+          }
+        },
+        "initial_prediction_deltas": {
+          "text_delta": 0.34626849819225847,
+          "theme_delta": 0.40170467273437205,
+          "overall_delta": 0.36289935055489253
+        },
+        "initial_deltas": {
+          "text_delta": 0.34626849819225847,
+          "theme_delta": 0.40170467273437205,
+          "overall_delta": 0.36289935055489253
+        },
+        "i0_snapshot": {
+          "prediction": {
+            "review_text": "As we continue to integrate AI tools into our business processes, I've seen firsthand how they can transform operations and enhance delivery. At CodingRippler, we've been leveraging platforms like n8n and Make to automate workflows that were once manual and time-consuming. For instance, imagine extracting data from Gmail, processing it through AI, and seamlessly sending it to Google Sheets—all automated! This not only saves time but also reduces human error, allowing teams to focus on strategic tasks. \n\nIt's crucial to remember that while AI offers incredible capabilities, the implementation must be thoughtful. I often advise founders to prioritize reliability and repeatability in their AI applications. This means planning for post-launch changes and ensuring that your team is equipped to handle the outputs consistently. \n\nIf you're considering how AI can streamline your operations, let's connect! I'd love to share insights and explore how we can tackle your unique challenges together. #AI #Automation #NoCode #BusinessProcess #TechStrategy",
+            "rating": 5,
+            "sentiment": "Positive",
+            "predicted_themes": {
+              "challenges of effective AI use": 0.33318126597466774,
+              "impact of AI on education accessibility": 1.512652800869878e-05,
+              "impact of automation on growth": 0.3325419419613792,
+              "redesigning customer support with AI": 1.512652800869878e-05,
+              "need for tool integration in businesses": 0.333183887269168,
+              "impact of alignment in operations": 0.0010570870956212325,
+              "collaboration over individual talent": 5.56464314645391e-06
+            }
+          },
+          "deltas": {
+            "text_delta": 0.34626849819225847,
+            "theme_delta": 0.40170467273437205,
+            "overall_delta": 0.36289935055489253
+          },
+          "metrics": {
+            "rating_score": 0.875,
+            "sentiment_score": 1.0,
+            "theme_jsd": 0.40170467273437205,
+            "num_actual_themes": 7,
+            "overall_accuracy": 0.8294885981796885,
+            "weights_used": {
+              "rating": 0.4,
+              "sentiment": 0.3,
+              "theme": 0.3
+            },
+            "recall@1": 0.0,
+            "recall@3": 1.0,
+            "recall@5": 1.0,
+            "recall@max(3,k)": 1.0,
+            "recall@max(3,k)_threshold_0.8": 0.0,
+            "num_themes_above_0.8": 0,
+            "num_additional_themes_0.8": 0,
+            "recall@max(3,k)_threshold_0.85": 0.0,
+            "num_themes_above_0.85": 0,
+            "num_additional_themes_0.85": 0
+          }
+        },
+        "correction_journey": [],
+        "best_deltas": {
+          "overall_delta": 0.36289935055489253,
+          "theme_delta": 0.40170467273437205
+        },
+        "best_prediction_data": {
+          "review_text": "As we continue to integrate AI tools into our business processes, I've seen firsthand how they can transform operations and enhance delivery. At CodingRippler, we've been leveraging platforms like n8n and Make to automate workflows that were once manual and time-consuming. For instance, imagine extracting data from Gmail, processing it through AI, and seamlessly sending it to Google Sheets—all automated! This not only saves time but also reduces human error, allowing teams to focus on strategic tasks. \n\nIt's crucial to remember that while AI offers incredible capabilities, the implementation must be thoughtful. I often advise founders to prioritize reliability and repeatability in their AI applications. This means planning for post-launch changes and ensuring that your team is equipped to handle the outputs consistently. \n\nIf you're considering how AI can streamline your operations, let's connect! I'd love to share insights and explore how we can tackle your unique challenges together. #AI #Automation #NoCode #BusinessProcess #TechStrategy",
+          "rating": 5,
+          "sentiment": "Positive",
+          "predicted_themes": {
+            "challenges of effective AI use": 0.33318126597466774,
+            "impact of AI on education accessibility": 1.512652800869878e-05,
+            "impact of automation on growth": 0.3325419419613792,
+            "redesigning customer support with AI": 1.512652800869878e-05,
+            "need for tool integration in businesses": 0.333183887269168,
+            "impact of alignment in operations": 0.0010570870956212325,
+            "collaboration over individual talent": 5.56464314645391e-06
+          }
+        },
+        "feedback_loop_iteration": 1
+      },
+      {
+        "review_key": "1db61e77-786d-4d4c-94e0-4dcc221af20b_review_1",
+        "user_id": "1db61e77-786d-4d4c-94e0-4dcc221af20b",
+        "review_idx": 1,
+        "status": "success",
+        "product_description": "Reliability and consistency in AI decision-making",
+        "category": "Business Operations and Strategy",
+        "post_id": "1db61e77-786d-4d4c-94e0-4dcc221af20b_3",
+        "prediction": {
+          "review_text": "In the rapidly evolving landscape of AI, one aspect that we cannot overlook is the importance of reliability and consistency in decision-making. As we integrate AI into our business operations, ensuring that our systems deliver predictable and repeatable outcomes is crucial. \n\nAt CodingRippler, we focus on practical automation strategies that prioritize these qualities. For instance, when designing workflows using tools like n8n or Zapier, we emphasize scenario-based instructions that account for various edge cases. This approach not only enhances the reliability of our AI applications but also builds trust among users and stakeholders.\n\nLet’s consider a recent project where we automated invoice processing for a client in the BFSI sector. By implementing a robust architecture that included AI-driven data extraction from emails, we ensured that the system consistently processed invoices with minimal errors. This not only saved time but also significantly reduced operational costs. \n\nAs we continue to innovate, let’s remember that the goal is not just to leverage cutting-edge technology but to create solutions that our clients can depend on. I invite fellow founders and tech enthusiasts to share their experiences with AI reliability and how it has impacted their business operations. Together, we can build a community that champions dependable AI solutions! \n\n#AI #Automation #Reliability #BusinessStrategy #CodingRippler",
+          "rating": 5,
+          "sentiment": "Positive",
+          "predicted_themes": {
+            "building systems for autonomous operations": 0.9998182206720045,
+            "understanding customer journeys in business": 4.544483199889032e-05,
+            "building adaptive learning platforms": 4.544483199889032e-05,
+            "power of simplicity in technology": 4.544483199889032e-05,
+            "navigating uncertainty in professional growth": 4.544483199889032e-05
+          }
+        },
+        "initial_prediction_data": {
+          "review_text": "In the rapidly evolving landscape of AI, one aspect that we cannot overlook is the importance of reliability and consistency in decision-making. As we integrate AI into our business operations, ensuring that our systems deliver predictable and repeatable outcomes is crucial. \n\nAt CodingRippler, we focus on practical automation strategies that prioritize these qualities. For instance, when designing workflows using tools like n8n or Zapier, we emphasize scenario-based instructions that account for various edge cases. This approach not only enhances the reliability of our AI applications but also builds trust among users and stakeholders.\n\nLet’s consider a recent project where we automated invoice processing for a client in the BFSI sector. By implementing a robust architecture that included AI-driven data extraction from emails, we ensured that the system consistently processed invoices with minimal errors. This not only saved time but also significantly reduced operational costs. \n\nAs we continue to innovate, let’s remember that the goal is not just to leverage cutting-edge technology but to create solutions that our clients can depend on. I invite fellow founders and tech enthusiasts to share their experiences with AI reliability and how it has impacted their business operations. Together, we can build a community that champions dependable AI solutions! \n\n#AI #Automation #Reliability #BusinessStrategy #CodingRippler",
+          "rating": 5,
+          "sentiment": "Positive",
+          "predicted_themes": {
+            "building systems for autonomous operations": 0.9998182206720045,
+            "understanding customer journeys in business": 4.544483199889032e-05,
+            "building adaptive learning platforms": 4.544483199889032e-05,
+            "power of simplicity in technology": 4.544483199889032e-05,
+            "navigating uncertainty in professional growth": 4.544483199889032e-05
+          }
+        },
+        "actual": {
+          "review_text": "This came up in a recent project we worked on.\n\nA business owner was dealing with THOUSANDS of new records every day for cold email campaigns.\n\nOut of that, they needed to reliably SHORT-LIST THE TOP 600 RELEVANT PROSPECTS before outreach went live.\n\nThey asked AI to do the filtering.\n\nTHE PROBLEM WASN’T SPEED.\nIT WAS CONSISTENCY.\n\nSome days the AI selected 580 records.\nOther days it crossed 700.\n\nOccasionally, it surfaced leads that clearly didn’t match previous campaigns.\n\nSAME DATA.\nSAME SETUP.\nDIFFERENT RESULTS.\n\nThat’s where AI quietly becomes a BUSINESS RISK.\n\nTheir first instinct was to switch models, add more examples, or manually double-check the output.\n\nInstead, we paused and looked at the task itself.\n\nThe AI wasn’t failing because it lacked intelligence.\nIt was failing because it wasn’t given CLEAR RESPONSIBILITY.\n\nIt didn’t know:\n\n → what must be excluded\n → which criteria mattered more\n → how to behave when the data didn’t clearly fit\n\nOnce those boundaries were defined, the output stabilized.\n\nNOT BECAUSE THE AI GOT SMARTER,\nBUT BECAUSE THE DECISION WAS FINALLY WELL-SCOPED.\n\nWhen AI is used for REPEATABLE BUSINESS DECISIONS,\nRELIABILITY MATTERS MORE THAN CREATIVITY.\n\nIf this sounds familiar, COMMENT “AI” and I’ll connect to understand what kind of inconsistency you’re seeing.\n\n#AIinBusiness #ArtificialIntelligence #BusinessAutomation \n#Founders #Entrepreneurship #SalesOperations #GoToMarket",
+          "rating": 4.5,
+          "sentiment": "Positive",
+          "predicted_themes": {
+            "building systems for autonomous operations": 0.9860224295217007,
+            "understanding customer journeys in business": 4.4832658603002715e-05,
+            "building adaptive learning platforms": 4.4832658603002715e-05,
+            "power of simplicity in technology": 0.013887901805286826,
+            "navigating uncertainty in professional growth": 3.355806535165316e-09
+          },
+          "topic_probabilities": {
+            "building systems for autonomous operations": 0.9860224295217007,
+            "understanding customer journeys in business": 4.4832658603002715e-05,
+            "building adaptive learning platforms": 4.4832658603002715e-05,
+            "power of simplicity in technology": 0.013887901805286826,
+            "navigating uncertainty in professional growth": 3.355806535165316e-09
+          }
+        },
+        "metrics": {
+          "rating_score": 0.875,
+          "sentiment_score": 1.0,
+          "theme_jsd": 0.006803521543368329,
+          "num_actual_themes": 5,
+          "overall_accuracy": 0.9479589435369895,
+          "weights_used": {
+            "rating": 0.4,
+            "sentiment": 0.3,
+            "theme": 0.3
+          },
+          "recall@1": 1.0,
+          "recall@3": 1.0,
+          "recall@5": 1.0,
+          "recall@max(3,k)": 1.0,
+          "recall@max(3,k)_threshold_0.8": 1.0,
+          "num_themes_above_0.8": 1,
+          "num_additional_themes_0.8": 0,
+          "recall@max(3,k)_threshold_0.85": 1.0,
+          "num_themes_above_0.85": 1,
+          "num_additional_themes_0.85": 0
+        },
+        "deltas": {
+          "text_delta": 0.2604995438840323,
+          "theme_delta": 0.006803521543368329,
+          "overall_delta": 0.1843907371818331,
+          "theme_jsd": 0.006803521543368329,
+          "delta_weights": {
+            "text": 0.7,
+            "theme": 0.3
+          }
+        },
+        "initial_prediction_deltas": {
+          "text_delta": 0.2604995438840323,
+          "theme_delta": 0.006803521543368329,
+          "overall_delta": 0.1843907371818331
+        },
+        "initial_deltas": {
+          "text_delta": 0.2604995438840323,
+          "theme_delta": 0.006803521543368329,
+          "overall_delta": 0.1843907371818331
+        },
+        "i0_snapshot": {
+          "prediction": {
+            "review_text": "In the rapidly evolving landscape of AI, one aspect that we cannot overlook is the importance of reliability and consistency in decision-making. As we integrate AI into our business operations, ensuring that our systems deliver predictable and repeatable outcomes is crucial. \n\nAt CodingRippler, we focus on practical automation strategies that prioritize these qualities. For instance, when designing workflows using tools like n8n or Zapier, we emphasize scenario-based instructions that account for various edge cases. This approach not only enhances the reliability of our AI applications but also builds trust among users and stakeholders.\n\nLet’s consider a recent project where we automated invoice processing for a client in the BFSI sector. By implementing a robust architecture that included AI-driven data extraction from emails, we ensured that the system consistently processed invoices with minimal errors. This not only saved time but also significantly reduced operational costs. \n\nAs we continue to innovate, let’s remember that the goal is not just to leverage cutting-edge technology but to create solutions that our clients can depend on. I invite fellow founders and tech enthusiasts to share their experiences with AI reliability and how it has impacted their business operations. Together, we can build a community that champions dependable AI solutions! \n\n#AI #Automation #Reliability #BusinessStrategy #CodingRippler",
+            "rating": 5,
+            "sentiment": "Positive",
+            "predicted_themes": {
+              "building systems for autonomous operations": 0.9998182206720045,
+              "understanding customer journeys in business": 4.544483199889032e-05,
+              "building adaptive learning platforms": 4.544483199889032e-05,
+              "power of simplicity in technology": 4.544483199889032e-05,
+              "navigating uncertainty in professional growth": 4.544483199889032e-05
+            }
+          },
+          "deltas": {
+            "text_delta": 0.2604995438840323,
+            "theme_delta": 0.006803521543368329,
+            "overall_delta": 0.1843907371818331
+          },
+          "metrics": {
+            "rating_score": 0.875,
+            "sentiment_score": 1.0,
+            "theme_jsd": 0.006803521543368329,
+            "num_actual_themes": 5,
+            "overall_accuracy": 0.9479589435369895,
+            "weights_used": {
+              "rating": 0.4,
+              "sentiment": 0.3,
+              "theme": 0.3
+            },
+            "recall@1": 1.0,
+            "recall@3": 1.0,
+            "recall@5": 1.0,
+            "recall@max(3,k)": 1.0,
+            "recall@max(3,k)_threshold_0.8": 1.0,
+            "num_themes_above_0.8": 1,
+            "num_additional_themes_0.8": 0,
+            "recall@max(3,k)_threshold_0.85": 1.0,
+            "num_themes_above_0.85": 1,
+            "num_additional_themes_0.85": 0
+          }
+        },
+        "correction_journey": [],
+        "best_deltas": {
+          "overall_delta": 0.1843907371818331,
+          "theme_delta": 0.006803521543368329
+        },
+        "best_prediction_data": {
+          "review_text": "In the rapidly evolving landscape of AI, one aspect that we cannot overlook is the importance of reliability and consistency in decision-making. As we integrate AI into our business operations, ensuring that our systems deliver predictable and repeatable outcomes is crucial. \n\nAt CodingRippler, we focus on practical automation strategies that prioritize these qualities. For instance, when designing workflows using tools like n8n or Zapier, we emphasize scenario-based instructions that account for various edge cases. This approach not only enhances the reliability of our AI applications but also builds trust among users and stakeholders.\n\nLet’s consider a recent project where we automated invoice processing for a client in the BFSI sector. By implementing a robust architecture that included AI-driven data extraction from emails, we ensured that the system consistently processed invoices with minimal errors. This not only saved time but also significantly reduced operational costs. \n\nAs we continue to innovate, let’s remember that the goal is not just to leverage cutting-edge technology but to create solutions that our clients can depend on. I invite fellow founders and tech enthusiasts to share their experiences with AI reliability and how it has impacted their business operations. Together, we can build a community that champions dependable AI solutions! \n\n#AI #Automation #Reliability #BusinessStrategy #CodingRippler",
+          "rating": 5,
+          "sentiment": "Positive",
+          "predicted_themes": {
+            "building systems for autonomous operations": 0.9998182206720045,
+            "understanding customer journeys in business": 4.544483199889032e-05,
+            "building adaptive learning platforms": 4.544483199889032e-05,
+            "power of simplicity in technology": 4.544483199889032e-05,
+            "navigating uncertainty in professional growth": 4.544483199889032e-05
+          }
+        },
+        "feedback_loop_iteration": 1
+      },
+      {
+        "review_key": "1db61e77-786d-4d4c-94e0-4dcc221af20b_review_2",
+        "user_id": "1db61e77-786d-4d4c-94e0-4dcc221af20b",
+        "review_idx": 2,
+        "status": "success",
+        "product_description": "Optimization of data management in business operations",
+        "category": "Business Operations and Strategy",
+        "post_id": "1db61e77-786d-4d4c-94e0-4dcc221af20b_4",
+        "prediction": {
+          "review_text": "In today's fast-paced business environment, optimizing data management is not just a luxury—it's a necessity. At CodingRippler, we've seen firsthand how effective data orchestration can transform operations for businesses of all sizes. By leveraging tools like n8n and Zapier, we can automate data flows between applications, ensuring that critical information is always at your fingertips. \n\nFor instance, imagine automating the process of extracting insights from your emails and pushing them directly into Google Sheets for real-time analysis. This not only saves time but also reduces the risk of human error. \n\nIn our recent project, we helped a client streamline their invoice processing by integrating Gmail with our n8n workflows, resulting in a 40% reduction in processing time and improved accuracy. \n\nIf you're looking to enhance your data management strategies, let's connect! I’m always eager to share insights and explore how we can tackle your unique challenges together. #DataManagement #Automation #n8n #BusinessStrategy #CodingRippler",
+          "rating": 5,
+          "sentiment": "Positive",
+          "predicted_themes": {
+            "building systems for autonomous operations": 0.9981897571927318,
+            "understanding customer journeys in business": 0.0005974009652242486,
+            "building adaptive learning platforms": 0.0005974009652242486,
+            "power of simplicity in technology": 1.8039911595306265e-05,
+            "navigating uncertainty in professional growth": 0.0005974009652242486
+          }
+        },
+        "initial_prediction_data": {
+          "review_text": "In today's fast-paced business environment, optimizing data management is not just a luxury—it's a necessity. At CodingRippler, we've seen firsthand how effective data orchestration can transform operations for businesses of all sizes. By leveraging tools like n8n and Zapier, we can automate data flows between applications, ensuring that critical information is always at your fingertips. \n\nFor instance, imagine automating the process of extracting insights from your emails and pushing them directly into Google Sheets for real-time analysis. This not only saves time but also reduces the risk of human error. \n\nIn our recent project, we helped a client streamline their invoice processing by integrating Gmail with our n8n workflows, resulting in a 40% reduction in processing time and improved accuracy. \n\nIf you're looking to enhance your data management strategies, let's connect! I’m always eager to share insights and explore how we can tackle your unique challenges together. #DataManagement #Automation #n8n #BusinessStrategy #CodingRippler",
+          "rating": 5,
+          "sentiment": "Positive",
+          "predicted_themes": {
+            "building systems for autonomous operations": 0.9981897571927318,
+            "understanding customer journeys in business": 0.0005974009652242486,
+            "building adaptive learning platforms": 0.0005974009652242486,
+            "power of simplicity in technology": 1.8039911595306265e-05,
+            "navigating uncertainty in professional growth": 0.0005974009652242486
+          }
+        },
+        "actual": {
+          "review_text": "Last week I spoke with a few LinkedIn members who reached out.\n\nHere's what I discovered:\n\n→ I'm juggling multiple spreadsheets. Data is everywhere. Nothing talks to each other unless I step in.\n\n→ I feel stuck. Is there a way to fix this?\n\nI suggested something simple.\n\nConnect the sheets. Let AI handle the juggling.\n\nCost? Around $30/month.\n\nIf spreadsheets are eating your time too, let's talk.\n\n \n\n#SmallBusiness #BusinessOwner #Entrepreneur #WorkSmarter #Productivity #BusinessTips",
+          "rating": 4.5,
+          "sentiment": "Positive",
+          "predicted_themes": {
+            "building systems for autonomous operations": 0.08704433884496385,
+            "understanding customer journeys in business": 4.144550879050938e-05,
+            "building adaptive learning platforms": 4.144550879050938e-05,
+            "power of simplicity in technology": 0.9128727677214031,
+            "navigating uncertainty in professional growth": 2.4160519980975114e-09
+          },
+          "topic_probabilities": {
+            "building systems for autonomous operations": 0.08704433884496385,
+            "understanding customer journeys in business": 4.144550879050938e-05,
+            "building adaptive learning platforms": 4.144550879050938e-05,
+            "power of simplicity in technology": 0.9128727677214031,
+            "navigating uncertainty in professional growth": 2.4160519980975114e-09
+          }
+        },
+        "metrics": {
+          "rating_score": 0.875,
+          "sentiment_score": 1.0,
+          "theme_jsd": 0.7809981124607761,
+          "num_actual_themes": 5,
+          "overall_accuracy": 0.7157005662617671,
+          "weights_used": {
+            "rating": 0.4,
+            "sentiment": 0.3,
+            "theme": 0.3
+          },
+          "recall@1": 0.0,
+          "recall@3": 0.0,
+          "recall@5": 1.0,
+          "recall@max(3,k)": 0.0,
+          "recall@max(3,k)_threshold_0.8": 0.0,
+          "num_themes_above_0.8": 1,
+          "num_additional_themes_0.8": 0,
+          "recall@max(3,k)_threshold_0.85": 0.0,
+          "num_themes_above_0.85": 1,
+          "num_additional_themes_0.85": 0
+        },
+        "deltas": {
+          "text_delta": 0.44889989341058323,
+          "theme_delta": 0.7809981124607761,
+          "overall_delta": 0.548529359125641,
+          "theme_jsd": 0.7809981124607761,
+          "delta_weights": {
+            "text": 0.7,
+            "theme": 0.3
+          }
+        },
+        "initial_prediction_deltas": {
+          "text_delta": 0.44889989341058323,
+          "theme_delta": 0.7809981124607761,
+          "overall_delta": 0.548529359125641
+        },
+        "initial_deltas": {
+          "text_delta": 0.44889989341058323,
+          "theme_delta": 0.7809981124607761,
+          "overall_delta": 0.548529359125641
+        },
+        "i0_snapshot": {
+          "prediction": {
+            "review_text": "In today's fast-paced business environment, optimizing data management is not just a luxury—it's a necessity. At CodingRippler, we've seen firsthand how effective data orchestration can transform operations for businesses of all sizes. By leveraging tools like n8n and Zapier, we can automate data flows between applications, ensuring that critical information is always at your fingertips. \n\nFor instance, imagine automating the process of extracting insights from your emails and pushing them directly into Google Sheets for real-time analysis. This not only saves time but also reduces the risk of human error. \n\nIn our recent project, we helped a client streamline their invoice processing by integrating Gmail with our n8n workflows, resulting in a 40% reduction in processing time and improved accuracy. \n\nIf you're looking to enhance your data management strategies, let's connect! I’m always eager to share insights and explore how we can tackle your unique challenges together. #DataManagement #Automation #n8n #BusinessStrategy #CodingRippler",
+            "rating": 5,
+            "sentiment": "Positive",
+            "predicted_themes": {
+              "building systems for autonomous operations": 0.9981897571927318,
+              "understanding customer journeys in business": 0.0005974009652242486,
+              "building adaptive learning platforms": 0.0005974009652242486,
+              "power of simplicity in technology": 1.8039911595306265e-05,
+              "navigating uncertainty in professional growth": 0.0005974009652242486
+            }
+          },
+          "deltas": {
+            "text_delta": 0.44889989341058323,
+            "theme_delta": 0.7809981124607761,
+            "overall_delta": 0.548529359125641
+          },
+          "metrics": {
+            "rating_score": 0.875,
+            "sentiment_score": 1.0,
+            "theme_jsd": 0.7809981124607761,
+            "num_actual_themes": 5,
+            "overall_accuracy": 0.7157005662617671,
+            "weights_used": {
+              "rating": 0.4,
+              "sentiment": 0.3,
+              "theme": 0.3
+            },
+            "recall@1": 0.0,
+            "recall@3": 0.0,
+            "recall@5": 1.0,
+            "recall@max(3,k)": 0.0,
+            "recall@max(3,k)_threshold_0.8": 0.0,
+            "num_themes_above_0.8": 1,
+            "num_additional_themes_0.8": 0,
+            "recall@max(3,k)_threshold_0.85": 0.0,
+            "num_themes_above_0.85": 1,
+            "num_additional_themes_0.85": 0
+          }
+        },
+        "correction_journey": [],
+        "best_deltas": {
+          "overall_delta": 0.548529359125641,
+          "theme_delta": 0.7809981124607761
+        },
+        "best_prediction_data": {
+          "review_text": "In today's fast-paced business environment, optimizing data management is not just a luxury—it's a necessity. At CodingRippler, we've seen firsthand how effective data orchestration can transform operations for businesses of all sizes. By leveraging tools like n8n and Zapier, we can automate data flows between applications, ensuring that critical information is always at your fingertips. \n\nFor instance, imagine automating the process of extracting insights from your emails and pushing them directly into Google Sheets for real-time analysis. This not only saves time but also reduces the risk of human error. \n\nIn our recent project, we helped a client streamline their invoice processing by integrating Gmail with our n8n workflows, resulting in a 40% reduction in processing time and improved accuracy. \n\nIf you're looking to enhance your data management strategies, let's connect! I’m always eager to share insights and explore how we can tackle your unique challenges together. #DataManagement #Automation #n8n #BusinessStrategy #CodingRippler",
+          "rating": 5,
+          "sentiment": "Positive",
+          "predicted_themes": {
+            "building systems for autonomous operations": 0.9981897571927318,
+            "understanding customer journeys in business": 0.0005974009652242486,
+            "building adaptive learning platforms": 0.0005974009652242486,
+            "power of simplicity in technology": 1.8039911595306265e-05,
+            "navigating uncertainty in professional growth": 0.0005974009652242486
+          }
+        },
+        "feedback_loop_iteration": 1
+      },
+      {
+        "review_key": "1db61e77-786d-4d4c-94e0-4dcc221af20b_review_3",
+        "user_id": "1db61e77-786d-4d4c-94e0-4dcc221af20b",
+        "review_idx": 3,
+        "status": "success",
+        "product_description": "Impact of AI on engineering and decision-making processes",
+        "category": "AI and Technology Integration",
+        "post_id": "1db61e77-786d-4d4c-94e0-4dcc221af20b_5",
+        "prediction": {
+          "review_text": "As we continue to integrate AI into our engineering processes, it's crucial to understand its profound impact on decision-making. At CodingRippler, we've been leveraging AI to streamline operations and enhance product delivery for our clients. One of the key lessons I've learned is the importance of scenario-based planning. AI can provide insights, but without a clear framework, those insights can lead to inconsistent outcomes. \n\nFor instance, when automating workflows using tools like n8n, we ensure that every step is meticulously designed to handle various scenarios, from data extraction to processing and reporting. This not only boosts reliability but also empowers our clients to make informed decisions based on solid data. \n\nI encourage fellow founders and tech enthusiasts to embrace AI thoughtfully—focus on building robust architectures that prioritize repeatability and accountability. Let's share our experiences and best practices to navigate this exciting yet complex landscape together. What strategies have you implemented to ensure AI enhances your decision-making processes? \n\n#AI #Automation #Engineering #DecisionMaking #CodingRippler",
+          "rating": 5,
+          "sentiment": "Positive",
+          "predicted_themes": {
+            "challenges of effective AI use": 0.44381680387390465,
+            "impact of AI on education accessibility": 2.0149255624436176e-05,
+            "impact of automation on growth": 1.2220803316612745e-05,
+            "redesigning customer support with AI": 2.0149255624436176e-05,
+            "need for tool integration in businesses": 0.4415000197938397,
+            "impact of alignment in operations": 0.0809635192824498,
+            "collaboration over individual talent": 0.03366713773524022
+          }
+        },
+        "initial_prediction_data": {
+          "review_text": "As we continue to integrate AI into our engineering processes, it's crucial to understand its profound impact on decision-making. At CodingRippler, we've been leveraging AI to streamline operations and enhance product delivery for our clients. One of the key lessons I've learned is the importance of scenario-based planning. AI can provide insights, but without a clear framework, those insights can lead to inconsistent outcomes. \n\nFor instance, when automating workflows using tools like n8n, we ensure that every step is meticulously designed to handle various scenarios, from data extraction to processing and reporting. This not only boosts reliability but also empowers our clients to make informed decisions based on solid data. \n\nI encourage fellow founders and tech enthusiasts to embrace AI thoughtfully—focus on building robust architectures that prioritize repeatability and accountability. Let's share our experiences and best practices to navigate this exciting yet complex landscape together. What strategies have you implemented to ensure AI enhances your decision-making processes? \n\n#AI #Automation #Engineering #DecisionMaking #CodingRippler",
+          "rating": 5,
+          "sentiment": "Positive",
+          "predicted_themes": {
+            "challenges of effective AI use": 0.44381680387390465,
+            "impact of AI on education accessibility": 2.0149255624436176e-05,
+            "impact of automation on growth": 1.2220803316612745e-05,
+            "redesigning customer support with AI": 2.0149255624436176e-05,
+            "need for tool integration in businesses": 0.4415000197938397,
+            "impact of alignment in operations": 0.0809635192824498,
+            "collaboration over individual talent": 0.03366713773524022
+          }
+        },
+        "actual": {
+          "review_text": "You’ve probably already validated this with AI.\n\nIt sounds right. \nIt looks reasonable. \nIt even feels convincing.\n\nAnd that’s exactly why this stage is risky \nbefore engineering decisions get locked in.\n\nAI is great at giving confident answers. \nIt doesn’t show you what breaks if it’s wrong \nor how expensive that mistake could become later.\n\nI stay close to technical challenges almost every day.\n\nThat means seeing \nwhere plans hold up, \nwhere assumptions fall apart, \nand where complexity quietly creeps in.\n\nBefore anything gets locked in, \nI spend time talking with founders \nto keep a human perspective in the loop \nbefore engineering decisions are made.\n\nThis isn’t about execution. \nIt’s about judgment before commitment.\n\nDM me and we’ll break it down.\n\n#founders #entrepreneurship #startuplife #businessdecisions #productstrategy #techstrategy #scalingbusiness",
+          "rating": 4.5,
+          "sentiment": "Positive",
+          "predicted_themes": {
+            "challenges of effective AI use": 0.9979786625269852,
+            "impact of AI on education accessibility": 4.530816995541768e-05,
+            "impact of automation on growth": 5.893368527712014e-10,
+            "redesigning customer support with AI": 4.530816995541768e-05,
+            "need for tool integration in businesses": 7.179592649705153e-09,
+            "impact of alignment in operations": 7.873319294787594e-06,
+            "collaboration over individual talent": 0.001922840044879507
+          },
+          "topic_probabilities": {
+            "challenges of effective AI use": 0.9979786625269852,
+            "impact of AI on education accessibility": 4.530816995541768e-05,
+            "impact of automation on growth": 5.893368527712014e-10,
+            "redesigning customer support with AI": 4.530816995541768e-05,
+            "need for tool integration in businesses": 7.179592649705153e-09,
+            "impact of alignment in operations": 7.873319294787594e-06,
+            "collaboration over individual talent": 0.001922840044879507
+          }
+        },
+        "metrics": {
+          "rating_score": 0.875,
+          "sentiment_score": 1.0,
+          "theme_jsd": 0.35242383919443154,
+          "num_actual_themes": 7,
+          "overall_accuracy": 0.8442728482416706,
+          "weights_used": {
+            "rating": 0.4,
+            "sentiment": 0.3,
+            "theme": 0.3
+          },
+          "recall@1": 1.0,
+          "recall@3": 1.0,
+          "recall@5": 1.0,
+          "recall@max(3,k)": 1.0,
+          "recall@max(3,k)_threshold_0.8": 0.0,
+          "num_themes_above_0.8": 0,
+          "num_additional_themes_0.8": 0,
+          "recall@max(3,k)_threshold_0.85": 0.0,
+          "num_themes_above_0.85": 0,
+          "num_additional_themes_0.85": 0
+        },
+        "deltas": {
+          "text_delta": 0.3812238140828532,
+          "theme_delta": 0.35242383919443154,
+          "overall_delta": 0.3725838216163267,
+          "theme_jsd": 0.35242383919443154,
+          "delta_weights": {
+            "text": 0.7,
+            "theme": 0.3
+          }
+        },
+        "initial_prediction_deltas": {
+          "text_delta": 0.3812238140828532,
+          "theme_delta": 0.35242383919443154,
+          "overall_delta": 0.3725838216163267
+        },
+        "initial_deltas": {
+          "text_delta": 0.3812238140828532,
+          "theme_delta": 0.35242383919443154,
+          "overall_delta": 0.3725838216163267
+        },
+        "i0_snapshot": {
+          "prediction": {
+            "review_text": "As we continue to integrate AI into our engineering processes, it's crucial to understand its profound impact on decision-making. At CodingRippler, we've been leveraging AI to streamline operations and enhance product delivery for our clients. One of the key lessons I've learned is the importance of scenario-based planning. AI can provide insights, but without a clear framework, those insights can lead to inconsistent outcomes. \n\nFor instance, when automating workflows using tools like n8n, we ensure that every step is meticulously designed to handle various scenarios, from data extraction to processing and reporting. This not only boosts reliability but also empowers our clients to make informed decisions based on solid data. \n\nI encourage fellow founders and tech enthusiasts to embrace AI thoughtfully—focus on building robust architectures that prioritize repeatability and accountability. Let's share our experiences and best practices to navigate this exciting yet complex landscape together. What strategies have you implemented to ensure AI enhances your decision-making processes? \n\n#AI #Automation #Engineering #DecisionMaking #CodingRippler",
+            "rating": 5,
+            "sentiment": "Positive",
+            "predicted_themes": {
+              "challenges of effective AI use": 0.44381680387390465,
+              "impact of AI on education accessibility": 2.0149255624436176e-05,
+              "impact of automation on growth": 1.2220803316612745e-05,
+              "redesigning customer support with AI": 2.0149255624436176e-05,
+              "need for tool integration in businesses": 0.4415000197938397,
+              "impact of alignment in operations": 0.0809635192824498,
+              "collaboration over individual talent": 0.03366713773524022
+            }
+          },
+          "deltas": {
+            "text_delta": 0.3812238140828532,
+            "theme_delta": 0.35242383919443154,
+            "overall_delta": 0.3725838216163267
+          },
+          "metrics": {
+            "rating_score": 0.875,
+            "sentiment_score": 1.0,
+            "theme_jsd": 0.35242383919443154,
+            "num_actual_themes": 7,
+            "overall_accuracy": 0.8442728482416706,
+            "weights_used": {
+              "rating": 0.4,
+              "sentiment": 0.3,
+              "theme": 0.3
+            },
+            "recall@1": 1.0,
+            "recall@3": 1.0,
+            "recall@5": 1.0,
+            "recall@max(3,k)": 1.0,
+            "recall@max(3,k)_threshold_0.8": 0.0,
+            "num_themes_above_0.8": 0,
+            "num_additional_themes_0.8": 0,
+            "recall@max(3,k)_threshold_0.85": 0.0,
+            "num_themes_above_0.85": 0,
+            "num_additional_themes_0.85": 0
+          }
+        },
+        "correction_journey": [],
+        "best_deltas": {
+          "overall_delta": 0.3725838216163267,
+          "theme_delta": 0.35242383919443154
+        },
+        "best_prediction_data": {
+          "review_text": "As we continue to integrate AI into our engineering processes, it's crucial to understand its profound impact on decision-making. At CodingRippler, we've been leveraging AI to streamline operations and enhance product delivery for our clients. One of the key lessons I've learned is the importance of scenario-based planning. AI can provide insights, but without a clear framework, those insights can lead to inconsistent outcomes. \n\nFor instance, when automating workflows using tools like n8n, we ensure that every step is meticulously designed to handle various scenarios, from data extraction to processing and reporting. This not only boosts reliability but also empowers our clients to make informed decisions based on solid data. \n\nI encourage fellow founders and tech enthusiasts to embrace AI thoughtfully—focus on building robust architectures that prioritize repeatability and accountability. Let's share our experiences and best practices to navigate this exciting yet complex landscape together. What strategies have you implemented to ensure AI enhances your decision-making processes? \n\n#AI #Automation #Engineering #DecisionMaking #CodingRippler",
+          "rating": 5,
+          "sentiment": "Positive",
+          "predicted_themes": {
+            "challenges of effective AI use": 0.44381680387390465,
+            "impact of AI on education accessibility": 2.0149255624436176e-05,
+            "impact of automation on growth": 1.2220803316612745e-05,
+            "redesigning customer support with AI": 2.0149255624436176e-05,
+            "need for tool integration in businesses": 0.4415000197938397,
+            "impact of alignment in operations": 0.0809635192824498,
+            "collaboration over individual talent": 0.03366713773524022
+          }
+        },
+        "feedback_loop_iteration": 1
+      }
+    ]
+  },
+  "journey_log": {
+    "12707bb7-7e48-4c4e-b690-84fd28843105_review_0": {
+      "user_id": "12707bb7-7e48-4c4e-b690-84fd28843105",
+      "review_idx": 0,
+      "product_description": "Accessibility tools and resources for digital environments",
+      "category": "Business Operations and Strategy",
+      "actual_review_data": {
+        "review_text": "Last week our team released Accessibility Insights, a set of free & open-source tools that can help find accessibility issues in websites & desktop applications. It's an exciting milestone for us; if you are curious, feel free to try it out and contribute at",
+        "rating": 4.5,
+        "sentiment": "Positive",
+        "predicted_themes": {
+          "building systems for autonomous operations": 0.2499993668707535,
+          "understanding customer journeys in business": 0.2499993668707535,
+          "building adaptive learning platforms": 0.2499993668707535,
+          "power of simplicity in technology": 2.5325169859991507e-06,
+          "navigating uncertainty in professional growth": 0.2499993668707535
+        },
+        "topic_probabilities": {
+          "building systems for autonomous operations": 0.2499993668707535,
+          "understanding customer journeys in business": 0.2499993668707535,
+          "building adaptive learning platforms": 0.2499993668707535,
+          "power of simplicity in technology": 2.5325169859991507e-06,
+          "navigating uncertainty in professional growth": 0.2499993668707535
+        },
+        "product_description": "Accessibility tools and resources for digital environments",
+        "category": "Business Operations and Strategy"
+      },
+      "initial_prediction_deltas": {
+        "text_delta": 0.33108478498477345,
+        "theme_delta": 0.13789046330020766,
+        "overall_delta": 0.2731264884794037
+      },
+      "initial_prediction_data": {
+        "review_text": "🌍 As we continue to build and innovate in the tech space, it's crucial to prioritize accessibility in our digital environments. At Microsoft, I've had the privilege of working on projects that not only push the boundaries of machine learning but also ensure that our tools are usable by everyone, regardless of their abilities. \n\nOne of the recent initiatives I'm excited about is the development of Accessibility Insights, an open-source tool designed to help developers identify and fix accessibility issues in their web and desktop applications. This tool is not just about compliance; it’s about creating a seamless experience for all users. \n\nIn addition to this, I’ve been experimenting with localized versions of popular games, like a Punjabi adaptation of Wordle, which emphasizes the importance of cultural relevance in tech. These projects have reinforced my belief that technology should be inclusive and accessible. \n\nI encourage everyone in our community to explore these resources and consider how we can all contribute to making our digital spaces more inclusive. Let’s share our experiences, tools, and tips to drive this mission forward! 💪 #Accessibility #OpenSource #MachineLearning #Localization #CommunityDriven",
+        "rating": 5,
+        "sentiment": "Positive",
+        "predicted_themes": {
+          "building systems for autonomous operations": 0.3333284211632073,
+          "understanding customer journeys in business": 0.3333284211632073,
+          "building adaptive learning platforms": 4.335701990630251e-06,
+          "power of simplicity in technology": 1.0400808387326873e-05,
+          "navigating uncertainty in professional growth": 0.3333284211632073
+        }
+      },
+      "correction_journey": []
+    },
+    "1db61e77-786d-4d4c-94e0-4dcc221af20b_review_0": {
+      "user_id": "1db61e77-786d-4d4c-94e0-4dcc221af20b",
+      "review_idx": 0,
+      "product_description": "Use of AI tools in business processes and delivery",
+      "category": "AI and Technology Integration",
+      "actual_review_data": {
+        "review_text": "AI tools aren't the edge.\n\nThe instructions are.\n\nEveryone has access to the same AI tools now.\n\nWhat makes the difference is how you instruct them.\n\nAt CodingRippler, we're heavily investing in building scenario-based instructions for our engineering team.\n\n→ Check this before delivery\n→ Flag this if it breaks\n→ Don't miss this\n\nAI runs through them. Every time.\n\nThe tool didn't change. The way we use it did.\n\nFaster delivery. Consistent quality.\n\nIf you've been waiting to build because \"agencies cost too much\" that's changed.\n\n \n\n#AI #Startup #Founder #Entrepreneur #SmallBusiness #Agency",
+        "rating": 4.5,
+        "sentiment": "Positive",
+        "predicted_themes": {
+          "challenges of effective AI use": 0.9754445681035767,
+          "impact of AI on education accessibility": 5.416646265688694e-05,
+          "impact of automation on growth": 0.007985212311293175,
+          "redesigning customer support with AI": 5.416646265688694e-05,
+          "need for tool integration in businesses": 0.010233760704195346,
+          "impact of alignment in operations": 0.006228109919925198,
+          "collaboration over individual talent": 1.603569581539283e-08
+        },
+        "topic_probabilities": {
+          "challenges of effective AI use": 0.9754445681035767,
+          "impact of AI on education accessibility": 5.416646265688694e-05,
+          "impact of automation on growth": 0.007985212311293175,
+          "redesigning customer support with AI": 5.416646265688694e-05,
+          "need for tool integration in businesses": 0.010233760704195346,
+          "impact of alignment in operations": 0.006228109919925198,
+          "collaboration over individual talent": 1.603569581539283e-08
+        },
+        "product_description": "Use of AI tools in business processes and delivery",
+        "category": "AI and Technology Integration"
+      },
+      "initial_prediction_deltas": {
+        "text_delta": 0.34626849819225847,
+        "theme_delta": 0.40170467273437205,
+        "overall_delta": 0.36289935055489253
+      },
+      "initial_prediction_data": {
+        "review_text": "As we continue to integrate AI tools into our business processes, I've seen firsthand how they can transform operations and enhance delivery. At CodingRippler, we've been leveraging platforms like n8n and Make to automate workflows that were once manual and time-consuming. For instance, imagine extracting data from Gmail, processing it through AI, and seamlessly sending it to Google Sheets—all automated! This not only saves time but also reduces human error, allowing teams to focus on strategic tasks. \n\nIt's crucial to remember that while AI offers incredible capabilities, the implementation must be thoughtful. I often advise founders to prioritize reliability and repeatability in their AI applications. This means planning for post-launch changes and ensuring that your team is equipped to handle the outputs consistently. \n\nIf you're considering how AI can streamline your operations, let's connect! I'd love to share insights and explore how we can tackle your unique challenges together. #AI #Automation #NoCode #BusinessProcess #TechStrategy",
+        "rating": 5,
+        "sentiment": "Positive",
+        "predicted_themes": {
+          "challenges of effective AI use": 0.33318126597466774,
+          "impact of AI on education accessibility": 1.512652800869878e-05,
+          "impact of automation on growth": 0.3325419419613792,
+          "redesigning customer support with AI": 1.512652800869878e-05,
+          "need for tool integration in businesses": 0.333183887269168,
+          "impact of alignment in operations": 0.0010570870956212325,
+          "collaboration over individual talent": 5.56464314645391e-06
+        }
+      },
+      "correction_journey": []
+    },
+    "1db61e77-786d-4d4c-94e0-4dcc221af20b_review_1": {
+      "user_id": "1db61e77-786d-4d4c-94e0-4dcc221af20b",
+      "review_idx": 1,
+      "product_description": "Reliability and consistency in AI decision-making",
+      "category": "Business Operations and Strategy",
+      "actual_review_data": {
+        "review_text": "This came up in a recent project we worked on.\n\nA business owner was dealing with THOUSANDS of new records every day for cold email campaigns.\n\nOut of that, they needed to reliably SHORT-LIST THE TOP 600 RELEVANT PROSPECTS before outreach went live.\n\nThey asked AI to do the filtering.\n\nTHE PROBLEM WASN’T SPEED.\nIT WAS CONSISTENCY.\n\nSome days the AI selected 580 records.\nOther days it crossed 700.\n\nOccasionally, it surfaced leads that clearly didn’t match previous campaigns.\n\nSAME DATA.\nSAME SETUP.\nDIFFERENT RESULTS.\n\nThat’s where AI quietly becomes a BUSINESS RISK.\n\nTheir first instinct was to switch models, add more examples, or manually double-check the output.\n\nInstead, we paused and looked at the task itself.\n\nThe AI wasn’t failing because it lacked intelligence.\nIt was failing because it wasn’t given CLEAR RESPONSIBILITY.\n\nIt didn’t know:\n\n → what must be excluded\n → which criteria mattered more\n → how to behave when the data didn’t clearly fit\n\nOnce those boundaries were defined, the output stabilized.\n\nNOT BECAUSE THE AI GOT SMARTER,\nBUT BECAUSE THE DECISION WAS FINALLY WELL-SCOPED.\n\nWhen AI is used for REPEATABLE BUSINESS DECISIONS,\nRELIABILITY MATTERS MORE THAN CREATIVITY.\n\nIf this sounds familiar, COMMENT “AI” and I’ll connect to understand what kind of inconsistency you’re seeing.\n\n#AIinBusiness #ArtificialIntelligence #BusinessAutomation \n#Founders #Entrepreneurship #SalesOperations #GoToMarket",
+        "rating": 4.5,
+        "sentiment": "Positive",
+        "predicted_themes": {
+          "building systems for autonomous operations": 0.9860224295217007,
+          "understanding customer journeys in business": 4.4832658603002715e-05,
+          "building adaptive learning platforms": 4.4832658603002715e-05,
+          "power of simplicity in technology": 0.013887901805286826,
+          "navigating uncertainty in professional growth": 3.355806535165316e-09
+        },
+        "topic_probabilities": {
+          "building systems for autonomous operations": 0.9860224295217007,
+          "understanding customer journeys in business": 4.4832658603002715e-05,
+          "building adaptive learning platforms": 4.4832658603002715e-05,
+          "power of simplicity in technology": 0.013887901805286826,
+          "navigating uncertainty in professional growth": 3.355806535165316e-09
+        },
+        "product_description": "Reliability and consistency in AI decision-making",
+        "category": "Business Operations and Strategy"
+      },
+      "initial_prediction_deltas": {
+        "text_delta": 0.2604995438840323,
+        "theme_delta": 0.006803521543368329,
+        "overall_delta": 0.1843907371818331
+      },
+      "initial_prediction_data": {
+        "review_text": "In the rapidly evolving landscape of AI, one aspect that we cannot overlook is the importance of reliability and consistency in decision-making. As we integrate AI into our business operations, ensuring that our systems deliver predictable and repeatable outcomes is crucial. \n\nAt CodingRippler, we focus on practical automation strategies that prioritize these qualities. For instance, when designing workflows using tools like n8n or Zapier, we emphasize scenario-based instructions that account for various edge cases. This approach not only enhances the reliability of our AI applications but also builds trust among users and stakeholders.\n\nLet’s consider a recent project where we automated invoice processing for a client in the BFSI sector. By implementing a robust architecture that included AI-driven data extraction from emails, we ensured that the system consistently processed invoices with minimal errors. This not only saved time but also significantly reduced operational costs. \n\nAs we continue to innovate, let’s remember that the goal is not just to leverage cutting-edge technology but to create solutions that our clients can depend on. I invite fellow founders and tech enthusiasts to share their experiences with AI reliability and how it has impacted their business operations. Together, we can build a community that champions dependable AI solutions! \n\n#AI #Automation #Reliability #BusinessStrategy #CodingRippler",
+        "rating": 5,
+        "sentiment": "Positive",
+        "predicted_themes": {
+          "building systems for autonomous operations": 0.9998182206720045,
+          "understanding customer journeys in business": 4.544483199889032e-05,
+          "building adaptive learning platforms": 4.544483199889032e-05,
+          "power of simplicity in technology": 4.544483199889032e-05,
+          "navigating uncertainty in professional growth": 4.544483199889032e-05
+        }
+      },
+      "correction_journey": []
+    },
+    "1db61e77-786d-4d4c-94e0-4dcc221af20b_review_2": {
+      "user_id": "1db61e77-786d-4d4c-94e0-4dcc221af20b",
+      "review_idx": 2,
+      "product_description": "Optimization of data management in business operations",
+      "category": "Business Operations and Strategy",
+      "actual_review_data": {
+        "review_text": "Last week I spoke with a few LinkedIn members who reached out.\n\nHere's what I discovered:\n\n→ I'm juggling multiple spreadsheets. Data is everywhere. Nothing talks to each other unless I step in.\n\n→ I feel stuck. Is there a way to fix this?\n\nI suggested something simple.\n\nConnect the sheets. Let AI handle the juggling.\n\nCost? Around $30/month.\n\nIf spreadsheets are eating your time too, let's talk.\n\n \n\n#SmallBusiness #BusinessOwner #Entrepreneur #WorkSmarter #Productivity #BusinessTips",
+        "rating": 4.5,
+        "sentiment": "Positive",
+        "predicted_themes": {
+          "building systems for autonomous operations": 0.08704433884496385,
+          "understanding customer journeys in business": 4.144550879050938e-05,
+          "building adaptive learning platforms": 4.144550879050938e-05,
+          "power of simplicity in technology": 0.9128727677214031,
+          "navigating uncertainty in professional growth": 2.4160519980975114e-09
+        },
+        "topic_probabilities": {
+          "building systems for autonomous operations": 0.08704433884496385,
+          "understanding customer journeys in business": 4.144550879050938e-05,
+          "building adaptive learning platforms": 4.144550879050938e-05,
+          "power of simplicity in technology": 0.9128727677214031,
+          "navigating uncertainty in professional growth": 2.4160519980975114e-09
+        },
+        "product_description": "Optimization of data management in business operations",
+        "category": "Business Operations and Strategy"
+      },
+      "initial_prediction_deltas": {
+        "text_delta": 0.44889989341058323,
+        "theme_delta": 0.7809981124607761,
+        "overall_delta": 0.548529359125641
+      },
+      "initial_prediction_data": {
+        "review_text": "In today's fast-paced business environment, optimizing data management is not just a luxury—it's a necessity. At CodingRippler, we've seen firsthand how effective data orchestration can transform operations for businesses of all sizes. By leveraging tools like n8n and Zapier, we can automate data flows between applications, ensuring that critical information is always at your fingertips. \n\nFor instance, imagine automating the process of extracting insights from your emails and pushing them directly into Google Sheets for real-time analysis. This not only saves time but also reduces the risk of human error. \n\nIn our recent project, we helped a client streamline their invoice processing by integrating Gmail with our n8n workflows, resulting in a 40% reduction in processing time and improved accuracy. \n\nIf you're looking to enhance your data management strategies, let's connect! I’m always eager to share insights and explore how we can tackle your unique challenges together. #DataManagement #Automation #n8n #BusinessStrategy #CodingRippler",
+        "rating": 5,
+        "sentiment": "Positive",
+        "predicted_themes": {
+          "building systems for autonomous operations": 0.9981897571927318,
+          "understanding customer journeys in business": 0.0005974009652242486,
+          "building adaptive learning platforms": 0.0005974009652242486,
+          "power of simplicity in technology": 1.8039911595306265e-05,
+          "navigating uncertainty in professional growth": 0.0005974009652242486
+        }
+      },
+      "correction_journey": []
+    },
+    "1db61e77-786d-4d4c-94e0-4dcc221af20b_review_3": {
+      "user_id": "1db61e77-786d-4d4c-94e0-4dcc221af20b",
+      "review_idx": 3,
+      "product_description": "Impact of AI on engineering and decision-making processes",
+      "category": "AI and Technology Integration",
+      "actual_review_data": {
+        "review_text": "You’ve probably already validated this with AI.\n\nIt sounds right. \nIt looks reasonable. \nIt even feels convincing.\n\nAnd that’s exactly why this stage is risky \nbefore engineering decisions get locked in.\n\nAI is great at giving confident answers. \nIt doesn’t show you what breaks if it’s wrong \nor how expensive that mistake could become later.\n\nI stay close to technical challenges almost every day.\n\nThat means seeing \nwhere plans hold up, \nwhere assumptions fall apart, \nand where complexity quietly creeps in.\n\nBefore anything gets locked in, \nI spend time talking with founders \nto keep a human perspective in the loop \nbefore engineering decisions are made.\n\nThis isn’t about execution. \nIt’s about judgment before commitment.\n\nDM me and we’ll break it down.\n\n#founders #entrepreneurship #startuplife #businessdecisions #productstrategy #techstrategy #scalingbusiness",
+        "rating": 4.5,
+        "sentiment": "Positive",
+        "predicted_themes": {
+          "challenges of effective AI use": 0.9979786625269852,
+          "impact of AI on education accessibility": 4.530816995541768e-05,
+          "impact of automation on growth": 5.893368527712014e-10,
+          "redesigning customer support with AI": 4.530816995541768e-05,
+          "need for tool integration in businesses": 7.179592649705153e-09,
+          "impact of alignment in operations": 7.873319294787594e-06,
+          "collaboration over individual talent": 0.001922840044879507
+        },
+        "topic_probabilities": {
+          "challenges of effective AI use": 0.9979786625269852,
+          "impact of AI on education accessibility": 4.530816995541768e-05,
+          "impact of automation on growth": 5.893368527712014e-10,
+          "redesigning customer support with AI": 4.530816995541768e-05,
+          "need for tool integration in businesses": 7.179592649705153e-09,
+          "impact of alignment in operations": 7.873319294787594e-06,
+          "collaboration over individual talent": 0.001922840044879507
+        },
+        "product_description": "Impact of AI on engineering and decision-making processes",
+        "category": "AI and Technology Integration"
+      },
+      "initial_prediction_deltas": {
+        "text_delta": 0.3812238140828532,
+        "theme_delta": 0.35242383919443154,
+        "overall_delta": 0.3725838216163267
+      },
+      "initial_prediction_data": {
+        "review_text": "As we continue to integrate AI into our engineering processes, it's crucial to understand its profound impact on decision-making. At CodingRippler, we've been leveraging AI to streamline operations and enhance product delivery for our clients. One of the key lessons I've learned is the importance of scenario-based planning. AI can provide insights, but without a clear framework, those insights can lead to inconsistent outcomes. \n\nFor instance, when automating workflows using tools like n8n, we ensure that every step is meticulously designed to handle various scenarios, from data extraction to processing and reporting. This not only boosts reliability but also empowers our clients to make informed decisions based on solid data. \n\nI encourage fellow founders and tech enthusiasts to embrace AI thoughtfully—focus on building robust architectures that prioritize repeatability and accountability. Let's share our experiences and best practices to navigate this exciting yet complex landscape together. What strategies have you implemented to ensure AI enhances your decision-making processes? \n\n#AI #Automation #Engineering #DecisionMaking #CodingRippler",
+        "rating": 5,
+        "sentiment": "Positive",
+        "predicted_themes": {
+          "challenges of effective AI use": 0.44381680387390465,
+          "impact of AI on education accessibility": 2.0149255624436176e-05,
+          "impact of automation on growth": 1.2220803316612745e-05,
+          "redesigning customer support with AI": 2.0149255624436176e-05,
+          "need for tool integration in businesses": 0.4415000197938397,
+          "impact of alignment in operations": 0.0809635192824498,
+          "collaboration over individual talent": 0.03366713773524022
+        }
+      },
+      "correction_journey": []
+    }
+  },
+  "meta": {
+    "contextual_json": "/media/samanvitha/Seagate HDD/Audience-workflow/scripts/LInkedin_Category_Topic_Extraction/tiered_posts_grouped/contextual_stimulus_extraction_with_topics.json",
+    "description_json": "/media/samanvitha/Seagate HDD/Audience-workflow/scripts/scripts_sgo/outputs/linkedin_tier1_sgo/default_run/description.json",
+    "description_seed_json": "/media/samanvitha/Seagate HDD/Audience-workflow/scripts/Linkedin_Posts_Extraction/raw_profiles/description.json",
+    "mapping_json": "/media/samanvitha/Seagate HDD/Audience-workflow/scripts/LInkedin_Category_Topic_Extraction/tiered_posts_grouped/discovered_category_topic_mapping.json",
+    "work_dir": "/media/samanvitha/Seagate HDD/Audience-workflow/scripts/scripts_sgo/outputs/linkedin_tier1_sgo/default_run",
+    "scoring_mode": "logprobs",
+    "feedback_loop": true,
+    "jsd_threshold": 0.2,
+    "prediction_include_post_body": false,
+    "gt_prob_threshold_for_actual_theme_list": 0.5,
+    "weight_text_delta": 0.7,
+    "weight_theme_delta": 0.3,
+    "total_delta_rows": 5,
+    "last_completed_iteration": 1,
+    "refinement_call_count": 0,
+    "shrink_call_count": 0,
+    "qual_refinement_call_count": 0,
+    "qual_shrink_call_count": 0,
+    "sync_description_json": true,
+    "trait_descriptions_refine_disabled": false,
+    "full_delta_post_pipeline": true,
+    "correction_iterations": 6,
+    "correction_delta_threshold": 0.2,
+    "correction_feedback_on": "theme",
+    "topic_model": "gpt-4o-mini",
+    "pipeline": "linkedin_tier1_delta_method_predictions_full",
+    "memory_jsd_threshold": 0.2,
+    "next_sweep_min_delta": 0.2,
+    "outer_sweep_post_filter": "full_then_best_delta_gt_next_sweep_min",
+    "memory_batch_size": 5,
+    "min_posts_for_memory_batch": 5,
+    "evolve_every_n_batches": 5,
+    "delta_style_predictions_output": "/media/samanvitha/Seagate HDD/Audience-workflow/scripts/scripts_sgo/outputs/linkedin_tier1_sgo/default_run/delta_method_predictions.json"
+  }
+}

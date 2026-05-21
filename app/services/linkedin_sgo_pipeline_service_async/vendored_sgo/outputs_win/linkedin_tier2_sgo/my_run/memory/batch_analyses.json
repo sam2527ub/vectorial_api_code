@@ -1,0 +1,1611 @@
+{
+  "iteration_1_batch_1": {
+    "reviews": [
+      "1db61e77-786d-4d4c-94e0-4dcc221af20b_post_1db61e77-786d-4d4c-94e0-4dcc221af20b_51",
+      "1db61e77-786d-4d4c-94e0-4dcc221af20b_post_1db61e77-786d-4d4c-94e0-4dcc221af20b_54",
+      "1db61e77-786d-4d4c-94e0-4dcc221af20b_post_1db61e77-786d-4d4c-94e0-4dcc221af20b_55",
+      "1db61e77-786d-4d4c-94e0-4dcc221af20b_post_1db61e77-786d-4d4c-94e0-4dcc221af20b_58",
+      "1db61e77-786d-4d4c-94e0-4dcc221af20b_post_1db61e77-786d-4d4c-94e0-4dcc221af20b_70"
+    ],
+    "batch_id": "iteration_1_batch_1",
+    "gaps": [
+      {
+        "behavioral_gap": "When discussing the evolution of technology, this community opens with a personal experience of failure or challenge they faced — but the prediction assumed they would provide a general endorsement of the trend without personal context.",
+        "exists_in_context": true,
+        "missing_nuance": "The predictions missed the emphasis on personal experiences that illustrate the challenges of adapting to new technologies.",
+        "evidence": "4/5 posts",
+        "confidence": "HIGH"
+      }
+    ],
+    "outliers": [
+      {
+        "post_id": "1db61e77-786d-4d4c-94e0-4dcc221af20b_54",
+        "behavioral_gap": "This post reflects on the adaptability of individuals in the face of disruptive technology without a personal failure narrative.",
+        "why_outlier": "It does not open with a personal experience of failure or challenge, which is a common move in the other posts.",
+        "exists_in_context": true,
+        "missing_nuance": "The post lacks a specific personal anecdote that illustrates the struggle with technology."
+      },
+      {
+        "post_id": "1db61e77-786d-4d4c-94e0-4dcc221af20b_58",
+        "behavioral_gap": "This post focuses on the execution challenges faced by founders without a personal failure narrative.",
+        "why_outlier": "It does not incorporate a personal experience of failure or challenge, which is a common move in the other posts.",
+        "exists_in_context": true,
+        "missing_nuance": "The post does not include a personal anecdote that connects to the broader theme of technology adaptation."
+      }
+    ],
+    "preliminary_delta_notes": [
+      "[queued_for_batch_root_cause_memory]",
+      "[queued_for_batch_root_cause_memory]",
+      "[queued_for_batch_root_cause_memory]",
+      "[queued_for_batch_root_cause_memory]",
+      "[queued_for_batch_root_cause_memory]"
+    ],
+    "category": "AI and Technology in Work | Team Dynamics and Collaboration"
+  },
+  "iteration_1_batch_2": {
+    "reviews": [
+      "1db61e77-786d-4d4c-94e0-4dcc221af20b_post_1db61e77-786d-4d4c-94e0-4dcc221af20b_74",
+      "1db61e77-786d-4d4c-94e0-4dcc221af20b_post_1db61e77-786d-4d4c-94e0-4dcc221af20b_79",
+      "1db61e77-786d-4d4c-94e0-4dcc221af20b_post_1db61e77-786d-4d4c-94e0-4dcc221af20b_81",
+      "1db61e77-786d-4d4c-94e0-4dcc221af20b_post_1db61e77-786d-4d4c-94e0-4dcc221af20b_84",
+      "1db61e77-786d-4d4c-94e0-4dcc221af20b_post_1db61e77-786d-4d4c-94e0-4dcc221af20b_87"
+    ],
+    "batch_id": "iteration_1_batch_2",
+    "gaps": [
+      {
+        "behavioral_gap": "When discussing the impact of AI on critical thinking, this community directly challenges the reader by highlighting the risks of over-reliance on AI tools — but the prediction assumed they would present a balanced view without a strong call to action.",
+        "exists_in_context": true,
+        "missing_nuance": "The prediction missed the emphasis on the potential dangers of dependency on AI, which is a critical concern for this community.",
+        "evidence": "2/5 posts",
+        "confidence": "HIGH"
+      }
+    ],
+    "outliers": [
+      {
+        "post_id": "1db61e77-786d-4d4c-94e0-4dcc221af20b_74",
+        "behavioral_gap": "This post opens with a personal narrative about transitioning from corporate finance to entrepreneurship, focusing on personal growth rather than a challenge or failure.",
+        "why_outlier": "It does not align with the community's typical move of framing discussions around personal failures or challenges related to technology.",
+        "exists_in_context": true,
+        "missing_nuance": "The post lacks a specific personal anecdote that illustrates the struggle with technology or critical thinking."
+      },
+      {
+        "post_id": "1db61e77-786d-4d4c-94e0-4dcc221af20b_81",
+        "behavioral_gap": "This post promotes an AI tool without a personal narrative or critical reflection on its implications, focusing instead on the tool's capabilities.",
+        "why_outlier": "It does not incorporate a personal experience or critical perspective on AI, which is common in other posts.",
+        "exists_in_context": true,
+        "missing_nuance": "The post lacks a personal anecdote or critical reflection that connects to the broader theme of technology adaptation."
+      },
+      {
+        "post_id": "1db61e77-786d-4d4c-94e0-4dcc221af20b_84",
+        "behavioral_gap": "This post discusses SEO and AI optimization without a personal narrative or critical reflection on the challenges faced in adapting to these technologies.",
+        "why_outlier": "It does not reflect the community's typical pattern of sharing personal experiences or challenges related to technology.",
+        "exists_in_context": true,
+        "missing_nuance": "The post lacks a personal anecdote that illustrates the struggle with technology or critical thinking."
+      }
+    ],
+    "preliminary_delta_notes": [
+      "[queued_for_batch_root_cause_memory]",
+      "[queued_for_batch_root_cause_memory]",
+      "[queued_for_batch_root_cause_memory]",
+      "[queued_for_batch_root_cause_memory]",
+      "[queued_for_batch_root_cause_memory]"
+    ],
+    "category": "AI and Technology in Work | Team Dynamics and Collaboration"
+  },
+  "iteration_1_batch_3": {
+    "reviews": [
+      "1db61e77-786d-4d4c-94e0-4dcc221af20b_post_1db61e77-786d-4d4c-94e0-4dcc221af20b_88",
+      "1db61e77-786d-4d4c-94e0-4dcc221af20b_post_1db61e77-786d-4d4c-94e0-4dcc221af20b_91",
+      "1db61e77-786d-4d4c-94e0-4dcc221af20b_post_1db61e77-786d-4d4c-94e0-4dcc221af20b_94",
+      "1db61e77-786d-4d4c-94e0-4dcc221af20b_post_1db61e77-786d-4d4c-94e0-4dcc221af20b_100",
+      "1db61e77-786d-4d4c-94e0-4dcc221af20b_post_1db61e77-786d-4d4c-94e0-4dcc221af20b_101"
+    ],
+    "batch_id": "iteration_1_batch_3",
+    "gaps": [
+      {
+        "behavioral_gap": "When discussing the implications of AI in business, this community emphasizes the need for practical evaluation frameworks based on real-world experiences — but the prediction assumed they would focus on general trends without specific critical insights.",
+        "exists_in_context": true,
+        "missing_nuance": "The prediction missed the emphasis on the importance of evaluating AI tools through the lens of practical application and past failures.",
+        "evidence": "3/5 posts",
+        "confidence": "HIGH"
+      }
+    ],
+    "outliers": [
+      {
+        "post_id": "1db61e77-786d-4d4c-94e0-4dcc221af20b_88",
+        "behavioral_gap": "This post discusses the role of boutique firms in leveraging AI without providing a critical evaluation of AI tools or frameworks.",
+        "why_outlier": "It does not align with the community's typical focus on practical evaluation frameworks for AI tools based on real-world experiences.",
+        "exists_in_context": true,
+        "missing_nuance": "The post lacks a critical perspective on AI evaluation that is common in other posts."
+      },
+      {
+        "post_id": "1db61e77-786d-4d4c-94e0-4dcc221af20b_91",
+        "behavioral_gap": "This post promotes a job opportunity without engaging in a critical discussion about AI adoption or evaluation frameworks.",
+        "why_outlier": "It does not incorporate a critical evaluation of AI tools or frameworks, which is a common theme in other posts.",
+        "exists_in_context": true,
+        "missing_nuance": "The post lacks a critical perspective on AI evaluation that is common in other posts."
+      },
+      {
+        "post_id": "1db61e77-786d-4d4c-94e0-4dcc221af20b_100",
+        "behavioral_gap": "This post highlights the importance of proper evaluation frameworks for AI without engaging in a personal narrative or practical example.",
+        "why_outlier": "It does not fit the community's pattern of sharing personal experiences or critical insights related to AI evaluation.",
+        "exists_in_context": true,
+        "missing_nuance": "The post lacks a personal anecdote that connects to the broader theme of AI evaluation."
+      }
+    ],
+    "preliminary_delta_notes": [
+      "[queued_for_batch_root_cause_memory]",
+      "[queued_for_batch_root_cause_memory]",
+      "[queued_for_batch_root_cause_memory]",
+      "[queued_for_batch_root_cause_memory]",
+      "[queued_for_batch_root_cause_memory]"
+    ],
+    "category": "AI and Technology in Work | Career Development and Mentorship | Team Dynamics and Collaboration"
+  },
+  "iteration_1_batch_4": {
+    "reviews": [
+      "22288d07-4cdf-4ea0-8242-70c9e9426b58_post_22288d07-4cdf-4ea0-8242-70c9e9426b58_5",
+      "22288d07-4cdf-4ea0-8242-70c9e9426b58_post_22288d07-4cdf-4ea0-8242-70c9e9426b58_12",
+      "22288d07-4cdf-4ea0-8242-70c9e9426b58_post_22288d07-4cdf-4ea0-8242-70c9e9426b58_13",
+      "2e4a00af-909d-4ee2-9aa6-52eee25d18e9_post_2e4a00af-909d-4ee2-9aa6-52eee25d18e9_24",
+      "2e4a00af-909d-4ee2-9aa6-52eee25d18e9_post_2e4a00af-909d-4ee2-9aa6-52eee25d18e9_30"
+    ],
+    "batch_id": "iteration_1_batch_4",
+    "gaps": [
+      {
+        "behavioral_gap": "When announcing career transitions, this community expresses gratitude towards specific individuals and teams who contributed to their growth — but the prediction assumed they would focus on personal achievements without acknowledging others.",
+        "exists_in_context": true,
+        "missing_nuance": "The prediction missed the emphasis on recognizing contributions from colleagues and mentors, which is a critical aspect of their posts.",
+        "evidence": "4/5 posts",
+        "confidence": "HIGH"
+      }
+    ],
+    "outliers": [
+      {
+        "post_id": "22288d07-4cdf-4ea0-8242-70c9e9426b58_5",
+        "behavioral_gap": "This post expresses gratitude towards specific colleagues but lacks a broader narrative about personal growth or career transition.",
+        "why_outlier": "It does not align with the community's typical move of framing discussions around gratitude for mentorship and contributions to their career journey.",
+        "exists_in_context": true,
+        "missing_nuance": "The post lacks a detailed narrative that connects personal achievements to the support received from others."
+      },
+      {
+        "post_id": "22288d07-4cdf-4ea0-8242-70c9e9426b58_12",
+        "behavioral_gap": "This post acknowledges team support but does not provide a narrative about personal growth or the impact of mentorship on their career.",
+        "why_outlier": "It does not incorporate a broader reflection on their career journey or the significance of mentorship, which is common in other posts.",
+        "exists_in_context": true,
+        "missing_nuance": "The post lacks a comprehensive narrative that ties personal achievements to the influence of mentors."
+      },
+      {
+        "post_id": "22288d07-4cdf-4ea0-8242-70c9e9426b58_13",
+        "behavioral_gap": "This post reflects on teamwork and collaboration but does not explicitly connect these themes to personal career transitions or gratitude.",
+        "why_outlier": "It emphasizes team dynamics without a personal narrative about their career journey or the role of mentorship.",
+        "exists_in_context": true,
+        "missing_nuance": "The post lacks a personal story that illustrates the impact of teamwork on their career development."
+      },
+      {
+        "post_id": "2e4a00af-909d-4ee2-9aa6-52eee25d18e9_30",
+        "behavioral_gap": "This post discusses a fitness test change without connecting it to personal experiences or team dynamics relevant to their career.",
+        "why_outlier": "It does not fit the community's pattern of sharing personal experiences or gratitude related to career transitions.",
+        "exists_in_context": true,
+        "missing_nuance": "The post lacks a personal connection to the themes of mentorship or career development."
+      }
+    ],
+    "preliminary_delta_notes": [
+      "[queued_for_batch_root_cause_memory]",
+      "[queued_for_batch_root_cause_memory]",
+      "[queued_for_batch_root_cause_memory]",
+      "[queued_for_batch_root_cause_memory]",
+      "[queued_for_batch_root_cause_memory]"
+    ],
+    "category": "Career Development and Mentorship | Team Dynamics and Collaboration"
+  },
+  "iteration_1_batch_5": {
+    "reviews": [
+      "2e4a00af-909d-4ee2-9aa6-52eee25d18e9_post_2e4a00af-909d-4ee2-9aa6-52eee25d18e9_32",
+      "2e4a00af-909d-4ee2-9aa6-52eee25d18e9_post_2e4a00af-909d-4ee2-9aa6-52eee25d18e9_39",
+      "2e4a00af-909d-4ee2-9aa6-52eee25d18e9_post_2e4a00af-909d-4ee2-9aa6-52eee25d18e9_41",
+      "30e90503-bef8-4da2-8ffb-f47487b0e1de_post_30e90503-bef8-4da2-8ffb-f47487b0e1de_4",
+      "313325f0-0334-45f7-93b3-e65adcc597e9_post_313325f0-0334-45f7-93b3-e65adcc597e9_19"
+    ],
+    "batch_id": "iteration_1_batch_5",
+    "gaps": [
+      {
+        "behavioral_gap": "When discussing the implications of AI tools, this community emphasizes practical solutions and personal experiences — but the prediction assumed they would focus on general capabilities without specific insights.",
+        "exists_in_context": true,
+        "missing_nuance": "The prediction missed the emphasis on sharing practical applications and personal anecdotes that illustrate the challenges and solutions related to AI.",
+        "evidence": "4/5 posts",
+        "confidence": "HIGH"
+      }
+    ],
+    "outliers": [
+      {
+        "post_id": "2e4a00af-909d-4ee2-9aa6-52eee25d18e9_32",
+        "behavioral_gap": "This post discusses a military fitness test without connecting it to personal experiences or insights related to technology.",
+        "why_outlier": "It does not align with the community's typical focus on practical applications and personal experiences related to AI tools.",
+        "exists_in_context": true,
+        "missing_nuance": "The post lacks a connection to personal experiences or insights that would tie it to the community's usual discussions."
+      },
+      {
+        "post_id": "2e4a00af-909d-4ee2-9aa6-52eee25d18e9_39",
+        "behavioral_gap": "This post critiques a coding error without providing a broader context about AI or personal learning experiences.",
+        "why_outlier": "It does not incorporate a personal narrative or critical reflection on AI, which is common in other posts.",
+        "exists_in_context": true,
+        "missing_nuance": "The post lacks a personal anecdote or critical reflection that connects to the broader theme of technology adaptation."
+      },
+      {
+        "post_id": "30e90503-bef8-4da2-8ffb-f47487b0e1de_4",
+        "behavioral_gap": "This post focuses on hiring without engaging in a discussion about mentorship or personal growth experiences.",
+        "why_outlier": "It does not fit the community's pattern of sharing personal experiences or gratitude related to career transitions.",
+        "exists_in_context": true,
+        "missing_nuance": "The post lacks a personal connection to the themes of mentorship or career development."
+      },
+      {
+        "post_id": "313325f0-0334-45f7-93b3-e65adcc597e9_19",
+        "behavioral_gap": "This post discusses a technical solution without emphasizing personal experiences or practical applications related to AI.",
+        "why_outlier": "It does not align with the community's typical focus on practical applications and personal experiences related to AI tools.",
+        "exists_in_context": true,
+        "missing_nuance": "The post lacks a personal anecdote that illustrates the struggle with technology or critical thinking."
+      }
+    ],
+    "preliminary_delta_notes": [
+      "[queued_for_batch_root_cause_memory]",
+      "[queued_for_batch_root_cause_memory]",
+      "[queued_for_batch_root_cause_memory]",
+      "[queued_for_batch_root_cause_memory]",
+      "[queued_for_batch_root_cause_memory]"
+    ],
+    "category": "AI and Technology in Work | Career Development and Mentorship | Team Dynamics and Collaboration"
+  },
+  "iteration_1_batch_6": {
+    "reviews": [
+      "313325f0-0334-45f7-93b3-e65adcc597e9_post_313325f0-0334-45f7-93b3-e65adcc597e9_25",
+      "313325f0-0334-45f7-93b3-e65adcc597e9_post_313325f0-0334-45f7-93b3-e65adcc597e9_31",
+      "313325f0-0334-45f7-93b3-e65adcc597e9_post_313325f0-0334-45f7-93b3-e65adcc597e9_51",
+      "313325f0-0334-45f7-93b3-e65adcc597e9_post_313325f0-0334-45f7-93b3-e65adcc597e9_53",
+      "3347a9f3-5493-4be8-9df0-f0e7663bc6dd_post_3347a9f3-5493-4be8-9df0-f0e7663bc6dd_12"
+    ],
+    "batch_id": "iteration_1_batch_6",
+    "gaps": [
+      {
+        "behavioral_gap": "When discussing personal growth or career transitions, this community emphasizes the importance of negotiation and self-advocacy — but the prediction assumed they would focus on a celebratory announcement without addressing the negotiation process.",
+        "exists_in_context": false,
+        "missing_nuance": null,
+        "evidence": "2/5 posts",
+        "confidence": "MEDIUM"
+      }
+    ],
+    "outliers": [
+      {
+        "post_id": "313325f0-0334-45f7-93b3-e65adcc597e9_25",
+        "behavioral_gap": "This post discusses a technical optimization without connecting it to personal experiences or broader implications for technology roles.",
+        "why_outlier": "It does not align with the community's typical focus on personal narratives or reflections related to technology.",
+        "exists_in_context": true,
+        "missing_nuance": "The post lacks a personal anecdote that ties the technical discussion to broader themes of adaptability or continuous learning."
+      },
+      {
+        "post_id": "313325f0-0334-45f7-93b3-e65adcc597e9_31",
+        "behavioral_gap": "This post raises a question about negotiation without sharing a personal experience or reflection on the negotiation process.",
+        "why_outlier": "It does not fit the community's pattern of sharing personal stories related to career development and negotiation.",
+        "exists_in_context": true,
+        "missing_nuance": "The post lacks a narrative that connects the negotiation topic to personal growth or mentorship."
+      },
+      {
+        "post_id": "313325f0-0334-45f7-93b3-e65adcc597e9_51",
+        "behavioral_gap": "This post reflects on accountability without connecting it to personal experiences or the role of AI in professional development.",
+        "why_outlier": "It does not align with the community's typical focus on personal narratives or reflections related to technology.",
+        "exists_in_context": true,
+        "missing_nuance": "The post lacks a personal anecdote that ties the theme of accountability to broader implications for technology roles."
+      },
+      {
+        "post_id": "313325f0-0334-45f7-93b3-e65adcc597e9_53",
+        "behavioral_gap": "This post focuses on hiring without engaging in a discussion about mentorship or personal growth experiences.",
+        "why_outlier": "It does not fit the community's pattern of sharing personal experiences or gratitude related to career transitions.",
+        "exists_in_context": true,
+        "missing_nuance": "The post lacks a personal connection to the themes of mentorship or career development."
+      },
+      {
+        "post_id": "3347a9f3-5493-4be8-9df0-f0e7663bc6dd_12",
+        "behavioral_gap": "This post celebrates a new job without reflecting on the journey or the influence of mentorship.",
+        "why_outlier": "It does not align with the community's typical emphasis on gratitude and recognition of contributions in career transitions.",
+        "exists_in_context": true,
+        "missing_nuance": "The post lacks a narrative that connects the achievement to the support received from others."
+      }
+    ],
+    "preliminary_delta_notes": [
+      "[queued_for_batch_root_cause_memory]",
+      "[queued_for_batch_root_cause_memory]",
+      "[queued_for_batch_root_cause_memory]",
+      "[queued_for_batch_root_cause_memory]",
+      "[queued_for_batch_root_cause_memory]"
+    ],
+    "category": "AI and Technology in Work | Career Development and Mentorship | Professional Growth and Recognition"
+  },
+  "iteration_1_batch_7": {
+    "reviews": [
+      "351405ab-deb1-45b5-810c-d32798c95f40_post_351405ab-deb1-45b5-810c-d32798c95f40_69",
+      "351405ab-deb1-45b5-810c-d32798c95f40_post_351405ab-deb1-45b5-810c-d32798c95f40_73",
+      "351405ab-deb1-45b5-810c-d32798c95f40_post_351405ab-deb1-45b5-810c-d32798c95f40_78",
+      "351405ab-deb1-45b5-810c-d32798c95f40_post_351405ab-deb1-45b5-810c-d32798c95f40_84",
+      "351405ab-deb1-45b5-810c-d32798c95f40_post_351405ab-deb1-45b5-810c-d32798c95f40_93"
+    ],
+    "batch_id": "iteration_1_batch_7",
+    "gaps": [
+      {
+        "behavioral_gap": "When discussing the role of AI in professional contexts, this community emphasizes the limitations and challenges of current models based on personal observations — but the prediction assumed they would focus on the potential benefits of AI without acknowledging its shortcomings.",
+        "exists_in_context": true,
+        "missing_nuance": "The prediction missed the community's tendency to highlight skepticism and critical evaluation of AI tools rather than unqualified endorsement.",
+        "evidence": "3/5 posts",
+        "confidence": "HIGH"
+      }
+    ],
+    "outliers": [
+      {
+        "post_id": "351405ab-deb1-45b5-810c-d32798c95f40_73",
+        "behavioral_gap": "This post uses humor to address ambiguity rather than discussing teamwork or collaboration in a professional context.",
+        "why_outlier": "It does not align with the community's typical focus on serious reflections about teamwork dynamics or professional growth.",
+        "exists_in_context": true,
+        "missing_nuance": "The post lacks a serious narrative that connects to the themes of teamwork or collaboration."
+      },
+      {
+        "post_id": "351405ab-deb1-45b5-810c-d32798c95f40_78",
+        "behavioral_gap": "This post seeks assistance for a friend's internship search without reflecting on personal experiences or mentorship dynamics.",
+        "why_outlier": "It does not fit the community's pattern of sharing personal growth narratives or mentorship experiences.",
+        "exists_in_context": true,
+        "missing_nuance": "The post lacks a personal connection to the themes of mentorship or career development."
+      },
+      {
+        "post_id": "351405ab-deb1-45b5-810c-d32798c95f40_84",
+        "behavioral_gap": "This post discusses language translation in a light-hearted manner without connecting it to professional development or technology adaptation.",
+        "why_outlier": "It does not engage with the community's typical focus on serious discussions about technology or personal experiences.",
+        "exists_in_context": true,
+        "missing_nuance": "The post lacks a serious narrative that ties back to the community's usual discussions on technology adaptation."
+      },
+      {
+        "post_id": "351405ab-deb1-45b5-810c-d32798c95f40_93",
+        "behavioral_gap": "This post humorously suggests virtual experiences without addressing the challenges of remote work dynamics.",
+        "why_outlier": "It does not align with the community's focus on serious reflections about remote work challenges or productivity.",
+        "exists_in_context": true,
+        "missing_nuance": "The post lacks a serious narrative that connects to the themes of remote work dynamics."
+      }
+    ],
+    "preliminary_delta_notes": [
+      "[queued_for_batch_root_cause_memory]",
+      "[queued_for_batch_root_cause_memory]",
+      "[queued_for_batch_root_cause_memory]",
+      "[queued_for_batch_root_cause_memory]",
+      "[queued_for_batch_root_cause_memory]"
+    ],
+    "category": "AI and Technology in Work | Career Development and Mentorship | Remote Work Challenges | Team Dynamics and Collaboration"
+  },
+  "iteration_1_batch_8": {
+    "reviews": [
+      "351405ab-deb1-45b5-810c-d32798c95f40_post_351405ab-deb1-45b5-810c-d32798c95f40_94",
+      "3a0a7529-16a1-48d1-b987-c60e4260ad46_post_3a0a7529-16a1-48d1-b987-c60e4260ad46_13",
+      "3a0a7529-16a1-48d1-b987-c60e4260ad46_post_3a0a7529-16a1-48d1-b987-c60e4260ad46_52",
+      "3a0a7529-16a1-48d1-b987-c60e4260ad46_post_3a0a7529-16a1-48d1-b987-c60e4260ad46_90",
+      "3a0a7529-16a1-48d1-b987-c60e4260ad46_post_3a0a7529-16a1-48d1-b987-c60e4260ad46_98"
+    ],
+    "batch_id": "iteration_1_batch_8",
+    "gaps": [
+      {
+        "behavioral_gap": "When discussing career opportunities, this community emphasizes personal connections and gratitude towards colleagues rather than solely promoting the role — but the prediction assumed they would focus on the job description and company benefits without personal context.",
+        "exists_in_context": true,
+        "missing_nuance": "The prediction missed the importance of personal relationships and mentorship in the context of job opportunities.",
+        "evidence": "3/5 posts",
+        "confidence": "HIGH"
+      }
+    ],
+    "outliers": [
+      {
+        "post_id": "351405ab-deb1-45b5-810c-d32798c95f40_94",
+        "behavioral_gap": "This post discusses a technology application in a specific context without connecting it to personal experiences or broader implications for technology roles.",
+        "why_outlier": "It does not align with the community's typical focus on personal narratives or reflections related to career development.",
+        "exists_in_context": true,
+        "missing_nuance": "The post lacks a personal anecdote that ties the technological discussion to broader themes of adaptability or continuous learning."
+      },
+      {
+        "post_id": "3a0a7529-16a1-48d1-b987-c60e4260ad46_52",
+        "behavioral_gap": "This post shares a positive reflection on an interview without engaging in a critical discussion about mentorship or personal growth experiences.",
+        "why_outlier": "It does not incorporate a broader narrative about personal growth or the impact of mentorship, which is common in other posts.",
+        "exists_in_context": true,
+        "missing_nuance": "The post lacks a comprehensive narrative that connects personal achievements to the influence of mentors."
+      },
+      {
+        "post_id": "3a0a7529-16a1-48d1-b987-c60e4260ad46_90",
+        "behavioral_gap": "This post highlights a company achievement without emphasizing personal contributions or the role of teamwork in achieving that success.",
+        "why_outlier": "It does not fit the community's pattern of sharing personal experiences or gratitude related to team dynamics.",
+        "exists_in_context": true,
+        "missing_nuance": "The post lacks a personal connection to the themes of teamwork or collaboration."
+      },
+      {
+        "post_id": "3a0a7529-16a1-48d1-b987-c60e4260ad46_98",
+        "behavioral_gap": "This post focuses on an event without connecting it to personal experiences or insights related to teamwork.",
+        "why_outlier": "It does not align with the community's typical focus on personal experiences or reflections related to collaboration.",
+        "exists_in_context": true,
+        "missing_nuance": "The post lacks a personal anecdote that illustrates the importance of teamwork in their career."
+      }
+    ],
+    "preliminary_delta_notes": [
+      "[queued_for_batch_root_cause_memory]",
+      "[queued_for_batch_root_cause_memory]",
+      "[queued_for_batch_root_cause_memory]",
+      "[queued_for_batch_root_cause_memory]",
+      "[queued_for_batch_root_cause_memory]"
+    ],
+    "category": "AI and Technology in Work | Career Development and Mentorship | Professional Growth and Recognition | Team Dynamics and Collaboration"
+  },
+  "iteration_1_batch_9": {
+    "reviews": [
+      "3a0a7529-16a1-48d1-b987-c60e4260ad46_post_3a0a7529-16a1-48d1-b987-c60e4260ad46_99",
+      "3a0a7529-16a1-48d1-b987-c60e4260ad46_post_3a0a7529-16a1-48d1-b987-c60e4260ad46_110",
+      "493cb77a-819e-4e20-9364-2cf9c5b733a6_post_493cb77a-819e-4e20-9364-2cf9c5b733a6_11",
+      "54c19b05-7985-47be-b2f2-6a2f8360cf89_post_54c19b05-7985-47be-b2f2-6a2f8360cf89_19",
+      "54c19b05-7985-47be-b2f2-6a2f8360cf89_post_54c19b05-7985-47be-b2f2-6a2f8360cf89_21"
+    ],
+    "batch_id": "iteration_1_batch_9",
+    "gaps": [
+      {
+        "behavioral_gap": "When discussing career transitions, this community emphasizes gratitude towards specific individuals who contributed to their growth — but the prediction assumed they would focus solely on personal achievements without acknowledging others.",
+        "exists_in_context": true,
+        "missing_nuance": "The prediction missed the emphasis on recognizing contributions from colleagues and mentors, which is a critical aspect of their posts.",
+        "evidence": "4/5 posts",
+        "confidence": "HIGH"
+      }
+    ],
+    "outliers": [
+      {
+        "post_id": "3a0a7529-16a1-48d1-b987-c60e4260ad46_99",
+        "behavioral_gap": "This post focuses on a brief interaction at KubeCon without engaging in a deeper discussion about teamwork or collaboration.",
+        "why_outlier": "It does not align with the community's typical emphasis on the importance of teamwork and collaboration in a more reflective manner.",
+        "exists_in_context": true,
+        "missing_nuance": "The post lacks a deeper narrative that connects the event to broader themes of collaboration or teamwork."
+      },
+      {
+        "post_id": "3a0a7529-16a1-48d1-b987-c60e4260ad46_110",
+        "behavioral_gap": "This post expresses gratitude towards a mentor but does not provide a narrative about personal growth or the impact of mentorship on their career.",
+        "why_outlier": "It does not incorporate a broader reflection on their career journey or the significance of mentorship, which is common in other posts.",
+        "exists_in_context": true,
+        "missing_nuance": "The post lacks a comprehensive narrative that ties personal achievements to the influence of mentors."
+      },
+      {
+        "post_id": "493cb77a-819e-4e20-9364-2cf9c5b733a6_11",
+        "behavioral_gap": "This post reflects on experiences at an AI summit but does not connect these experiences to personal growth or practical applications in technology roles.",
+        "why_outlier": "It does not fit the community's pattern of sharing personal experiences or insights related to AI tools and their integration.",
+        "exists_in_context": true,
+        "missing_nuance": "The post lacks a personal anecdote that ties the experiences at the summit to broader themes of technology adaptation."
+      },
+      {
+        "post_id": "54c19b05-7985-47be-b2f2-6a2f8360cf89_19",
+        "behavioral_gap": "This post discusses a technical perspective on development without emphasizing teamwork or collaboration.",
+        "why_outlier": "It does not align with the community's typical focus on the importance of teamwork and collaboration in achieving goals.",
+        "exists_in_context": true,
+        "missing_nuance": "The post lacks a narrative that connects technical discussions to the collaborative nature of development work."
+      },
+      {
+        "post_id": "54c19b05-7985-47be-b2f2-6a2f8360cf89_21",
+        "behavioral_gap": "This post focuses on personal reflections about development practices without engaging in a discussion about teamwork or collaboration.",
+        "why_outlier": "It does not fit the community's pattern of emphasizing the importance of teamwork and collaboration in a more reflective manner.",
+        "exists_in_context": true,
+        "missing_nuance": "The post lacks a deeper narrative that connects personal development practices to collaborative efforts."
+      }
+    ],
+    "preliminary_delta_notes": [
+      "[queued_for_batch_root_cause_memory]",
+      "[queued_for_batch_root_cause_memory]",
+      "[queued_for_batch_root_cause_memory]",
+      "[queued_for_batch_root_cause_memory]",
+      "[queued_for_batch_root_cause_memory]"
+    ],
+    "category": "AI and Technology in Work | Career Development and Mentorship | Team Dynamics and Collaboration"
+  },
+  "iteration_1_batch_10": {
+    "reviews": [
+      "54c19b05-7985-47be-b2f2-6a2f8360cf89_post_54c19b05-7985-47be-b2f2-6a2f8360cf89_31",
+      "54c19b05-7985-47be-b2f2-6a2f8360cf89_post_54c19b05-7985-47be-b2f2-6a2f8360cf89_43",
+      "56d7e3b2-8a5b-4647-ada8-33898383fad8_post_56d7e3b2-8a5b-4647-ada8-33898383fad8_42",
+      "56d7e3b2-8a5b-4647-ada8-33898383fad8_post_56d7e3b2-8a5b-4647-ada8-33898383fad8_43",
+      "56d7e3b2-8a5b-4647-ada8-33898383fad8_post_56d7e3b2-8a5b-4647-ada8-33898383fad8_54"
+    ],
+    "batch_id": "iteration_1_batch_10",
+    "gaps": [
+      {
+        "behavioral_gap": "When discussing career opportunities, this community emphasizes the importance of networking and supporting colleagues rather than solely promoting job openings — but the prediction assumed they would focus on a straightforward job advertisement without highlighting the community aspect.",
+        "exists_in_context": true,
+        "missing_nuance": "The prediction missed the emphasis on community support and the personal connections that drive their networking efforts.",
+        "evidence": "3/5 posts",
+        "confidence": "HIGH"
+      }
+    ],
+    "outliers": [
+      {
+        "post_id": "54c19b05-7985-47be-b2f2-6a2f8360cf89_31",
+        "behavioral_gap": "This post expresses gratitude towards a colleague but lacks a broader narrative about personal growth or career transition.",
+        "why_outlier": "It does not align with the community's typical move of framing discussions around gratitude for mentorship and contributions to their career journey.",
+        "exists_in_context": true,
+        "missing_nuance": "The post lacks a detailed narrative that connects personal achievements to the support received from others."
+      },
+      {
+        "post_id": "54c19b05-7985-47be-b2f2-6a2f8360cf89_43",
+        "behavioral_gap": "This post seeks referrals for colleagues without reflecting on personal experiences or mentorship dynamics.",
+        "why_outlier": "It does not fit the community's pattern of sharing personal growth narratives or mentorship experiences.",
+        "exists_in_context": true,
+        "missing_nuance": "The post lacks a personal connection to the themes of mentorship or career development."
+      },
+      {
+        "post_id": "56d7e3b2-8a5b-4647-ada8-33898383fad8_42",
+        "behavioral_gap": "This post shares a blog post about job hunting but does not engage in a discussion about personal experiences or the impact of mentorship.",
+        "why_outlier": "It does not align with the community's typical focus on personal narratives or reflections related to technology.",
+        "exists_in_context": true,
+        "missing_nuance": "The post lacks a personal anecdote that ties the technical discussion to broader themes of adaptability or continuous learning."
+      },
+      {
+        "post_id": "56d7e3b2-8a5b-4647-ada8-33898383fad8_43",
+        "behavioral_gap": "This post acknowledges a colleague's title but does not provide a narrative about personal growth or the influence of mentorship.",
+        "why_outlier": "It does not fit the community's pattern of sharing personal experiences or gratitude related to career transitions.",
+        "exists_in_context": true,
+        "missing_nuance": "The post lacks a narrative that connects the achievement to the support received from others."
+      },
+      {
+        "post_id": "56d7e3b2-8a5b-4647-ada8-33898383fad8_54",
+        "behavioral_gap": "This post expresses a need for hiring without connecting it to personal experiences or broader implications for technology roles.",
+        "why_outlier": "It does not align with the community's typical focus on personal narratives or reflections related to technology.",
+        "exists_in_context": true,
+        "missing_nuance": "The post lacks a personal anecdote that ties the hiring discussion to broader themes of adaptability or continuous learning."
+      }
+    ],
+    "preliminary_delta_notes": [
+      "[queued_for_batch_root_cause_memory]",
+      "[queued_for_batch_root_cause_memory]",
+      "[queued_for_batch_root_cause_memory]",
+      "[queued_for_batch_root_cause_memory]",
+      "[queued_for_batch_root_cause_memory]"
+    ],
+    "category": "Career Development and Mentorship | Professional Growth and Recognition"
+  },
+  "iteration_1_batch_11": {
+    "reviews": [
+      "583f07ae-71cc-42ed-982b-67b6c6d6a3ff_post_583f07ae-71cc-42ed-982b-67b6c6d6a3ff_3",
+      "583f07ae-71cc-42ed-982b-67b6c6d6a3ff_post_583f07ae-71cc-42ed-982b-67b6c6d6a3ff_15",
+      "583f07ae-71cc-42ed-982b-67b6c6d6a3ff_post_583f07ae-71cc-42ed-982b-67b6c6d6a3ff_16",
+      "583f07ae-71cc-42ed-982b-67b6c6d6a3ff_post_583f07ae-71cc-42ed-982b-67b6c6d6a3ff_18",
+      "583f07ae-71cc-42ed-982b-67b6c6d6a3ff_post_583f07ae-71cc-42ed-982b-67b6c6d6a3ff_19"
+    ],
+    "batch_id": "iteration_1_batch_11",
+    "gaps": [
+      {
+        "behavioral_gap": "When discussing remote work dynamics, this community emphasizes the importance of individual preferences and the need for trust in employees' autonomy — but the prediction assumed they would advocate for remote work as a universal solution without addressing personal experiences.",
+        "exists_in_context": true,
+        "missing_nuance": "The prediction missed the community's tendency to highlight the diversity of opinions on remote work rather than presenting a one-size-fits-all endorsement.",
+        "evidence": "3/5 posts",
+        "confidence": "HIGH"
+      }
+    ],
+    "outliers": [
+      {
+        "post_id": "583f07ae-71cc-42ed-982b-67b6c6d6a3ff_15",
+        "behavioral_gap": "This post critiques the use of data in arguments against remote work without engaging in personal narratives or broader implications.",
+        "why_outlier": "It does not align with the community's typical focus on personal experiences or reflections related to remote work dynamics.",
+        "exists_in_context": true,
+        "missing_nuance": "The post lacks a personal anecdote that ties the discussion to broader themes of adaptability or continuous learning."
+      },
+      {
+        "post_id": "583f07ae-71cc-42ed-982b-67b6c6d6a3ff_16",
+        "behavioral_gap": "This post expresses appreciation for data insights without connecting it to personal experiences or the implications of remote work.",
+        "why_outlier": "It does not fit the community's pattern of sharing personal growth narratives or reflections related to remote work.",
+        "exists_in_context": true,
+        "missing_nuance": "The post lacks a narrative that connects the appreciation for data to personal experiences or challenges faced in remote work."
+      },
+      {
+        "post_id": "583f07ae-71cc-42ed-982b-67b6c6d6a3ff_18",
+        "behavioral_gap": "This post discusses unit testing and its evolution without connecting it to personal experiences or the role of mentorship in professional development.",
+        "why_outlier": "It does not align with the community's typical focus on personal narratives or reflections related to technology adaptation.",
+        "exists_in_context": true,
+        "missing_nuance": "The post lacks a personal anecdote that ties the technical discussion to broader themes of adaptability or continuous learning."
+      },
+      {
+        "post_id": "583f07ae-71cc-42ed-982b-67b6c6d6a3ff_19",
+        "behavioral_gap": "This post discusses blockchain protocols without engaging in personal experiences or the impact of mentorship on career development.",
+        "why_outlier": "It does not fit the community's pattern of sharing personal experiences or gratitude related to career transitions.",
+        "exists_in_context": true,
+        "missing_nuance": "The post lacks a personal connection to the themes of mentorship or career development."
+      }
+    ],
+    "preliminary_delta_notes": [
+      "[queued_for_batch_root_cause_memory]",
+      "[queued_for_batch_root_cause_memory]",
+      "[queued_for_batch_root_cause_memory]",
+      "[queued_for_batch_root_cause_memory]",
+      "[queued_for_batch_root_cause_memory]"
+    ],
+    "category": "AI and Technology in Work | Career Development and Mentorship | Remote Work Challenges"
+  },
+  "iteration_1_batch_12": {
+    "reviews": [
+      "583f07ae-71cc-42ed-982b-67b6c6d6a3ff_post_583f07ae-71cc-42ed-982b-67b6c6d6a3ff_21",
+      "583f07ae-71cc-42ed-982b-67b6c6d6a3ff_post_583f07ae-71cc-42ed-982b-67b6c6d6a3ff_22",
+      "583f07ae-71cc-42ed-982b-67b6c6d6a3ff_post_583f07ae-71cc-42ed-982b-67b6c6d6a3ff_25",
+      "583f07ae-71cc-42ed-982b-67b6c6d6a3ff_post_583f07ae-71cc-42ed-982b-67b6c6d6a3ff_26",
+      "583f07ae-71cc-42ed-982b-67b6c6d6a3ff_post_583f07ae-71cc-42ed-982b-67b6c6d6a3ff_29"
+    ],
+    "batch_id": "iteration_1_batch_12",
+    "gaps": [
+      {
+        "behavioral_gap": "When discussing remote work dynamics, this community emphasizes the complexities of power dynamics and productivity challenges rather than simply endorsing remote work as a universal solution — but the prediction assumed they would focus on the benefits of remote work without acknowledging these complexities.",
+        "exists_in_context": true,
+        "missing_nuance": "The prediction missed the community's tendency to critically evaluate the implications of remote work on workplace power dynamics and productivity.",
+        "evidence": "3/5 posts",
+        "confidence": "HIGH"
+      }
+    ],
+    "outliers": [
+      {
+        "post_id": "583f07ae-71cc-42ed-982b-67b6c6d6a3ff_22",
+        "behavioral_gap": "This post expresses agreement with the benefits of remote work without engaging in a critical discussion about teamwork or collaboration.",
+        "why_outlier": "It does not align with the community's typical focus on serious reflections about teamwork dynamics or professional growth.",
+        "exists_in_context": true,
+        "missing_nuance": "The post lacks a serious narrative that connects to the themes of teamwork or collaboration."
+      },
+      {
+        "post_id": "583f07ae-71cc-42ed-982b-67b6c6d6a3ff_25",
+        "behavioral_gap": "This post critiques the motivations behind office work and the power dynamics at play without connecting it to personal experiences or broader implications for remote work.",
+        "why_outlier": "It does not fit the community's pattern of sharing personal narratives or reflections related to remote work dynamics.",
+        "exists_in_context": true,
+        "missing_nuance": "The post lacks a personal anecdote that ties the critique to broader themes of adaptability or continuous learning."
+      },
+      {
+        "post_id": "583f07ae-71cc-42ed-982b-67b6c6d6a3ff_26",
+        "behavioral_gap": "This post discusses job interviews and red flags in employers without connecting these insights to personal experiences or mentorship dynamics.",
+        "why_outlier": "It does not fit the community's pattern of sharing personal growth narratives or mentorship experiences.",
+        "exists_in_context": true,
+        "missing_nuance": "The post lacks a personal connection to the themes of mentorship or career development."
+      },
+      {
+        "post_id": "583f07ae-71cc-42ed-982b-67b6c6d6a3ff_29",
+        "behavioral_gap": "This post reflects on job interviews and employer red flags without engaging in a deeper discussion about teamwork or collaboration.",
+        "why_outlier": "It does not align with the community's typical emphasis on the importance of teamwork and collaboration in a more reflective manner.",
+        "exists_in_context": true,
+        "missing_nuance": "The post lacks a deeper narrative that connects the event to broader themes of collaboration or teamwork."
+      }
+    ],
+    "preliminary_delta_notes": [
+      "[queued_for_batch_root_cause_memory]",
+      "[queued_for_batch_root_cause_memory]",
+      "[queued_for_batch_root_cause_memory]",
+      "[queued_for_batch_root_cause_memory]",
+      "[queued_for_batch_root_cause_memory]"
+    ],
+    "category": "Career Development and Mentorship | Remote Work Challenges | Team Dynamics and Collaboration"
+  },
+  "iteration_1_batch_13": {
+    "reviews": [
+      "583f07ae-71cc-42ed-982b-67b6c6d6a3ff_post_583f07ae-71cc-42ed-982b-67b6c6d6a3ff_30",
+      "583f07ae-71cc-42ed-982b-67b6c6d6a3ff_post_583f07ae-71cc-42ed-982b-67b6c6d6a3ff_31",
+      "583f07ae-71cc-42ed-982b-67b6c6d6a3ff_post_583f07ae-71cc-42ed-982b-67b6c6d6a3ff_33",
+      "583f07ae-71cc-42ed-982b-67b6c6d6a3ff_post_583f07ae-71cc-42ed-982b-67b6c6d6a3ff_34",
+      "583f07ae-71cc-42ed-982b-67b6c6d6a3ff_post_583f07ae-71cc-42ed-982b-67b6c6d6a3ff_35"
+    ],
+    "batch_id": "iteration_1_batch_13",
+    "gaps": [
+      {
+        "behavioral_gap": "When discussing remote work dynamics, this community emphasizes the need for collaboration and recognition of contributions rather than simply endorsing remote work as a universal solution — but the prediction assumed they would focus on the benefits of remote work without addressing these complexities.",
+        "exists_in_context": true,
+        "missing_nuance": "The prediction missed the community's tendency to highlight the importance of collaboration and recognition in remote work settings.",
+        "evidence": "3/5 posts",
+        "confidence": "HIGH"
+      }
+    ],
+    "outliers": [
+      {
+        "post_id": "583f07ae-71cc-42ed-982b-67b6c6d6a3ff_30",
+        "behavioral_gap": "This post critiques the lack of collaboration and rewards in remote work dynamics without engaging in a broader discussion about the benefits of remote work.",
+        "why_outlier": "It does not align with the community's typical focus on discussing the benefits of remote work alongside its challenges.",
+        "exists_in_context": true,
+        "missing_nuance": "The post lacks a balanced view that connects the critique to the potential advantages of remote work."
+      },
+      {
+        "post_id": "583f07ae-71cc-42ed-982b-67b6c6d6a3ff_31",
+        "behavioral_gap": "This post questions the power dynamics associated with remote work without addressing the collaborative aspects that the community usually emphasizes.",
+        "why_outlier": "It does not fit the community's pattern of discussing both the challenges and benefits of remote work.",
+        "exists_in_context": true,
+        "missing_nuance": "The post lacks a connection to the collaborative opportunities that remote work can provide."
+      },
+      {
+        "post_id": "583f07ae-71cc-42ed-982b-67b6c6d6a3ff_33",
+        "behavioral_gap": "This post expresses support for the benefits of remote work but does so in a vague manner without engaging in the community's typical critical analysis.",
+        "why_outlier": "It does not align with the community's usual depth of discussion regarding remote work dynamics.",
+        "exists_in_context": true,
+        "missing_nuance": "The post lacks a detailed critique or exploration of remote work's complexities."
+      },
+      {
+        "post_id": "583f07ae-71cc-42ed-982b-67b6c6d6a3ff_34",
+        "behavioral_gap": "This post provides a brief comment on interview processes without engaging in a broader discussion about mentorship or personal growth.",
+        "why_outlier": "It does not fit the community's pattern of sharing personal experiences or reflections related to mentorship.",
+        "exists_in_context": true,
+        "missing_nuance": "The post lacks a narrative that connects the comment to the influence of mentorship."
+      },
+      {
+        "post_id": "583f07ae-71cc-42ed-982b-67b6c6d6a3ff_35",
+        "behavioral_gap": "This post discusses salary transparency without connecting it to personal experiences or broader implications for career development.",
+        "why_outlier": "It does not align with the community's typical focus on personal narratives or reflections related to career growth.",
+        "exists_in_context": true,
+        "missing_nuance": "The post lacks a personal anecdote that ties the discussion to broader themes of adaptability or continuous learning."
+      }
+    ],
+    "preliminary_delta_notes": [
+      "[queued_for_batch_root_cause_memory]",
+      "[queued_for_batch_root_cause_memory]",
+      "[queued_for_batch_root_cause_memory]",
+      "[queued_for_batch_root_cause_memory]",
+      "[queued_for_batch_root_cause_memory]"
+    ],
+    "category": "Career Development and Mentorship | Professional Growth and Recognition | Remote Work Challenges"
+  },
+  "iteration_1_batch_14": {
+    "reviews": [
+      "7333df73-63cf-4f92-b724-caefc9171b63_post_7333df73-63cf-4f92-b724-caefc9171b63_32",
+      "7333df73-63cf-4f92-b724-caefc9171b63_post_7333df73-63cf-4f92-b724-caefc9171b63_37",
+      "7333df73-63cf-4f92-b724-caefc9171b63_post_7333df73-63cf-4f92-b724-caefc9171b63_39",
+      "7333df73-63cf-4f92-b724-caefc9171b63_post_7333df73-63cf-4f92-b724-caefc9171b63_40",
+      "7333df73-63cf-4f92-b724-caefc9171b63_post_7333df73-63cf-4f92-b724-caefc9171b63_41"
+    ],
+    "batch_id": "iteration_1_batch_14",
+    "gaps": [
+      {
+        "behavioral_gap": "When announcing new roles or achievements, this community emphasizes gratitude towards mentors and colleagues who contributed to their success — but the prediction assumed they would focus solely on personal accomplishments without acknowledging others.",
+        "exists_in_context": true,
+        "missing_nuance": "The prediction missed the importance of recognizing contributions from colleagues and mentors, which is a critical aspect of their posts.",
+        "evidence": "4/5 posts",
+        "confidence": "HIGH"
+      }
+    ],
+    "outliers": [
+      {
+        "post_id": "7333df73-63cf-4f92-b724-caefc9171b63_32",
+        "behavioral_gap": "This post discusses a hackathon achievement but lacks a narrative about personal growth or the influence of teamwork.",
+        "why_outlier": "It does not align with the community's typical emphasis on gratitude and recognition of contributions from others.",
+        "exists_in_context": true,
+        "missing_nuance": "The post lacks a detailed narrative that connects the achievement to the support received from others."
+      },
+      {
+        "post_id": "7333df73-63cf-4f92-b724-caefc9171b63_37",
+        "behavioral_gap": "This post announces a new role but does not provide a narrative about personal growth or the impact of mentorship.",
+        "why_outlier": "It does not incorporate a broader reflection on their career journey or the significance of mentorship, which is common in other posts.",
+        "exists_in_context": true,
+        "missing_nuance": "The post lacks a comprehensive narrative that ties personal achievements to the influence of mentors."
+      },
+      {
+        "post_id": "7333df73-63cf-4f92-b724-caefc9171b63_39",
+        "behavioral_gap": "This post shares a new position announcement but lacks a narrative about personal growth or the influence of mentorship.",
+        "why_outlier": "It does not fit the community's pattern of sharing personal growth narratives or mentorship experiences.",
+        "exists_in_context": true,
+        "missing_nuance": "The post lacks a narrative that connects the achievement to the support received from others."
+      },
+      {
+        "post_id": "7333df73-63cf-4f92-b724-caefc9171b63_40",
+        "behavioral_gap": "This post expresses excitement about attending an event but does not connect it to personal experiences or reflections on professional growth.",
+        "why_outlier": "It does not align with the community's typical focus on personal narratives or reflections related to career development.",
+        "exists_in_context": true,
+        "missing_nuance": "The post lacks a personal anecdote that ties the event to broader themes of professional growth."
+      },
+      {
+        "post_id": "7333df73-63cf-4f92-b724-caefc9171b63_41",
+        "behavioral_gap": "This post asks for feedback on content but does not engage in a discussion about personal experiences or the impact of mentorship.",
+        "why_outlier": "It does not fit the community's pattern of sharing personal growth narratives or reflections related to technology.",
+        "exists_in_context": true,
+        "missing_nuance": "The post lacks a personal anecdote that ties the content discussion to broader themes of adaptability or continuous learning."
+      }
+    ],
+    "preliminary_delta_notes": [
+      "[queued_for_batch_root_cause_memory]",
+      "[queued_for_batch_root_cause_memory]",
+      "[queued_for_batch_root_cause_memory]",
+      "[queued_for_batch_root_cause_memory]",
+      "[queued_for_batch_root_cause_memory]"
+    ],
+    "category": "AI and Technology in Work | Career Development and Mentorship | Professional Growth and Recognition | Team Dynamics and Collaboration"
+  },
+  "iteration_1_batch_15": {
+    "reviews": [
+      "7333df73-63cf-4f92-b724-caefc9171b63_post_7333df73-63cf-4f92-b724-caefc9171b63_53",
+      "7333df73-63cf-4f92-b724-caefc9171b63_post_7333df73-63cf-4f92-b724-caefc9171b63_63",
+      "7333df73-63cf-4f92-b724-caefc9171b63_post_7333df73-63cf-4f92-b724-caefc9171b63_65",
+      "7333df73-63cf-4f92-b724-caefc9171b63_post_7333df73-63cf-4f92-b724-caefc9171b63_66",
+      "8774ee3b-19ab-45ca-8197-b68720c4b1b8_post_8774ee3b-19ab-45ca-8197-b68720c4b1b8_50"
+    ],
+    "batch_id": "iteration_1_batch_15",
+    "gaps": [
+      {
+        "behavioral_gap": "When sharing experiences related to learning and development, this community emphasizes personal growth narratives and the impact of mentorship — but the prediction assumed they would focus solely on the content of the courses without reflecting on personal experiences.",
+        "exists_in_context": true,
+        "missing_nuance": "The prediction missed the emphasis on personal reflections and the importance of mentorship in their learning journeys.",
+        "evidence": "4/5 posts",
+        "confidence": "HIGH"
+      }
+    ],
+    "outliers": [
+      {
+        "post_id": "7333df73-63cf-4f92-b724-caefc9171b63_53",
+        "behavioral_gap": "This post expresses gratitude towards the Oracle team for their sessions but lacks a deeper narrative about personal growth or the impact of those sessions on the author's journey.",
+        "why_outlier": "It does not align with the community's typical emphasis on personal growth narratives connected to mentorship.",
+        "exists_in_context": true,
+        "missing_nuance": "The post lacks a comprehensive narrative that ties the learning experience to personal development."
+      },
+      {
+        "post_id": "7333df73-63cf-4f92-b724-caefc9171b63_63",
+        "behavioral_gap": "This post celebrates the completion of a learning path but does not connect the achievement to personal growth or mentorship experiences.",
+        "why_outlier": "It does not fit the community's pattern of sharing personal narratives or reflections related to mentorship.",
+        "exists_in_context": true,
+        "missing_nuance": "The post lacks a narrative that connects the learning experience to broader themes of mentorship."
+      },
+      {
+        "post_id": "7333df73-63cf-4f92-b724-caefc9171b63_65",
+        "behavioral_gap": "This post announces a new Masterclass but does not engage in a discussion about personal experiences or the impact of mentorship on the author's career.",
+        "why_outlier": "It does not align with the community's typical focus on personal narratives or reflections related to mentorship.",
+        "exists_in_context": true,
+        "missing_nuance": "The post lacks a personal anecdote that ties the announcement to broader themes of mentorship."
+      },
+      {
+        "post_id": "7333df73-63cf-4f92-b724-caefc9171b63_66",
+        "behavioral_gap": "This post expresses gratitude for a Masterclass but does not provide a narrative about personal growth or the influence of mentorship.",
+        "why_outlier": "It does not fit the community's pattern of sharing personal experiences or gratitude related to career transitions.",
+        "exists_in_context": true,
+        "missing_nuance": "The post lacks a narrative that connects the achievement to the support received from others."
+      }
+    ],
+    "preliminary_delta_notes": [
+      "[queued_for_batch_root_cause_memory]",
+      "[queued_for_batch_root_cause_memory]",
+      "[queued_for_batch_root_cause_memory]",
+      "[queued_for_batch_root_cause_memory]",
+      "[queued_for_batch_root_cause_memory]"
+    ],
+    "category": "AI and Technology in Work | Career Development and Mentorship | Professional Growth and Recognition"
+  },
+  "iteration_1_batch_16": {
+    "reviews": [
+      "937353b2-546c-41e3-ae57-4b7507de8a1d_post_937353b2-546c-41e3-ae57-4b7507de8a1d_46",
+      "937353b2-546c-41e3-ae57-4b7507de8a1d_post_937353b2-546c-41e3-ae57-4b7507de8a1d_59",
+      "937353b2-546c-41e3-ae57-4b7507de8a1d_post_937353b2-546c-41e3-ae57-4b7507de8a1d_62",
+      "937353b2-546c-41e3-ae57-4b7507de8a1d_post_937353b2-546c-41e3-ae57-4b7507de8a1d_64",
+      "937353b2-546c-41e3-ae57-4b7507de8a1d_post_937353b2-546c-41e3-ae57-4b7507de8a1d_70"
+    ],
+    "batch_id": "iteration_1_batch_16",
+    "gaps": [
+      {
+        "behavioral_gap": "When promoting community events, this community emphasizes collaboration and personal connections with peers — but the prediction assumed they would focus solely on the event details without highlighting the relational aspect.",
+        "exists_in_context": true,
+        "missing_nuance": "The prediction missed the importance of personal connections and the community aspect that drives engagement.",
+        "evidence": "3/5 posts",
+        "confidence": "HIGH"
+      }
+    ],
+    "outliers": [
+      {
+        "post_id": "937353b2-546c-41e3-ae57-4b7507de8a1d_46",
+        "behavioral_gap": "This post shares event details but lacks a narrative about personal connections or community engagement.",
+        "why_outlier": "It does not align with the community's typical emphasis on relational aspects when discussing events.",
+        "exists_in_context": true,
+        "missing_nuance": "The post lacks a deeper narrative that connects the event to personal relationships or community building."
+      },
+      {
+        "post_id": "937353b2-546c-41e3-ae57-4b7507de8a1d_59",
+        "behavioral_gap": "This post discusses Mahjong as a networking tool but does not connect it to personal experiences or community-building efforts.",
+        "why_outlier": "It does not fit the community's pattern of sharing personal narratives or reflections related to networking.",
+        "exists_in_context": true,
+        "missing_nuance": "The post lacks a personal anecdote that ties the discussion to broader themes of community engagement."
+      },
+      {
+        "post_id": "937353b2-546c-41e3-ae57-4b7507de8a1d_62",
+        "behavioral_gap": "This post reflects on an internship experience but does not emphasize gratitude towards mentors or community connections.",
+        "why_outlier": "It does not align with the community's typical focus on recognizing contributions from others in career narratives.",
+        "exists_in_context": true,
+        "missing_nuance": "The post lacks a narrative that connects achievements to the support received from others."
+      },
+      {
+        "post_id": "937353b2-546c-41e3-ae57-4b7507de8a1d_64",
+        "behavioral_gap": "This post agrees with a perspective on AI but does not engage in personal narratives or community discussions.",
+        "why_outlier": "It does not fit the community's pattern of sharing personal experiences or reflections related to AI discussions.",
+        "exists_in_context": true,
+        "missing_nuance": "The post lacks a personal connection to the themes of mentorship or community engagement."
+      },
+      {
+        "post_id": "937353b2-546c-41e3-ae57-4b7507de8a1d_70",
+        "behavioral_gap": "This post expresses gratitude for an opportunity but does not connect it to community efforts or collaborative experiences.",
+        "why_outlier": "It does not align with the community's typical emphasis on collaboration and recognition in professional settings.",
+        "exists_in_context": true,
+        "missing_nuance": "The post lacks a narrative that ties the experience to broader themes of community and collaboration."
+      }
+    ],
+    "preliminary_delta_notes": [
+      "[queued_for_batch_root_cause_memory]",
+      "[queued_for_batch_root_cause_memory]",
+      "[queued_for_batch_root_cause_memory]",
+      "[queued_for_batch_root_cause_memory]",
+      "[queued_for_batch_root_cause_memory]"
+    ],
+    "category": "AI and Technology in Work | Career Development and Mentorship | Professional Growth and Recognition | Team Dynamics and Collaboration"
+  },
+  "iteration_1_batch_17": {
+    "reviews": [
+      "937353b2-546c-41e3-ae57-4b7507de8a1d_post_937353b2-546c-41e3-ae57-4b7507de8a1d_73",
+      "937353b2-546c-41e3-ae57-4b7507de8a1d_post_937353b2-546c-41e3-ae57-4b7507de8a1d_80",
+      "937353b2-546c-41e3-ae57-4b7507de8a1d_post_937353b2-546c-41e3-ae57-4b7507de8a1d_86",
+      "937353b2-546c-41e3-ae57-4b7507de8a1d_post_937353b2-546c-41e3-ae57-4b7507de8a1d_91",
+      "97d44170-c93f-48f4-b33f-c5655fb0bfcb_post_97d44170-c93f-48f4-b33f-c5655fb0bfcb_90"
+    ],
+    "batch_id": "iteration_1_batch_17",
+    "gaps": [
+      {
+        "behavioral_gap": "When expressing gratitude for mentorship, this community emphasizes specific personal experiences and the impact of those relationships on their growth — but the prediction assumed they would focus solely on general acknowledgments without personal context.",
+        "exists_in_context": true,
+        "missing_nuance": "The prediction missed the community's tendency to share detailed personal narratives that illustrate the significance of mentorship rather than just expressing thanks.",
+        "evidence": "3/5 posts",
+        "confidence": "HIGH"
+      }
+    ],
+    "outliers": [
+      {
+        "post_id": "937353b2-546c-41e3-ae57-4b7507de8a1d_73",
+        "behavioral_gap": "This post expresses appreciation for a visit to Microsoft without detailing personal growth or the influence of mentorship.",
+        "why_outlier": "It does not align with the community's typical emphasis on sharing specific personal experiences related to mentorship.",
+        "exists_in_context": true,
+        "missing_nuance": "The post lacks a narrative that connects the visit to personal growth or mentorship experiences."
+      },
+      {
+        "post_id": "937353b2-546c-41e3-ae57-4b7507de8a1d_80",
+        "behavioral_gap": "This post discusses hiring with a growth mindset but does not connect it to personal mentorship experiences.",
+        "why_outlier": "It does not fit the community's pattern of sharing personal narratives about mentorship alongside broader themes.",
+        "exists_in_context": true,
+        "missing_nuance": "The post lacks a personal anecdote that ties the discussion to their own mentorship experiences."
+      },
+      {
+        "post_id": "937353b2-546c-41e3-ae57-4b7507de8a1d_86",
+        "behavioral_gap": "This post celebrates a podcast achievement without connecting it to personal experiences or mentorship.",
+        "why_outlier": "It does not align with the community's typical focus on personal growth narratives related to mentorship.",
+        "exists_in_context": true,
+        "missing_nuance": "The post lacks a narrative that connects the achievement to personal growth or mentorship."
+      },
+      {
+        "post_id": "937353b2-546c-41e3-ae57-4b7507de8a1d_91",
+        "behavioral_gap": "This post expresses support for a friend's interview without discussing personal experiences or mentorship.",
+        "why_outlier": "It does not fit the community's pattern of sharing personal narratives or reflections related to mentorship.",
+        "exists_in_context": true,
+        "missing_nuance": "The post lacks a narrative that connects the support to personal experiences or mentorship."
+      },
+      {
+        "post_id": "97d44170-c93f-48f4-b33f-c5655fb0bfcb_90",
+        "behavioral_gap": "This post announces a new role but lacks a narrative about personal growth or the impact of mentorship.",
+        "why_outlier": "It does not incorporate a broader reflection on their career journey or the significance of mentorship, which is common in other posts.",
+        "exists_in_context": true,
+        "missing_nuance": "The post lacks a comprehensive narrative that ties personal achievements to the influence of mentors."
+      }
+    ],
+    "preliminary_delta_notes": [
+      "[queued_for_batch_root_cause_memory]",
+      "[queued_for_batch_root_cause_memory]",
+      "[queued_for_batch_root_cause_memory]",
+      "[queued_for_batch_root_cause_memory]",
+      "[queued_for_batch_root_cause_memory]"
+    ],
+    "category": "Career Development and Mentorship | Professional Growth and Recognition | Team Dynamics and Collaboration"
+  },
+  "iteration_1_batch_18": {
+    "reviews": [
+      "9d0711b8-17ae-44cc-adbd-f2e39f25571b_post_9d0711b8-17ae-44cc-adbd-f2e39f25571b_78",
+      "ab1fb966-d14e-4639-b504-00f7b6f9084b_post_ab1fb966-d14e-4639-b504-00f7b6f9084b_62",
+      "ab9d0a34-906e-4d05-9992-ae4fbd70cd87_post_ab9d0a34-906e-4d05-9992-ae4fbd70cd87_13",
+      "ab9d0a34-906e-4d05-9992-ae4fbd70cd87_post_ab9d0a34-906e-4d05-9992-ae4fbd70cd87_15",
+      "ab9d0a34-906e-4d05-9992-ae4fbd70cd87_post_ab9d0a34-906e-4d05-9992-ae4fbd70cd87_30"
+    ],
+    "batch_id": "iteration_1_batch_18",
+    "gaps": [
+      {
+        "behavioral_gap": "When reflecting on career transitions, this community emphasizes gratitude towards specific individuals and the impact of their support — but the prediction assumed they would focus solely on personal achievements without acknowledging others.",
+        "exists_in_context": true,
+        "missing_nuance": "The prediction missed the community's tendency to highlight the importance of recognizing contributions from colleagues and mentors.",
+        "evidence": "3/5 posts",
+        "confidence": "HIGH"
+      }
+    ],
+    "outliers": [
+      {
+        "post_id": "9d0711b8-17ae-44cc-adbd-f2e39f25571b_78",
+        "behavioral_gap": "This post focuses on organizing events and retreats without a personal narrative about mentorship or gratitude towards specific individuals.",
+        "why_outlier": "It does not align with the community's typical emphasis on personal growth narratives connected to mentorship.",
+        "exists_in_context": true,
+        "missing_nuance": "The post lacks a narrative that connects the event organization to personal experiences or the influence of mentorship."
+      },
+      {
+        "post_id": "ab1fb966-d14e-4639-b504-00f7b6f9084b_62",
+        "behavioral_gap": "This post reflects on a long career at Microsoft but lacks a narrative about personal growth or the influence of mentorship.",
+        "why_outlier": "It does not incorporate a broader reflection on their career journey or the significance of mentorship, which is common in other posts.",
+        "exists_in_context": true,
+        "missing_nuance": "The post lacks a comprehensive narrative that ties personal achievements to the influence of mentors."
+      },
+      {
+        "post_id": "ab9d0a34-906e-4d05-9992-ae4fbd70cd87_13",
+        "behavioral_gap": "This post discusses an article on AI prompting without connecting it to personal experiences or mentorship dynamics.",
+        "why_outlier": "It does not fit the community's pattern of sharing personal growth narratives or reflections related to mentorship.",
+        "exists_in_context": true,
+        "missing_nuance": "The post lacks a narrative that connects the discussion of AI to broader themes of mentorship or personal development."
+      },
+      {
+        "post_id": "ab9d0a34-906e-4d05-9992-ae4fbd70cd87_15",
+        "behavioral_gap": "This post recommends a colleague for a job opportunity without a personal narrative about mentorship or gratitude.",
+        "why_outlier": "It does not align with the community's typical focus on personal narratives or reflections related to career development.",
+        "exists_in_context": true,
+        "missing_nuance": "The post lacks a personal anecdote that ties the recommendation to broader themes of mentorship or collaboration."
+      },
+      {
+        "post_id": "ab9d0a34-906e-4d05-9992-ae4fbd70cd87_30",
+        "behavioral_gap": "This post presents a metaphor about teamwork without engaging in a personal narrative or reflection on collaboration.",
+        "why_outlier": "It does not fit the community's pattern of discussing teamwork through personal experiences or specific examples.",
+        "exists_in_context": true,
+        "missing_nuance": "The post lacks a narrative that connects the metaphor to real-life teamwork experiences."
+      }
+    ],
+    "preliminary_delta_notes": [
+      "[queued_for_batch_root_cause_memory]",
+      "[queued_for_batch_root_cause_memory]",
+      "[queued_for_batch_root_cause_memory]",
+      "[queued_for_batch_root_cause_memory]",
+      "[queued_for_batch_root_cause_memory]"
+    ],
+    "category": "AI and Technology in Work | Career Development and Mentorship | Team Dynamics and Collaboration"
+  },
+  "iteration_1_batch_19": {
+    "reviews": [
+      "ab9d0a34-906e-4d05-9992-ae4fbd70cd87_post_ab9d0a34-906e-4d05-9992-ae4fbd70cd87_34",
+      "b897cdbe-ca1b-40fe-b087-ef4c1958425c_post_b897cdbe-ca1b-40fe-b087-ef4c1958425c_35",
+      "c802671d-8fd2-4a18-8fe8-689b72f7c268_post_c802671d-8fd2-4a18-8fe8-689b72f7c268_42",
+      "c802671d-8fd2-4a18-8fe8-689b72f7c268_post_c802671d-8fd2-4a18-8fe8-689b72f7c268_47",
+      "c802671d-8fd2-4a18-8fe8-689b72f7c268_post_c802671d-8fd2-4a18-8fe8-689b72f7c268_49"
+    ],
+    "batch_id": "iteration_1_batch_19",
+    "gaps": [
+      {
+        "behavioral_gap": "When discussing the challenges of remote work, this community emphasizes personal narratives and cultural connections — but the prediction assumed they would focus solely on abstract productivity metrics without personal context.",
+        "exists_in_context": true,
+        "missing_nuance": "The prediction missed the community's tendency to weave personal stories and cultural elements into discussions about remote work.",
+        "evidence": "3/5 posts",
+        "confidence": "HIGH"
+      }
+    ],
+    "outliers": [
+      {
+        "post_id": "ab9d0a34-906e-4d05-9992-ae4fbd70cd87_34",
+        "behavioral_gap": "This post focuses on a cultural artifact without connecting it to remote work dynamics or personal experiences.",
+        "why_outlier": "It does not align with the community's typical emphasis on personal narratives when discussing remote work challenges.",
+        "exists_in_context": true,
+        "missing_nuance": "The post lacks a narrative that ties the cultural artifact to broader themes of remote work."
+      },
+      {
+        "post_id": "b897cdbe-ca1b-40fe-b087-ef4c1958425c_35",
+        "behavioral_gap": "This post comments on a corporate event without engaging in the community's typical discussions about teamwork or collaboration.",
+        "why_outlier": "It does not fit the community's pattern of emphasizing personal connections and teamwork in discussions about corporate events.",
+        "exists_in_context": true,
+        "missing_nuance": "The post lacks a narrative that connects the corporate event to personal experiences or teamwork."
+      },
+      {
+        "post_id": "c802671d-8fd2-4a18-8fe8-689b72f7c268_42",
+        "behavioral_gap": "This post shares a personal philosophy without connecting it to mentorship or community support.",
+        "why_outlier": "It does not align with the community's typical focus on mentorship and personal growth narratives.",
+        "exists_in_context": true,
+        "missing_nuance": "The post lacks a narrative that ties the personal philosophy to mentorship or community support."
+      },
+      {
+        "post_id": "c802671d-8fd2-4a18-8fe8-689b72f7c268_47",
+        "behavioral_gap": "This post reflects on personal growth without connecting it to the community's typical discussions about mentorship or collaboration.",
+        "why_outlier": "It does not fit the community's pattern of emphasizing mentorship and collaboration in personal growth narratives.",
+        "exists_in_context": true,
+        "missing_nuance": "The post lacks a narrative that ties personal growth to mentorship or community collaboration."
+      },
+      {
+        "post_id": "c802671d-8fd2-4a18-8fe8-689b72f7c268_49",
+        "behavioral_gap": "This post discusses personal habits without connecting them to community values or mentorship experiences.",
+        "why_outlier": "It does not align with the community's typical emphasis on mentorship and community support in personal development discussions.",
+        "exists_in_context": true,
+        "missing_nuance": "The post lacks a narrative that ties personal habits to mentorship or community values."
+      }
+    ],
+    "preliminary_delta_notes": [
+      "[queued_for_batch_root_cause_memory]",
+      "[queued_for_batch_root_cause_memory]",
+      "[queued_for_batch_root_cause_memory]",
+      "[queued_for_batch_root_cause_memory]",
+      "[queued_for_batch_root_cause_memory]"
+    ],
+    "category": "AI and Technology in Work | Career Development and Mentorship | Remote Work Challenges | Team Dynamics and Collaboration"
+  },
+  "iteration_1_batch_20": {
+    "reviews": [
+      "c802671d-8fd2-4a18-8fe8-689b72f7c268_post_c802671d-8fd2-4a18-8fe8-689b72f7c268_58",
+      "c802671d-8fd2-4a18-8fe8-689b72f7c268_post_c802671d-8fd2-4a18-8fe8-689b72f7c268_83",
+      "e249e2eb-055f-40b5-8401-ae42ecb24ef8_post_e249e2eb-055f-40b5-8401-ae42ecb24ef8_1",
+      "e42e36c2-5f88-47f2-b75b-537252ea0ce8_post_e42e36c2-5f88-47f2-b75b-537252ea0ce8_14",
+      "e42e36c2-5f88-47f2-b75b-537252ea0ce8_post_e42e36c2-5f88-47f2-b75b-537252ea0ce8_17"
+    ],
+    "batch_id": "iteration_1_batch_20",
+    "gaps": [
+      {
+        "behavioral_gap": "When discussing AI's impact on coding practices, this community opens with personal experiences of trial and error, emphasizing the learning journey — but the prediction assumed they would focus on the benefits of AI without acknowledging personal challenges.",
+        "exists_in_context": true,
+        "missing_nuance": "The prediction missed the importance of personal narratives that illustrate the complexities and learning experiences associated with using AI tools.",
+        "evidence": "3/5 posts",
+        "confidence": "HIGH"
+      }
+    ],
+    "outliers": [
+      {
+        "post_id": "c802671d-8fd2-4a18-8fe8-689b72f7c268_58",
+        "behavioral_gap": "This post critiques social media trends without connecting to personal experiences or professional growth narratives.",
+        "why_outlier": "It does not align with the community's typical emphasis on personal narratives or reflections related to technology.",
+        "exists_in_context": true,
+        "missing_nuance": "The post lacks a narrative that ties the critique to broader themes of professional growth or community engagement."
+      },
+      {
+        "post_id": "c802671d-8fd2-4a18-8fe8-689b72f7c268_83",
+        "behavioral_gap": "This post seeks job referrals without sharing personal experiences or reflections on mentorship.",
+        "why_outlier": "It does not fit the community's pattern of sharing personal growth narratives or the impact of mentorship.",
+        "exists_in_context": true,
+        "missing_nuance": "The post lacks a narrative that connects the job search to personal experiences or gratitude towards mentors."
+      },
+      {
+        "post_id": "e249e2eb-055f-40b5-8401-ae42ecb24ef8_1",
+        "behavioral_gap": "This post celebrates a hackathon achievement but lacks a narrative about personal growth or the influence of teamwork.",
+        "why_outlier": "It does not align with the community's typical emphasis on gratitude and recognition of contributions from others.",
+        "exists_in_context": true,
+        "missing_nuance": "The post lacks a detailed narrative that connects the achievement to the support received from others."
+      },
+      {
+        "post_id": "e42e36c2-5f88-47f2-b75b-537252ea0ce8_14",
+        "behavioral_gap": "This post discusses AI's utility in coding without reflecting on personal experiences or challenges faced during the process.",
+        "why_outlier": "It does not fit the community's pattern of sharing personal narratives or reflections related to AI discussions.",
+        "exists_in_context": true,
+        "missing_nuance": "The post lacks a personal connection to the themes of mentorship or community engagement."
+      },
+      {
+        "post_id": "e42e36c2-5f88-47f2-b75b-537252ea0ce8_17",
+        "behavioral_gap": "This post expresses curiosity about AI's emotional capabilities without connecting it to personal experiences or professional insights.",
+        "why_outlier": "It does not align with the community's typical focus on personal narratives or reflections related to technology.",
+        "exists_in_context": true,
+        "missing_nuance": "The post lacks a narrative that ties the discussion to broader themes of professional growth or community engagement."
+      }
+    ],
+    "preliminary_delta_notes": [
+      "[queued_for_batch_root_cause_memory]",
+      "[queued_for_batch_root_cause_memory]",
+      "[queued_for_batch_root_cause_memory]",
+      "[queued_for_batch_root_cause_memory]",
+      "[queued_for_batch_root_cause_memory]"
+    ],
+    "category": "AI and Technology in Work | Career Development and Mentorship | Professional Growth and Recognition | Team Dynamics and Collaboration"
+  },
+  "iteration_1_batch_21": {
+    "reviews": [
+      "e42e36c2-5f88-47f2-b75b-537252ea0ce8_post_e42e36c2-5f88-47f2-b75b-537252ea0ce8_26",
+      "e42e36c2-5f88-47f2-b75b-537252ea0ce8_post_e42e36c2-5f88-47f2-b75b-537252ea0ce8_28",
+      "e42e36c2-5f88-47f2-b75b-537252ea0ce8_post_e42e36c2-5f88-47f2-b75b-537252ea0ce8_33",
+      "e8e645ed-2c14-4a7e-ac8f-e42993ae794a_post_e8e645ed-2c14-4a7e-ac8f-e42993ae794a_3",
+      "e8e645ed-2c14-4a7e-ac8f-e42993ae794a_post_e8e645ed-2c14-4a7e-ac8f-e42993ae794a_8"
+    ],
+    "batch_id": "iteration_1_batch_21",
+    "gaps": [
+      {
+        "behavioral_gap": "When discussing personal experiences with rejection, this community emphasizes resilience and self-worth through personal anecdotes — but the prediction assumed they would focus solely on general reflections about rejection without personal context.",
+        "exists_in_context": true,
+        "missing_nuance": "The prediction missed the community's tendency to share detailed personal narratives that illustrate their journey and growth in the face of rejection.",
+        "evidence": "3/5 posts",
+        "confidence": "HIGH"
+      }
+    ],
+    "outliers": [
+      {
+        "post_id": "e42e36c2-5f88-47f2-b75b-537252ea0ce8_26",
+        "behavioral_gap": "The author shares a technical insight about database scaling techniques without connecting it to personal experiences or team dynamics.",
+        "why_outlier": "This post does not align with the community's typical emphasis on personal narratives or reflections related to mentorship and collaboration.",
+        "exists_in_context": true,
+        "missing_nuance": "The post lacks a narrative that ties technical insights to personal growth or team collaboration."
+      },
+      {
+        "post_id": "e42e36c2-5f88-47f2-b75b-537252ea0ce8_28",
+        "behavioral_gap": "The author discusses their journey through rejection but does not connect it to personal growth or mentorship experiences.",
+        "why_outlier": "This post does not fit the community's pattern of sharing personal narratives about mentorship alongside broader themes.",
+        "exists_in_context": true,
+        "missing_nuance": "The post lacks a personal anecdote that ties the discussion of rejection to their own mentorship experiences."
+      },
+      {
+        "post_id": "e42e36c2-5f88-47f2-b75b-537252ea0ce8_33",
+        "behavioral_gap": "The author reflects on a technical challenge with AI-generated code but does not incorporate personal experiences or lessons learned in a mentorship context.",
+        "why_outlier": "This post does not align with the community's typical focus on personal narratives or reflections related to mentorship.",
+        "exists_in_context": true,
+        "missing_nuance": "The post lacks a narrative that connects the technical experience to broader themes of mentorship or personal development."
+      },
+      {
+        "post_id": "e8e645ed-2c14-4a7e-ac8f-e42993ae794a_3",
+        "behavioral_gap": "The author shares a negative interview experience but does not reflect on personal growth or mentorship lessons learned.",
+        "why_outlier": "This post does not fit the community's pattern of sharing personal narratives or reflections related to mentorship.",
+        "exists_in_context": true,
+        "missing_nuance": "The post lacks a narrative that connects the interview experience to personal growth or mentorship."
+      },
+      {
+        "post_id": "e8e645ed-2c14-4a7e-ac8f-e42993ae794a_8",
+        "behavioral_gap": "The author recounts a negative interview experience but does not connect it to personal growth or lessons learned from mentorship.",
+        "why_outlier": "This post does not align with the community's typical emphasis on sharing specific personal experiences related to mentorship.",
+        "exists_in_context": true,
+        "missing_nuance": "The post lacks a narrative that ties the interview experience to personal growth or mentorship lessons."
+      }
+    ],
+    "preliminary_delta_notes": [
+      "[queued_for_batch_root_cause_memory]",
+      "[queued_for_batch_root_cause_memory]",
+      "[queued_for_batch_root_cause_memory]",
+      "[queued_for_batch_root_cause_memory]",
+      "[queued_for_batch_root_cause_memory]"
+    ],
+    "category": "AI and Technology in Work | Career Development and Mentorship | Team Dynamics and Collaboration"
+  },
+  "iteration_1_batch_22": {
+    "reviews": [
+      "e8e645ed-2c14-4a7e-ac8f-e42993ae794a_post_e8e645ed-2c14-4a7e-ac8f-e42993ae794a_9",
+      "e9e811b0-6759-473a-aed2-8a84e5566a8c_post_e9e811b0-6759-473a-aed2-8a84e5566a8c_1",
+      "e9e811b0-6759-473a-aed2-8a84e5566a8c_post_e9e811b0-6759-473a-aed2-8a84e5566a8c_80",
+      "e9e811b0-6759-473a-aed2-8a84e5566a8c_post_e9e811b0-6759-473a-aed2-8a84e5566a8c_82",
+      "e9e811b0-6759-473a-aed2-8a84e5566a8c_post_e9e811b0-6759-473a-aed2-8a84e5566a8c_86"
+    ],
+    "batch_id": "iteration_1_batch_22",
+    "gaps": [
+      {
+        "behavioral_gap": "When reflecting on interview experiences, this community emphasizes personal growth and the lessons learned from negative encounters — but the prediction assumed they would focus on a generalized narrative about the importance of empathy in interviews.",
+        "exists_in_context": true,
+        "missing_nuance": "The prediction missed the community's tendency to share specific personal anecdotes that illustrate their growth from challenging situations.",
+        "evidence": "3/5 posts",
+        "confidence": "HIGH"
+      }
+    ],
+    "outliers": [
+      {
+        "post_id": "e8e645ed-2c14-4a7e-ac8f-e42993ae794a_9",
+        "behavioral_gap": "This post shares a personal interview experience but does not reflect on personal growth or lessons learned.",
+        "why_outlier": "It does not align with the community's typical emphasis on personal growth narratives connected to interview experiences.",
+        "exists_in_context": true,
+        "missing_nuance": "The post lacks a narrative that connects the interview experience to broader themes of personal development."
+      },
+      {
+        "post_id": "e9e811b0-6759-473a-aed2-8a84e5566a8c_1",
+        "behavioral_gap": "This post celebrates a book launch but does not connect it to personal experiences or the influence of mentorship.",
+        "why_outlier": "It does not fit the community's pattern of sharing personal narratives or reflections related to mentorship.",
+        "exists_in_context": true,
+        "missing_nuance": "The post lacks a personal anecdote that ties the book launch to broader themes of mentorship or personal growth."
+      },
+      {
+        "post_id": "e9e811b0-6759-473a-aed2-8a84e5566a8c_80",
+        "behavioral_gap": "This post discusses hiring opportunities without engaging in personal narratives or reflections on mentorship.",
+        "why_outlier": "It does not align with the community's typical focus on personal growth narratives related to mentorship.",
+        "exists_in_context": true,
+        "missing_nuance": "The post lacks a narrative that connects the hiring discussion to personal experiences or mentorship."
+      },
+      {
+        "post_id": "e9e811b0-6759-473a-aed2-8a84e5566a8c_82",
+        "behavioral_gap": "This post critiques the recruitment process but does not incorporate personal experiences or reflections on teamwork.",
+        "why_outlier": "It does not fit the community's pattern of discussing recruitment through personal experiences or specific examples.",
+        "exists_in_context": true,
+        "missing_nuance": "The post lacks a narrative that connects the critique to real-life experiences in recruitment."
+      },
+      {
+        "post_id": "e9e811b0-6759-473a-aed2-8a84e5566a8c_86",
+        "behavioral_gap": "This post discusses recruitment solutions without engaging in personal narratives or reflections on the hiring process.",
+        "why_outlier": "It does not align with the community's typical emphasis on personal growth narratives connected to recruitment.",
+        "exists_in_context": true,
+        "missing_nuance": "The post lacks a narrative that ties the discussion of recruitment solutions to personal experiences."
+      }
+    ],
+    "preliminary_delta_notes": [
+      "[queued_for_batch_root_cause_memory]",
+      "[queued_for_batch_root_cause_memory]",
+      "[queued_for_batch_root_cause_memory]",
+      "[queued_for_batch_root_cause_memory]",
+      "[queued_for_batch_root_cause_memory]"
+    ],
+    "category": "AI and Technology in Work | Career Development and Mentorship | Professional Growth and Recognition | Team Dynamics and Collaboration"
+  },
+  "iteration_1_batch_23": {
+    "reviews": [
+      "e9e811b0-6759-473a-aed2-8a84e5566a8c_post_e9e811b0-6759-473a-aed2-8a84e5566a8c_87",
+      "e9e811b0-6759-473a-aed2-8a84e5566a8c_post_e9e811b0-6759-473a-aed2-8a84e5566a8c_90",
+      "e9e811b0-6759-473a-aed2-8a84e5566a8c_post_e9e811b0-6759-473a-aed2-8a84e5566a8c_91",
+      "e9e811b0-6759-473a-aed2-8a84e5566a8c_post_e9e811b0-6759-473a-aed2-8a84e5566a8c_95",
+      "f20ab826-b48b-42cf-be34-de640b4befa1_post_f20ab826-b48b-42cf-be34-de640b4befa1_48"
+    ],
+    "batch_id": "iteration_1_batch_23",
+    "gaps": [
+      {
+        "behavioral_gap": "When discussing the challenges of recruitment, this community emphasizes the inefficiencies and personal experiences related to the hiring process — but the prediction assumed they would focus solely on promoting a recruitment solution without personal context.",
+        "exists_in_context": true,
+        "missing_nuance": "The prediction missed the community's tendency to share personal insights and critiques about recruitment processes rather than just promoting solutions.",
+        "evidence": "1/5 posts",
+        "confidence": "LOW"
+      }
+    ],
+    "outliers": [
+      {
+        "post_id": "e9e811b0-6759-473a-aed2-8a84e5566a8c_87",
+        "behavioral_gap": "The author critiques the inefficiencies in the hiring process but does not connect it to personal experiences or broader themes of recruitment challenges.",
+        "why_outlier": "This post does not align with the community's typical emphasis on personal narratives when discussing recruitment challenges.",
+        "exists_in_context": true,
+        "missing_nuance": "The post lacks a narrative that ties the critique to personal experiences or broader themes of recruitment."
+      },
+      {
+        "post_id": "e9e811b0-6759-473a-aed2-8a84e5566a8c_90",
+        "behavioral_gap": "The author shares a recommendation for a course but does not connect it to personal growth or mentorship experiences.",
+        "why_outlier": "This post does not fit the community's pattern of sharing personal narratives about mentorship alongside broader themes.",
+        "exists_in_context": true,
+        "missing_nuance": "The post lacks a personal anecdote that ties the discussion to their own mentorship experiences."
+      },
+      {
+        "post_id": "e9e811b0-6759-473a-aed2-8a84e5566a8c_91",
+        "behavioral_gap": "The author discusses the value of a course but does not connect it to personal experiences or the influence of mentorship.",
+        "why_outlier": "This post does not align with the community's typical focus on personal growth narratives related to mentorship.",
+        "exists_in_context": true,
+        "missing_nuance": "The post lacks a narrative that connects the achievement to personal growth or mentorship."
+      },
+      {
+        "post_id": "e9e811b0-6759-473a-aed2-8a84e5566a8c_95",
+        "behavioral_gap": "The author reflects on personal insecurities and challenges but does not connect these reflections to mentorship or community support.",
+        "why_outlier": "This post does not fit the community's pattern of discussing personal challenges through the lens of mentorship or community support.",
+        "exists_in_context": true,
+        "missing_nuance": "The post lacks a narrative that ties personal challenges to mentorship or community values."
+      },
+      {
+        "post_id": "f20ab826-b48b-42cf-be34-de640b4befa1_48",
+        "behavioral_gap": "The author announces a technical feature but does not incorporate personal experiences or team acknowledgments.",
+        "why_outlier": "This post does not align with the community's typical emphasis on personal narratives or reflections related to technology announcements.",
+        "exists_in_context": true,
+        "missing_nuance": "The post lacks a narrative that connects the announcement to personal experiences or team contributions."
+      }
+    ],
+    "preliminary_delta_notes": [
+      "[queued_for_batch_root_cause_memory]",
+      "[queued_for_batch_root_cause_memory]",
+      "[queued_for_batch_root_cause_memory]",
+      "[queued_for_batch_root_cause_memory]",
+      "[queued_for_batch_root_cause_memory]"
+    ],
+    "category": "AI and Technology in Work | Career Development and Mentorship | Professional Growth and Recognition"
+  },
+  "iteration_1_batch_24": {
+    "reviews": [
+      "f20ab826-b48b-42cf-be34-de640b4befa1_post_f20ab826-b48b-42cf-be34-de640b4befa1_54",
+      "f20ab826-b48b-42cf-be34-de640b4befa1_post_f20ab826-b48b-42cf-be34-de640b4befa1_55",
+      "f20ab826-b48b-42cf-be34-de640b4befa1_post_f20ab826-b48b-42cf-be34-de640b4befa1_62",
+      "f20ab826-b48b-42cf-be34-de640b4befa1_post_f20ab826-b48b-42cf-be34-de640b4befa1_65",
+      "f20ab826-b48b-42cf-be34-de640b4befa1_post_f20ab826-b48b-42cf-be34-de640b4befa1_66"
+    ],
+    "batch_id": "iteration_1_batch_24",
+    "gaps": [
+      {
+        "behavioral_gap": "When announcing new product features, this community emphasizes collaboration and recognition of team efforts — but the prediction assumed they would focus solely on personal achievements without acknowledging others.",
+        "exists_in_context": true,
+        "missing_nuance": "The prediction missed the community's tendency to highlight the importance of teamwork and collective success in product announcements.",
+        "evidence": "3/5 posts",
+        "confidence": "HIGH"
+      }
+    ],
+    "outliers": [
+      {
+        "post_id": "f20ab826-b48b-42cf-be34-de640b4befa1_54",
+        "behavioral_gap": "This post focuses on a technical announcement without a personal narrative about teamwork or collaboration.",
+        "why_outlier": "It does not align with the community's typical emphasis on recognizing team contributions in product announcements.",
+        "exists_in_context": true,
+        "missing_nuance": "The post lacks a narrative that connects the technical achievement to the collaborative efforts of the team."
+      },
+      {
+        "post_id": "f20ab826-b48b-42cf-be34-de640b4befa1_55",
+        "behavioral_gap": "This post shares a personal achievement without connecting it to broader themes of mentorship or community impact.",
+        "why_outlier": "It does not fit the community's pattern of emphasizing mentorship and collaboration in professional growth narratives.",
+        "exists_in_context": true,
+        "missing_nuance": "The post lacks a narrative that ties the return to lecturing to the influence of mentorship or community support."
+      },
+      {
+        "post_id": "f20ab826-b48b-42cf-be34-de640b4befa1_62",
+        "behavioral_gap": "This post discusses a technical feature without incorporating personal experiences or reflections on teamwork.",
+        "why_outlier": "It does not align with the community's typical emphasis on personal narratives or teamwork in technical discussions.",
+        "exists_in_context": true,
+        "missing_nuance": "The post lacks a narrative that connects the technical announcement to personal experiences or team dynamics."
+      },
+      {
+        "post_id": "f20ab826-b48b-42cf-be34-de640b4befa1_65",
+        "behavioral_gap": "This post highlights a product release without a personal narrative about the journey or teamwork involved.",
+        "why_outlier": "It does not fit the community's pattern of discussing product achievements through personal or team narratives.",
+        "exists_in_context": true,
+        "missing_nuance": "The post lacks a narrative that connects the product announcement to the collaborative efforts of the team."
+      },
+      {
+        "post_id": "f20ab826-b48b-42cf-be34-de640b4befa1_66",
+        "behavioral_gap": "This post reflects on a product release without connecting it to personal experiences or team contributions.",
+        "why_outlier": "It does not align with the community's typical emphasis on recognizing contributions from others in product announcements.",
+        "exists_in_context": true,
+        "missing_nuance": "The post lacks a narrative that ties the product announcement to the influence of teamwork or mentorship."
+      }
+    ],
+    "preliminary_delta_notes": [
+      "[queued_for_batch_root_cause_memory]",
+      "[queued_for_batch_root_cause_memory]",
+      "[queued_for_batch_root_cause_memory]",
+      "[queued_for_batch_root_cause_memory]",
+      "[queued_for_batch_root_cause_memory]"
+    ],
+    "category": "Career Development and Mentorship | Professional Growth and Recognition | Team Dynamics and Collaboration"
+  },
+  "iteration_1_batch_25": {
+    "reviews": [
+      "f20ab826-b48b-42cf-be34-de640b4befa1_post_f20ab826-b48b-42cf-be34-de640b4befa1_72",
+      "f20ab826-b48b-42cf-be34-de640b4befa1_post_f20ab826-b48b-42cf-be34-de640b4befa1_74",
+      "f20ab826-b48b-42cf-be34-de640b4befa1_post_f20ab826-b48b-42cf-be34-de640b4befa1_77",
+      "f20ab826-b48b-42cf-be34-de640b4befa1_post_f20ab826-b48b-42cf-be34-de640b4befa1_81",
+      "f20ab826-b48b-42cf-be34-de640b4befa1_post_f20ab826-b48b-42cf-be34-de640b4befa1_82"
+    ],
+    "batch_id": "iteration_1_batch_25",
+    "gaps": [
+      {
+        "behavioral_gap": "When announcing new features or products, this community emphasizes the collaborative effort of their team and the technical challenges overcome — but the prediction assumed they would focus solely on the product's benefits without acknowledging the team's contributions.",
+        "exists_in_context": true,
+        "missing_nuance": "The prediction missed the importance of recognizing team efforts and the technical journey involved in product development.",
+        "evidence": "3/5 posts",
+        "confidence": "HIGH"
+      }
+    ],
+    "outliers": [
+      {
+        "post_id": "f20ab826-b48b-42cf-be34-de640b4befa1_72",
+        "behavioral_gap": "The author shares a personal project announcement without connecting it to team collaboration or challenges faced during development.",
+        "why_outlier": "This post does not align with the community's typical emphasis on teamwork and the collaborative nature of product development.",
+        "exists_in_context": true,
+        "missing_nuance": "The post lacks a narrative that ties the app development to broader themes of teamwork or technical challenges."
+      },
+      {
+        "post_id": "f20ab826-b48b-42cf-be34-de640b4befa1_74",
+        "behavioral_gap": "The author addresses a specific concern about product availability without reflecting on the collaborative efforts of the team or the challenges faced.",
+        "why_outlier": "This post does not fit the community's pattern of emphasizing teamwork and the journey behind product releases.",
+        "exists_in_context": true,
+        "missing_nuance": "The post lacks a narrative that connects the product announcement to team collaboration or technical challenges."
+      },
+      {
+        "post_id": "f20ab826-b48b-42cf-be34-de640b4befa1_77",
+        "behavioral_gap": "The author discusses a technical feature without incorporating personal experiences or insights about teamwork.",
+        "why_outlier": "This post does not align with the community's typical focus on collaborative efforts and the impact of mentorship in product development.",
+        "exists_in_context": true,
+        "missing_nuance": "The post lacks a narrative that ties the technical feature to teamwork or personal experiences."
+      },
+      {
+        "post_id": "f20ab826-b48b-42cf-be34-de640b4befa1_81",
+        "behavioral_gap": "The author critiques a leadership ratio without connecting it to personal experiences or collaborative team dynamics.",
+        "why_outlier": "This post does not fit the community's pattern of emphasizing personal narratives or reflections related to teamwork.",
+        "exists_in_context": true,
+        "missing_nuance": "The post lacks a narrative that ties the leadership critique to personal experiences or team dynamics."
+      },
+      {
+        "post_id": "f20ab826-b48b-42cf-be34-de640b4befa1_82",
+        "behavioral_gap": "The author discusses leadership roles without connecting it to personal experiences or the importance of mentorship.",
+        "why_outlier": "This post does not align with the community's typical emphasis on mentorship and personal growth narratives.",
+        "exists_in_context": true,
+        "missing_nuance": "The post lacks a narrative that ties leadership discussions to personal experiences or mentorship."
+      }
+    ],
+    "preliminary_delta_notes": [
+      "[queued_for_batch_root_cause_memory]",
+      "[queued_for_batch_root_cause_memory]",
+      "[queued_for_batch_root_cause_memory]",
+      "[queued_for_batch_root_cause_memory]",
+      "[queued_for_batch_root_cause_memory]"
+    ],
+    "category": "AI and Technology in Work | Career Development and Mentorship | Team Dynamics and Collaboration"
+  },
+  "iteration_1_batch_26": {
+    "reviews": [
+      "f20ab826-b48b-42cf-be34-de640b4befa1_post_f20ab826-b48b-42cf-be34-de640b4befa1_83",
+      "f20ab826-b48b-42cf-be34-de640b4befa1_post_f20ab826-b48b-42cf-be34-de640b4befa1_84",
+      "f20ab826-b48b-42cf-be34-de640b4befa1_post_f20ab826-b48b-42cf-be34-de640b4befa1_85",
+      "fa8cec49-9e7b-44e2-b2ce-7b6a324697f1_post_fa8cec49-9e7b-44e2-b2ce-7b6a324697f1_8",
+      "fa8cec49-9e7b-44e2-b2ce-7b6a324697f1_post_fa8cec49-9e7b-44e2-b2ce-7b6a324697f1_9"
+    ],
+    "batch_id": "iteration_1_batch_26",
+    "gaps": [
+      {
+        "behavioral_gap": "When discussing team dynamics, this community emphasizes the importance of nuanced roles and responsibilities within leadership — but the prediction assumed they would focus solely on a simplified leadership ratio without addressing the complexities of team management.",
+        "exists_in_context": true,
+        "missing_nuance": "The prediction missed the community's tendency to explore the multifaceted nature of leadership and team dynamics rather than just presenting a numeric target.",
+        "evidence": "3/5 posts",
+        "confidence": "HIGH"
+      }
+    ],
+    "outliers": [
+      {
+        "post_id": "fa8cec49-9e7b-44e2-b2ce-7b6a324697f1_8",
+        "behavioral_gap": "The author critiques micromanagement in a fictional context rather than discussing real team dynamics or personal experiences.",
+        "why_outlier": "This post does not align with the community's typical emphasis on personal narratives or reflections related to team dynamics.",
+        "exists_in_context": true,
+        "missing_nuance": "The post lacks a narrative that ties the critique to real-life experiences in team management."
+      },
+      {
+        "post_id": "fa8cec49-9e7b-44e2-b2ce-7b6a324697f1_9",
+        "behavioral_gap": "The author shares a technical exploration of Markov chains without connecting it to personal experiences or broader themes of AI application in teamwork.",
+        "why_outlier": "This post does not fit the community's pattern of discussing AI through personal narratives or reflections on teamwork.",
+        "exists_in_context": true,
+        "missing_nuance": "The post lacks a narrative that connects the technical exploration to personal growth or team collaboration."
+      }
+    ],
+    "preliminary_delta_notes": [
+      "[queued_for_batch_root_cause_memory]",
+      "[queued_for_batch_root_cause_memory]",
+      "[queued_for_batch_root_cause_memory]",
+      "[queued_for_batch_root_cause_memory]",
+      "[queued_for_batch_root_cause_memory]"
+    ],
+    "category": "AI and Technology in Work | Team Dynamics and Collaboration"
+  },
+  "iteration_1_batch_27": {
+    "reviews": [
+      "fa8cec49-9e7b-44e2-b2ce-7b6a324697f1_post_fa8cec49-9e7b-44e2-b2ce-7b6a324697f1_10",
+      "fa8cec49-9e7b-44e2-b2ce-7b6a324697f1_post_fa8cec49-9e7b-44e2-b2ce-7b6a324697f1_11",
+      "fa8cec49-9e7b-44e2-b2ce-7b6a324697f1_post_fa8cec49-9e7b-44e2-b2ce-7b6a324697f1_12",
+      "fa8cec49-9e7b-44e2-b2ce-7b6a324697f1_post_fa8cec49-9e7b-44e2-b2ce-7b6a324697f1_13",
+      "fa8cec49-9e7b-44e2-b2ce-7b6a324697f1_post_fa8cec49-9e7b-44e2-b2ce-7b6a324697f1_26"
+    ],
+    "batch_id": "iteration_1_batch_27",
+    "gaps": [
+      {
+        "behavioral_gap": "When discussing team dynamics, this community emphasizes specific examples of toxic management behaviors and their impact on collaboration — but the prediction assumed they would focus on general advice for improving teamwork instead.",
+        "exists_in_context": true,
+        "missing_nuance": "The prediction missed the community's tendency to share detailed critiques of management styles that hinder collaboration rather than offering generic solutions.",
+        "evidence": "3/5 posts",
+        "confidence": "HIGH"
+      }
+    ],
+    "outliers": [
+      {
+        "post_id": "fa8cec49-9e7b-44e2-b2ce-7b6a324697f1_10",
+        "behavioral_gap": "The author discusses their experience with AI in game development but does not connect it to team dynamics or collaboration.",
+        "why_outlier": "This post does not align with the community's typical emphasis on team dynamics and critiques of management styles.",
+        "exists_in_context": true,
+        "missing_nuance": "The post lacks a narrative that ties the discussion of AI to broader themes of teamwork or collaboration."
+      },
+      {
+        "post_id": "fa8cec49-9e7b-44e2-b2ce-7b6a324697f1_11",
+        "behavioral_gap": "The author reflects on toxic management behaviors but does not provide a personal narrative or specific examples related to their own experiences.",
+        "why_outlier": "This post does not fit the community's pattern of sharing personal experiences or critiques tied to team dynamics.",
+        "exists_in_context": true,
+        "missing_nuance": "The post lacks a personal anecdote that connects the critique of management to their own experiences."
+      },
+      {
+        "post_id": "fa8cec49-9e7b-44e2-b2ce-7b6a324697f1_12",
+        "behavioral_gap": "The author critiques micromanagement but does not incorporate personal experiences or reflections on teamwork.",
+        "why_outlier": "This post does not align with the community's typical emphasis on personal narratives or reflections related to team dynamics.",
+        "exists_in_context": true,
+        "missing_nuance": "The post lacks a narrative that connects the critique of micromanagement to personal experiences."
+      },
+      {
+        "post_id": "fa8cec49-9e7b-44e2-b2ce-7b6a324697f1_13",
+        "behavioral_gap": "The author discusses open space offices and their impact on collaboration but does not connect it to personal experiences or team dynamics.",
+        "why_outlier": "This post does not fit the community's pattern of discussing team dynamics through personal narratives.",
+        "exists_in_context": true,
+        "missing_nuance": "The post lacks a narrative that ties the discussion of open spaces to personal experiences or team collaboration."
+      },
+      {
+        "post_id": "fa8cec49-9e7b-44e2-b2ce-7b6a324697f1_26",
+        "behavioral_gap": "The author shares a brief comment about media coverage without engaging in a discussion about teamwork or collaboration.",
+        "why_outlier": "This post does not align with the community's typical emphasis on team dynamics and collaboration.",
+        "exists_in_context": true,
+        "missing_nuance": "The post lacks a narrative that connects the discussion to broader themes of teamwork or collaboration."
+      }
+    ],
+    "preliminary_delta_notes": [
+      "[queued_for_batch_root_cause_memory]",
+      "[queued_for_batch_root_cause_memory]",
+      "[queued_for_batch_root_cause_memory]",
+      "[queued_for_batch_root_cause_memory]",
+      "[queued_for_batch_root_cause_memory]"
+    ],
+    "category": "AI and Technology in Work | Team Dynamics and Collaboration"
+  }
+}

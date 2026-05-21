@@ -1,0 +1,16 @@
+Post text:
+---
+{post_text}
+---
+
+Allowed topics for this post's category (choose only from this list; exact strings):
+{topic_universe}
+
+Return JSON:
+{{
+  "identified_themes": ["<topic from list>", "..."],
+  "topic_probabilities": {{"<topic string>": <0-1 optional; omit keys if unknown>}},
+  "sentiment": "positive" | "negative" | "neutral" | "mixed" | null
+}}
+
+If you are unsure of a probability for a theme, omit it from topic_probabilities (the pipeline may fill defaults).

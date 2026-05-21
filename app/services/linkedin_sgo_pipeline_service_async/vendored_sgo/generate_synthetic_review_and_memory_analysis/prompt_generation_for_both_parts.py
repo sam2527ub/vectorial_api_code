@@ -3,7 +3,7 @@ import os
 import re
 import sys
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Optional, Set, Tuple
 
 # Repo prompt assets live under ``scripts/scripts_sgo/prompts`` (config may point elsewhere).
 _SCRIPTS_SGO_PROMPTS = Path(__file__).resolve().parent.parent / "prompts"
@@ -333,65 +333,185 @@ def _normalize_confidence_label(raw: Any) -> str:
     return s or "LOW"
 
 
-def _normalize_memory_pattern_row(row: Any) -> Optional[Dict[str, Any]]:
-    if not isinstance(row, dict):
-        return None
-    behavior = str(row.get("behavior") or "").strip()
-    if len(behavior) < 8:
-        return None
-    why_raw = row.get("why")
-    why: Optional[str]
-    if why_raw is None or str(why_raw).strip().lower() in ("", "null", "none"):
-        why = None
-    else:
-        why = str(why_raw).strip()
-    evidence = str(row.get("evidence") or "").strip()
-    confidence = _normalize_confidence_label(row.get("confidence"))
-    return {
-        "behavior": behavior,
-        "why": why,
-        "evidence": evidence,
-        "confidence": confidence,
-    }
+def _normalize_bool_field(raw: Any) -> bool:
+    if isinstance(raw, bool):
+        return raw
+    s = str(raw or "").strip().lower()
+    return s in ("true", "yes", "1")
+
+
+_VALID_BATCH_VERDICTS = frozenset(
+    {"new_gaps_found", "no_new_gaps", "prior_gaps_confirmed"}
+)
+
+
+def _normalize_batch_verdict(raw: Any) -> Optional[str]:
+    """Normalize Part B ``batch_verdict`` (``part_b_memory_analysis.txt``)."""
+    s = str(raw or "").strip().lower().replace(" ", "_").replace("-", "_")
+    if s in _VALID_BATCH_VERDICTS:
+        return s
+    if "new" in s and "gap" in s:
+        return "new_gaps_found"
+    if "no" in s and "gap" in s:
+        return "no_new_gaps"
+    if "confirm" in s or "prior" in s:
+        return "prior_gaps_confirmed"
+    return None
+
+
+def _normalize_prior_gap_confirmations(raw: Any) -> List[str]:
+    """Normalize Part B ``prior_gap_confirmations[]`` strings."""
+    if not isinstance(raw, list):
+        return []
+    out: List[str] = []
+    seen: Set[str] = set()
+    for row in raw:
+        t = str(row or "").strip()
+        if len(t) < 8:
+            continue
+        key = t.lower()
+        if key in seen:
+            continue
+        seen.add(key)
+        out.append(t)
+    return out
 
 
 def _normalize_memory_outlier_row(row: Any) -> Optional[Dict[str, Any]]:
+    """Normalize one Part B ``outliers[]`` object (per-post divergences outside main batch gap)."""
     if not isinstance(row, dict):
         return None
-    behavior = str(row.get("behavior") or "").strip()
-    if len(behavior) < 8:
+    gap = str(row.get("behavioral_gap") or row.get("behavior") or "").strip()
+    if len(gap) < 8:
         return None
+    post_id = str(row.get("post_id") or "").strip()
+    why_raw = row.get("why_outlier")
+    why_outlier: Optional[str]
+    if why_raw is None or str(why_raw).strip().lower() in ("", "null", "none"):
+        why_outlier = None
+    else:
+        why_outlier = str(why_raw).strip()
+    nuance_raw = row.get("missing_nuance")
+    missing_nuance: Optional[str]
+    if nuance_raw is None or str(nuance_raw).strip().lower() in ("", "null", "none"):
+        missing_nuance = None
+    else:
+        missing_nuance = str(nuance_raw).strip()
     return {
-        "behavior": behavior,
-        "confidence": _normalize_confidence_label(row.get("confidence") or "LOW"),
+        "post_id": post_id,
+        "behavioral_gap": gap,
+        "why_outlier": why_outlier,
+        "exists_in_context": _normalize_bool_field(row.get("exists_in_context")),
+        "missing_nuance": missing_nuance,
     }
 
 
-def parse_linkedin_memory_batch_patterns_response(
+def _normalize_memory_gap_row(row: Any) -> Optional[Dict[str, Any]]:
+    """Normalize one Part B ``gaps[]`` object from ``part_b_memory_analysis.txt``."""
+    if not isinstance(row, dict):
+        return None
+    gap = str(row.get("behavioral_gap") or row.get("behavior") or "").strip()
+    if len(gap) < 8:
+        return None
+    nuance_raw = row.get("missing_nuance")
+    missing_nuance: Optional[str]
+    if nuance_raw is None or str(nuance_raw).strip().lower() in ("", "null", "none"):
+        missing_nuance = None
+    else:
+        missing_nuance = str(nuance_raw).strip()
+    return {
+        "behavioral_gap": gap,
+        "exists_in_context": _normalize_bool_field(row.get("exists_in_context")),
+        "missing_nuance": missing_nuance,
+        "evidence": str(row.get("evidence") or "").strip(),
+        "confidence": _normalize_confidence_label(row.get("confidence")),
+    }
+
+
+def _legacy_patterns_to_gaps(
+    data: Dict[str, Any],
+    *,
+    batch_size: int,
+) -> List[Dict[str, Any]]:
+    """Convert older memory JSON (patterns/outliers/analyses) into ``gaps`` rows."""
+    out: List[Dict[str, Any]] = []
+    for row in data.get("patterns") or []:
+        if not isinstance(row, dict):
+            continue
+        beh = str(row.get("behavior") or "").strip()
+        if len(beh) < 8:
+            continue
+        why = row.get("why")
+        nuance = None
+        if why is not None and str(why).strip().lower() not in ("", "null", "none"):
+            nuance = str(why).strip()
+        out.append(
+            {
+                "behavioral_gap": beh,
+                "exists_in_context": False,
+                "missing_nuance": nuance,
+                "evidence": str(row.get("evidence") or "").strip(),
+                "confidence": _normalize_confidence_label(row.get("confidence")),
+            }
+        )
+    legacy = data.get("analyses")
+    if not out and isinstance(legacy, list):
+        merged = "\n\n".join(str(x).strip() for x in legacy if str(x).strip())
+        if len(merged) >= 12:
+            out.append(
+                {
+                    "behavioral_gap": merged[:4000],
+                    "exists_in_context": False,
+                    "missing_nuance": None,
+                    "evidence": f"{len(legacy)}/{max(1, batch_size)} posts",
+                    "confidence": "LOW",
+                }
+            )
+    return out
+
+
+def _legacy_outliers_list(data: Dict[str, Any]) -> List[Dict[str, Any]]:
+    """Convert legacy ``outliers`` (behavior-only rows) into structured outlier objects."""
+    out: List[Dict[str, Any]] = []
+    for row in data.get("outliers") or []:
+        norm = _normalize_memory_outlier_row(row)
+        if norm:
+            out.append(norm)
+    return out
+
+
+def parse_linkedin_memory_batch_gaps_response(
     data: Any,
     *,
     batch_size: int,
+    batch_key: str = "",
     fallback_preliminary_notes: Optional[List[str]] = None,
 ) -> Dict[str, Any]:
     """
-    Parse Part B ``part_b_memory_analysis.txt`` JSON (``patterns`` + ``outliers``).
-    On failure, returns empty pattern lists and preserves preliminary per-post notes.
+    Parse Part B ``part_b_memory_analysis.txt`` JSON (``batch_id``, ``gaps[]``, ``outliers[]``,
+    ``batch_verdict``, ``prior_gap_confirmations[]``).
+    On failure, returns empty lists and preserves preliminary per-post notes.
+    Empty ``gaps`` with ``batch_verdict=no_new_gaps`` is a valid success (no fb synthesis).
     """
     fb = list(fallback_preliminary_notes or [])
     empty: Dict[str, Any] = {
-        "patterns": [],
+        "batch_id": str(batch_key or "").strip(),
+        "gaps": [],
         "outliers": [],
+        "batch_verdict": None,
+        "prior_gap_confirmations": [],
         "preliminary_delta_notes": fb[: max(0, int(batch_size))],
         "parse_ok": False,
     }
     if not isinstance(data, dict):
         return empty
 
-    patterns: List[Dict[str, Any]] = []
-    for row in data.get("patterns") or []:
-        norm = _normalize_memory_pattern_row(row)
+    batch_id = str(data.get("batch_id") or batch_key or "").strip()
+    gaps: List[Dict[str, Any]] = []
+    for row in data.get("gaps") or []:
+        norm = _normalize_memory_gap_row(row)
         if norm:
-            patterns.append(norm)
+            gaps.append(norm)
 
     outliers: List[Dict[str, Any]] = []
     for row in data.get("outliers") or []:
@@ -399,39 +519,60 @@ def parse_linkedin_memory_batch_patterns_response(
         if norm:
             outliers.append(norm)
 
-    # Legacy per-post ``analyses`` — fold into one LOW-confidence pattern if new fields absent
-    if not patterns and not outliers:
-        legacy = data.get("analyses")
-        if isinstance(legacy, list):
-            merged = "\n\n".join(str(x).strip() for x in legacy if str(x).strip())
-            if len(merged) >= 12:
-                patterns.append(
-                    {
-                        "behavior": merged[:4000],
-                        "why": None,
-                        "evidence": f"{len(legacy)}/{max(1, batch_size)} posts",
-                        "confidence": "LOW",
-                    }
-                )
+    if not gaps:
+        gaps = _legacy_patterns_to_gaps(data, batch_size=batch_size)
+    if not outliers:
+        outliers = _legacy_outliers_list(data)
 
-    if not patterns and not outliers and fb:
+    batch_verdict = _normalize_batch_verdict(data.get("batch_verdict"))
+    prior_gap_confirmations = _normalize_prior_gap_confirmations(
+        data.get("prior_gap_confirmations")
+    )
+
+    if not gaps and fb and not batch_verdict:
         merged_fb = "\n\n---\n\n".join(str(x).strip() for x in fb if str(x).strip())
-        if merged_fb:
-            patterns.append(
+        if merged_fb and "[queued_for_batch_root_cause_memory]" not in merged_fb:
+            gaps.append(
                 {
-                    "behavior": merged_fb[:4000],
-                    "why": None,
+                    "behavioral_gap": merged_fb[:4000],
+                    "exists_in_context": False,
+                    "missing_nuance": None,
                     "evidence": f"{len([x for x in fb if str(x).strip()])}/{max(1, batch_size)} posts",
                     "confidence": "LOW",
                 }
             )
 
+    parse_ok = bool(
+        batch_verdict or gaps or outliers or prior_gap_confirmations
+    )
+
     return {
-        "patterns": patterns,
+        "batch_id": batch_id,
+        "gaps": gaps,
         "outliers": outliers,
+        "batch_verdict": batch_verdict,
+        "prior_gap_confirmations": prior_gap_confirmations,
         "preliminary_delta_notes": fb[: max(0, int(batch_size))],
-        "parse_ok": bool(patterns or outliers),
+        "parse_ok": parse_ok,
     }
+
+
+# Backward-compatible alias
+parse_linkedin_memory_batch_patterns_response = parse_linkedin_memory_batch_gaps_response
+
+_MEM_KEY_NEW = re.compile(r"^iteration_(\d+)_batch_(\d+)$")
+_MEM_KEY_LEGACY = re.compile(r"^i(\d+)_batch_(\d+)$")
+
+
+def memory_batch_iteration_number(batch_key: str) -> Optional[int]:
+    """Parse outer iteration from ``iteration_N_batch_M`` or legacy ``iN_batch_M`` keys."""
+    m = _MEM_KEY_NEW.match(str(batch_key or "").strip())
+    if m:
+        return int(m.group(1))
+    m = _MEM_KEY_LEGACY.match(str(batch_key or "").strip())
+    if m:
+        return int(m.group(1))
+    return None
 
 
 def format_memory_batch_entry_lines(
@@ -439,6 +580,9 @@ def format_memory_batch_entry_lines(
     data: Dict[str, Any],
     *,
     max_chars_per_line: int = 1200,
+    include_gaps: bool = True,
+    include_outliers: bool = True,
+    include_gap_metadata: bool = True,
 ) -> List[str]:
     """Human-readable lines for one ``memory/batch_analyses.json`` batch entry."""
     cap = max(400, int(max_chars_per_line))
@@ -452,37 +596,90 @@ def format_memory_batch_entry_lines(
     if revs:
         lines.append("reviews: " + ", ".join(str(x) for x in revs))
 
-    patterns = data.get("patterns") or []
-    if patterns:
-        lines.append("patterns:")
-        for p in patterns:
-            if not isinstance(p, dict):
+    bid = str(data.get("batch_id") or batch_key or "").strip()
+    if bid:
+        lines.append(f"batch_id: {bid}")
+
+    verdict = _normalize_batch_verdict(data.get("batch_verdict"))
+    if verdict:
+        lines.append(f"batch_verdict: {verdict}")
+    confirmations = data.get("prior_gap_confirmations") or []
+    if isinstance(confirmations, list) and confirmations:
+        lines.append("prior_gap_confirmations:")
+        for c in confirmations:
+            t = str(c or "").strip()
+            if t:
+                lines.append(f"- {t}")
+
+    gaps = data.get("gaps") or []
+    if not gaps and (data.get("patterns") or data.get("outliers") or data.get("analyses")):
+        gaps = _legacy_patterns_to_gaps(data, batch_size=max(1, len(revs) if isinstance(revs, list) else 1))
+
+    if include_gaps and gaps:
+        lines.append("gaps:")
+        for g in gaps:
+            if not isinstance(g, dict):
                 continue
-            conf = _normalize_confidence_label(p.get("confidence"))
-            beh = str(p.get("behavior") or "").strip()
-            if len(beh) > cap:
-                beh = beh[: cap - 3].rstrip() + "..."
-            ev = str(p.get("evidence") or "").strip()
-            why = p.get("why")
-            why_s = ""
-            if why is not None and str(why).strip().lower() not in ("", "null", "none"):
-                why_s = f" | why: {str(why).strip()}"
+            conf = _normalize_confidence_label(g.get("confidence"))
+            gap_txt = str(g.get("behavioral_gap") or g.get("behavior") or "").strip()
+            if len(gap_txt) > cap:
+                gap_txt = gap_txt[: cap - 3].rstrip() + "..."
+            ev = str(g.get("evidence") or "").strip()
             ev_s = f" ({ev})" if ev else ""
-            lines.append(f"- [{conf}]{ev_s} {beh}{why_s}")
+            meta_s = ""
+            if include_gap_metadata:
+                in_ctx = (
+                    "in_context"
+                    if _normalize_bool_field(g.get("exists_in_context"))
+                    else "not_in_context"
+                )
+                nuance = g.get("missing_nuance")
+                nuance_s = ""
+                if nuance is not None and str(nuance).strip().lower() not in (
+                    "",
+                    "null",
+                    "none",
+                ):
+                    nuance_s = f" | missing_nuance: {str(nuance).strip()}"
+                meta_s = f" [{in_ctx}]{nuance_s}"
+            lines.append(f"- [{conf}]{ev_s}{meta_s} {gap_txt}")
 
     outliers = data.get("outliers") or []
-    if outliers:
+    if not outliers and (data.get("patterns") or data.get("analyses")):
+        outliers = _legacy_outliers_list(data)
+    if include_outliers and outliers:
         lines.append("outliers:")
         for o in outliers:
             if not isinstance(o, dict):
                 continue
-            conf = _normalize_confidence_label(o.get("confidence") or "LOW")
-            beh = str(o.get("behavior") or "").strip()
-            if len(beh) > cap:
-                beh = beh[: cap - 3].rstrip() + "..."
-            lines.append(f"- [{conf}] {beh}")
+            pid = str(o.get("post_id") or "").strip()
+            pid_s = f"post_id={pid} | " if pid else ""
+            gap_txt = str(o.get("behavioral_gap") or "").strip()
+            if len(gap_txt) > cap:
+                gap_txt = gap_txt[: cap - 3].rstrip() + "..."
+            why = o.get("why_outlier")
+            why_s = ""
+            if why is not None and str(why).strip().lower() not in ("", "null", "none"):
+                why_s = f" | why_outlier: {str(why).strip()}"
+            meta_s = ""
+            if include_gap_metadata:
+                in_ctx = (
+                    "in_context"
+                    if _normalize_bool_field(o.get("exists_in_context"))
+                    else "not_in_context"
+                )
+                nuance = o.get("missing_nuance")
+                nuance_s = ""
+                if nuance is not None and str(nuance).strip().lower() not in (
+                    "",
+                    "null",
+                    "none",
+                ):
+                    nuance_s = f" | missing_nuance: {str(nuance).strip()}"
+                meta_s = f" [{in_ctx}]{nuance_s}"
+            lines.append(f"- {pid_s}{meta_s} {gap_txt}{why_s}")
 
-    if not patterns and not outliers:
+    if not (include_gaps and gaps) and not (include_outliers and outliers):
         for a in data.get("analyses") or []:
             s = str(a).strip()
             if not s:
@@ -491,7 +688,11 @@ def format_memory_batch_entry_lines(
                 s = s[: cap - 3].rstrip() + "..."
             lines.append(f"- {s}")
 
-    if not patterns and not outliers and not (data.get("analyses") or []):
+    if (
+        not (include_gaps and gaps)
+        and not (include_outliers and outliers)
+        and not (data.get("analyses") or [])
+    ):
         prelim = data.get("preliminary_delta_notes") or []
         if prelim:
             lines.append("preliminary_delta_notes:")
@@ -506,10 +707,6 @@ def format_memory_batch_entry_lines(
     return lines
 
 
-_MEM_KEY_NEW = re.compile(r"^iteration_(\d+)_batch_(\d+)$")
-_MEM_KEY_LEGACY = re.compile(r"^i(\d+)_batch_(\d+)$")
-
-
 def _sort_memory_batch_keys(keys: List[str]) -> List[str]:
     def sort_key(k: str) -> Tuple[int, int, int, str]:
         m = _MEM_KEY_NEW.match(k)
@@ -521,6 +718,43 @@ def _sort_memory_batch_keys(keys: List[str]) -> List[str]:
         return (2, 99999, 99999, k)
 
     return sorted(keys, key=sort_key)
+
+
+def count_outliers_for_iteration(memory: Dict[str, Any], iteration: int) -> int:
+    """Count structured outlier rows across memory batches for one outer iteration."""
+    n = 0
+    it = int(iteration)
+    for batch_key, data in (memory or {}).items():
+        if memory_batch_iteration_number(str(batch_key)) != it:
+            continue
+        if not isinstance(data, dict):
+            continue
+        for row in data.get("outliers") or []:
+            if isinstance(row, dict) and str(row.get("behavioral_gap") or "").strip():
+                n += 1
+    return n
+
+
+def memory_batches_outliers_only_for_iteration(
+    memory: Dict[str, Any], iteration: int
+) -> Dict[str, Dict[str, Any]]:
+    """Subset of memory entries that have outliers for the given outer iteration."""
+    out: Dict[str, Dict[str, Any]] = {}
+    it = int(iteration)
+    for batch_key in _sort_memory_batch_keys(list((memory or {}).keys())):
+        if memory_batch_iteration_number(str(batch_key)) != it:
+            continue
+        data = memory.get(batch_key)
+        if not isinstance(data, dict):
+            continue
+        outliers = data.get("outliers") or []
+        if not outliers:
+            continue
+        slim = dict(data)
+        slim["gaps"] = []
+        slim["outliers"] = outliers
+        out[str(batch_key)] = slim
+    return out
 
 
 def format_batch_analyses_memory_for_part_a(memory: Dict[str, Any], max_chars: int = 14000) -> str:
@@ -636,6 +870,14 @@ _PART_B_LINKEDIN_GROUP_MEMORY = "part_b_memory_analysis"
 _LINKEDIN_GROUP_POSTS_SECTION_MAX = 100000
 
 
+def _fill_named_placeholders(template: str, **values: str) -> str:
+    """Replace ``{key}`` only for explicit keys (safe when template contains JSON ``{{`` blocks)."""
+    out = template
+    for key, val in values.items():
+        out = out.replace("{" + key + "}", str(val))
+    return out
+
+
 def format_linkedin_group_memory_posts_section(
     review_items: List[Dict[str, Any]],
     *,
@@ -653,6 +895,7 @@ def format_linkedin_group_memory_posts_section(
         if not isinstance(it, dict):
             it = {}
         rk = str(it.get("review_key") or "").strip()
+        post_id = str(it.get("post_id") or "").strip()
         cat = str(it.get("category") or "").strip()
         stim = str(it.get("stimulus") or "").strip()
         actual = str(it.get("actual_review_text") or "").strip()
@@ -682,8 +925,10 @@ def format_linkedin_group_memory_posts_section(
         pr = prelim[:8000] + ("…" if len(prelim) > 8000 else "")
 
         blocks.append(
-            f"### Post index {idx} — review_key `{rk}`\n\n"
+            f"### Post index {idx} — post_id `{post_id or '(unknown)'}` — review_key `{rk}`\n\n"
             f"- **Category:** {cat}\n"
+            f"- **Batch inclusion:** high-delta prediction failure (queued for Part B memory — "
+            f"treat as prediction failure unless Phase 1 shows otherwise)\n"
             f"- **Topics (evaluation order):** {topic_order}\n\n"
             "**Stimulus:**\n"
             f"{stim}\n\n"
@@ -710,6 +955,8 @@ def generate_part_b_linkedin_group_memory_prompt(
     group_summary: str,
     group_traits: str,
     posts_section: str,
+    past_learnings: str = "",
+    prior_batch_gaps: str = "",
 ) -> str:
     """
     Fill ``prompts/part_b_memory_analysis.txt`` for LinkedIn **group** batch memory (Part B).
@@ -723,9 +970,13 @@ def generate_part_b_linkedin_group_memory_prompt(
             f"CRITICAL: '{_PART_B_LINKEDIN_GROUP_MEMORY}.txt' not found under "
             f"{settings.PROMPT_DIR_PART_B} or {_SCRIPTS_SGO_PROMPTS}."
         )
-    return tpl.format(
+    return _fill_named_placeholders(
+        tpl,
         group_summary=(group_summary or "").strip() or "(none)",
         group_traits=(group_traits or "").strip() or "(none)",
+        past_learnings=(past_learnings or "").strip() or "(no prior memory batches yet)",
+        prior_batch_gaps=(prior_batch_gaps or "").strip()
+        or "(no prior batch gaps yet — first memory batch for this run)",
         posts_section=(posts_section or "").strip() or "(none)",
     )
 

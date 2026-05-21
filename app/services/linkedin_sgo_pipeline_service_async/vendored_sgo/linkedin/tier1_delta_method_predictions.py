@@ -2,8 +2,8 @@
 """
 LinkedIn tier-1 **delta-method** pipeline (SGO training from **i1** onward — **no on-line i0**).
 
-**Production:** use only ``app.services.linkedin_sgo_pipeline_service_async`` (S3 I/O + ``vendored_sgo/``).
-Deployed workers must **never** import or depend on ``scripts/``. This file is a **local development mirror** only.
+**Production:** ``app.services.linkedin_sgo_pipeline_service_async`` only (S3 I/O + ``vendored_sgo/``).
+Production workers must **not** import ``scripts/``; this vendored file is loaded via that package's sys-path shim.
 
 **Initial predictions (i0)** must exist in ``--precomputed-i0-json`` (e.g. from ``run_linkedin_i0_only.py``).
 This script loads them, then runs the same outer iterations as before: sweep **1** loads i0 from disk for
@@ -26,11 +26,14 @@ same keys as batch correction, and **best_deltas** / **best_prediction_data** se
 default 5); each batch runs the delta feedback loop (i1..iN), delta analyses into traces, and memory
 when the resolved gate exceeds ``--memory-jsd-threshold`` (default ``--next-sweep-min-delta``).
 ``memory/batch_analyses.json`` flushes when the buffer reaches ``--min-posts-for-memory-batch``; each flush
-runs the LinkedIn **batch pattern-extraction** prompt (``prompts/part_b_memory_analysis.txt`` →
-``patterns`` + ``outliers`` JSON) unless ``--no-linkedin-root-cause-memory`` is set (then preliminary
-per-post delta notes are stored only).
-**(3)** After ``--evolve-every-n-batches`` full memory batches, runs group_summary refine + shrink and
-qualitative (traits) refine/shrink (same prompts as ``tier1_sgo_feedback_loop``). **(4)** persists
+runs the LinkedIn **batch behavioral-gap** prompt (``prompts/part_b_memory_analysis.txt`` →
+``batch_id`` + ``gaps[]`` + ``outliers[]`` + ``batch_verdict`` + ``prior_gap_confirmations[]`` JSON)
+unless ``--no-linkedin-root-cause-memory`` is set.
+**(3)** After ``--evolve-every-n-batches`` full memory batches, runs group_summary refine (optional
+shrink via ``shrink_refinement.txt`` unless ``--no-shrink``) on **gaps only** (outliers excluded
+from window refines). At **end of each outer iteration**, one
+**outlier consolidation** refine (``refine_outliers.txt``) on all ``outliers[]`` for that iteration.
+Qualitative refine/shrink uses the same prompts as ``tier1_sgo_feedback_loop``. **(4)** persists
 ``evolution/evolution_state.json``, optional
 ``evolution/state_history/NNNNNN_<reason>.json`` snapshots, ``<work-dir>/description.json`` (working
 copy; seed ``--description-json`` stays read-only when sync is on), ``post_traces.jsonl``,
@@ -66,9 +69,12 @@ except ImportError:
     load_dotenv = None  # type: ignore
 
 SCRIPTS_SGO = Path(__file__).resolve().parent.parent
-REPO_ROOT = SCRIPTS_SGO.parent.parent
 if str(SCRIPTS_SGO) not in sys.path:
     sys.path.insert(0, str(SCRIPTS_SGO))
+
+from _paths import repo_root as _linkedin_sgo_repo_root
+
+REPO_ROOT = _linkedin_sgo_repo_root()
 
 if load_dotenv:
     load_dotenv(REPO_ROOT / ".env", override=True)
@@ -78,6 +84,7 @@ import _package_setup  # noqa: F401
 from openai import AsyncOpenAI, OpenAI
 
 from calculate_behaviour_loss.weighted_topic_review_metric_calculation import calculate_jsd
+from config.linkedin_sgo_pipeline_config import linkedin_sgo_model_defaults
 from sgo_training.config import settings
 from utils import io_utils
 from utils import journey_utils
@@ -249,7 +256,6 @@ try_load_qualitative_from_description_json = t1.try_load_qualitative_from_descri
 sync_description_json_from_state = t1.sync_description_json_from_state
 ensure_workdir_description_from_seed = t1.ensure_workdir_description_from_seed
 save_state = t1.save_state
-delta_bridge_analysis = t1.delta_bridge_analysis
 iter_posts_tier1 = t1.iter_posts_tier1
 iter_posts_with_ground_truth = t1.iter_posts_with_ground_truth
 load_or_init_state = t1.load_or_init_state
@@ -261,6 +267,10 @@ save_memory = t1.save_memory
 memory_batch_key = t1.memory_batch_key
 linkedin_review_key = t1.linkedin_review_key
 refine_group_summary = t1.refine_group_summary
+refine_outliers_at_iteration_end = t1.refine_outliers_at_iteration_end
+build_outlier_refine_analyses_text = t1.build_outlier_refine_analyses_text
+count_outliers_for_iteration = t1.count_outliers_for_iteration
+memory_batches_outliers_only_for_iteration = t1.memory_batches_outliers_only_for_iteration
 shrink_group_summary = t1.shrink_group_summary
 compute_shrink_target_words = t1.compute_shrink_target_words
 compute_group_summary_shrink_band = t1.compute_group_summary_shrink_band
@@ -563,6 +573,55 @@ def _infer_resume_start_iteration_from_stats(work_dir: Path, tier: int, num_iter
     return last_done + 1
 
 
+def _user_pred_map_to_jsonable(m: Dict[str, Dict[int, Dict[str, Any]]]) -> Dict[str, Any]:
+    out: Dict[str, Any] = {}
+    for uid, rows in (m or {}).items():
+        out[str(uid)] = {str(k): copy.deepcopy(v) for k, v in (rows or {}).items()}
+    return out
+
+
+def _user_pred_map_from_jsonable(raw: Any) -> Dict[str, Dict[int, Dict[str, Any]]]:
+    out: Dict[str, Dict[int, Dict[str, Any]]] = {}
+    if not isinstance(raw, dict):
+        return out
+    for uid, rows in raw.items():
+        if not isinstance(rows, dict):
+            continue
+        inner: Dict[int, Dict[str, Any]] = {}
+        for k, v in rows.items():
+            try:
+                ik = int(k)
+            except (TypeError, ValueError):
+                continue
+            inner[ik] = copy.deepcopy(v) if isinstance(v, dict) else {}
+        out[str(uid)] = inner
+    return out
+
+
+def _pred_snapshot_to_jsonable(snap: Dict[Tuple[str, int], Dict[str, Any]]) -> Dict[str, Any]:
+    out: Dict[str, Any] = {}
+    for (uid, ridx), v in (snap or {}).items():
+        out[f"{uid}|{int(ridx)}"] = copy.deepcopy(v)
+    return out
+
+
+def _pred_snapshot_from_jsonable(raw: Any) -> Dict[Tuple[str, int], Dict[str, Any]]:
+    out: Dict[Tuple[str, int], Dict[str, Any]] = {}
+    if not isinstance(raw, dict):
+        return out
+    for k, v in raw.items():
+        ks = str(k)
+        if "|" not in ks:
+            continue
+        a, b = ks.split("|", 1)
+        try:
+            ri = int(b)
+        except ValueError:
+            continue
+        out[(str(a), ri)] = copy.deepcopy(v) if isinstance(v, dict) else {}
+    return out
+
+
 def _print_review_progress(
     posts_done: int,
     total_posts: int,
@@ -670,7 +729,6 @@ async def run_correction_rounds_on_entry(
     client: AsyncOpenAI,
     sync_client: OpenAI,
     gen_model: str,
-    delta_model: str,
     topic_model: str,
     sem: asyncio.Semaphore,
     profiles_root: Path,
@@ -728,9 +786,6 @@ async def run_correction_rounds_on_entry(
     prev_overall = float(id0.get("overall_delta", 1.0))
 
     entry["correction_journey"] = []
-    qual_excerpt = format_qualitative_summary_descriptions_only(qualitative_summary)
-    if len(qual_excerpt) > max_qual_json_chars:
-        qual_excerpt = qual_excerpt[:max_qual_json_chars]
 
     for it in range(1, iteration_cap + 1):
         if feedback_on == "overall":
@@ -752,21 +807,8 @@ async def run_correction_rounds_on_entry(
                 )
                 break
 
-        analysis_raw = await delta_bridge_analysis(
-            client,
-            delta_model,
-            body,
-            stim,
-            category,
-            group_summary[:6000],
-            qual_excerpt,
-            individual_ctx,
-            topics,
-            gt_probs,
-            current_topics,
-            float(calculate_jsd(current_topics, gt_probs, theme_jsd_support)),
-        )
-        analysis_used = str(analysis_raw)
+        # No per-post LLM gap analysis — Part A uses persona + past memory + post block only.
+        analysis_used = ""
 
         current_text = await regenerate_post(
             client,
@@ -891,17 +933,8 @@ def _post_key_to_meta_for_posts(
     return out
 
 
-async def _memory_analysis_for_delta_entry(
-    client: AsyncOpenAI,
-    delta_model: str,
-    max_qual_json_chars: int,
-    entry: Dict[str, Any],
-    post: Dict[str, Any],
-    group_text: str,
-    qual: Dict[str, Any],
-    card: Dict[str, Any],
-    bundle: Dict[str, Any],
-) -> Optional[str]:
+def _memory_delta_note_for_entry(entry: Dict[str, Any]) -> Optional[str]:
+    """Legacy trace note when batch Part B memory is disabled (no per-post LLM analysis)."""
     journey = entry.get("correction_journey") or []
     parts = [
         str(s.get("analysis_used") or "").strip()
@@ -909,41 +942,8 @@ async def _memory_analysis_for_delta_entry(
         if isinstance(s, dict) and s.get("analysis_used")
     ]
     if parts:
-        blob = "\n\n---\n\n".join(p for p in parts if p)
-        return blob or None
-    topics = list(post.get("topics_ordered") or [])
-    if not topics:
-        return None
-    gt = {k: float(v) for k, v in (post.get("topic_probabilities") or {}).items()}
-    pred_raw = (entry.get("initial_prediction_data") or {}).get("predicted_themes") or {}
-    pred: Dict[str, float] = {}
-    if isinstance(pred_raw, dict):
-        for k, v in pred_raw.items():
-            try:
-                pred[str(k)] = float(v)
-            except (TypeError, ValueError):
-                continue
-    jsd = float(calculate_jsd(pred, gt, topics))
-    individual_ctx = format_individual_author_context(card, bundle)
-    stim = (post.get("stimulus") or "").strip()
-    body = (post.get("body_text") or "").strip()
-    qual_excerpt = format_qualitative_summary_descriptions_only(qual)
-    if len(qual_excerpt) > max_qual_json_chars:
-        qual_excerpt = qual_excerpt[:max_qual_json_chars]
-    return await delta_bridge_analysis(
-        client,
-        delta_model,
-        body,
-        stim,
-        str(post.get("category") or ""),
-        group_text,
-        qual_excerpt,
-        individual_ctx,
-        topics,
-        gt,
-        pred,
-        jsd,
-    )
+        return "\n\n---\n\n".join(p for p in parts if p)
+    return None
 
 
 def _resolved_deltas_for_gates(rec: Dict[str, Any]) -> Dict[str, Any]:
@@ -982,6 +982,18 @@ async def run_all(args: argparse.Namespace) -> None:
     mapping_path = Path(args.mapping_json).expanduser().resolve()
     profiles_root = Path(args.profiles_root).expanduser().resolve()
     work_dir.mkdir(parents=True, exist_ok=True)
+    if tier_mode == "tier2":
+        tw = str(getattr(args, "tier1_evolution_work_dir", "") or "").strip()
+        if tw:
+            ensure_tier2_evolution_baseline_from_tier1_workdir(
+                work_dir,
+                Path(tw).expanduser().resolve(),
+            )
+        else:
+            logger.warning(
+                "[TIER2] tier_mode=tier2 but tier1_evolution_work_dir is empty; "
+                "evolution will init from description.json unless state already exists."
+            )
     out_path = Path(args.output).expanduser().resolve()
 
     weight_text = float(args.weight_text) if args.weight_text is not None else float(settings.WEIGHT_TEXT_DELTA)
@@ -1041,7 +1053,7 @@ async def run_all(args: argparse.Namespace) -> None:
     )
     if not precomputed_i0_path.is_file():
         logger.error(
-            "[I0] Precomputed i0 JSON not found: %s — run scripts_sgo/linkedin/run_linkedin_i0_only.py first.",
+            "[I0] Precomputed i0 JSON not found: %s — generate tier-matching i0 (initial prediction job / i0 script).",
             precomputed_i0_path,
         )
         sys.exit(1)
@@ -1063,7 +1075,8 @@ async def run_all(args: argparse.Namespace) -> None:
     )
     logger.info(
         "[PIPELINE] num_iterations=%s | next_sweep_min_delta=%s (post-correction best_deltas) | "
-        "precomputed_i0=%s | i1 batch=%s (min_posts=%s) | evolve every %s memory batches | memory_gate=%s (%s) | correction_cap=%s",
+        "precomputed_i0=%s | i1 batch=%s (min_posts=%s) | evolve every %s memory batches | memory_gate=%s (%s) | "
+        "correction_cap=%s | outlier_refine=%s | shrink=%s",
         int(args.num_iterations),
         next_sweep_thr,
         precomputed_i0_path.name,
@@ -1073,19 +1086,31 @@ async def run_all(args: argparse.Namespace) -> None:
         memory_jsd_thr,
         args.feedback_on,
         int(args.correction_iterations),
+        "off" if getattr(args, "no_outlier_refine", False) else "end-of-iteration",
+        "off" if getattr(args, "no_shrink", False) else "on",
+    )
+    logger.info(
+        "[CONFIG] models memory_batch=%s refine=%s shrink=%s qual_schema=%s",
+        getattr(args, "linkedin_root_cause_model", ""),
+        getattr(args, "refine_model", ""),
+        getattr(args, "shrink_model", ""),
+        getattr(args, "qual_schema_model", ""),
     )
 
     base_url = os.environ.get("OPENAI_BASE_URL")
+    openai_timeout = float(os.environ.get("LINKEDIN_SGO_OPENAI_TIMEOUT", "120"))
     client = AsyncOpenAI(
         api_key=os.environ["OPENAI_API_KEY"],
         base_url=base_url if base_url and base_url.strip() else None,
-        timeout=120.0,
+        timeout=openai_timeout,
     )
     sync_client = OpenAI(
         api_key=os.environ["OPENAI_API_KEY"],
         base_url=base_url if base_url and base_url.strip() else None,
-        timeout=120.0,
+        timeout=openai_timeout,
     )
+
+    trace_pipeline_name = f"linkedin_{tier_mode}_delta_method"
 
     sem = asyncio.Semaphore(max(1, args.concurrent))
     emb_cache: Dict[str, Any] = {}
@@ -1094,7 +1119,14 @@ async def run_all(args: argparse.Namespace) -> None:
     trace_lock = asyncio.Lock()
 
     load_group_summary_refine_template()
-    load_group_summary_shrink_template()
+    if not getattr(args, "no_shrink", False):
+        load_group_summary_shrink_template()
+    if not getattr(args, "no_outlier_refine", False):
+        try:
+            t1.load_outlier_refine_template()
+        except FileNotFoundError as e:
+            logger.error("[OUTLIER_REFINE] Missing outlier refine prompt: %s", e)
+            sys.exit(1)
 
     if getattr(args, "linkedin_root_cause_memory", True):
         try:
@@ -1131,6 +1163,8 @@ async def run_all(args: argparse.Namespace) -> None:
             or reason.startswith("after_group_shrink_")
             or reason.startswith("after_qual_refine_")
             or reason.startswith("after_qual_shrink_")
+            or reason.startswith("after_outlier_refine_")
+            or reason.startswith("after_qual_outlier_refine_")
         ):
             try:
                 wd = ensure_workdir_description_from_seed(work_dir, description_seed_path)
@@ -1489,7 +1523,6 @@ async def run_all(args: argparse.Namespace) -> None:
                 client=client,
                 sync_client=sync_client,
                 gen_model=args.gen_model,
-                delta_model=args.delta_model,
                 topic_model=args.topic_model,
                 sem=sem,
                 profiles_root=profiles_root,
@@ -1526,17 +1559,7 @@ async def run_all(args: argparse.Namespace) -> None:
                 if getattr(args, "linkedin_root_cause_memory", True):
                     delta_text = "[queued_for_batch_root_cause_memory]"
                 else:
-                    delta_text = await _memory_analysis_for_delta_entry(
-                        client,
-                        args.delta_model,
-                        args.max_qual_json_chars,
-                        rec,
-                        p,
-                        group_text,
-                        qual,
-                        card,
-                        b,
-                    )
+                    delta_text = _memory_delta_note_for_entry(rec)
             bd = rec.get("best_deltas") or id0
             pred_best = (rec.get("best_prediction_data") or rec.get("initial_prediction_data") or {}).get(
                 "predicted_themes"
@@ -1598,8 +1621,11 @@ async def run_all(args: argparse.Namespace) -> None:
                 revs = [t[0] for t in slice_rows]
                 prelim_notes = [t[1] for t in slice_rows]
                 memory_batch_payload: Dict[str, Any] = {
-                    "patterns": [],
+                    "batch_id": batch_key,
+                    "gaps": [],
                     "outliers": [],
+                    "batch_verdict": None,
+                    "prior_gap_confirmations": [],
                     "preliminary_delta_notes": prelim_notes,
                 }
                 if (
@@ -1644,6 +1670,7 @@ async def run_all(args: argparse.Namespace) -> None:
                         rc_items.append(
                             {
                                 "review_key": str(rk),
+                                "post_id": str(post_id_rc or post_rc.get("post_id") or ""),
                                 "category": str(post_rc.get("category") or ""),
                                 "stimulus": stim_rc,
                                 "actual_review_text": body_rc,
@@ -1669,13 +1696,16 @@ async def run_all(args: argparse.Namespace) -> None:
                             pending_memory_keys=set(),
                             review_items=rc_items,
                             fallback_analyses=prelim_notes,
+                            batch_key=batch_key,
                         )
                 elif not getattr(args, "linkedin_root_cause_memory", True):
                     memory_batch_payload = {
-                        "patterns": [],
+                        "batch_id": batch_key,
+                        "gaps": [],
                         "outliers": [],
+                        "batch_verdict": None,
+                        "prior_gap_confirmations": [],
                         "preliminary_delta_notes": prelim_notes,
-                        "analyses": prelim_notes,
                     }
                 cats_slice = sorted({t[2] for t in slice_rows if t[2]})
                 if len(cats_slice) == 1:
@@ -1686,8 +1716,14 @@ async def run_all(args: argparse.Namespace) -> None:
                     category_field = ""
                 refine_accumulator[batch_key] = {
                     "reviews": revs,
-                    "patterns": memory_batch_payload.get("patterns") or [],
+                    "batch_id": memory_batch_payload.get("batch_id") or batch_key,
+                    "gaps": memory_batch_payload.get("gaps") or [],
                     "outliers": memory_batch_payload.get("outliers") or [],
+                    "batch_verdict": memory_batch_payload.get("batch_verdict"),
+                    "prior_gap_confirmations": memory_batch_payload.get(
+                        "prior_gap_confirmations"
+                    )
+                    or [],
                     "preliminary_delta_notes": memory_batch_payload.get("preliminary_delta_notes")
                     or prelim_notes,
                     "category": category_field,
@@ -1804,80 +1840,97 @@ async def run_all(args: argparse.Namespace) -> None:
                         ) + 1
                         qrc_u = int(state["qual_refinement_call_count"])
                         persist_state(f"after_qual_refine_{qrc_u}", user_pred_by_idx, all_delta_rows)
-                    qual_for_shrink = copy.deepcopy(
-                        state.get("qualitative_summary") or empty_qualitative_summary()
-                    )
-                    max_traits = int(args.max_traits_per_category)
-                    traits_over = qualitative_summary_over_trait_limit(
-                        qual_for_shrink,
-                        max_traits_per_category=max_traits,
-                    )
-                    summary_words = word_count_t1(state["group_summary"])
-                    summary_over = summary_words > max_wc
-                    shrink_min_wc = max(min_wc, baseline_min_wc)
-
-                    if summary_over and not traits_over:
-                        prior_sum = state["group_summary"]
-                        state["group_summary"] = hard_truncate_words(prior_sum, max_wc)
-                        logger.info(
-                            "[SHRINK] skipped LLM — summary %s words > %s but traits within "
-                            "≤%s/category; hard-truncated to %s words.",
-                            summary_words,
-                            max_wc,
-                            max_traits,
-                            word_count_t1(state["group_summary"]),
+                    if getattr(args, "no_shrink", False):
+                        sw = word_count_t1(state.get("group_summary") or "")
+                        mt = int(args.max_traits_per_category)
+                        traits_over_ns = qualitative_summary_over_trait_limit(
+                            state.get("qualitative_summary") or empty_qualitative_summary(),
+                            max_traits_per_category=mt,
                         )
-                    elif traits_over:
-                        qual_before_shrink = copy.deepcopy(qual_for_shrink)
-                        shrunk_sum, shrunk_qual = await shrink_group_summary(
-                            client,
-                            args.shrink_model,
-                            state["group_summary"],
-                            baseline_group,
-                            shrink_min_wc,
-                            max_wc,
-                            qual_for_shrink,
-                        )
-                        if shrunk_sum:
-                            state["group_summary"] = guard_shrink_group_summary(
-                                baseline=baseline_group,
-                                prior=state["group_summary"],
-                                candidate=shrunk_sum,
-                                max_words=max_wc,
-                                min_words=shrink_min_wc,
+                        if sw > max_wc or traits_over_ns:
+                            logger.info(
+                                "[SHRINK] disabled (--no-shrink) | summary_words=%s (max %s) | "
+                                "traits_over_limit=%s",
+                                sw,
+                                max_wc,
+                                traits_over_ns,
                             )
-                        elif summary_over:
-                            state["group_summary"] = hard_truncate_words(
-                                state["group_summary"], max_wc
-                            )
-                            logger.warning(
-                                "[SHRINK] LLM failed — hard-truncated summary to ≤%s words.", max_wc
-                            )
-                        if shrunk_qual is not None and not qualitative_summary_regression(
-                            qual_before_shrink, shrunk_qual
-                        ):
-                            state["qualitative_summary"] = merge_qualitative_refinement(
-                                baseline=q_baseline,
-                                prior=qual_before_shrink,
-                                candidate=shrunk_qual,
-                                max_new_per_category=0,
-                            )
-                        elif shrunk_qual is not None:
-                            logger.warning(
-                                "[SHRINK] rejected qualitative_summary regression; keeping pre-shrink traits."
-                            )
-                        state["shrink_call_count"] = int(state.get("shrink_call_count") or 0) + 1
-                        persist_state(
-                            f"after_group_shrink_{state['shrink_call_count']}",
-                            user_pred_by_idx,
-                            all_delta_rows,
-                        )
                     else:
-                        logger.info(
-                            "[SHRINK] skipped — within limits (≤%s words, ≤%s traits/category).",
-                            max_wc,
-                            max_traits,
+                        qual_for_shrink = copy.deepcopy(
+                            state.get("qualitative_summary") or empty_qualitative_summary()
                         )
+                        max_traits = int(args.max_traits_per_category)
+                        traits_over = qualitative_summary_over_trait_limit(
+                            qual_for_shrink,
+                            max_traits_per_category=max_traits,
+                        )
+                        summary_words = word_count_t1(state["group_summary"])
+                        summary_over = summary_words > max_wc
+                        shrink_min_wc = max(min_wc, baseline_min_wc)
+
+                        if summary_over and not traits_over:
+                            prior_sum = state["group_summary"]
+                            state["group_summary"] = hard_truncate_words(prior_sum, max_wc)
+                            logger.info(
+                                "[SHRINK] skipped LLM — summary %s words > %s but traits within "
+                                "≤%s/category; hard-truncated to %s words.",
+                                summary_words,
+                                max_wc,
+                                max_traits,
+                                word_count_t1(state["group_summary"]),
+                            )
+                        elif traits_over:
+                            qual_before_shrink = copy.deepcopy(qual_for_shrink)
+                            shrunk_sum, shrunk_qual = await shrink_group_summary(
+                                client,
+                                args.shrink_model,
+                                state["group_summary"],
+                                baseline_group,
+                                shrink_min_wc,
+                                max_wc,
+                                qual_for_shrink,
+                            )
+                            if shrunk_sum:
+                                state["group_summary"] = guard_shrink_group_summary(
+                                    baseline=baseline_group,
+                                    prior=state["group_summary"],
+                                    candidate=shrunk_sum,
+                                    max_words=max_wc,
+                                    min_words=shrink_min_wc,
+                                )
+                            elif summary_over:
+                                state["group_summary"] = hard_truncate_words(
+                                    state["group_summary"], max_wc
+                                )
+                                logger.warning(
+                                    "[SHRINK] LLM failed — hard-truncated summary to ≤%s words.",
+                                    max_wc,
+                                )
+                            if shrunk_qual is not None and not qualitative_summary_regression(
+                                qual_before_shrink, shrunk_qual
+                            ):
+                                state["qualitative_summary"] = merge_qualitative_refinement(
+                                    baseline=q_baseline,
+                                    prior=qual_before_shrink,
+                                    candidate=shrunk_qual,
+                                    max_new_per_category=0,
+                                )
+                            elif shrunk_qual is not None:
+                                logger.warning(
+                                    "[SHRINK] rejected qualitative_summary regression; keeping pre-shrink traits."
+                                )
+                            state["shrink_call_count"] = int(state.get("shrink_call_count") or 0) + 1
+                            persist_state(
+                                f"after_group_shrink_{state['shrink_call_count']}",
+                                user_pred_by_idx,
+                                all_delta_rows,
+                            )
+                        else:
+                            logger.info(
+                                "[SHRINK] skipped — within limits (≤%s words, ≤%s traits/category).",
+                                max_wc,
+                                max_traits,
+                            )
 
                     if persona_evolver is not None:
                         analyses_blob = build_refine_analyses_text(
@@ -1907,7 +1960,8 @@ async def run_all(args: argparse.Namespace) -> None:
                                     baseline=q_base,
                                     prior=q_cur,
                                     candidate=refined_q,
-                                    max_new_per_category=5,
+                                    max_new_per_category=10,
+                                    prefer_new_traits=True,
                                 )
                                 state["qual_refinement_call_count"] = int(
                                     state.get("qual_refinement_call_count") or 0
@@ -1920,9 +1974,13 @@ async def run_all(args: argparse.Namespace) -> None:
                                 )
 
                         qrc = int(state.get("qual_refinement_call_count") or 0)
-                        if qrc > 0 and qualitative_summary_over_trait_limit(
-                            state.get("qualitative_summary") or empty_qualitative_summary(),
-                            max_traits_per_category=int(args.max_traits_per_category),
+                        if (
+                            not getattr(args, "no_shrink", False)
+                            and qrc > 0
+                            and qualitative_summary_over_trait_limit(
+                                state.get("qualitative_summary") or empty_qualitative_summary(),
+                                max_traits_per_category=int(args.max_traits_per_category),
+                            )
                         ):
 
                             def _qual_shrink() -> Optional[Dict[str, Any]]:
@@ -1957,6 +2015,112 @@ async def run_all(args: argparse.Namespace) -> None:
                                     "[QUAL_SHRINK] rejected regression; keeping pre-shrink qualitative_summary."
                                 )
 
+        if (
+            not getattr(args, "no_outlier_refine", False)
+            and int(state.get("last_outlier_refine_iteration") or 0) != int(iteration)
+            and count_outliers_for_iteration(memory, iteration) > 0
+        ):
+            logger.info(
+                "[OUTLIER_REFINE] starting end-of-iteration pass | iteration=%s | outliers=%s",
+                iteration,
+                count_outliers_for_iteration(memory, iteration),
+            )
+            before_out = state.get("group_summary") or ""
+            qual_before_out = copy.deepcopy(
+                state.get("qualitative_summary") or empty_qualitative_summary()
+            )
+            q_base_out = state.get("baseline_qualitative_summary") or empty_qualitative_summary()
+            new_summary_out, new_qual_out, outlier_llm_ok = await refine_outliers_at_iteration_end(
+                client,
+                args.refine_model,
+                before_out,
+                baseline_group,
+                memory,
+                iteration,
+                qual_before_out,
+                baseline_qualitative_summary=q_base_out,
+            )
+            if outlier_llm_ok:
+                state["last_outlier_refine_iteration"] = int(iteration)
+            if outlier_llm_ok and (new_summary_out or new_qual_out is not None):
+                if new_summary_out:
+                    max_wc_out = int(args.group_summary_max_words)
+                    min_wc_out = int(args.shrink_floor_words)
+                    baseline_min_wc_out = baseline_summary_min_words(
+                        baseline_group,
+                        floor_words=min_wc_out,
+                        floor_ratio=float(args.shrink_baseline_floor_ratio),
+                    )
+                    integrated_out = normalize_group_summary_refinement(
+                        baseline=baseline_group,
+                        prior=before_out,
+                        candidate=new_summary_out,
+                    )
+                    state["group_summary"] = guard_group_summary_text(
+                        candidate=integrated_out,
+                        prior=before_out,
+                        baseline=baseline_group,
+                        max_words=max_wc_out,
+                        min_words=baseline_min_wc_out,
+                    )
+                    logger.info(
+                        "[OUTLIER_REFINE] group_summary words %s → %s",
+                        word_count_t1(before_out),
+                        word_count_t1(state["group_summary"]),
+                    )
+                if new_qual_out is not None:
+                    state["qualitative_summary"] = new_qual_out
+                state["outlier_refinement_call_count"] = int(
+                    state.get("outlier_refinement_call_count") or 0
+                ) + 1
+                orc = int(state["outlier_refinement_call_count"])
+                persist_state(f"after_outlier_refine_{orc}", user_pred_by_idx, all_delta_rows)
+
+                if persona_evolver is not None:
+                    outlier_logs = memory_batches_outliers_only_for_iteration(memory, iteration)
+                    outlier_blob = build_outlier_refine_analyses_text(memory, iteration)
+                    q_cur_out = copy.deepcopy(
+                        state.get("qualitative_summary") or empty_qualitative_summary()
+                    )
+
+                    def _qual_outlier_refine() -> Optional[Dict[str, Any]]:
+                        return persona_evolver.run_single_refinement_step(
+                            outlier_logs,
+                            q_cur_out,
+                            q_base_out,
+                            batch_analyses_text=outlier_blob,
+                            group_summary=(state.get("group_summary") or ""),
+                            refine_prompt_basename="refine_outliers",
+                        )
+
+                    refined_q_out = await asyncio.to_thread(_qual_outlier_refine)
+                    if refined_q_out:
+                        state["qualitative_summary"] = merge_qualitative_refinement(
+                            baseline=q_base_out,
+                            prior=q_cur_out,
+                            candidate=refined_q_out,
+                            max_new_per_category=5,
+                            prefer_new_traits=True,
+                        )
+                        state["qual_outlier_refinement_call_count"] = int(
+                            state.get("qual_outlier_refinement_call_count") or 0
+                        ) + 1
+                        qorc = int(state["qual_outlier_refinement_call_count"])
+                        persist_state(
+                            f"after_qual_outlier_refine_{qorc}",
+                            user_pred_by_idx,
+                            all_delta_rows,
+                        )
+                    else:
+                        logger.warning(
+                            "[OUTLIER_REFINE] qual refine returned nothing; keeping prior traits."
+                        )
+            elif outlier_llm_ok:
+                logger.info(
+                    "[OUTLIER_REFINE] iteration=%s — pass complete, no persona changes applied",
+                    iteration,
+                )
+
         iteration_jsds.clear()
         for pid, _b, p in pending:
             _pk = (str(pid), str(p.get("post_id") or ""))
@@ -1990,6 +2154,11 @@ async def run_all(args: argparse.Namespace) -> None:
             "shrink_call_count_end": state.get("shrink_call_count"),
             "qual_refinement_call_count_end": state.get("qual_refinement_call_count"),
             "qual_shrink_call_count_end": state.get("qual_shrink_call_count"),
+            "outlier_refinement_call_count_end": state.get("outlier_refinement_call_count"),
+            "qual_outlier_refinement_call_count_end": state.get(
+                "qual_outlier_refinement_call_count"
+            ),
+            "last_outlier_refine_iteration": state.get("last_outlier_refine_iteration"),
         }
         iteration_stats_path.parent.mkdir(parents=True, exist_ok=True)
         with open(iteration_stats_path, "a", encoding="utf-8") as sf:
@@ -2023,6 +2192,36 @@ async def run_all(args: argparse.Namespace) -> None:
         qualifying_keys_from_prev = next_qualifying
         pred_snapshot_prev_outer = build_prediction_snapshot_for_memory(user_pred_by_idx)
 
+        _out_seed = str(getattr(args, "sgo_user_pred_seed_json_out", "") or "").strip()
+        if _out_seed:
+            outp = Path(_out_seed)
+            outp.parent.mkdir(parents=True, exist_ok=True)
+            outp.write_text(
+                json.dumps(_user_pred_map_to_jsonable(user_pred_by_idx), ensure_ascii=False, indent=2)
+                + "\n",
+                encoding="utf-8",
+            )
+            logger.info("[SGO_CHECKPOINT] wrote user_pred seed → %s", outp)
+
+        _hook = getattr(args, "sgo_on_outer_iteration_complete", None)
+        if _hook is not None:
+            _maybe = _hook(
+                iteration_completed=int(iteration),
+                num_iterations_planned=int(num_it),
+                work_dir=work_dir,
+                qualifying_keys_for_next=sorted(list(qualifying_keys_from_prev)),
+                pred_snapshot_jsonable=_pred_snapshot_to_jsonable(pred_snapshot_prev_outer),
+                user_pred_jsonable=_user_pred_map_to_jsonable(user_pred_by_idx),
+                state_path=state_path,
+                memory_path=memory_path,
+                trace_path=trace_path,
+                iteration_stats_path=iteration_stats_path,
+                out_path=out_path,
+                tier_mode=str(getattr(args, "tier_mode", "tier1") or "tier1"),
+            )
+            if asyncio.iscoroutine(_maybe):
+                await _maybe
+
     print(
         f"\n[DONE] state={state_path} | memory={memory_path} | traces={trace_path.name} | "
         f"predictions={out_path}\n",
@@ -2043,6 +2242,20 @@ def _flatten_user_predictions_for_aggregate(
 def main() -> None:
     default_desc = _RAW_PROFILES / "description.json"
     default_profiles = _RAW_PROFILES / "profiles"
+
+    try:
+        _model_cfg = linkedin_sgo_model_defaults()
+    except (FileNotFoundError, ValueError, OSError) as e:
+        logger.warning(
+            "[CONFIG] Could not load linkedin_sgo_pipeline.yaml (%s); using o3 for memory/refine/shrink",
+            e,
+        )
+        _model_cfg = {
+            "linkedin_root_cause_model": "o3",
+            "refine_model": "o3",
+            "shrink_model": "o3",
+            "qual_schema_model": "o3",
+        }
 
     p = argparse.ArgumentParser(description=__doc__)
     p.add_argument(
@@ -2070,6 +2283,21 @@ def main() -> None:
     p.add_argument("--mapping-json", type=str, default=None)
     p.add_argument("--profiles-root", type=str, default=str(default_profiles))
     p.add_argument(
+        "--tier-mode",
+        type=str,
+        choices=("tier1", "tier2"),
+        default="tier1",
+        dest="tier_mode",
+        help="tier2: optionally seed evolution from tier-1 work dir (--tier1-evolution-work-dir) before state load.",
+    )
+    p.add_argument(
+        "--tier1-evolution-work-dir",
+        type=str,
+        default="",
+        dest="tier1_evolution_work_dir",
+        help="Tier-1 pipeline work directory; tier-2 copies evolution/evolution_state.json when tier-2 state is missing.",
+    )
+    p.add_argument(
         "--work-dir",
         type=str,
         default="",
@@ -2090,9 +2318,9 @@ def main() -> None:
     p.add_argument(
         "--linkedin-root-cause-model",
         type=str,
-        default="",
+        default=_model_cfg["linkedin_root_cause_model"],
         dest="linkedin_root_cause_model",
-        help="Model for batch memory pattern-extraction prompt (default: same as --delta-model)",
+        help="Model for part_b_memory_analysis.txt (default: config/linkedin_sgo_pipeline.yaml → models.memory_batch)",
     )
     _rcm = p.add_mutually_exclusive_group()
     _rcm.add_argument(
@@ -2105,7 +2333,7 @@ def main() -> None:
         "--no-linkedin-root-cause-memory",
         dest="linkedin_root_cause_memory",
         action="store_false",
-        help="Legacy: store per-post preliminary deltas only (disables batch pattern-extraction prompt)",
+        help="Disable batch Part B memory (no gaps JSON); high-delta posts skip memory queue",
     )
     _rcm.set_defaults(linkedin_root_cause_memory=True)
     p.add_argument("--concurrent", type=int, default=8)
@@ -2211,10 +2439,22 @@ def main() -> None:
         "(theme vs overall per --feedback-on) exceeded this. Default 0.2.",
     )
     p.add_argument(
+        "--no-outlier-refine",
+        action="store_true",
+        dest="no_outlier_refine",
+        help="Skip end-of-iteration outlier consolidation refine (window refines still use gaps only)",
+    )
+    p.add_argument(
+        "--no-shrink",
+        action="store_true",
+        dest="no_shrink",
+        help="Skip LLM shrink (group_summary and traits) after refine; no hard-truncate either",
+    )
+    p.add_argument(
         "--refine-model",
         type=str,
-        default=os.environ.get("OPENAI_REFINE_MODEL", "gpt-4o"),
-        help="Model for group_summary refine",
+        default=_model_cfg["refine_model"],
+        help="Model for refine_characteristics.txt (default: config/linkedin_sgo_pipeline.yaml → models.refine)",
     )
     p.add_argument(
         "--refine-memory-batches",
@@ -2226,8 +2466,8 @@ def main() -> None:
     p.add_argument(
         "--shrink-model",
         type=str,
-        default=os.environ.get("OPENAI_SHRINK_MODEL", "gpt-4o"),
-        help="Model for group_summary/traits shrink when limits are exceeded",
+        default=_model_cfg["shrink_model"],
+        help="Model for shrink_refinement.txt (default: config/linkedin_sgo_pipeline.yaml → models.shrink)",
     )
     p.add_argument(
         "--group-summary-max-words",
@@ -2274,9 +2514,9 @@ def main() -> None:
     p.add_argument(
         "--qual-schema-model",
         type=str,
-        default=os.environ.get("OPENAI_QUAL_SCHEMA_MODEL", "gpt-4o"),
+        default=_model_cfg["qual_schema_model"],
         dest="qual_schema_model",
-        help="Model for qualitative_summary (traits) refine + shrink",
+        help="TribeSchemaEvolver traits refine fallback (default: config → models.qual_schema)",
     )
     p.add_argument(
         "--qual-shrink-every-n-refinements",

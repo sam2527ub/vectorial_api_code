@@ -1,0 +1,20 @@
+# Copy to ground_truth_extraction_local.yaml and edit.
+# Set env: GROUND_TRUTH_LOCAL_CONFIG=/absolute/or/repo/path/ground_truth_extraction_local.yaml
+
+# tier1 | tier2 — which path group under ``paths`` to use
+preset: tier1
+
+# Relative paths are resolved against the directory containing *this* YAML file
+paths:
+  tier1:
+    input: ../tiered_posts_grouped/contextual_stimulus_extraction.json
+    output: ../tiered_posts_grouped/ground_truth_extraction_tier1.json
+    mapping: ../tiered_posts_grouped/discovered_category_topic_mapping.json
+  tier2:
+    input: ../tiered_posts_grouped/contextual_stimulus_extraction_tier2.json
+    output: ../tiered_posts_grouped/ground_truth_extraction_tier2.json
+    # Use category_topic_mapping.json if stimulus was labeled with room taxonomy; else discovered_category_topic_mapping_tier2.json
+    mapping: ../tiered_posts_grouped/category_topic_mapping.json
+
+# Optional: max_concurrent_llm, max_concurrent_posts, model, max_posts_to_classify
+overrides: {}

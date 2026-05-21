@@ -1,0 +1,16 @@
+Category (for context only; topics are already chosen for this category): {category}
+
+Ordered topics (index 0 = first array element in your answer):
+{topics_numbered}
+
+Post body:
+---
+{post_text}
+---
+
+Return exactly this JSON shape (and nothing else):
+{{
+  "present": ["yes" or "no", ...]
+}}
+
+The "present" array MUST have length {n_topics} — the i-th entry corresponds to topic index i above. Each value must be lowercase "yes" or "no" only.

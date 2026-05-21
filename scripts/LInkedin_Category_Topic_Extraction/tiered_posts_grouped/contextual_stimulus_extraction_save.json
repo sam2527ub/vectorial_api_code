@@ -1,0 +1,337 @@
+{
+  "room_id": "91cd222b-8cc9-4ee4-bf06-c5e9ed2f6f74",
+  "source_file": "tier_1_authored_cleaned.json",
+  "results_by_user": {
+    "00a93ac9-ae3c-40a4-95fa-1f565d6f7411": {
+      "profile_info": {
+        "occupation": "Senior Software Engineer | Ex-Qualcomm | UCLA Alumni"
+      },
+      "posts": [
+        {
+          "post_id": "00a93ac9-ae3c-40a4-95fa-1f565d6f7411_1",
+          "body_text": "Fantastic announcement at #MSIgnite today \nMicrosoft's #MAIA100 AI Accelerator will power some of the largest AI workloads running on #MicrosoftAzure\nKudos to the entire team for the immense efforts put into this project",
+          "stimulus": "Corporate announcements related to technology",
+          "category": "Technical Expertise and Capabilities"
+        },
+        {
+          "post_id": "00a93ac9-ae3c-40a4-95fa-1f565d6f7411_2",
+          "body_text": "Interesting article about how AI is changing the computer industry! #MIT #AI #DeepLearning #TPUs #NeuralNetworks",
+          "stimulus": "Articles and discussions on technological advancements",
+          "category": "Technical Expertise and Capabilities"
+        },
+        {
+          "post_id": "00a93ac9-ae3c-40a4-95fa-1f565d6f7411_3",
+          "body_text": "A pivotal news about creation of 'The PyTorch Foundation' was announced this week!\nThis will immensely help the ever increasing community of open source developers in the field of ML/AI! #Pytorch #LinuxFoundation #opensource #ML #AI #SoftwareDevelopers",
+          "stimulus": "Industry news in open source technology",
+          "category": "Organizational and Leadership Dynamics"
+        },
+        {
+          "post_id": "00a93ac9-ae3c-40a4-95fa-1f565d6f7411_4",
+          "body_text": "Great to see Qualcomm getting the recognition of Best Places to Work in 2022! #Glassdoor #TeamQualcomm #5G",
+          "stimulus": "Recognition of companies in the workplace",
+          "category": "Values and Motivations"
+        },
+        {
+          "post_id": "00a93ac9-ae3c-40a4-95fa-1f565d6f7411_5",
+          "body_text": "Number1 public university for 5 years in row!\nProud to be a Bruin #UCLA #almamater #GoBruins #university",
+          "stimulus": "Achievements in higher education",
+          "category": "Values and Motivations"
+        },
+        {
+          "post_id": "00a93ac9-ae3c-40a4-95fa-1f565d6f7411_6",
+          "body_text": "For those who were wondering if the '5G E' on their ATT phone is real 5G...",
+          "stimulus": "Telecommunication technology discussion",
+          "category": "Challenges and Pain Points"
+        }
+      ]
+    },
+    "12707bb7-7e48-4c4e-b690-84fd28843105": {
+      "profile_info": {
+        "occupation": "Principal SWE @ Microsoft CoreAI"
+      },
+      "posts": [
+        {
+          "post_id": "12707bb7-7e48-4c4e-b690-84fd28843105_1",
+          "body_text": "This writeup describes a side project trying out VILA, Llama 3, and Whisper to generate offline summaries of viral videos from social media. These are all downloadable models - they can run locally on some gaming computers.",
+          "stimulus": "AI models and applications",
+          "category": "Technical Expertise and Capabilities"
+        },
+        {
+          "post_id": "12707bb7-7e48-4c4e-b690-84fd28843105_2",
+          "body_text": "After learning about Wordle, I made a version for my mother tongue Punjabi. This required some interesting changes to gameplay, so I wrote about them. You can find the game & article here: \n\n#motherlanguageday #punjabi #wordle",
+          "stimulus": "Word games in different languages",
+          "category": "Working and Learning Styles"
+        },
+        {
+          "post_id": "12707bb7-7e48-4c4e-b690-84fd28843105_3",
+          "body_text": "Last week our team released Accessibility Insights, a set of free & open-source tools that can help find accessibility issues in websites & desktop applications. It's an exciting milestone for us; if you are curious, feel free to try it out and contribute at",
+          "stimulus": "Software tools for accessibility",
+          "category": "Technical Expertise and Capabilities"
+        }
+      ]
+    },
+    "1db61e77-786d-4d4c-94e0-4dcc221af20b": {
+      "profile_info": {
+        "occupation": "Founder, CodingRippler | Helped 20+ businesses build the tech they needed"
+      },
+      "posts": [
+        {
+          "post_id": "1db61e77-786d-4d4c-94e0-4dcc221af20b_1",
+          "body_text": "Just like Holi brings together many colors, building great products and businesses requires diverse ideas and collaboration.\n\nGrateful for the clients, partners, and team members who add color to this journey.\n\nWishing everyone a joyful and successful Holi! \n#HappyHoli #Entrepreneurship #BuildingTogether",
+          "stimulus": "Cultural celebration and collaboration",
+          "category": "Values and Motivations"
+        },
+        {
+          "post_id": "1db61e77-786d-4d4c-94e0-4dcc221af20b_2",
+          "body_text": "AI tools aren't the edge.\n\nThe instructions are.\n\nEveryone has access to the same AI tools now.\n\nWhat makes the difference is how you instruct them.\n\nAt CodingRippler, we're heavily investing in building scenario-based instructions for our engineering team.\n\n→ Check this before delivery\n→ Flag this if it breaks\n→ Don't miss this\n\nAI runs through them. Every time.\n\nThe tool didn't change. The way we use it did.\n\nFaster delivery. Consistent quality.\n\nIf you've been waiting to build because \"agencies cost too much\" that's changed.\n\n \n\n#AI #Startup #Founder #Entrepreneur #SmallBusiness #Agency",
+          "stimulus": "Use of AI tools in engineering",
+          "category": "Technical Expertise and Capabilities"
+        },
+        {
+          "post_id": "1db61e77-786d-4d4c-94e0-4dcc221af20b_3",
+          "body_text": "This came up in a recent project we worked on.\n\nA business owner was dealing with THOUSANDS of new records every day for cold email campaigns.\n\nOut of that, they needed to reliably SHORT-LIST THE TOP 600 RELEVANT PROSPECTS before outreach went live.\n\nThey asked AI to do the filtering.\n\nTHE PROBLEM WASN’T SPEED.\nIT WAS CONSISTENCY.\n\nSome days the AI selected 580 records.\nOther days it crossed 700.\n\nOccasionally, it surfaced leads that clearly didn’t match previous campaigns.\n\nSAME DATA.\nSAME SETUP.\nDIFFERENT RESULTS.\n\nThat’s where AI quietly becomes a BUSINESS RISK.\n\nTheir first instinct was to switch models, add more examples, or manually double-check the output.\n\nInstead, we paused and looked at the task itself.\n\nThe AI wasn’t failing because it lacked intelligence.\nIt was failing because it wasn’t given CLEAR RESPONSIBILITY.\n\nIt didn’t know:\n\n → what must be excluded\n → which criteria mattered more\n → how to behave when the data didn’t clearly fit\n\nOnce those boundaries were defined, the output stabilized.\n\nNOT BECAUSE THE AI GOT SMARTER,\nBUT BECAUSE THE DECISION WAS FINALLY WELL-SCOPED.\n\nWhen AI is used for REPEATABLE BUSINESS DECISIONS,\nRELIABILITY MATTERS MORE THAN CREATIVITY.\n\nIf this sounds familiar, COMMENT “AI” and I’ll connect to understand what kind of inconsistency you’re seeing.\n\n#AIinBusiness #ArtificialIntelligence #BusinessAutomation \n#Founders #Entrepreneurship #SalesOperations #GoToMarket",
+          "stimulus": "AI implementation challenges in businesses",
+          "category": "Challenges and Pain Points"
+        },
+        {
+          "post_id": "1db61e77-786d-4d4c-94e0-4dcc221af20b_4",
+          "body_text": "Last week I spoke with a few LinkedIn members who reached out.\n\nHere's what I discovered:\n\n→ I'm juggling multiple spreadsheets. Data is everywhere. Nothing talks to each other unless I step in.\n\n→ I feel stuck. Is there a way to fix this?\n\nI suggested something simple.\n\nConnect the sheets. Let AI handle the juggling.\n\nCost? Around $30/month.\n\nIf spreadsheets are eating your time too, let's talk.\n\n \n\n#SmallBusiness #BusinessOwner #Entrepreneur #WorkSmarter #Productivity #BusinessTips",
+          "stimulus": "Management of data across platforms",
+          "category": "Organizational and Leadership Dynamics"
+        },
+        {
+          "post_id": "1db61e77-786d-4d4c-94e0-4dcc221af20b_5",
+          "body_text": "You’ve probably already validated this with AI.\n\nIt sounds right. \nIt looks reasonable. \nIt even feels convincing.\n\nAnd that’s exactly why this stage is risky \nbefore engineering decisions get locked in.\n\nAI is great at giving confident answers. \nIt doesn’t show you what breaks if it’s wrong \nor how expensive that mistake could become later.\n\nI stay close to technical challenges almost every day.\n\nThat means seeing \nwhere plans hold up, \nwhere assumptions fall apart, \nand where complexity quietly creeps in.\n\nBefore anything gets locked in, \nI spend time talking with founders \nto keep a human perspective in the loop \nbefore engineering decisions are made.\n\nThis isn’t about execution. \nIt’s about judgment before commitment.\n\nDM me and we’ll break it down.\n\n#founders #entrepreneurship #startuplife #businessdecisions #productstrategy #techstrategy #scalingbusiness",
+          "stimulus": "Decision-making processes in engineering",
+          "category": "Values and Motivations"
+        },
+        {
+          "post_id": "1db61e77-786d-4d4c-94e0-4dcc221af20b_6",
+          "body_text": "You know you have a strong idea.\nEspecially in this AI era.\n\nThe possibilities feel endless.\n\nAnd that’s exactly what makes this stage tricky.\n\nBecause today, \neveryone sounds confident. \nEveryone sounds like they can help you figure it out.\n\nWhat you really want to avoid \nis moving forward with the wrong build plan \nand realizing later that it was an expensive mistake.\n\nBefore committing time, money, or momentum, \nI spend time thinking with founders \nabout their idea, \ntheir real pain points, \nand what kind of build plan \nactually makes sense right now.\n\nJust a structured conversation \nto bring clarity to the path ahead. \nNothing more.\n\nDM me and we’ll break it down.\n\n#founders #entrepreneurship #startuplife #productstrategy #businessdecisions #techstrategy #scalingbusiness",
+          "stimulus": "Early stages of idea validation",
+          "category": "Working and Learning Styles"
+        }
+      ]
+    },
+    "22288d07-4cdf-4ea0-8242-70c9e9426b58": {
+      "profile_info": {
+        "occupation": "Senior Software Engineer at Microsoft"
+      },
+      "posts": []
+    },
+    "2c0dd0f9-7978-435b-904e-2f53704ad828": {
+      "profile_info": {
+        "occupation": "Software Engineering| Software Development| Technical Design and Architecture| Testing and Quality Assurance| Technical Support| System Testing"
+      },
+      "posts": []
+    },
+    "2d60701b-70df-4c28-877a-eadcf31eca3f": {
+      "profile_info": {
+        "occupation": "Software Engineer at Microsoft"
+      },
+      "posts": []
+    },
+    "2e4a00af-909d-4ee2-9aa6-52eee25d18e9": {
+      "profile_info": {
+        "occupation": "Senior Software Engineer at Microsoft"
+      },
+      "posts": []
+    },
+    "30e90503-bef8-4da2-8ffb-f47487b0e1de": {
+      "profile_info": {
+        "occupation": "Software Engineer"
+      },
+      "posts": []
+    },
+    "313325f0-0334-45f7-93b3-e65adcc597e9": {
+      "profile_info": {
+        "occupation": "Software Development Engineer 2 (SDE) at Microsoft"
+      },
+      "posts": []
+    },
+    "3347a9f3-5493-4be8-9df0-f0e7663bc6dd": {
+      "profile_info": {
+        "occupation": "Principal Software Engineer at Microsoft"
+      },
+      "posts": []
+    },
+    "351405ab-deb1-45b5-810c-d32798c95f40": {
+      "profile_info": {
+        "occupation": "Ordinary human"
+      },
+      "posts": []
+    },
+    "3a0a7529-16a1-48d1-b987-c60e4260ad46": {
+      "profile_info": {
+        "occupation": "Principal Software Engineer Lead - Istio TOC"
+      },
+      "posts": []
+    },
+    "493cb77a-819e-4e20-9364-2cf9c5b733a6": {
+      "profile_info": {
+        "occupation": "Senior Software Engineer | GenAI Evaluation Platform @ Microsoft"
+      },
+      "posts": []
+    },
+    "54c19b05-7985-47be-b2f2-6a2f8360cf89": {
+      "profile_info": {
+        "occupation": "Software Engineer at Microsoft"
+      },
+      "posts": []
+    },
+    "56d7e3b2-8a5b-4647-ada8-33898383fad8": {
+      "profile_info": {
+        "occupation": "Software Engineer 2 at Microsoft"
+      },
+      "posts": []
+    },
+    "583f07ae-71cc-42ed-982b-67b6c6d6a3ff": {
+      "profile_info": {
+        "occupation": "Senior Software Engineer at Microsoft"
+      },
+      "posts": []
+    },
+    "5b792818-ac34-4256-97f8-cdce43bde7f0": {
+      "profile_info": {
+        "occupation": "Senior software engineer (SDE-III) at Microsoft | Ex-Adobe | Ex-Amazon"
+      },
+      "posts": []
+    },
+    "6217bbbb-06c5-4c5d-b3a1-f30fb9a169bd": {
+      "profile_info": {
+        "occupation": "Software Engineer at Microsoft"
+      },
+      "posts": []
+    },
+    "6629981a-f60d-452c-b773-9adfa0827259": {
+      "profile_info": {
+        "occupation": "Senior Software Engineer | C++ | Database Internals | 19+ years exp | Postgres | MySQL | Rust"
+      },
+      "posts": []
+    },
+    "7333df73-63cf-4f92-b724-caefc9171b63": {
+      "profile_info": {
+        "occupation": "Software Engineer"
+      },
+      "posts": []
+    },
+    "77a8e5f8-0a16-456a-a634-c30cecdf356b": {
+      "profile_info": {
+        "occupation": "SWE-2 @ Microsoft | Windows AI"
+      },
+      "posts": []
+    },
+    "86d688ad-1e09-4343-a4cc-ce318bf1b00d": {
+      "profile_info": {
+        "occupation": "Principal High-Performance Computing Backend Network Engineer"
+      },
+      "posts": []
+    },
+    "8774ee3b-19ab-45ca-8197-b68720c4b1b8": {
+      "profile_info": {
+        "occupation": "Principal Software Engineer Manager at Microsoft"
+      },
+      "posts": []
+    },
+    "881ba53e-5c01-4ae4-bc09-59d059c315a5": {
+      "profile_info": {
+        "occupation": "Software Engineer III at Microsoft | AI Engineer | Product Engineer | Python, C#, GenAI , Cloud Computing, Backend & Data Engineering"
+      },
+      "posts": []
+    },
+    "937353b2-546c-41e3-ae57-4b7507de8a1d": {
+      "profile_info": {
+        "occupation": "Software Engineer @Xbox | TEDx Speaker | Tech Enthusiast | Maker | Adventurer | Mentor | Polymath"
+      },
+      "posts": []
+    },
+    "97d44170-c93f-48f4-b33f-c5655fb0bfcb": {
+      "profile_info": {
+        "occupation": "Senior Strategic Client Advisor – Agentic AI | DevX | Governance | Software"
+      },
+      "posts": []
+    },
+    "9d0711b8-17ae-44cc-adbd-f2e39f25571b": {
+      "profile_info": {
+        "occupation": "Engineering | Systems and Software Design | Networking Software | Microsoft | Co-founder and Advisor @Vahati for Women in STEM Empowerment"
+      },
+      "posts": []
+    },
+    "a9f99660-2db6-4851-a76e-61fc5c205a53": {
+      "profile_info": {
+        "occupation": "Senior Software Engineer | Design Systems, UI Platforms & Developer Experience @ Microsoft"
+      },
+      "posts": []
+    },
+    "ab1fb966-d14e-4639-b504-00f7b6f9084b": {
+      "profile_info": {
+        "occupation": "Principal Software Engineer @ Microsoft| Leading Edge AI & Cloud Transformational Solutions | Brazil Community Lead @The WIT Network"
+      },
+      "posts": []
+    },
+    "ab9d0a34-906e-4d05-9992-ae4fbd70cd87": {
+      "profile_info": {
+        "occupation": "Software Engineer at Microsoft"
+      },
+      "posts": []
+    },
+    "b897cdbe-ca1b-40fe-b087-ef4c1958425c": {
+      "profile_info": {
+        "occupation": "Senior Software Engineer at Microsoft"
+      },
+      "posts": []
+    },
+    "c788cdc0-2b0a-4a32-bf4e-de67621560ce": {
+      "profile_info": {
+        "occupation": "Senior Software Professional"
+      },
+      "posts": []
+    },
+    "c802671d-8fd2-4a18-8fe8-689b72f7c268": {
+      "profile_info": {
+        "occupation": "Senior Software Engineer at Microsoft | Responsible and Ethical AI Advocate | D&I | Holistic Health"
+      },
+      "posts": []
+    },
+    "dc0b5d74-87d9-4fe3-8883-aef9d0924114": {
+      "profile_info": {
+        "occupation": "SAP S/4 HANA Finance & Controlling | Project Systems Consultant || Software Engineer @ Microsoft"
+      },
+      "posts": []
+    },
+    "df5fe5a4-2fa7-4dd8-8dde-f0adf9fdef6e": {
+      "profile_info": {
+        "occupation": "Senior Software Developer at Microsoft"
+      },
+      "posts": []
+    },
+    "e8e645ed-2c14-4a7e-ac8f-e42993ae794a": {
+      "profile_info": {
+        "occupation": "Senior Software Engineer at Microsoft"
+      },
+      "posts": []
+    },
+    "e9e811b0-6759-473a-aed2-8a84e5566a8c": {
+      "profile_info": {
+        "occupation": "Software Engineer @ Microsoft"
+      },
+      "posts": []
+    },
+    "f20ab826-b48b-42cf-be34-de640b4befa1": {
+      "profile_info": {
+        "occupation": "Principal Software Engineering Manager at Microsoft"
+      },
+      "posts": []
+    },
+    "fa8cec49-9e7b-44e2-b2ce-7b6a324697f1": {
+      "profile_info": {
+        "occupation": "Senior Software Engineer | Technical lead for Engineering Systems | C++ | C# | Release Manager | AI practitioner | Master’s in Software Engineering"
+      },
+      "posts": []
+    }
+  },
+  "total_posts_processed": 15,
+  "total_prompt_tokens": 3484,
+  "total_completion_tokens": 717,
+  "cost_usd": 0.000953
+}

@@ -14,13 +14,13 @@ output: ""
 
 model_type_used: linkedin_tier1_delta_method
 
-gen_model: gpt-4o-mini
+gen_model: o3
 topic_model: gpt-4o-mini
 delta_model: gpt-4o-mini
-linkedin_root_cause_model: ""
-refine_model: gpt-4o
-shrink_model: gpt-4o
-qual_schema_model: gpt-4o
+linkedin_root_cause_model: o3
+refine_model: o3
+shrink_model: o3
+qual_schema_model: o3
 
 concurrent: 8
 max_posts: 0
