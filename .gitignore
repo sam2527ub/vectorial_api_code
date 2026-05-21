@@ -42,6 +42,9 @@ apps/
 reddit-vercel-worflow/
 
 .vercel
-# Local script trees (removed from remote; keep on disk only)
-scripts/LInkedin_Category_Topic_Extraction/
+
+# Local LinkedIn / SGO script trees (large data + experiments; keep on disk only)
 scripts/scripts_sgo/
+scripts/Linkedin_Posts_Extraction/
+scripts/LInkedin_Category_Topic_Extraction/
+scripts/Linkedin_Category_Topic_Extraction/
