@@ -575,6 +575,33 @@ def memory_batch_iteration_number(batch_key: str) -> Optional[int]:
     return None
 
 
+def _format_one_refine_gap_block(g: Dict[str, Any], *, cap: int) -> List[str]:
+    """Gap fields only (for ``refine_characteristics.txt``) — no batch/post metadata."""
+    gap_txt = str(g.get("behavioral_gap") or g.get("behavior") or "").strip()
+    if len(gap_txt) > cap:
+        gap_txt = gap_txt[: cap - 3].rstrip() + "..."
+    if len(gap_txt) < 8:
+        return []
+    conf = _normalize_confidence_label(g.get("confidence"))
+    ev = str(g.get("evidence") or "").strip()
+    nuance_raw = g.get("missing_nuance")
+    nuance = ""
+    if nuance_raw is not None and str(nuance_raw).strip().lower() not in ("", "null", "none"):
+        nuance = str(nuance_raw).strip()
+        if len(nuance) > cap:
+            nuance = nuance[: cap - 3].rstrip() + "..."
+    in_ctx = g.get("exists_in_context")
+    block = [
+        "gap:",
+        f"  behavioral_gap: {gap_txt}",
+        f"  missing_nuance: {nuance if nuance else 'null'}",
+        f"  evidence: {ev if ev else 'n/a'}",
+        f"  confidence: {conf or 'LOW'}",
+        f"  exists_in_context: {'true' if _normalize_bool_field(in_ctx) else 'false'}",
+    ]
+    return block
+
+
 def format_memory_batch_entry_lines(
     batch_key: str,
     data: Dict[str, Any],
@@ -583,16 +610,36 @@ def format_memory_batch_entry_lines(
     include_gaps: bool = True,
     include_outliers: bool = True,
     include_gap_metadata: bool = True,
+    refine_gaps_only: bool = False,
 ) -> List[str]:
-    """Human-readable lines for one ``memory/batch_analyses.json`` batch entry."""
+    """Human-readable lines for one ``memory/batch_analyses.json`` entry (``gaps[]`` / ``outliers[]``)."""
     cap = max(400, int(max_chars_per_line))
+    revs = data.get("reviews")
+    if revs is None:
+        revs = data.get("post_ids") or []
+
+    gaps = data.get("gaps") or []
+    if not gaps and (data.get("patterns") or data.get("outliers") or data.get("analyses")):
+        gaps = _legacy_patterns_to_gaps(data, batch_size=max(1, len(revs) if isinstance(revs, list) else 1))
+
+    if refine_gaps_only:
+        if not (include_gaps and gaps):
+            return []
+        lines: List[str] = []
+        for i, g in enumerate(gaps):
+            if not isinstance(g, dict):
+                continue
+            block = _format_one_refine_gap_block(g, cap=cap)
+            if block:
+                if i > 0:
+                    lines.append("")
+                lines.extend(block)
+        return lines
+
     lines: List[str] = [f"--- {batch_key} ---"]
     cat = (data.get("category") or "").strip()
     if cat:
         lines.append(f"category: {cat}")
-    revs = data.get("reviews")
-    if revs is None:
-        revs = data.get("post_ids") or []
     if revs:
         lines.append("reviews: " + ", ".join(str(x) for x in revs))
 
@@ -610,10 +657,6 @@ def format_memory_batch_entry_lines(
             t = str(c or "").strip()
             if t:
                 lines.append(f"- {t}")
-
-    gaps = data.get("gaps") or []
-    if not gaps and (data.get("patterns") or data.get("outliers") or data.get("analyses")):
-        gaps = _legacy_patterns_to_gaps(data, batch_size=max(1, len(revs) if isinstance(revs, list) else 1))
 
     if include_gaps and gaps:
         lines.append("gaps:")

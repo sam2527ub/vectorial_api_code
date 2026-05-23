@@ -20,6 +20,26 @@ database_retry:
 
 linkedin_sgo_async:
   process_trigger_timeout_s: 120
+  # Mark PROCESSING jobs FAILED when heartbeat is older than this (seconds).
+  processing_stale_timeout_s: 7200
+  webhook_max_attempts: 5
+  webhook_initial_backoff_s: 2.0
+
+# AWS ECS Fargate worker for long-running LinkedIn SGO (no Vercel timeout).
+# Secrets (AWS keys, webhook secret) stay in .env. Override via env: SGO_FARGATE_ECS_CLUSTER, etc.
+sgo_fargate:
+  enabled: false
+  ecs_cluster: ""
+  task_definition: ""
+  container_name: "sgo-python-container"
+  launch_type: "FARGATE"
+  assign_public_ip: true
+  subnet_ids: []
+  security_group_ids: []
+  task_role_arn: ""
+  execution_role_arn: ""
+  webhook_path: "/api/v1/sgo/fargate/webhook"
+  max_chunk_iterations: 64
 
 # Repo-relative paths for pipeline YAML (resolved from repository root). Env vars still win per service when set.
 pipeline_config_files:

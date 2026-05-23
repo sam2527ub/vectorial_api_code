@@ -22,9 +22,26 @@ from app.services.linkedin_room_pipeline_async import (
 from app.services.linkedin_room_pipeline_async.workflow_orchestration import (
     build_process_chunk_response,
 )
+from app.services.sgo_fargate import (
+    SgoFargateLaunchError,
+    fargate_is_configured,
+    start_linkedin_sgo_on_fargate,
+)
+from app.services.sgo_fargate.fargate_launcher import build_fargate_trigger_result
 from app.services.user_profile_summarization_service.utils import get_base_url
 
 router = APIRouter()
+
+
+class _SgoAsyncBody(BaseModel):
+    """Optional JSON body for SGO async trigger (Fargate + workflow)."""
+
+    model_config = ConfigDict(extra="ignore")
+
+    workflowResumeUrl: Optional[str] = Field(
+        default=None,
+        description="When using externalWorker=fargate, POST callback URL when training completes.",
+    )
 
 
 class _GroundTruthTiersBody(BaseModel):
@@ -673,18 +690,65 @@ async def linkedin_sgo_pipeline_async(
         False,
         description="When true, do not auto-trigger /async/process; Vercel Workflow chains chunks.",
     ),
+    externalWorker: Optional[str] = Query(
+        None,
+        description="Set to 'fargate' to run SGO on AWS ECS instead of Vercel serverless chunks.",
+    ),
+    notifyWebhook: bool = Query(
+        False,
+        description="With externalWorker=fargate: POST webhook on completion (default poll-only).",
+    ),
+    body: Optional[_SgoAsyncBody] = Body(None),
     request: Request = None,
 ) -> dict:
     """Queue chunked LinkedIn SGO delta-method pipeline; poll linkedin-sgo-pipeline/async/status/{job_id}."""
     try:
-        out = request_handler.trigger_async_linkedin_sgo_pipeline(
-            audience_room_id=audience_room_id,
-            enterprise_name=enterpriseName,
-            model=model,
-            tier_mode=tierMode,
-            num_iterations=numIterations,
-        )
+        use_fargate = (externalWorker or "").strip().lower() == "fargate"
+        tm = (tierMode or "tier1").strip().lower()
+        if use_fargate and tm in ("both", "all", "tier1_tier2", "tier1+tier2"):
+            out = build_fargate_trigger_result(
+                audience_room_id=audience_room_id,
+                enterprise_name=enterpriseName,
+                model=model,
+                tier_mode=tm,
+                num_iterations=numIterations,
+            )
+        else:
+            out = request_handler.trigger_async_linkedin_sgo_pipeline(
+                audience_room_id=audience_room_id,
+                enterprise_name=enterpriseName,
+                model=model,
+                tier_mode=tierMode,
+                num_iterations=numIterations,
+            )
         job_id = out["job_id"]
+        if use_fargate:
+            if not fargate_is_configured():
+                raise HTTPException(
+                    status_code=503,
+                    detail="externalWorker=fargate requires SGO Fargate ECS configuration.",
+                )
+            base_url = get_base_url()
+            if request:
+                try:
+                    base_url = str(request.base_url).rstrip("/")
+                except Exception:
+                    pass
+            resume_url = body.workflowResumeUrl if body else None
+            try:
+                return start_linkedin_sgo_on_fargate(
+                    trigger_result=out,
+                    audience_room_id=audience_room_id,
+                    enterprise_name=enterpriseName,
+                    model=model,
+                    base_url=base_url,
+                    workflow_resume_url=resume_url,
+                    tier_mode=tierMode,
+                    num_iterations=numIterations,
+                    notify_webhook=notifyWebhook,
+                )
+            except SgoFargateLaunchError as e:
+                raise HTTPException(status_code=500, detail=str(e)) from e
         if not workflowOrchestrated:
             base_url = get_base_url()
             if request:
@@ -764,12 +828,27 @@ async def get_linkedin_sgo_pipeline_async_status(
     ),
 ) -> dict:
     try:
-        return request_handler.get_job(
+        from app.runtime_settings import get_runtime_settings
+        from app.services.linkedin_sgo_pipeline_service_async.linkedin_sgo_job_health import (
+            maybe_mark_stale_sgo_job_failed,
+        )
+
+        job = request_handler.get_job(
             job_id,
             enterprise_name=enterpriseName,
             audience_room_id=audience_room_id,
             expected_job_type=JOB_TYPE_LINKEDIN_SGO_PIPELINE,
         )
+        if str(job.get("status") or "") == "PROCESSING":
+            job = maybe_mark_stale_sgo_job_failed(
+                job,
+                job_id=job_id,
+                enterprise_name=enterpriseName,
+                stale_timeout_s=float(
+                    get_runtime_settings().linkedin_sgo_async.processing_stale_timeout_s
+                ),
+            )
+        return job
     except HTTPException:
         raise
     except Exception as e:

@@ -12,6 +12,7 @@ import _package_setup
 
 from sgo_training.config import settings
 from sgo_training.utils.cost_tracker import track_api_call, extract_token_usage
+from utils.openai_chat_params import build_chat_completion_kwargs
 
 def process_part_a_batch(prompt, client, batch_size, required_themes=None):
     """
@@ -47,11 +48,14 @@ CRITICAL REQUIREMENTS:
                 model_to_use = settings.ANALYSIS_MODEL
             
             response = client.chat.completions.create(
-                model=model_to_use,
-                messages=[
-                    {"role": "system", "content": system_message},
-                    {"role": "user", "content": prompt}
-                ],
+                **build_chat_completion_kwargs(
+                    model_to_use,
+                    [
+                        {"role": "system", "content": system_message},
+                        {"role": "user", "content": prompt},
+                    ],
+                    json_mode=True,
+                )
             )
             
             # Track API call for cost calculation
@@ -282,26 +286,17 @@ def process_part_b_batch(prompt, client, batch_size):
             
             system_message = "You are a deep analytical expert in consumer behavior and persona psychology. Your task is root cause analysis: identify WHY predictions fail and what SPECIFIC characteristics are missing or need refinement. Your response must be a valid JSON object with an 'analyses' array containing one analysis string per review in the format `[Characteristic 1, Characteristic 2] [Root cause explanation]`."
             
-            # Check if model is gpt-5.2 (uses reasoning_effort parameter)
-            if "gpt-5.2" in model_to_use.lower():
-                # Use chat.completions.create with reasoning_effort for gpt-5.2
-                response = client.chat.completions.create(
-                    model=model_to_use,
-                    messages=[
+            response = client.chat.completions.create(
+                **build_chat_completion_kwargs(
+                    model_to_use,
+                    [
                         {"role": "system", "content": system_message},
-                        {"role": "user", "content": prompt}
+                        {"role": "user", "content": prompt},
                     ],
-                    reasoning_effort="medium"
+                    json_mode=True,
+                    reasoning_effort="medium",
                 )
-            else:
-                # Use standard chat.completions.create API for other models
-                response = client.chat.completions.create(
-                    model=model_to_use,
-                    messages=[
-                        {"role": "system", "content": system_message},
-                        {"role": "user", "content": prompt}
-                    ],
-                )
+            )
             
             # Track API call for cost calculation
             input_tokens, output_tokens, cached_tokens = extract_token_usage(response)

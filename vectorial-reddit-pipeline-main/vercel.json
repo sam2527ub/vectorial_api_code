@@ -1,0 +1,9 @@
+{
+  "buildCommand": "python -m pip install --break-system-packages -r requirements.txt",
+  "routes": [
+    {
+      "src": "/(.*)",
+      "dest": "/main.py"
+    }
+  ]
+}

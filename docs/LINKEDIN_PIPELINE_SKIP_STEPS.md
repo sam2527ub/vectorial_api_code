@@ -15,7 +15,7 @@ This API provides **run planning** based on canonical S3 outputs under
 | 4 | `stimulus` | `POST .../contextual-stimulus-categorization/async` (+ `/async/process` chunks) |
 | 5 | `ground_truth` | `POST .../ground-truth-extraction/async` (+ chunks) |
 | 6 | `initial_prediction` | `POST .../linkedin-initial-prediction/async` (+ chunks) |
-| 7 | `sgo` | `POST .../linkedin-sgo-pipeline/async` (+ chunks) |
+| 7 | `sgo` | `POST .../linkedin-sgo-pipeline/async` (+ chunks), or `?externalWorker=fargate` / `POST .../fargate/start` (AWS ECS, webhook) |
 
 ## Endpoints (Audience-workflow / vectorial-api-code)
 

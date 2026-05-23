@@ -40,6 +40,9 @@ def _resolve_model(
     if env_val:
         return env_val
     flat_map = {
+        "part_a": "gen_model",
+        "topic": "topic_model",
+        "i0": "i0_model",
         "memory_batch": "linkedin_root_cause_model",
         "refine": "refine_model",
         "shrink": "shrink_model",
@@ -80,13 +83,25 @@ def linkedin_sgo_model_defaults(*, force_reload: bool = False) -> Dict[str, str]
     """
     Model names for argparse defaults and run_all fallbacks.
 
-    Keys: ``linkedin_root_cause_model``, ``refine_model``, ``shrink_model``, ``qual_schema_model``.
+    Keys: ``gen_model``, ``topic_model``, ``i0_model``, ``linkedin_root_cause_model``,
+    ``refine_model``, ``shrink_model``, ``qual_schema_model``.
     """
     raw = load_linkedin_sgo_pipeline_config(force_reload=force_reload)
     models = raw.get("models") if isinstance(raw.get("models"), dict) else {}
     if not isinstance(models, dict):
         models = {}
+    part_a = _resolve_model("part_a", models, raw, "LINKEDIN_PART_A_MODEL")
     return {
+        "gen_model": part_a,
+        "topic_model": _resolve_model("topic", models, raw, "LINKEDIN_TOPIC_MODEL"),
+        "i0_model": _resolve_model(
+            "i0",
+            models,
+            raw,
+            "LINKEDIN_I0_MODEL",
+            fallback_key="part_a",
+            default=part_a,
+        ),
         "linkedin_root_cause_model": _resolve_model(
             "memory_batch",
             models,

@@ -15,6 +15,7 @@ from .endpoints import (
     comment_context_summary_async,
     linkedin_room_pipeline_async,
     linkedin_room_pipeline,
+    sgo_fargate,
 )
 from extra_endpoints import router as extra_endpoints_router
 
@@ -38,3 +39,4 @@ api_router.include_router(
 )  # LinkedIn pipeline step status + run plan (skip completed steps)
 api_router.include_router(comments_scrape.router)  # LinkedIn comments scrape (poll Apify, update commentsS3Url only)
 api_router.include_router(comment_context_summary_async.router)  # Async comment context summaries on LinkedIn comments.json
+api_router.include_router(sgo_fargate.router)  # LinkedIn SGO on AWS Fargate (external worker + webhook)

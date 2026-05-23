@@ -17,9 +17,13 @@ from typing import Dict, Any, Optional, List, Tuple
 from openai import OpenAI
 from openai import RateLimitError, APIError
 
+script_dir = Path(__file__).parent
+if str(script_dir) not in sys.path:
+    sys.path.insert(0, str(script_dir))
+from utils.openai_chat_params import build_chat_completion_kwargs
+
 # Try to import wandb utilities and config
 try:
-    script_dir = Path(__file__).parent
     project_root = script_dir.parent.parent.parent
     if str(project_root) not in sys.path:
         sys.path.insert(0, str(project_root))
@@ -97,24 +101,17 @@ def get_theme_logprobs_for_ground_truth(
             user_msg = f'Analyze this product review and determine if it discusses the theme "{theme}".\n\nProduct Description: {product_description}\n\nReview: "{review_text}"\n\nDoes this review discuss the theme "{theme}"?\nAnswer with ONLY "Yes" or "No".'
             
             try:
-                # Check if model uses max_completion_tokens (gpt-5) or max_tokens
-                request_params = {
-                    "model": theme_model_name,
-                    "messages": [
+                request_params = build_chat_completion_kwargs(
+                    theme_model_name,
+                    [
                         {"role": "system", "content": system_msg},
-                        {"role": "user", "content": user_msg}
+                        {"role": "user", "content": user_msg},
                     ],
-                    "temperature": 0,
-                    "logprobs": True,
-                    "top_logprobs": 20
-                }
-                
-                # Use max_completion_tokens for gpt-5 models, max_tokens for others
-                if "gpt-5" in theme_model_name.lower():
-                    request_params["max_completion_tokens"] = 5
-                else:
-                    request_params["max_tokens"] = 5
-                
+                    max_tokens=5,
+                    temperature=0,
+                    logprobs=True,
+                    top_logprobs=20,
+                )
                 response = client.chat.completions.create(**request_params)
                 
                 # Track API call for cost calculation

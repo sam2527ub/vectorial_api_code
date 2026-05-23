@@ -1,3 +1,37 @@
-# Don't ignore the generated Prisma client
-!prisma_client/
+# Local / experimental SGO run artifacts (hundreds of MB; production uses S3 workdirs)
+app/services/linkedin_sgo_pipeline_service_async/vendored_sgo/outputs/
+app/services/linkedin_sgo_pipeline_service_async/vendored_sgo/outputs_*/
 
+# Already gitignored; exclude if present on disk
+scripts/
+apps/
+Predictions/
+reddit-vercel-worflow/
+local/
+cdk/
+venv/
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+node_modules/
+
+# Vendored SGO dev artifacts (not used in production runner)
+app/services/linkedin_sgo_pipeline_service_async/vendored_sgo/**/*.orig
+app/services/linkedin_sgo_pipeline_service_async/vendored_sgo/**/*.rej
+app/services/linkedin_sgo_pipeline_service_async/vendored_sgo/**/*BACKUP*
+app/services/linkedin_sgo_pipeline_service_async/vendored_sgo/**/Untitled
+
+# Not needed at runtime on Vercel
+tests/
+docs/
+migrations/
+extra_endpoints/
+deploy-aws.sh
+Dockerfile
+VERCEL_SETUP.md
+**/VERCEL_SETUP.md
+
+# Don't ignore the generated Prisma client (must stay last)
+!prisma_client/
+!prisma/prisma_client/

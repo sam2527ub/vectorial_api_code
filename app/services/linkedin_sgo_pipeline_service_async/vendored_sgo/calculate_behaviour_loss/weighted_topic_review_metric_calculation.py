@@ -1,27 +1,8 @@
+from scipy.spatial.distance import cosine
+from scipy.stats import entropy
 import numpy as np
 
 EPSILON = 1e-10
-
-
-def _kl_divergence_base2(p: np.ndarray, q: np.ndarray) -> float:
-    """KL(P||Q) with log base 2 (same as ``scipy.stats.entropy(p, q, base=2)``)."""
-    p = np.asarray(p, dtype=np.float64)
-    q = np.asarray(q, dtype=np.float64)
-    mask = p > 0
-    if not np.any(mask):
-        return 0.0
-    return float(np.sum(p[mask] * np.log2(p[mask] / q[mask])))
-
-
-def _cosine_distance(u, v) -> float:
-    """Cosine distance (same as ``scipy.spatial.distance.cosine``)."""
-    a = np.asarray(u, dtype=np.float64)
-    b = np.asarray(v, dtype=np.float64)
-    na = float(np.linalg.norm(a))
-    nb = float(np.linalg.norm(b))
-    if na == 0.0 or nb == 0.0:
-        return 0.0
-    return float(1.0 - np.dot(a, b) / (na * nb))
 
 def calculate_jsd(predicted_dist: dict, actual_dist: dict, all_themes: list = None) -> float:
     """
@@ -100,7 +81,7 @@ def calculate_jsd(predicted_dist: dict, actual_dist: dict, all_themes: list = No
     return float(jsd)
 
 def calculate_text_delta(embedding1, embedding2):
-    return _cosine_distance(embedding1, embedding2)
+    return cosine(embedding1, embedding2)
 
 def calculate_theme_delta(predicted_themes, actual_themes):
     if not actual_themes: return 0.0

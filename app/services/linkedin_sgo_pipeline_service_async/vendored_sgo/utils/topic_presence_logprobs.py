@@ -15,14 +15,11 @@ from typing import Any, Callable, Dict, List, Optional, Tuple
 
 from openai import AsyncOpenAI
 
+from utils.openai_chat_params import build_chat_completion_kwargs, model_supports_logprobs
+
 logger = logging.getLogger(__name__)
 
 _LP_FALLBACK = -10.0
-
-
-def model_supports_logprobs(model_name: str) -> bool:
-    m = model_name.lower()
-    return any(x in m for x in ("gpt-4", "gpt-3.5", "gpt-4o", "gpt-4-turbo", "gpt-oss", "oss"))
 
 
 def softmax_over_logprob_yes(
@@ -160,16 +157,18 @@ async def get_topic_logprobs(
                 if model_supports_logprobs(model):
                     try:
                         response = await client.chat.completions.create(
-                            model=model,
-                            messages=[
-                                {"role": "system", "content": system_msg},
-                                {"role": "user", "content": user_msg},
-                            ],
-                            max_tokens=5,
-                            temperature=0,
-                            logprobs=True,
-                            top_logprobs=5,
-                            timeout=90.0,
+                            **build_chat_completion_kwargs(
+                                model,
+                                [
+                                    {"role": "system", "content": system_msg},
+                                    {"role": "user", "content": user_msg},
+                                ],
+                                max_tokens=5,
+                                temperature=0,
+                                logprobs=True,
+                                top_logprobs=5,
+                                timeout=90.0,
+                            )
                         )
                         ch = response.choices[0]
                         logprobs_data = getattr(ch, "logprobs", None)
@@ -189,14 +188,16 @@ async def get_topic_logprobs(
                         err_s = str(logprob_error).lower()
                         if "logprob" in err_s or "403" in err_s:
                             response = await client.chat.completions.create(
-                                model=model,
-                                messages=[
-                                    {"role": "system", "content": system_msg},
-                                    {"role": "user", "content": user_msg},
-                                ],
-                                max_tokens=5,
-                                temperature=0,
-                                timeout=90.0,
+                                **build_chat_completion_kwargs(
+                                    model,
+                                    [
+                                        {"role": "system", "content": system_msg},
+                                        {"role": "user", "content": user_msg},
+                                    ],
+                                    max_tokens=5,
+                                    temperature=0,
+                                    timeout=90.0,
+                                )
                             )
                             answer_text = (response.choices[0].message.content or "").strip().lower()
                             is_yes = "yes" in answer_text or answer_text.startswith("y")
@@ -214,14 +215,16 @@ async def get_topic_logprobs(
                         raise
                 else:
                     response = await client.chat.completions.create(
-                        model=model,
-                        messages=[
-                            {"role": "system", "content": system_msg},
-                            {"role": "user", "content": user_msg},
-                        ],
-                        max_tokens=5,
-                        temperature=0,
-                        timeout=90.0,
+                        **build_chat_completion_kwargs(
+                            model,
+                            [
+                                {"role": "system", "content": system_msg},
+                                {"role": "user", "content": user_msg},
+                            ],
+                            max_tokens=5,
+                            temperature=0,
+                            timeout=90.0,
+                        )
                     )
                     answer_text = (response.choices[0].message.content or "").strip().lower()
                     is_yes = "yes" in answer_text or answer_text.startswith("y")

@@ -58,9 +58,11 @@ from calculate_behaviour_loss.weighted_topic_review_metric_calculation import (
 from sgo_training.config import settings
 from utils import io_utils, journey_utils
 from utils.contextual_payload import load_contextual_payload
+from utils.openai_chat_params import build_chat_completion_kwargs, is_gpt5_family
 from utils.topic_presence_logprobs import process_single_post
 
 from linkedin.i0_audience_room_helpers import (
+    _parse_llm_json_object,
     build_prediction_snapshot_for_memory,
     resolve_failed_prediction_for_memory_batch,
     run_audience_room_i0_for_post,
@@ -1355,6 +1357,49 @@ def resolve_workdir_evolution_paths(work_dir: Path) -> Tuple[Path, Path]:
     return state_new, hist_new
 
 
+def ensure_evolution_state_from_seed_json(
+    work_dir: Path,
+    seed_json: Path,
+    *,
+    force: bool = False,
+) -> None:
+    """
+    Copy an external ``evolution_state.json`` into ``<work_dir>/evolution/`` when the work-dir
+    state is missing, or when ``force=True`` (overwrites existing state).
+    """
+    dest, _ = resolve_workdir_evolution_paths(work_dir)
+    if dest.is_file() and not force:
+        return
+    src = Path(seed_json).expanduser().resolve()
+    if not src.is_file():
+        raise FileNotFoundError(f"seed evolution state not found: {src}")
+    dest.parent.mkdir(parents=True, exist_ok=True)
+    shutil.copy2(src, dest)
+    logger.info("[STATE] Seeded evolution state from %s -> %s", src, dest)
+
+
+def ensure_tier2_evolution_baseline_from_tier1_workdir(
+    tier2_work_dir: Path,
+    tier1_work_dir: Path,
+) -> None:
+    """
+    When starting tier 2, copy tier 1's latest ``evolution/evolution_state.json`` into the tier-2
+    work directory if tier 2 has no state file yet.
+    """
+    dest, _ = resolve_workdir_evolution_paths(tier2_work_dir)
+    if dest.is_file():
+        return
+    src, _ = resolve_workdir_evolution_paths(Path(tier1_work_dir))
+    if not src.is_file():
+        raise FileNotFoundError(
+            "Tier-2 seeding requires tier-1 evolution state at "
+            f"{src}; run tier 1 first or pass a valid tier1_evolution_work_dir."
+        )
+    dest.parent.mkdir(parents=True, exist_ok=True)
+    shutil.copy2(src, dest)
+    logger.info("[TIER2] Seeded evolution state from tier-1 work dir: %s -> %s", src, dest)
+
+
 def append_evolution_state_snapshot(
     history_dir: Path,
     state: Dict[str, Any],
@@ -1399,8 +1444,17 @@ def _int_env(name: str, default: int) -> int:
         return default
 
 
-REFINE_ANALYSIS_LINE_MAX_CHARS = _int_env("REFINE_ANALYSIS_LINE_MAX_CHARS", 2800)
-REFINE_ANALYSES_BLOB_MAX_CHARS = _int_env("REFINE_ANALYSES_BLOB_MAX_CHARS", 62000)
+REFINE_GAP_LINE_MAX_CHARS = _int_env(
+    "REFINE_GAP_LINE_MAX_CHARS",
+    _int_env("REFINE_ANALYSIS_LINE_MAX_CHARS", 2800),
+)
+REFINE_ERROR_LOGS_BLOB_MAX_CHARS = _int_env(
+    "REFINE_ERROR_LOGS_BLOB_MAX_CHARS",
+    _int_env("REFINE_ANALYSES_BLOB_MAX_CHARS", 62000),
+)
+# Backward-compatible aliases (deprecated env names)
+REFINE_ANALYSIS_LINE_MAX_CHARS = REFINE_GAP_LINE_MAX_CHARS
+REFINE_ANALYSES_BLOB_MAX_CHARS = REFINE_ERROR_LOGS_BLOB_MAX_CHARS
 
 
 def _truncate_for_refine_prompt(text: str, max_len: int, *, what: str) -> str:
@@ -1419,17 +1473,19 @@ def _truncate_for_refine_prompt(text: str, max_len: int, *, what: str) -> str:
 def format_batch_logs_for_prompt(
     batch_logs: Dict[str, Any],
     *,
-    max_chars_per_analysis: int = REFINE_ANALYSIS_LINE_MAX_CHARS,
+    max_chars_per_analysis: int = REFINE_GAP_LINE_MAX_CHARS,
     include_gaps: bool = True,
     include_outliers: bool = False,
     include_gap_metadata: bool = True,
+    refine_gaps_only: bool = False,
 ) -> str:
     """
     Human-readable blob for refine prompts. Expects memory entries with
     ``gaps`` (Part B) or legacy ``patterns`` / ``outliers`` / per-post ``analyses``.
 
-    Window refines use ``include_outliers=False``; end-of-iteration outlier refines
-    pass ``include_gaps=False``, ``include_outliers=True``.
+    ``refine_gaps_only=True`` (``refine_characteristics.txt``): only gap fields per row —
+    ``behavioral_gap``, ``missing_nuance``, ``evidence``, ``confidence``, ``exists_in_context``.
+    No batch_id, verdict, reviews, or post lists.
     """
     lines: List[str] = []
     cap_a = max(400, int(max_chars_per_analysis))
@@ -1437,44 +1493,53 @@ def format_batch_logs_for_prompt(
         data = batch_logs[batch_key]
         if not isinstance(data, dict):
             continue
-        lines.extend(
-            format_memory_batch_entry_lines(
-                str(batch_key),
-                data,
-                max_chars_per_line=cap_a,
-                include_gaps=include_gaps,
-                include_outliers=include_outliers,
-                include_gap_metadata=include_gap_metadata,
-            )
+        entry_lines = format_memory_batch_entry_lines(
+            str(batch_key),
+            data,
+            max_chars_per_line=cap_a,
+            include_gaps=include_gaps,
+            include_outliers=include_outliers,
+            include_gap_metadata=include_gap_metadata,
+            refine_gaps_only=refine_gaps_only,
         )
+        if not entry_lines:
+            continue
+        if refine_gaps_only and lines:
+            lines.append("")
+        lines.extend(entry_lines)
+    if refine_gaps_only:
+        return "\n".join(lines) if lines else "(no gaps in refinement window)"
     return "\n".join(lines) if lines else "(no memory batches this window)"
 
 
-def build_refine_analyses_text(
+def build_refine_error_logs_text(
     full_memory: Dict[str, Any],
     window_logs: Dict[str, Any],
     max_history_batches: int,
     *,
     window_only: bool = False,
-    max_chars_per_analysis: int = REFINE_ANALYSIS_LINE_MAX_CHARS,
-    max_total_chars: int = REFINE_ANALYSES_BLOB_MAX_CHARS,
+    max_chars_per_gap: int = REFINE_GAP_LINE_MAX_CHARS,
+    max_total_chars: int = REFINE_ERROR_LOGS_BLOB_MAX_CHARS,
 ) -> str:
     """
-    Refine sees (1) the current refinement window (typically the last 5 memory batches)
-    and optionally (2) a small tail of prior batches for dedupe/context.
+    Serialize memory batches for ``refine_characteristics.txt`` ({batch_error_logs}).
+
+    Refine sees (1) the current window (typically the last ``evolve_every_n_batches``
+    memory flushes) and optionally (2) a small tail of prior batches for dedupe only.
+    Each batch contributes ``gaps[]`` rows (not per-post analysis strings).
     """
     parts: List[str] = []
     parts.append(
         "### CURRENT REFINEMENT WINDOW (last memory batches — primary evidence; "
-        "rewrite group_summary from current persona + these analyses)\n"
+        "cluster gaps across batches; rewrite persona from these batch gap logs)\n"
     )
     parts.append(
         format_batch_logs_for_prompt(
             window_logs,
-            max_chars_per_analysis=max_chars_per_analysis,
+            max_chars_per_analysis=max_chars_per_gap,
             include_gaps=True,
             include_outliers=False,
-            include_gap_metadata=False,
+            refine_gaps_only=True,
         )
     )
     if window_only:
@@ -1488,21 +1553,23 @@ def build_refine_analyses_text(
     if max_history_batches > 0 and prior_sorted:
         tail = prior_sorted[-max_history_batches :]
         hist = {k: full_memory[k] for k in tail}
-        parts.append("\n### RECENT MEMORY (rolling context — avoid contradicting; dedupe themes)\n")
+        parts.append(
+            "\n### RECENT MEMORY (older batches — dedupe only; do not override window gaps)\n"
+        )
         parts.append(
             format_batch_logs_for_prompt(
                 hist,
-                max_chars_per_analysis=max_chars_per_analysis,
+                max_chars_per_analysis=max_chars_per_gap,
                 include_gaps=True,
                 include_outliers=False,
-                include_gap_metadata=False,
+                refine_gaps_only=True,
             )
         )
     blob = "\n".join(parts)
     cap = max(8000, int(max_total_chars))
     if len(blob) > cap:
         logger.warning(
-            "[REFINE] analyses blob %s chars exceeds cap %s — truncating tail (recent memory dropped first at cut)",
+            "[REFINE] error-logs blob %s chars exceeds cap %s — truncating tail",
             len(blob),
             cap,
         )
@@ -1510,24 +1577,26 @@ def build_refine_analyses_text(
     return blob
 
 
-def build_outlier_refine_analyses_text(
+build_refine_analyses_text = build_refine_error_logs_text
+
+
+def build_outlier_refine_error_logs_text(
     full_memory: Dict[str, Any],
     iteration: int,
     *,
-    max_chars_per_analysis: int = REFINE_ANALYSIS_LINE_MAX_CHARS,
-    max_total_chars: int = REFINE_ANALYSES_BLOB_MAX_CHARS,
+    max_chars_per_gap: int = REFINE_GAP_LINE_MAX_CHARS,
+    max_total_chars: int = REFINE_ERROR_LOGS_BLOB_MAX_CHARS,
 ) -> str:
-    """All Part B outliers for one outer iteration (end-of-iteration consolidation pass)."""
+    """Part B ``outliers[]`` for one outer iteration → ``refine_outliers.txt`` ({batch_error_logs})."""
     subset = memory_batches_outliers_only_for_iteration(full_memory, int(iteration))
     parts: List[str] = [
         f"### OUTLIER CONSOLIDATION — iteration {int(iteration)} "
-        "(all per-post divergences from this iteration's memory batches; "
-        "gaps were already applied in window refines)\n"
+        "(outliers only from this iteration's memory batches; gaps already applied in window refines)\n"
     ]
     parts.append(
         format_batch_logs_for_prompt(
             subset,
-            max_chars_per_analysis=max_chars_per_analysis,
+            max_chars_per_analysis=max_chars_per_gap,
             include_gaps=False,
             include_outliers=True,
             include_gap_metadata=False,
@@ -1537,12 +1606,15 @@ def build_outlier_refine_analyses_text(
     cap = max(8000, int(max_total_chars))
     if len(blob) > cap:
         logger.warning(
-            "[OUTLIER_REFINE] blob %s chars exceeds cap %s — truncating",
+            "[OUTLIER_REFINE] error-logs blob %s chars exceeds cap %s — truncating",
             len(blob),
             cap,
         )
         blob = blob[: cap - 80].rstrip() + "\n\n... [OUTLIER_BLOB_TRUNCATED]"
     return blob
+
+
+build_outlier_refine_analyses_text = build_outlier_refine_error_logs_text
 
 
 def load_linkedin_memory_batch_root_cause_template() -> str:
@@ -1816,16 +1888,15 @@ async def linkedin_memory_batch_root_cause_analyses(
         logger.warning("[MEMORY_RC] full Part B prompt truncated to 115000 chars")
 
     try:
-        resp = await client.chat.completions.create(
-            model=model,
-            messages=[{"role": "user", "content": full_prompt}],
-            response_format={"type": "json_object"},
+        data = await _async_chat_json_object(
+            client,
+            model,
+            full_prompt,
+            max_tokens=8192,
             temperature=0.2,
-            max_tokens=4096,
-            timeout=180.0,
+            max_attempts=3,
+            log_prefix="MEMORY_RC",
         )
-        raw = (resp.choices[0].message.content or "").strip()
-        data = json.loads(raw)
         parsed = parse_linkedin_memory_batch_gaps_response(
             data, batch_size=n, batch_key=bk, fallback_preliminary_notes=fb
         )
@@ -1900,6 +1971,92 @@ def compute_shrink_target_words(
     return mx
 
 
+REFINE_JSON_MAX_COMPLETION_TOKENS = 16384
+REFINE_JSON_TIMEOUT_SEC = 180.0
+_REFINE_JSON_SYSTEM = (
+    "You must respond with exactly one valid JSON object. "
+    "No markdown code fences, no commentary outside the JSON."
+)
+
+
+def _choice_text_and_finish(choice: Any) -> Tuple[str, str]:
+    msg = choice.message
+    raw = (getattr(msg, "content", None) or "").strip()
+    finish = str(getattr(choice, "finish_reason", None) or "")
+    return raw, finish
+
+
+async def _async_chat_json_object(
+    client: AsyncOpenAI,
+    model: str,
+    user_prompt: str,
+    *,
+    max_tokens: int = REFINE_JSON_MAX_COMPLETION_TOKENS,
+    temperature: Optional[float] = 0.25,
+    timeout: float = REFINE_JSON_TIMEOUT_SEC,
+    max_attempts: int = 3,
+    log_prefix: str = "REFINE",
+) -> Dict[str, Any]:
+    """
+    Chat completion → JSON object with retries.
+
+    gpt-5.2 often returns empty ``content`` when ``max_completion_tokens`` is too low
+    (reasoning consumes the budget). Retries use ``reasoning_effort=low`` and more tokens.
+    """
+    last_err: Optional[Exception] = None
+    reasoning_efforts = ("medium", "low", "low")
+
+    for attempt in range(max(1, int(max_attempts))):
+        effort = reasoning_efforts[min(attempt, len(reasoning_efforts) - 1)]
+        tok = int(max_tokens) if attempt == 0 else int(max_tokens * 1.25)
+        raw = ""
+        try:
+            resp = await client.chat.completions.create(
+                **build_chat_completion_kwargs(
+                    model,
+                    [
+                        {"role": "system", "content": _REFINE_JSON_SYSTEM},
+                        {"role": "user", "content": user_prompt},
+                    ],
+                    max_tokens=tok,
+                    temperature=temperature,
+                    json_mode=True,
+                    timeout=timeout,
+                    reasoning_effort=effort if is_gpt5_family(model) else None,
+                )
+            )
+            choice = resp.choices[0]
+            raw, finish = _choice_text_and_finish(choice)
+            if not raw:
+                raise ValueError(
+                    f"empty message content (finish_reason={finish!r}, "
+                    f"max_completion_tokens={tok})"
+                )
+            if finish == "length":
+                raise ValueError("truncated response (finish_reason=length)")
+            return _parse_llm_json_object(raw)
+        except Exception as e:
+            last_err = e
+            preview = ""
+            try:
+                preview = (raw[:500] if raw else "(empty)")
+            except NameError:
+                preview = "(no raw)"
+            logger.warning(
+                "[%s] JSON LLM failed attempt %s/%s model=%s: %s | preview=%r",
+                log_prefix,
+                attempt + 1,
+                max_attempts,
+                model,
+                e,
+                preview,
+            )
+            if attempt + 1 < max_attempts:
+                await asyncio.sleep(2.0 * (attempt + 1))
+    logger.error("[%s] all JSON LLM attempts failed: %s", log_prefix, last_err)
+    raise last_err if last_err else RuntimeError(f"{log_prefix} JSON call failed")
+
+
 async def refine_group_summary(
     client: AsyncOpenAI,
     model: str,
@@ -1917,7 +2074,7 @@ async def refine_group_summary(
     Returns ``(group_summary, qualitative_summary_or_none)``. The trait dict is ``None`` if the
     model response has no usable trait lists (caller may fall back to ``TribeSchemaEvolver``).
     """
-    analyses_blob = build_refine_analyses_text(
+    error_logs_blob = build_refine_error_logs_text(
         full_memory,
         window_logs,
         history_batches,
@@ -1931,7 +2088,7 @@ async def refine_group_summary(
     full_prompt = _fill_named_placeholders(
         template,
         current_group_persona_json=persona_json,
-        batch_analyses_text=analyses_blob,
+        batch_error_logs=error_logs_blob,
     )
     baseline_anchor = _truncate_for_refine_prompt(
         (baseline_summary or "").strip(),
@@ -1954,16 +2111,13 @@ async def refine_group_summary(
         f"{baseline_anchor}\n"
     )
     try:
-        resp = await client.chat.completions.create(
-            model=model,
-            messages=[{"role": "user", "content": full_prompt}],
-            response_format={"type": "json_object"},
+        data = await _async_chat_json_object(
+            client,
+            model,
+            full_prompt,
             temperature=0.25,
-            max_tokens=6144,
-            timeout=120.0,
+            log_prefix="REFINE",
         )
-        raw = (resp.choices[0].message.content or "").strip()
-        data = json.loads(raw)
         new_s = (data.get("group_summary") or data.get("summary") or "").strip()
         new_qual = qualitative_slice_from_persona_response_evolver(data)
         enforce_hard_limit_preserve_seeded(new_qual, max_items=DEFAULT_MAX_TRAITS_PER_CATEGORY)
@@ -2025,7 +2179,7 @@ async def refine_outliers_at_iteration_end(
         )
         return None, None, False
 
-    analyses_blob = build_outlier_refine_analyses_text(full_memory, int(iteration))
+    error_logs_blob = build_outlier_refine_error_logs_text(full_memory, int(iteration))
     template = load_outlier_refine_template()
     persona = persona_dict_for_prompt_evolver(current_summary, qualitative_summary)
     persona_json = json.dumps(persona, ensure_ascii=False, indent=2)
@@ -2034,7 +2188,7 @@ async def refine_outliers_at_iteration_end(
     full_prompt = _fill_named_placeholders(
         template,
         current_group_persona_json=persona_json,
-        batch_analyses_text=analyses_blob,
+        batch_error_logs=error_logs_blob,
     )
     baseline_anchor = _truncate_for_refine_prompt(
         (baseline_summary or "").strip(),
@@ -2053,16 +2207,13 @@ async def refine_outliers_at_iteration_end(
         f"{baseline_anchor}\n"
     )
     try:
-        resp = await client.chat.completions.create(
-            model=model,
-            messages=[{"role": "user", "content": full_prompt}],
-            response_format={"type": "json_object"},
+        data = await _async_chat_json_object(
+            client,
+            model,
+            full_prompt,
             temperature=0.2,
-            max_tokens=6144,
-            timeout=120.0,
+            log_prefix="OUTLIER_REFINE",
         )
-        raw = (resp.choices[0].message.content or "").strip()
-        data = json.loads(raw)
         new_s = (data.get("group_summary") or data.get("summary") or "").strip()
         new_qual = qualitative_slice_from_persona_response_evolver(data)
         enforce_hard_limit_preserve_seeded(new_qual, max_items=DEFAULT_MAX_TRAITS_PER_CATEGORY)
@@ -2130,16 +2281,14 @@ async def shrink_group_summary(
     prev_trait_n = _trait_item_count_persona(qualitative_summary)
     for attempt in range(2):
         try:
-            resp = await client.chat.completions.create(
-                model=model,
-                messages=[{"role": "user", "content": prompt}],
-                response_format={"type": "json_object"},
+            data = await _async_chat_json_object(
+                client,
+                model,
+                prompt,
                 temperature=0.15 if attempt == 0 else 0.05,
-                max_tokens=6144,
-                timeout=120.0,
+                max_attempts=2,
+                log_prefix="SHRINK",
             )
-            raw = (resp.choices[0].message.content or "").strip()
-            data = json.loads(raw)
             new_s = (data.get("group_summary") or data.get("summary") or "").strip()
             if not new_s:
                 continue

@@ -25,10 +25,15 @@ from collections import defaultdict
 import re
 import time
 
-# Add project root to path
+# Add project root and scripts_sgo to path
 project_root = Path(__file__).parent.parent.parent
+scripts_sgo = Path(__file__).resolve().parent
 if str(project_root) not in sys.path:
     sys.path.insert(0, str(project_root))
+if str(scripts_sgo) not in sys.path:
+    sys.path.insert(0, str(scripts_sgo))
+
+from utils.openai_chat_params import build_chat_completion_kwargs
 
 # Load .env so OPENAI_API_KEY and OPENAI_BASE_URL (Bedrock) are set
 try:
@@ -281,12 +286,17 @@ Return ONLY a valid JSON object with a single "summary" key:
 
     try:
         response = client.chat.completions.create(
-            model=model,
-            messages=[
-                {"role": "system", "content": "You are an expert at extracting behavioral characteristics from learning patterns. Return only valid JSON."},
-                {"role": "user", "content": prompt}
-            ],
-            response_format={"type": "json_object"}
+            **build_chat_completion_kwargs(
+                model,
+                [
+                    {
+                        "role": "system",
+                        "content": "You are an expert at extracting behavioral characteristics from learning patterns. Return only valid JSON.",
+                    },
+                    {"role": "user", "content": prompt},
+                ],
+                json_mode=True,
+            )
         )
         
         result_text = response.choices[0].message.content

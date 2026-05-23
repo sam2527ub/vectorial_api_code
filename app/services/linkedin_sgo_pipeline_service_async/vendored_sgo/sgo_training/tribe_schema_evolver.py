@@ -6,9 +6,16 @@ Prompts are loaded from ``scripts/scripts_sgo/prompts`` (e.g. refine_characteris
 import copy
 import json
 import os
+import sys
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
 from openai import OpenAI
+
+_SCRIPTS_SGO = Path(__file__).resolve().parent.parent
+if str(_SCRIPTS_SGO) not in sys.path:
+    sys.path.insert(0, str(_SCRIPTS_SGO))
+
+from utils.openai_chat_params import build_chat_completion_kwargs
 
 # Canonical five-list keys for qualitative_summary (same as LinkedIn tier1 evolution state).
 QUALITATIVE_SUMMARY_KEYS: Tuple[str, ...] = (
@@ -143,10 +150,12 @@ class TribeSchemaEvolver:
     def _call_llm(self, prompt: str, temperature: float = 0.2) -> Optional[Dict]:
         try:
             response = self.client.chat.completions.create(
-                model=self.evolution_model,
-                messages=[{"role": "system", "content": prompt}],
-                response_format={"type": "json_object"},
-                temperature=temperature,
+                **build_chat_completion_kwargs(
+                    self.evolution_model,
+                    [{"role": "system", "content": prompt}],
+                    temperature=temperature,
+                    json_mode=True,
+                )
             )
             return json.loads(response.choices[0].message.content)
         except Exception as e:
@@ -158,19 +167,25 @@ class TribeSchemaEvolver:
         current_summary_block: Dict[str, Any],
         batch_logs: Dict[str, Any],
         baseline_summary_block: Dict[str, Any],
+        batch_error_logs: Optional[str] = None,
         batch_analyses_text: Optional[str] = None,
         *,
         group_summary: str = "",
         refine_prompt_basename: Optional[str] = None,
     ) -> Optional[Dict[str, Any]]:
         """
-        Run one refinement step: evolve qualitative_summary using the given batch error logs.
-        batch_logs: dict mapping batch_key -> { 'reviews': [...], 'analyses': [...], 'category': ... }
-        If ``batch_analyses_text`` is set, it is used verbatim instead of formatting ``batch_logs``.
-        ``group_summary`` is folded into ``{current_group_persona_json}`` for refine_characteristics.txt.
-        ``baseline_summary_block`` is kept for API compatibility; refine prompt does not embed it.
+        Run one refinement step: evolve qualitative_summary using batch memory error logs.
+
+        ``batch_logs``: dict mapping batch_key -> { gaps[], outliers[], batch_verdict, ... }.
+        If ``batch_error_logs`` is set, it is used verbatim (from ``build_refine_error_logs_text``).
+        Deprecated alias: ``batch_analyses_text``.
         """
         _ = baseline_summary_block
+        prebuilt_logs = (
+            batch_error_logs
+            if batch_error_logs is not None
+            else batch_analyses_text
+        )
         try:
             from generate_synthetic_review_and_memory_analysis.prompt_generation_for_both_parts import (
                 _fill_named_placeholders,
@@ -187,8 +202,8 @@ class TribeSchemaEvolver:
             format_memory_batch_entry_lines = None  # type: ignore
             _sort_memory_batch_keys = None  # type: ignore
 
-        if batch_analyses_text is not None:
-            logs_text = batch_analyses_text
+        if prebuilt_logs is not None:
+            logs_text = prebuilt_logs
         else:
             try:
                 if format_memory_batch_entry_lines is None:
@@ -205,7 +220,7 @@ class TribeSchemaEvolver:
                             data,
                             include_gaps=True,
                             include_outliers=False,
-                            include_gap_metadata=False,
+                            refine_gaps_only=True,
                         )
                     )
                 logs_text = "\n".join(formatted_logs) if formatted_logs else "(no memory batches)"
@@ -242,7 +257,7 @@ class TribeSchemaEvolver:
         full_prompt = _fill_named_placeholders(
             template,
             current_group_persona_json=persona_json,
-            batch_analyses_text=logs_text,
+            batch_error_logs=logs_text,
         )
         refined = self._call_llm(full_prompt, temperature=0.2)
         if not refined:
@@ -292,6 +307,7 @@ class TribeSchemaEvolver:
         new_batch_logs: Dict[str, Any],
         current_qualitative_summary: Dict[str, Any],
         baseline_qualitative_summary: Dict[str, Any],
+        batch_error_logs: Optional[str] = None,
         batch_analyses_text: Optional[str] = None,
         *,
         group_summary: str = "",
@@ -299,13 +315,13 @@ class TribeSchemaEvolver:
     ) -> Optional[Dict[str, Any]]:
         """
         Run one refinement step on the given batch logs and return updated qualitative_summary.
-        Caller is responsible for saving and for running shrink_step every N steps.
-        Pass ``batch_analyses_text`` to inject a pre-built memory string (e.g. window + rolling history).
+        Pass ``batch_error_logs`` from ``build_refine_error_logs_text`` (window of memory batches).
         """
         return self.refine_step(
             current_qualitative_summary,
             new_batch_logs,
             baseline_qualitative_summary,
+            batch_error_logs=batch_error_logs,
             batch_analyses_text=batch_analyses_text,
             group_summary=group_summary,
             refine_prompt_basename=refine_prompt_basename,

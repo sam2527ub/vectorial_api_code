@@ -40,11 +40,15 @@ apps/
 
 # Reddit Vercel workflow (local copy)
 reddit-vercel-worflow/
-
+vectorial-reddit-pipeline-main/
 .vercel
 
 # Local prediction artifacts (i0 / run outputs)
 Predictions/
+
+# Vendored SGO local run outputs (production writes to S3; do not deploy or commit)
+app/services/linkedin_sgo_pipeline_service_async/vendored_sgo/outputs/
+app/services/linkedin_sgo_pipeline_service_async/vendored_sgo/outputs_*/
 
 # Local LinkedIn / SGO script trees (large data + experiments; keep on disk only)
 scripts/scripts_sgo/

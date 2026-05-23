@@ -2,8 +2,8 @@
 """
 LinkedIn tier-1 **delta-method** pipeline (SGO training from **i1** onward — **no on-line i0**).
 
-**Production:** ``app.services.linkedin_sgo_pipeline_service_async`` only (S3 I/O + ``vendored_sgo/``).
-Production workers must **not** import ``scripts/``; this vendored file is loaded via that package's sys-path shim.
+**Source of truth:** ``scripts/scripts_sgo/`` (this file). Production copies to ``vendored_sgo/`` via ``scripts/sync_linkedin_sgo_vendored.sh``.
+**Production runtime:** ``app.services.linkedin_sgo_pipeline_service_async`` (S3 I/O + synced ``vendored_sgo/``).
 
 **Initial predictions (i0)** must exist in ``--precomputed-i0-json`` (e.g. from ``run_linkedin_i0_only.py``).
 This script loads them, then runs the same outer iterations as before: sweep **1** loads i0 from disk for
@@ -19,8 +19,10 @@ same keys as batch correction, and **best_deltas** / **best_prediction_data** se
 **Tier:** pass ``--tier 2`` (or explicit paths) for tier-2 GT + mapping + i0 under
 ``outputs/linkedin_tier2_sgo/``. Tier **1** remains the default.
 
-**Mandatory run directory (``--work-dir``):** if empty, defaults to
-``scripts_sgo/outputs/linkedin_tier{N}_sgo/default_run``. Each outer iteration (default **5** via
+**Mandatory run directory (``--work-dir``):** all run artifacts live under
+``scripts/scripts_sgo/outputs/`` (e.g. ``outputs/linkedin_tier1_sgo/my_run`` resolves there even when
+cwd is repo root). If empty, defaults to ``scripts_sgo/outputs/linkedin_tier{N}_sgo/default_run``.
+Each outer iteration (default **5** via
 ``--num-iterations``): **(1)** sweep **all** posts — **hydrate i0 from --precomputed-i0-json** (no LLM i0).
 **(2)** **i1+:** posts whose **loaded i0** gate delta (``--feedback-on``) exceeds ``--delta-threshold`` are batched (``--memory-batch-size``,
 default 5); each batch runs the delta feedback loop (i1..iN), delta analyses into traces, and memory
@@ -37,6 +39,10 @@ Qualitative refine/shrink uses the same prompts as ``tier1_sgo_feedback_loop``. 
 ``evolution/evolution_state.json``, optional
 ``evolution/state_history/NNNNNN_<reason>.json`` snapshots, ``<work-dir>/description.json`` (working
 copy; seed ``--description-json`` stays read-only when sync is on), ``post_traces.jsonl``,
+
+**Seed evolved persona (skip description.json baselines):** pass ``--seed-evolution-state-json`` with
+a prior run's ``evolution/evolution_state.json`` (e.g. tier-2 SGO ``my_run`` output). Copied into
+``--work-dir`` before state load when that work dir has no evolution file yet.
 ``iteration_stats.jsonl``, ``linkedin_tier{N}_all_reviews_deltas.json``, ``delta_method_predictions.json``,
 per-iteration ``delta_method_predictions_iteration_<n>.json``, and mirrors the latest bundle to
 ``--output``.
@@ -81,6 +87,7 @@ if load_dotenv:
 
 import _package_setup  # noqa: F401
 
+from sgo_errors import SgoPipelineError
 from openai import AsyncOpenAI, OpenAI
 
 from calculate_behaviour_loss.weighted_topic_review_metric_calculation import calculate_jsd
@@ -110,6 +117,34 @@ from generate_synthetic_review_and_memory_analysis.prompt_generation_for_both_pa
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s | %(levelname)s | %(message)s")
 logger = logging.getLogger(__name__)
+
+
+def _fatal(message: str) -> None:
+    """Raise a pipeline error (production worker maps this to job FAILED)."""
+    logger.error("%s", message)
+    raise SgoPipelineError(message)
+
+
+def _record_failed_post(
+    failed_posts: List[Dict[str, Any]],
+    *,
+    profile_id: str,
+    post_id: Optional[str],
+    review_idx: int,
+    outer_iteration: int,
+    phase: str,
+    error: str,
+) -> None:
+    failed_posts.append(
+        {
+            "profile_id": profile_id,
+            "post_id": post_id,
+            "review_idx": review_idx,
+            "outer_iteration": outer_iteration,
+            "phase": phase,
+            "error": error,
+        }
+    )
 
 
 def _ensure_scoring_mode() -> None:
@@ -149,6 +184,98 @@ def _tier_pipeline_names(tier: int) -> Tuple[str, str, str]:
     label = f"tier{int(tier)}"
     base = f"linkedin_{label}_delta_method"
     return label, base, f"{base}_predictions"
+
+
+def _reset_work_dir_for_fresh_restart(work_dir: Path) -> None:
+    """Drop prior sweep artifacts so persona comes only from ``--seed-evolution-state-json``."""
+    import shutil
+
+    work_dir.mkdir(parents=True, exist_ok=True)
+    for rel in ("memory", "evolution/state_history"):
+        p = work_dir / rel
+        if p.is_dir():
+            shutil.rmtree(p, ignore_errors=True)
+    for name in ("post_traces.jsonl", "iteration_stats.jsonl"):
+        p = work_dir / name
+        if p.is_file():
+            p.unlink()
+    evo_state = work_dir / "evolution" / "evolution_state.json"
+    if evo_state.is_file():
+        evo_state.unlink()
+    for pat in (
+        "delta_method_predictions.json",
+        "delta_method_predictions_iteration_*.json",
+        "linkedin_tier1_all_reviews_deltas.json",
+        "linkedin_tier2_all_reviews_deltas.json",
+    ):
+        for p in work_dir.glob(pat):
+            if p.is_file():
+                p.unlink()
+    logger.info("[RESTART] cleared run artifacts under %s (memory, traces, predictions, evolution)", work_dir)
+
+
+def _normalize_to_scripts_sgo_outputs_relative(path_str: str) -> str:
+    """Map ``scripts_sgo/outputs/...`` or repo-root ``outputs/...`` → ``outputs/...`` under SCRIPTS_SGO."""
+    norm = Path(path_str).expanduser().as_posix().lstrip("./")
+    for marker in ("scripts/scripts_sgo/outputs/", "scripts_sgo/outputs/"):
+        if marker in norm:
+            return "outputs/" + norm.split("outputs/", 1)[1]
+    if norm.startswith("outputs/"):
+        return norm
+    # Absolute path already under scripts_sgo/outputs → keep as-is (caller uses .resolve())
+    try:
+        resolved = Path(path_str).expanduser().resolve()
+        sgo_out = (SCRIPTS_SGO / "outputs").resolve()
+        if str(resolved).startswith(str(sgo_out)):
+            return "outputs/" + str(resolved.relative_to(sgo_out))
+    except (OSError, ValueError):
+        pass
+    return norm
+
+
+def _resolve_cli_path(path_str: str) -> Path:
+    """
+    Resolve CLI paths when the process cwd may be repo root or ``scripts/scripts_sgo``.
+
+    - ``outputs/...`` (and ``scripts_sgo/outputs/...``): always ``SCRIPTS_SGO/outputs/...``.
+    - Repo-root ``<repo>/outputs/...`` is **not** used for relative ``outputs/`` CLI values.
+    - Other relatives: cwd if that path exists, else ``SCRIPTS_SGO``, else cwd (for mkdir).
+    """
+    raw = str(path_str or "").strip()
+    if not raw:
+        return Path()
+    p = Path(raw).expanduser()
+    if p.is_absolute():
+        sgo_out = (SCRIPTS_SGO / "outputs").resolve()
+        try:
+            resolved = p.resolve()
+            if str(resolved).startswith(str(sgo_out)):
+                return resolved
+            # Redirect repo-root outputs/linkedin_* → scripts_sgo/outputs/linkedin_*
+            repo_out = (REPO_ROOT / "outputs").resolve()
+            if str(resolved).startswith(str(repo_out)):
+                rel = resolved.relative_to(repo_out)
+                redirected = (SCRIPTS_SGO / "outputs" / rel).resolve()
+                logger.info(
+                    "[CONFIG] redirecting repo-root outputs path → scripts_sgo: %s → %s",
+                    resolved,
+                    redirected,
+                )
+                return redirected
+        except (OSError, ValueError):
+            pass
+        return p.resolve()
+    norm = _normalize_to_scripts_sgo_outputs_relative(raw)
+    if norm.startswith("outputs/"):
+        return (SCRIPTS_SGO / norm).resolve()
+    cwd_hit = (Path.cwd() / p).resolve()
+    if cwd_hit.exists():
+        return cwd_hit
+    sgo_hit = (SCRIPTS_SGO / p).resolve()
+    if sgo_hit.exists():
+        logger.info("[CONFIG] resolved relative path via SCRIPTS_SGO: %s → %s", raw, sgo_hit)
+        return sgo_hit
+    return cwd_hit
 
 
 def _load_precomputed_i0_index(path: Path) -> Dict[Tuple[str, int], Dict[str, Any]]:
@@ -191,7 +318,10 @@ def _validate_precomputed_covers_posts(
             path,
             missing[0],
         )
-        sys.exit(1)
+        _fatal(
+            f"{len(missing)} post(s) missing from precomputed JSON {path} — "
+            f"regenerate i0 (first missing profile_id, review_idx): {missing[0]}"
+        )
 
 
 def _slim_row_to_pipeline_entry(
@@ -275,7 +405,9 @@ shrink_group_summary = t1.shrink_group_summary
 compute_shrink_target_words = t1.compute_shrink_target_words
 compute_group_summary_shrink_band = t1.compute_group_summary_shrink_band
 hard_truncate_words = t1.hard_truncate_words
+build_refine_error_logs_text = t1.build_refine_error_logs_text
 build_refine_analyses_text = t1.build_refine_analyses_text
+build_outlier_refine_error_logs_text = t1.build_outlier_refine_error_logs_text
 merge_batch_logs_dict = t1.merge_batch_logs_dict
 normalize_group_summary_refinement = t1.normalize_group_summary_refinement
 sort_memory_batch_keys = t1.sort_memory_batch_keys
@@ -294,6 +426,8 @@ load_group_summary_shrink_template = t1.load_group_summary_shrink_template
 append_evolution_state_snapshot = t1.append_evolution_state_snapshot
 next_state_snapshot_seq = t1.next_state_snapshot_seq
 resolve_workdir_evolution_paths = t1.resolve_workdir_evolution_paths
+ensure_evolution_state_from_seed_json = t1.ensure_evolution_state_from_seed_json
+ensure_tier2_evolution_baseline_from_tier1_workdir = t1.ensure_tier2_evolution_baseline_from_tier1_workdir
 load_profile_json = t1.load_profile_json
 linkedin_memory_batch_root_cause_analyses = t1.linkedin_memory_batch_root_cause_analyses
 load_linkedin_memory_batch_root_cause_template = t1.load_linkedin_memory_batch_root_cause_template
@@ -525,6 +659,94 @@ def _post_baseline_done_this_iteration(rec: Any, iteration: int) -> bool:
     return isinstance(rec, dict) and int(rec.get("feedback_loop_iteration") or 0) == int(iteration)
 
 
+def _count_baseline_done_in_pending(
+    pending: List[Tuple[str, Dict[str, Any], Dict[str, Any]]],
+    user_pred_by_idx: Dict[str, Dict[int, Dict[str, Any]]],
+    post_key_to_meta: Dict[Tuple[str, str], Tuple[int, str]],
+    iteration: int,
+) -> int:
+    n = 0
+    for pid, _b, p in pending:
+        pk = (str(pid), str(p.get("post_id") or ""))
+        ridx, _ = post_key_to_meta.get(pk, (0, ""))
+        rec = user_pred_by_idx.get(pid, {}).get(ridx)
+        if _post_baseline_done_this_iteration(rec, iteration):
+            n += 1
+    return n
+
+
+def _memory_batches_pending_refine(
+    memory: Dict[str, Any],
+    last_refined_key: Optional[str],
+    iteration: int,
+) -> Dict[str, Any]:
+    """Memory batches for this outer iteration that were flushed but not yet refined."""
+    prefix = f"iteration_{int(iteration)}_batch_"
+    iter_keys = [k for k in memory.keys() if isinstance(k, str) and k.startswith(prefix)]
+    if not iter_keys:
+        return {}
+    sorted_iter = sort_memory_batch_keys(iter_keys)
+    last_key = str(last_refined_key or "").strip()
+    if not last_key:
+        pending_keys = sorted_iter
+    elif last_key in sorted_iter:
+        pending_keys = sorted_iter[sorted_iter.index(last_key) + 1 :]
+    else:
+        all_sorted = sort_memory_batch_keys(list(memory.keys()))
+        if last_key in all_sorted:
+            idx = all_sorted.index(last_key)
+            pending_keys = [k for k in all_sorted[idx + 1 :] if k.startswith(prefix)]
+        else:
+            pending_keys = sorted_iter
+    return {k: copy.deepcopy(memory[k]) for k in pending_keys if k in memory}
+
+
+def _correction_steps_this_outer(rec: Dict[str, Any], iteration: int) -> List[Dict[str, Any]]:
+    """Correction rounds belonging to this outer iteration only (not prior sweeps)."""
+    out: List[Dict[str, Any]] = []
+    for step in rec.get("correction_journey") or []:
+        if not isinstance(step, dict):
+            continue
+        tagged = step.get("outer_iteration")
+        if tagged is not None:
+            if int(tagged) == int(iteration):
+                out.append(step)
+            continue
+        # Legacy rows (no tag): treat as belonging to the iteration they were run under.
+        if int(rec.get("feedback_loop_iteration") or 0) == int(iteration):
+            out.append(step)
+    return out
+
+
+def _begin_outer_iteration_corrections(
+    rec: Dict[str, Any],
+    iteration: int,
+    *,
+    resume_same_outer: bool,
+) -> None:
+    """
+    Start a fresh i1+ correction pass for outer iteration > 1.
+
+    Archives prior ``correction_journey`` under ``correction_journey_by_outer`` and clears
+    in-flight steps unless resuming mid-outer with steps already tagged for this iteration.
+    """
+    if int(iteration) <= 1 or not isinstance(rec, dict):
+        return
+    current_steps = _correction_steps_this_outer(rec, iteration)
+    if resume_same_outer and current_steps:
+        return
+    old_journey = rec.get("correction_journey") or []
+    if old_journey:
+        hist = rec.get("correction_journey_by_outer")
+        if not isinstance(hist, dict):
+            hist = {}
+            rec["correction_journey_by_outer"] = hist
+        archive_key = str(int(rec.get("feedback_loop_iteration") or 0) or (iteration - 1))
+        if archive_key not in hist:
+            hist[archive_key] = copy.deepcopy(old_journey)
+    rec["correction_journey"] = list(current_steps) if (resume_same_outer and current_steps) else []
+
+
 def _post_outer_iteration_complete(
     rec: Any,
     iteration: int,
@@ -536,7 +758,7 @@ def _post_outer_iteration_complete(
         return False
     if int(rec.get("feedback_loop_iteration") or 0) != int(iteration):
         return False
-    journey = rec.get("correction_journey") or []
+    journey = _correction_steps_this_outer(rec, iteration)
     if len(journey) >= int(correction_iterations):
         return True
     if journey and _gate_delta_from_deltas(_resolved_deltas_for_gates(rec), feedback_on) <= delta_thr:
@@ -753,6 +975,8 @@ async def run_correction_rounds_on_entry(
     max_qual_json_chars: int,
     delta_rows_iter_prefix: str = "",
     past_learnings: str = "",
+    preserve_existing_journey: bool = False,
+    outer_iteration: int = 1,
 ) -> None:
     """Run i1..iN delta corrections on an existing i0 ``entry`` (mutates in place)."""
     if iteration_cap <= 0:
@@ -785,9 +1009,35 @@ async def run_correction_rounds_on_entry(
     prev_theme = float(id0.get("theme_delta", 1.0))
     prev_overall = float(id0.get("overall_delta", 1.0))
 
-    entry["correction_journey"] = []
+    existing_journey = _correction_steps_this_outer(entry, int(outer_iteration))
+    if preserve_existing_journey and existing_journey:
+        journey = list(existing_journey)
+        entry["correction_journey"] = journey
+        last_step = journey[-1] if journey else None
+        if isinstance(last_step, dict):
+            cpd = last_step.get("corrected_prediction_data") or {}
+            if isinstance(cpd, dict):
+                if cpd.get("review_text"):
+                    current_text = str(cpd.get("review_text") or current_text)
+                pt = cpd.get("predicted_themes")
+                if isinstance(pt, dict) and pt:
+                    current_topics = {k: float(v) for k, v in pt.items()}
+            prev_theme = float(last_step.get("new_theme_delta", prev_theme))
+            prev_overall = float(last_step.get("new_overall_delta", prev_overall))
+        start_it = len(journey) + 1
+        if start_it <= iteration_cap:
+            logger.info(
+                "[RESUME] %s continuing corrections from round %s/%s (journey_len=%s)",
+                review_key,
+                start_it,
+                iteration_cap,
+                len(journey),
+            )
+    else:
+        entry["correction_journey"] = []
+        start_it = 1
 
-    for it in range(1, iteration_cap + 1):
+    for it in range(start_it, iteration_cap + 1):
         if feedback_on == "overall":
             if prev_overall <= delta_threshold:
                 logger.info(
@@ -863,6 +1113,7 @@ async def run_correction_rounds_on_entry(
         topic_logprobs_raw = copy.deepcopy(t_out2.get("topic_logprobs") or {})
         entry["correction_journey"].append(
             {
+                "outer_iteration": int(outer_iteration),
                 "iteration": it,
                 "corrected_prediction_data": copy.deepcopy(corrected),
                 "new_text_delta": n_td,
@@ -961,10 +1212,52 @@ def _gate_delta_from_deltas(deltas: Dict[str, Any], feedback_on: str) -> float:
     return float(deltas.get("theme_delta", 0.0))
 
 
+def _schedule_outer_iteration_progress(
+    args: argparse.Namespace,
+    *,
+    outer_iteration: int,
+    progress_reason: str,
+    work_dir: Path,
+    user_pred_by_idx: Dict[str, Dict[int, Dict[str, Any]]],
+    state_path: Path,
+    memory_path: Path,
+    trace_path: Path,
+    iteration_stats_path: Path,
+    out_path: Path,
+    processed_post_ids: List[str],
+    failed_posts: List[Dict[str, Any]],
+) -> None:
+    hook = getattr(args, "sgo_on_outer_iteration_progress", None)
+    if hook is None:
+        return
+    maybe = hook(
+        outer_iteration=outer_iteration,
+        progress_reason=progress_reason,
+        work_dir=work_dir,
+        user_pred_jsonable=_user_pred_map_to_jsonable(user_pred_by_idx),
+        state_path=state_path,
+        memory_path=memory_path,
+        trace_path=trace_path,
+        iteration_stats_path=iteration_stats_path,
+        out_path=out_path,
+        processed_post_ids=processed_post_ids,
+        failed_posts=list(failed_posts),
+        tier_mode=str(getattr(args, "tier_mode", "tier1") or "tier1"),
+    )
+    if asyncio.iscoroutine(maybe):
+        pending = getattr(args, "_sgo_pending_progress_tasks", None)
+        if pending is None:
+            pending = []
+            setattr(args, "_sgo_pending_progress_tasks", pending)
+        pending.append(maybe)
+
+
 async def run_all(args: argparse.Namespace) -> None:
+    failed_posts: List[Dict[str, Any]] = list(getattr(args, "sgo_failed_posts", None) or [])
+    setattr(args, "sgo_failed_posts", failed_posts)
+
     if not os.environ.get("OPENAI_API_KEY"):
-        logger.error("OPENAI_API_KEY is not set")
-        sys.exit(1)
+        _fatal("OPENAI_API_KEY is not set")
 
     _ensure_scoring_mode()
 
@@ -973,7 +1266,16 @@ async def run_all(args: argparse.Namespace) -> None:
     tier_defs = _default_paths(tier)
     default_run_dir = tier_defs["work"].resolve()
     wd_raw = str(getattr(args, "work_dir", "") or "").strip()
-    work_dir = Path(wd_raw).expanduser().resolve() if wd_raw else default_run_dir
+    work_dir = _resolve_cli_path(wd_raw) if wd_raw else default_run_dir
+    sgo_outputs = (SCRIPTS_SGO / "outputs").resolve()
+    if not str(work_dir).startswith(str(sgo_outputs)):
+        logger.warning(
+            "[CONFIG] work-dir is outside scripts_sgo/outputs (%s); "
+            "use e.g. --work-dir outputs/linkedin_tier1_sgo/my_run for the standard tree.",
+            work_dir,
+        )
+    else:
+        logger.info("[CONFIG] work-dir under scripts_sgo/outputs: %s", work_dir)
     if not wd_raw:
         logger.info("[CONFIG] tier=%s empty --work-dir → using default %s", tier, work_dir)
 
@@ -982,19 +1284,40 @@ async def run_all(args: argparse.Namespace) -> None:
     mapping_path = Path(args.mapping_json).expanduser().resolve()
     profiles_root = Path(args.profiles_root).expanduser().resolve()
     work_dir.mkdir(parents=True, exist_ok=True)
-    if tier_mode == "tier2":
-        tw = str(getattr(args, "tier1_evolution_work_dir", "") or "").strip()
-        if tw:
+    if getattr(args, "restart_fresh", False):
+        if getattr(args, "resume", False):
+            _fatal("--restart-fresh cannot be used with --resume")
+        seed_check = str(getattr(args, "seed_evolution_state_json", "") or "").strip()
+        if not seed_check:
+            _fatal(
+                "--restart-fresh requires --seed-evolution-state-json "
+                "(e.g. tier-2 evolution_state.json)"
+            )
+        _reset_work_dir_for_fresh_restart(work_dir)
+        setattr(args, "force_seed_evolution_state", True)
+        setattr(args, "start_iteration", 1)
+    seed_evo_raw = str(getattr(args, "seed_evolution_state_json", "") or "").strip()
+    if seed_evo_raw:
+        seed_evo_path = _resolve_cli_path(seed_evo_raw)
+        ensure_evolution_state_from_seed_json(
+            work_dir,
+            seed_evo_path,
+            force=bool(getattr(args, "force_seed_evolution_state", False)),
+        )
+    elif tier == 2:
+        t1_evo = str(getattr(args, "tier1_evolution_work_dir", "") or "").strip()
+        if t1_evo:
             ensure_tier2_evolution_baseline_from_tier1_workdir(
                 work_dir,
-                Path(tw).expanduser().resolve(),
+                _resolve_cli_path(t1_evo),
             )
         else:
             logger.warning(
-                "[TIER2] tier_mode=tier2 but tier1_evolution_work_dir is empty; "
+                "[TIER2] --tier 2 but --tier1-evolution-work-dir is empty; "
                 "evolution will init from description.json unless state already exists."
             )
-    out_path = Path(args.output).expanduser().resolve()
+    out_raw = str(getattr(args, "output", "") or "").strip()
+    out_path = _resolve_cli_path(out_raw) if out_raw else work_dir / "delta_method_predictions.json"
 
     weight_text = float(args.weight_text) if args.weight_text is not None else float(settings.WEIGHT_TEXT_DELTA)
     weight_theme = float(args.weight_theme) if args.weight_theme is not None else float(settings.WEIGHT_THEME_DELTA)
@@ -1056,7 +1379,10 @@ async def run_all(args: argparse.Namespace) -> None:
             "[I0] Precomputed i0 JSON not found: %s — generate tier-matching i0 (initial prediction job / i0 script).",
             precomputed_i0_path,
         )
-        sys.exit(1)
+        _fatal(
+            f"Precomputed i0 JSON not found: {precomputed_i0_path} — "
+            "run initial prediction / i0 for this tier first."
+        )
     precomputed_i0_index = _load_precomputed_i0_index(precomputed_i0_path)
     _validate_precomputed_covers_posts(all_posts, post_key_to_meta, precomputed_i0_index, precomputed_i0_path)
     logger.info(
@@ -1090,7 +1416,9 @@ async def run_all(args: argparse.Namespace) -> None:
         "off" if getattr(args, "no_shrink", False) else "on",
     )
     logger.info(
-        "[CONFIG] models memory_batch=%s refine=%s shrink=%s qual_schema=%s",
+        "[CONFIG] models part_a=%s topic=%s memory_batch=%s refine=%s shrink=%s qual_schema=%s",
+        getattr(args, "gen_model", ""),
+        getattr(args, "topic_model", ""),
         getattr(args, "linkedin_root_cause_model", ""),
         getattr(args, "refine_model", ""),
         getattr(args, "shrink_model", ""),
@@ -1125,18 +1453,15 @@ async def run_all(args: argparse.Namespace) -> None:
         try:
             t1.load_outlier_refine_template()
         except FileNotFoundError as e:
-            logger.error("[OUTLIER_REFINE] Missing outlier refine prompt: %s", e)
-            sys.exit(1)
+            _fatal(f"[OUTLIER_REFINE] Missing outlier refine prompt: {e}")
 
     if getattr(args, "linkedin_root_cause_memory", True):
         try:
             load_linkedin_memory_batch_root_cause_template()
         except FileNotFoundError as e:
-            logger.error(
-                "[MEMORY_RC] Missing batch memory prompt (required when --linkedin-root-cause-memory): %s",
-                e,
+            _fatal(
+                f"[MEMORY_RC] Missing batch memory prompt (required when --linkedin-root-cause-memory): {e}"
             )
-            sys.exit(1)
 
     persona_evolver: Optional[TribeSchemaEvolver] = None
     if not getattr(args, "disable_qual_schema", False):
@@ -1220,6 +1545,26 @@ async def run_all(args: argparse.Namespace) -> None:
             snap = append_evolution_state_snapshot(state_history_dir, state, state_snap_seq, reason)
             if snap is not None:
                 logger.info("[STATE] snapshot -> %s", snap.name)
+        _schedule_outer_iteration_progress(
+            args,
+            outer_iteration=int(state.get("last_completed_iteration") or 0),
+            progress_reason=str(reason),
+            work_dir=work_dir,
+            user_pred_by_idx=user_pred_by_idx,
+            state_path=state_path,
+            memory_path=memory_path,
+            trace_path=trace_path,
+            iteration_stats_path=iteration_stats_path,
+            out_path=out_path,
+            processed_post_ids=list(state.get("processed_post_ids") or []),
+            failed_posts=failed_posts,
+        )
+
+    async def _flush_pending_progress() -> None:
+        pending = list(getattr(args, "_sgo_pending_progress_tasks", None) or [])
+        setattr(args, "_sgo_pending_progress_tasks", [])
+        for task in pending:
+            await task
 
     start_it = max(1, int(args.start_iteration))
     num_it = int(args.num_iterations)
@@ -1235,8 +1580,7 @@ async def run_all(args: argparse.Namespace) -> None:
                 inferred,
             )
     if start_it > num_it:
-        logger.error("--start-iteration (%s) > --num-iterations (%s)", start_it, num_it)
-        sys.exit(1)
+        _fatal(f"--start-iteration ({start_it}) > --num-iterations ({num_it})")
 
     qualifying_keys_from_prev: Optional[Set[Tuple[str, str]]] = None
     pred_snapshot_prev_outer: Dict[Tuple[str, int], Dict[str, Any]] = {}
@@ -1259,16 +1603,12 @@ async def run_all(args: argparse.Namespace) -> None:
                     prev_iter_path.name,
                 )
             except (OSError, json.JSONDecodeError) as e:
-                logger.error("[RESUME] could not load %s: %s", prev_iter_path, e)
-                sys.exit(1)
+                _fatal(f"[RESUME] could not load {prev_iter_path}: {e}")
         else:
-            logger.error(
-                "[RESUME] missing %s (required when --start-iteration > 1). "
-                "Run iteration %s first or use --start-iteration 1.",
-                prev_iter_path,
-                start_it - 1,
+            _fatal(
+                f"[RESUME] missing {prev_iter_path} (required when --start-iteration > 1). "
+                f"Run iteration {start_it - 1} first or use --start-iteration 1."
             )
-            sys.exit(1)
 
     resume_seed_path = Path(
         str(getattr(args, "resume_user_pred_seed", "") or "").strip()
@@ -1288,8 +1628,7 @@ async def run_all(args: argparse.Namespace) -> None:
                     sum(len(v) for v in user_pred_by_idx.values()),
                 )
             except (OSError, json.JSONDecodeError) as e:
-                logger.error("[RESUME] could not load seed predictions %s: %s", resume_seed_path, e)
-                sys.exit(1)
+                _fatal(f"[RESUME] could not load seed predictions {resume_seed_path}: {e}")
         all_delta_rows: List[Dict[str, Any]] = []
         if getattr(args, "resume", False):
             tier_label = f"tier{int(tier)}"
@@ -1310,6 +1649,18 @@ async def run_all(args: argparse.Namespace) -> None:
         )
         if resume_same_outer:
             processed = {str(x) for x in (state.get("processed_post_ids") or [])}
+            pending_refine = _memory_batches_pending_refine(
+                memory,
+                state.get("last_refined_memory_batch_key"),
+                iteration,
+            )
+            if pending_refine:
+                refine_accumulator.update(pending_refine)
+                logger.info(
+                    "[RESUME] restored %s unrefined memory batch(es) for refine window: %s",
+                    len(pending_refine),
+                    ", ".join(sort_memory_batch_keys(list(pending_refine.keys()))),
+                )
             logger.info(
                 "[RESUME] continuing outer iteration %s | batch_seq=%s | processed_posts=%s",
                 iteration,
@@ -1353,14 +1704,35 @@ async def run_all(args: argparse.Namespace) -> None:
         mem_buffer: List[Tuple[str, str, str]] = []
         mem_bs = int(args.memory_batch_size)
 
-        if n_posts > 0:
+        baseline_done_count = 0
+        if getattr(args, "resume", False) and user_pred_by_idx:
+            baseline_done_count = _count_baseline_done_in_pending(
+                pending,
+                user_pred_by_idx,
+                post_key_to_meta,
+                iteration,
+            )
+        skip_i0_sweep = bool(
+            getattr(args, "resume", False)
+            and n_posts > 0
+            and baseline_done_count >= n_posts
+        )
+
+        if skip_i0_sweep:
+            logger.info(
+                "[RESUME] skipping i0 baseline sweep (%s/%s posts already tagged iteration %s)",
+                baseline_done_count,
+                n_posts,
+                iteration,
+            )
+        elif n_posts > 0:
             print(
                 f"[ITER {iteration}] Phase baseline: {n_posts} posts — "
                 f"{'hydrate i0 from ' + precomputed_i0_path.name if iteration == 1 else 'carry forward prior best (fallback to i0)'}",
                 flush=True,
             )
 
-        for i in range(0, n_posts, mem_bs):
+        for i in range(0, n_posts, mem_bs) if not skip_i0_sweep else []:
             batch = pending[i : i + mem_bs]
 
             batch_review_idx_key: List[Tuple[int, str]] = []
@@ -1381,15 +1753,25 @@ async def run_all(args: argparse.Namespace) -> None:
                 post_id = p.get("post_id")
                 prev = user_pred_by_idx.get(pid, {}).get(ridx)
                 if getattr(args, "resume", False) and _post_baseline_done_this_iteration(prev, iteration):
+                    if iteration > 1 and isinstance(prev, dict):
+                        _begin_outer_iteration_corrections(
+                            prev,
+                            iteration,
+                            resume_same_outer=resume_same_outer,
+                        )
                     return str(post_id) if post_id is not None else None
                 slim = precomputed_i0_index.get((str(pid), int(ridx)))
                 if not isinstance(slim, dict):
-                    logger.error("[I0] internal: missing row for %s review_%s", pid, ridx)
-                    sys.exit(1)
+                    _fatal(f"[I0] internal: missing row for {pid} review_{ridx}")
                 # Iteration 1 seeds from precomputed i0. Later iterations should start from the
                 # previous iteration's best-known prediction/deltas (so i1 uses i0; i2 uses i1, etc.).
                 if iteration > 1 and isinstance(prev, dict):
                     rec = prev
+                    _begin_outer_iteration_corrections(
+                        rec,
+                        iteration,
+                        resume_same_outer=resume_same_outer,
+                    )
                 else:
                     rec = _slim_row_to_pipeline_entry(
                         slim,
@@ -1454,24 +1836,78 @@ async def run_all(args: argparse.Namespace) -> None:
                 *[
                     _one_i0(pid, b, p, batch_review_idx_key[j][0], batch_review_idx_key[j][1])
                     for j, (pid, b, p) in enumerate(batch)
-                ]
+                ],
+                return_exceptions=True,
             )
 
-            for post_id in results_i0:
-                if post_id:
-                    processed.add(str(post_id))
+            for j, res in enumerate(results_i0):
+                if isinstance(res, BaseException):
+                    pid, _b, p = batch[j]
+                    ridx = batch_review_idx_key[j][0]
+                    _record_failed_post(
+                        failed_posts,
+                        profile_id=str(pid),
+                        post_id=str(p.get("post_id") or "") or None,
+                        review_idx=ridx,
+                        outer_iteration=int(iteration),
+                        phase="baseline_i0",
+                        error=f"{type(res).__name__}: {res}",
+                    )
+                    logger.error(
+                        "[I0] post failed profile=%s review_%s: %s",
+                        pid,
+                        ridx,
+                        res,
+                        exc_info=res,
+                    )
+                    continue
+                if res:
+                    processed.add(str(res))
 
             state["processed_post_ids"] = sorted(processed)
             state["last_completed_iteration"] = iteration
-            persist_state(f"outer{iteration}_i0_offset{i}", user_pred_by_idx, all_delta_rows)
+            batch_had_baseline_work = any(
+                not (
+                    getattr(args, "resume", False)
+                    and _post_baseline_done_this_iteration(
+                        user_pred_by_idx.get(pid, {}).get(batch_review_idx_key[j][0]),
+                        iteration,
+                    )
+                )
+                for j, (pid, _b, _p) in enumerate(batch)
+            )
+            if batch_had_baseline_work:
+                persist_state(f"outer{iteration}_i0_offset{i}", user_pred_by_idx, all_delta_rows)
+                await _flush_pending_progress()
+
+        if n_posts and int(iteration) > 1 and skip_i0_sweep:
+            for pid, _b, p in pending:
+                _pk = (str(pid), str(p.get("post_id") or ""))
+                ridx, _ = post_key_to_meta.get(_pk, (0, f"{pid}_review_0"))
+                row = user_pred_by_idx.get(pid, {}).get(ridx)
+                if isinstance(row, dict):
+                    row["feedback_loop_iteration"] = int(iteration)
+                    _begin_outer_iteration_corrections(
+                        row,
+                        iteration,
+                        resume_same_outer=resume_same_outer,
+                    )
 
         pending_high: List[Tuple[str, Dict[str, Any], Dict[str, Any], int, str]] = []
+        n_skipped_complete = 0
+        n_below_threshold = 0
         for pid, b, p in pending:
             _pk = (str(pid), str(p.get("post_id") or ""))
             ridx, rkey = post_key_to_meta.get(_pk, (0, f"{pid}_review_0"))
             row = user_pred_by_idx.get(pid, {}).get(ridx)
             if not isinstance(row, dict):
                 continue
+            if int(iteration) > 1:
+                _begin_outer_iteration_corrections(
+                    row,
+                    iteration,
+                    resume_same_outer=resume_same_outer,
+                )
             if getattr(args, "resume", False) and _post_outer_iteration_complete(
                 row,
                 iteration,
@@ -1479,24 +1915,30 @@ async def run_all(args: argparse.Namespace) -> None:
                 delta_thr,
                 args.feedback_on,
             ):
+                n_skipped_complete += 1
                 continue
             # Use the *current baseline* deltas before starting this iteration's correction rounds:
             # i1 gates from i0; i2 gates from prior i1 best; etc.
             res_d = _resolved_deltas_for_gates(row)
             if _gate_delta_from_deltas(res_d, args.feedback_on) > delta_thr:
                 pending_high.append((pid, b, p, ridx, rkey))
+            else:
+                n_below_threshold += 1
 
         n_high = len(pending_high)
         if n_high:
+            gate_label = "baseline" if int(iteration) <= 1 else "carry-forward best"
             print(
-                f"[ITER {iteration}] Phase i1+: {n_high} posts with i0 "
+                f"[ITER {iteration}] Phase i1+: {n_high} posts with {gate_label} "
                 f"{args.feedback_on} delta > {delta_thr} — "
                 "Part B memory batches → Part A corrections → refine cadence",
                 flush=True,
             )
         elif n_posts:
             print(
-                f"[ITER {iteration}] Phase i1+: no posts above --delta-threshold ({delta_thr})",
+                f"[ITER {iteration}] Phase i1+: no posts eligible for corrections "
+                f"(sweep={n_posts} | already_complete={n_skipped_complete} | "
+                f"at_or_below_threshold={n_below_threshold} | threshold={delta_thr})",
                 flush=True,
             )
 
@@ -1513,6 +1955,11 @@ async def run_all(args: argparse.Namespace) -> None:
             qual = copy.deepcopy(state.get("qualitative_summary") or empty_qualitative_summary())
             cat_list = category_themes_for_post(str(p.get("category") or ""), theme_map)
             rec = user_pred_by_idx[pid][ridx]
+            preserve_journey = bool(
+                getattr(args, "resume", False)
+                and resume_same_outer
+                and _correction_steps_this_outer(rec, iteration)
+            )
             await run_correction_rounds_on_entry(
                 rec,
                 iteration_cap=args.correction_iterations,
@@ -1547,6 +1994,8 @@ async def run_all(args: argparse.Namespace) -> None:
                 max_qual_json_chars=args.max_qual_json_chars,
                 delta_rows_iter_prefix=f"outer{iteration}_",
                 past_learnings=format_batch_analyses_memory_for_part_a(memory),
+                preserve_existing_journey=preserve_journey,
+                outer_iteration=iteration,
             )
             apply_select_best_prediction(rec)
             rec["feedback_loop_iteration"] = iteration
@@ -1743,9 +2192,29 @@ async def run_all(args: argparse.Namespace) -> None:
 
             results = await asyncio.gather(
                 *[_one_i1_part_a(t[0], t[1], t[2], t[3], t[4]) for t in batch_hi],
+                return_exceptions=True,
             )
 
-            for r in results:
+            for j, r in enumerate(results):
+                if isinstance(r, BaseException):
+                    pid, _b, p, ridx, _rkey = batch_hi[j]
+                    _record_failed_post(
+                        failed_posts,
+                        profile_id=str(pid),
+                        post_id=str(p.get("post_id") or "") or None,
+                        review_idx=int(ridx),
+                        outer_iteration=int(iteration),
+                        phase="i1_correction",
+                        error=f"{type(r).__name__}: {r}",
+                    )
+                    logger.error(
+                        "[I1] post failed profile=%s review_%s: %s",
+                        pid,
+                        ridx,
+                        r,
+                        exc_info=r,
+                    )
+                    continue
                 pid = r.get("post_id")
                 if pid:
                     processed.add(str(pid))
@@ -1756,12 +2225,13 @@ async def run_all(args: argparse.Namespace) -> None:
             if not flushed_memory_this_chunk:
                 trace_key = f"iter{iteration}_i1_traceonly_offset{i}"
                 persist_state(f"after_traceonly_{trace_key}", user_pred_by_idx, all_delta_rows)
-                if len(batch_hi) < mem_bs:
-                    logger.debug(
-                        "[BATCH] iter=%s final partial i1 chunk | posts=%s (no memory flush this chunk)",
-                        iteration,
-                        len(batch_hi),
-                    )
+            await _flush_pending_progress()
+            if not flushed_memory_this_chunk and len(batch_hi) < mem_bs:
+                logger.debug(
+                    "[BATCH] iter=%s final partial i1 chunk | posts=%s (no memory flush this chunk)",
+                    iteration,
+                    len(batch_hi),
+                )
 
             is_last_batch = i + len(batch_hi) >= n_high
             min_refine_batches = int(args.evolve_every_n_batches)
@@ -1933,7 +2403,7 @@ async def run_all(args: argparse.Namespace) -> None:
                             )
 
                     if persona_evolver is not None:
-                        analyses_blob = build_refine_analyses_text(
+                        error_logs_blob = build_refine_error_logs_text(
                             memory,
                             window_logs,
                             0,
@@ -1950,7 +2420,7 @@ async def run_all(args: argparse.Namespace) -> None:
                                     merged_for_qual,
                                     q_cur,
                                     q_base,
-                                    batch_analyses_text=analyses_blob,
+                                    batch_error_logs=error_logs_blob,
                                     group_summary=(state.get("group_summary") or ""),
                                 )
 
@@ -2078,7 +2548,7 @@ async def run_all(args: argparse.Namespace) -> None:
 
                 if persona_evolver is not None:
                     outlier_logs = memory_batches_outliers_only_for_iteration(memory, iteration)
-                    outlier_blob = build_outlier_refine_analyses_text(memory, iteration)
+                    outlier_blob = build_outlier_refine_error_logs_text(memory, iteration)
                     q_cur_out = copy.deepcopy(
                         state.get("qualitative_summary") or empty_qualitative_summary()
                     )
@@ -2088,7 +2558,7 @@ async def run_all(args: argparse.Namespace) -> None:
                             outlier_logs,
                             q_cur_out,
                             q_base_out,
-                            batch_analyses_text=outlier_blob,
+                            batch_error_logs=outlier_blob,
                             group_summary=(state.get("group_summary") or ""),
                             refine_prompt_basename="refine_outliers",
                         )
@@ -2218,9 +2688,13 @@ async def run_all(args: argparse.Namespace) -> None:
                 iteration_stats_path=iteration_stats_path,
                 out_path=out_path,
                 tier_mode=str(getattr(args, "tier_mode", "tier1") or "tier1"),
+                failed_posts=list(failed_posts),
             )
             if asyncio.iscoroutine(_maybe):
                 await _maybe
+
+    if failed_posts:
+        logger.warning("[SGO] run finished with %s failed post(s)", len(failed_posts))
 
     print(
         f"\n[DONE] state={state_path} | memory={memory_path} | traces={trace_path.name} | "
@@ -2247,14 +2721,17 @@ def main() -> None:
         _model_cfg = linkedin_sgo_model_defaults()
     except (FileNotFoundError, ValueError, OSError) as e:
         logger.warning(
-            "[CONFIG] Could not load linkedin_sgo_pipeline.yaml (%s); using o3 for memory/refine/shrink",
+            "[CONFIG] Could not load linkedin_sgo_pipeline.yaml (%s); using defaults for memory/refine",
             e,
         )
         _model_cfg = {
-            "linkedin_root_cause_model": "o3",
-            "refine_model": "o3",
+            "gen_model": "gpt-4o-mini",
+            "topic_model": "gpt-4o-mini",
+            "i0_model": "gpt-4o-mini",
+            "linkedin_root_cause_model": "gpt-5.2",
+            "refine_model": "gpt-5.2",
             "shrink_model": "o3",
-            "qual_schema_model": "o3",
+            "qual_schema_model": "gpt-5.2",
         }
 
     p = argparse.ArgumentParser(description=__doc__)
@@ -2302,7 +2779,37 @@ def main() -> None:
         type=str,
         default="",
         help="Run directory. Empty → scripts_sgo/outputs/linkedin_tier{N}_sgo/default_run. "
+        "Relative outputs/... paths resolve under scripts_sgo/ even when cwd is repo root. "
         "Writes evolution/, memory/, traces, predictions.",
+    )
+    p.add_argument(
+        "--seed-evolution-state-json",
+        type=str,
+        default="",
+        dest="seed_evolution_state_json",
+        help="Path to an existing evolution_state.json (e.g. tier-2 SGO my_run). "
+        "Relative paths under outputs/ resolve under scripts_sgo/ (cwd may be repo root). "
+        "Copied into <work-dir>/evolution/ when that file is missing (use --force-seed-evolution-state to overwrite).",
+    )
+    p.add_argument(
+        "--force-seed-evolution-state",
+        action="store_true",
+        dest="force_seed_evolution_state",
+        help="Overwrite <work-dir>/evolution/evolution_state.json when --seed-evolution-state-json is set.",
+    )
+    p.add_argument(
+        "--restart-fresh",
+        action="store_true",
+        dest="restart_fresh",
+        help="Clear memory/traces/predictions/evolution in --work-dir, force-copy --seed-evolution-state-json, "
+        "start at iteration 1 (no --resume). Use to re-run tier-1 from tier-2 persona baseline.",
+    )
+    p.add_argument(
+        "--tier1-evolution-work-dir",
+        type=str,
+        default="",
+        dest="tier1_evolution_work_dir",
+        help="Tier-1 work directory; with --tier 2, copies evolution/evolution_state.json when tier-2 state is missing.",
     )
     p.add_argument("--output", type=str, default=None)
     p.add_argument(
@@ -2312,9 +2819,24 @@ def main() -> None:
         dest="model_type_used",
         help="Written as model_type_used in the output JSON (default: linkedin_tier{N}_delta_method).",
     )
-    p.add_argument("--gen-model", type=str, default=os.environ.get("OPENAI_MODEL", "gpt-4o-mini"))
-    p.add_argument("--topic-model", type=str, default=os.environ.get("OPENAI_MODEL", "gpt-4o-mini"))
-    p.add_argument("--delta-model", type=str, default=os.environ.get("OPENAI_DELTA_MODEL", "gpt-4o-mini"))
+    p.add_argument(
+        "--gen-model",
+        type=str,
+        default=_model_cfg["gen_model"],
+        help="Part A post rewrite (part_a_individual_prompt_logprobs.txt); default: config → models.part_a",
+    )
+    p.add_argument(
+        "--topic-model",
+        type=str,
+        default=_model_cfg["topic_model"],
+        help="Theme probabilities after Part A rewrite; default: config → models.topic",
+    )
+    p.add_argument(
+        "--delta-model",
+        type=str,
+        default=os.environ.get("OPENAI_DELTA_MODEL", "gpt-4o-mini"),
+        help="Legacy fallback if memory_batch model is empty (Part A does not use this)",
+    )
     p.add_argument(
         "--linkedin-root-cause-model",
         type=str,
@@ -2587,6 +3109,9 @@ def main() -> None:
 
     try:
         asyncio.run(run_all(args))
+    except SgoPipelineError as e:
+        logger.error("%s", e)
+        sys.exit(1)
     except KeyboardInterrupt:
         logger.warning(
             "Interrupted (Ctrl+C). Last completed batch may have persisted state/memory/snapshots under --work-dir."

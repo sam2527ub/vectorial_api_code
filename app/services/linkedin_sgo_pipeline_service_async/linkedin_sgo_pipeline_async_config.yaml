@@ -14,11 +14,11 @@ output: ""
 
 model_type_used: linkedin_tier1_delta_method
 
-gen_model: o3
+gen_model: gpt-4o-mini
 topic_model: gpt-4o-mini
 delta_model: gpt-4o-mini
-linkedin_root_cause_model: o3
-refine_model: o3
+linkedin_root_cause_model: gpt-5.2
+refine_model: gpt-5.2
 shrink_model: o3
 qual_schema_model: o3
 
@@ -43,6 +43,7 @@ num_iterations: 5
 start_iteration: 1
 memory_batch_size: 5
 min_posts_for_memory_batch: 5
+# Memory batches accumulated before persona refine (each batch = one Part B gaps[] payload, not per-post analyses)
 evolve_every_n_batches: 5
 memory_jsd_threshold: null
 next_sweep_min_delta: 0.2

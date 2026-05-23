@@ -10,7 +10,9 @@ from __future__ import annotations
 import asyncio
 import copy
 import json
+import json_repair
 import logging
+import re
 import time
 from pathlib import Path
 from threading import Lock
@@ -25,6 +27,7 @@ from calculate_behaviour_loss.weighted_topic_review_metric_calculation import (
 from feedback_loop.batch_correction_pipeline import get_theme_delta
 from sgo_training.config import settings
 from utils import embeddings as emb_utils
+from utils.openai_chat_params import build_chat_completion_kwargs
 from utils.topic_presence_logprobs import process_single_post
 
 from linkedin.i0_initial_prediction import run_i0_initial_prediction
@@ -247,6 +250,28 @@ def measure_deltas(
     return text_delta, theme_delta, overall_delta
 
 
+def _strip_json_fence(text: str) -> str:
+    s = (text or "").strip()
+    if s.startswith("```"):
+        s = re.sub(r"^```(?:json)?\s*", "", s, flags=re.IGNORECASE)
+        s = re.sub(r"\s*```\s*$", "", s)
+    return s.strip()
+
+
+def _parse_llm_json_object(raw: str) -> Dict[str, Any]:
+    """Parse model JSON; repair invalid escapes / minor formatting issues."""
+    text = _strip_json_fence(raw)
+    if not text:
+        raise ValueError("LLM returned empty content")
+    try:
+        parsed = json.loads(text)
+    except json.JSONDecodeError:
+        parsed = json_repair.loads(text)
+    if not isinstance(parsed, dict):
+        raise ValueError(f"Expected JSON object, got {type(parsed).__name__}")
+    return parsed
+
+
 async def llm_json(
     client: AsyncOpenAI,
     model: str,
@@ -255,21 +280,41 @@ async def llm_json(
     sem: asyncio.Semaphore,
     *,
     max_tokens: int = 2500,
+    max_retries: int = 2,
 ) -> Dict[str, Any]:
-    async with sem:
-        resp = await client.chat.completions.create(
-            model=model,
-            messages=[
-                {"role": "system", "content": system},
-                {"role": "user", "content": user},
-            ],
-            response_format={"type": "json_object"},
-            temperature=0.35,
-            max_tokens=max_tokens,
-            timeout=120.0,
-        )
-    raw = (resp.choices[0].message.content or "").strip()
-    return json.loads(raw)
+    last_err: Optional[Exception] = None
+    for attempt in range(max(1, int(max_retries))):
+        async with sem:
+            resp = await client.chat.completions.create(
+                **build_chat_completion_kwargs(
+                    model,
+                    [
+                        {"role": "system", "content": system},
+                        {"role": "user", "content": user},
+                    ],
+                    max_tokens=max_tokens,
+                    temperature=0.35,
+                    json_mode=True,
+                    timeout=120.0,
+                )
+            )
+        raw = (resp.choices[0].message.content or "").strip()
+        try:
+            return _parse_llm_json_object(raw)
+        except (json.JSONDecodeError, ValueError, TypeError) as e:
+            last_err = e
+            logging.getLogger(__name__).warning(
+                "llm_json parse failed (attempt %s/%s, model=%s): %s | preview=%r",
+                attempt + 1,
+                max_retries,
+                model,
+                e,
+                raw[:400],
+            )
+            if attempt + 1 >= max_retries:
+                break
+            await asyncio.sleep(1.5 * (attempt + 1))
+    raise last_err if last_err else ValueError("llm_json failed with no response")
 
 
 async def generate_initial_post(

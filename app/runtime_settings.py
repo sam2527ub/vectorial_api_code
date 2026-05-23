@@ -77,6 +77,28 @@ class LinkedinSgoAsyncSettings(BaseModel):
     model_config = ConfigDict(extra="ignore")
 
     process_trigger_timeout_s: float = 120.0
+    processing_stale_timeout_s: float = 7200.0
+    webhook_max_attempts: int = 5
+    webhook_initial_backoff_s: float = 2.0
+
+
+class SgoFargateSettings(BaseModel):
+    """ECS Fargate worker for LinkedIn SGO (external compute, webhook callback)."""
+
+    model_config = ConfigDict(extra="ignore")
+
+    enabled: bool = False
+    ecs_cluster: str = ""
+    task_definition: str = ""
+    container_name: str = "sgo-python-container"
+    launch_type: str = "FARGATE"
+    assign_public_ip: bool = True
+    subnet_ids: list[str] = Field(default_factory=list)
+    security_group_ids: list[str] = Field(default_factory=list)
+    task_role_arn: str = ""
+    execution_role_arn: str = ""
+    webhook_path: str = "/api/v1/sgo/fargate/webhook"
+    max_chunk_iterations: int = 64
 
 
 class PathsSettings(BaseModel):
@@ -113,6 +135,7 @@ class RuntimeSettings(BaseModel):
     database_pool: DatabasePoolSettings = Field(default_factory=DatabasePoolSettings)
     database_retry: DatabaseRetrySettings = Field(default_factory=DatabaseRetrySettings)
     linkedin_sgo_async: LinkedinSgoAsyncSettings = Field(default_factory=LinkedinSgoAsyncSettings)
+    sgo_fargate: SgoFargateSettings = Field(default_factory=SgoFargateSettings)
     pipeline_config_files: Dict[str, str] = Field(
         default_factory=lambda: dict(DEFAULT_PIPELINE_FILES)
     )
@@ -147,8 +170,47 @@ def _deep_merge_env_into_raw(raw: Dict[str, Any]) -> Dict[str, Any]:
         sgo["process_trigger_timeout_s"] = float(
             os.environ["LINKEDIN_SGO_PROCESS_TRIGGER_TIMEOUT_S"].strip()
         )
+    if os.getenv("LINKEDIN_SGO_PROCESSING_STALE_TIMEOUT_S"):
+        sgo["processing_stale_timeout_s"] = float(
+            os.environ["LINKEDIN_SGO_PROCESSING_STALE_TIMEOUT_S"].strip()
+        )
+    if os.getenv("LINKEDIN_SGO_WEBHOOK_MAX_ATTEMPTS"):
+        sgo["webhook_max_attempts"] = int(os.environ["LINKEDIN_SGO_WEBHOOK_MAX_ATTEMPTS"].strip())
     if sgo:
         out["linkedin_sgo_async"] = sgo
+
+    fargate = dict(out.get("sgo_fargate") or {})
+    if os.getenv("SGO_FARGATE_ENABLED", "").strip():
+        fargate["enabled"] = os.environ["SGO_FARGATE_ENABLED"].strip().lower() in (
+            "1",
+            "true",
+            "yes",
+            "on",
+        )
+    if os.getenv("SGO_FARGATE_ECS_CLUSTER"):
+        fargate["ecs_cluster"] = os.environ["SGO_FARGATE_ECS_CLUSTER"].strip()
+    if os.getenv("SGO_FARGATE_TASK_DEFINITION"):
+        fargate["task_definition"] = os.environ["SGO_FARGATE_TASK_DEFINITION"].strip()
+    if os.getenv("SGO_FARGATE_CONTAINER_NAME"):
+        fargate["container_name"] = os.environ["SGO_FARGATE_CONTAINER_NAME"].strip()
+    if os.getenv("SGO_FARGATE_SUBNET_IDS"):
+        fargate["subnet_ids"] = [
+            s.strip()
+            for s in os.environ["SGO_FARGATE_SUBNET_IDS"].split(",")
+            if s.strip()
+        ]
+    if os.getenv("SGO_FARGATE_SECURITY_GROUP_IDS"):
+        fargate["security_group_ids"] = [
+            s.strip()
+            for s in os.environ["SGO_FARGATE_SECURITY_GROUP_IDS"].split(",")
+            if s.strip()
+        ]
+    if os.getenv("SGO_FARGATE_TASK_ROLE_ARN"):
+        fargate["task_role_arn"] = os.environ["SGO_FARGATE_TASK_ROLE_ARN"].strip()
+    if os.getenv("SGO_FARGATE_EXECUTION_ROLE_ARN"):
+        fargate["execution_role_arn"] = os.environ["SGO_FARGATE_EXECUTION_ROLE_ARN"].strip()
+    if fargate:
+        out["sgo_fargate"] = fargate
 
     db_retry = dict(out.get("database_retry") or {})
     if os.getenv("DATABASE_RETRY_MAX_ATTEMPTS"):

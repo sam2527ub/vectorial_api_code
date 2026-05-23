@@ -60,13 +60,25 @@ async def run_linkedin_sgo_pipeline_async(args: Any) -> None:
     ensure_required_paths(args)
     _maybe_set_repo_root_env()
     logger.info("[linkedin_sgo_pipeline_async] starting vendored delta-method run")
-    with vendored_sgo_sys_path():
-        import importlib
+    try:
+        with vendored_sgo_sys_path():
+            import importlib
 
-        import _package_setup  # noqa: F401
+            import _package_setup  # noqa: F401
 
-        mod = importlib.import_module("linkedin.tier1_delta_method_predictions")
-        await mod.run_all(args)
+            mod = importlib.import_module("linkedin.tier1_delta_method_predictions")
+            await mod.run_all(args)
+    except SystemExit as e:
+        code = e.code if e.code is not None else 1
+        if code in (0, None):
+            return
+        raise LinkedInSGOPipelineError(f"SGO pipeline exited with status {code}") from e
+    except LinkedInSGOPipelineError:
+        raise
+    except Exception as e:
+        if e.__class__.__name__ == "SgoPipelineError":
+            raise LinkedInSGOPipelineError(str(e)) from e
+        raise
 
 
 def run_linkedin_sgo_pipeline_async_sync(args: Any) -> None:

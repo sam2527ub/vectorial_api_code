@@ -18,6 +18,7 @@ import _package_setup
 
 from sgo_training.config import settings
 from sgo_training.utils.cost_tracker import track_api_call, extract_token_usage
+from utils.openai_chat_params import apply_json_chat_payload, build_chat_completion_kwargs
 
 
 def get_theme_logprobs_without_context(product_description: str, review_text: str, theme: str, client, theme_model_name: str, max_retries: int) -> dict:
@@ -34,24 +35,17 @@ def get_theme_logprobs_without_context(product_description: str, review_text: st
             time.sleep(settings.API_RATE_LIMIT_DELAY)
             
             try:
-                # Check if model uses max_completion_tokens (gpt-5) or max_tokens
-                request_params = {
-                    "model": theme_model_name,
-                    "messages": [
+                request_params = build_chat_completion_kwargs(
+                    theme_model_name,
+                    [
                         {"role": "system", "content": system_msg},
-                        {"role": "user", "content": user_msg}
+                        {"role": "user", "content": user_msg},
                     ],
-                    "temperature": 0,
-                    "logprobs": True,
-                    "top_logprobs": getattr(settings, 'TOP_LOGPROBS', 20)
-                }
-                
-                # Use max_completion_tokens for gpt-5 models, max_tokens for others
-                if "gpt-5" in theme_model_name.lower():
-                    request_params["max_completion_tokens"] = 5
-                else:
-                    request_params["max_tokens"] = 5
-                
+                    max_tokens=5,
+                    temperature=0,
+                    logprobs=True,
+                    top_logprobs=getattr(settings, "TOP_LOGPROBS", 20),
+                )
                 response = client.chat.completions.create(**request_params)
                 
                 # Track API call for cost calculation (get_theme_logprobs_without_context)
@@ -128,20 +122,15 @@ def get_theme_logprobs_without_context(product_description: str, review_text: st
                 error_str = str(logprob_error)
                 if "logprob" in error_str.lower() or "403" in error_str:
                     # Fallback to answer-based classification
-                    fallback_params = {
-                        "model": theme_model_name,
-                        "messages": [
+                    fallback_params = build_chat_completion_kwargs(
+                        theme_model_name,
+                        [
                             {"role": "system", "content": system_msg},
-                            {"role": "user", "content": user_msg}
+                            {"role": "user", "content": user_msg},
                         ],
-                        "temperature": 0
-                    }
-                    
-                    if "gpt-5" in theme_model_name.lower():
-                        fallback_params["max_completion_tokens"] = 5
-                    else:
-                        fallback_params["max_tokens"] = 5
-                    
+                        max_tokens=5,
+                        temperature=0,
+                    )
                     response = client.chat.completions.create(**fallback_params)
                     
                     # Track fallback API call for cost calculation (get_theme_logprobs_without_context fallback)
@@ -224,19 +213,17 @@ Answer with ONLY "Yes" or "No"."""
             time.sleep(settings.API_RATE_LIMIT_DELAY)
             
             try:
-                # Use max_tokens for theme classification (gpt-4o-mini uses max_tokens)
-                request_params = {
-                    "model": theme_model_name,
-                    "messages": [
+                request_params = build_chat_completion_kwargs(
+                    theme_model_name,
+                    [
                         {"role": "system", "content": system_msg},
-                        {"role": "user", "content": user_msg}
+                        {"role": "user", "content": user_msg},
                     ],
-                    "max_tokens": 5,
-                    "temperature": 0,
-                    "logprobs": True,
-                    "top_logprobs": getattr(settings, 'TOP_LOGPROBS', 20)
-                }
-                
+                    max_tokens=5,
+                    temperature=0,
+                    logprobs=True,
+                    top_logprobs=getattr(settings, "TOP_LOGPROBS", 20),
+                )
                 response = client.chat.completions.create(**request_params)
                 
                 # Track API call for cost calculation (get_theme_logprobs_with_context)
@@ -313,16 +300,15 @@ Answer with ONLY "Yes" or "No"."""
                 error_str = str(logprob_error)
                 if "logprob" in error_str.lower() or "403" in error_str:
                     # Fallback to answer-based classification
-                    fallback_params = {
-                        "model": theme_model_name,
-                        "messages": [
+                    fallback_params = build_chat_completion_kwargs(
+                        theme_model_name,
+                        [
                             {"role": "system", "content": system_msg},
-                            {"role": "user", "content": user_msg}
+                            {"role": "user", "content": user_msg},
                         ],
-                        "max_tokens": 5,
-                        "temperature": 0
-                    }
-                    
+                        max_tokens=5,
+                        temperature=0,
+                    )
                     response = client.chat.completions.create(**fallback_params)
                     
                     # Track fallback API call for cost calculation (get_theme_logprobs_with_context fallback)
@@ -448,29 +434,22 @@ def process_single_review_logprobs(
         try:
             time.sleep(settings.API_RATE_LIMIT_DELAY)
             
-            system_message = "You are a persona-based review prediction agent. Your response must be a single, valid JSON object. Follow the instructions in the user message carefully."
-            
+            system_message = (
+                "You are a persona-based review prediction agent. Your response must be a single, "
+                "valid JSON object. Follow the instructions in the user message carefully."
+            )
+
             request_params = {
                 "model": review_model,
                 "messages": [
                     {"role": "system", "content": system_message},
-                    {"role": "user", "content": review_context}
+                    {"role": "user", "content": review_context},
                 ],
             }
-            
-            # Add response_format based on model (some models like o3 handle JSON naturally)
-            # Check if model name contains "o3" to determine JSON handling
-            if "o3" in review_model.lower():
-                # o3 doesn't need response_format, it handles JSON naturally
-                pass
-            else:
-                request_params["response_format"] = {"type": "json_object"}
-                # Add max_tokens/temperature for non-o3 models if needed
-                if hasattr(settings, 'MAX_TOKENS'):
-                    request_params["max_tokens"] = getattr(settings, 'MAX_TOKENS', 2000)
-                if hasattr(settings, 'TEMPERATURE'):
-                    request_params["temperature"] = getattr(settings, 'TEMPERATURE', 0.7)
-            
+            max_out = getattr(settings, "MAX_TOKENS", 2000) if hasattr(settings, "MAX_TOKENS") else None
+            temp = getattr(settings, "TEMPERATURE", 0.7) if hasattr(settings, "TEMPERATURE") else None
+            apply_json_chat_payload(request_params, review_model, max_tokens=max_out, temperature=temp)
+
             response = client.chat.completions.create(**request_params)
             
             # Track API call for cost calculation
@@ -489,20 +468,20 @@ def process_single_review_logprobs(
             
             parsed = json_repair.loads(text)
             
-            # Extract review data (should be a single review, not a batch)
+            # Extract review body only (no rating/sentiment)
             if "corrections" in parsed:
-                # Batch format - take first correction
                 correction = parsed["corrections"][0] if parsed["corrections"] else {}
-            elif "review_text" in parsed:
-                # Single review format
+            elif "review_text" in parsed or "post_text" in parsed:
                 correction = parsed
             else:
                 raise ValueError(f"Unexpected response format: {list(parsed.keys())}")
-            
-            if not isinstance(correction, dict) or 'review_text' not in correction:
-                raise ValueError(f"Missing review_text in correction: {correction}")
-            
-            review_text = correction.get('review_text', '')
+
+            if not isinstance(correction, dict):
+                raise ValueError(f"Correction is not a dict: {type(correction)}")
+
+            review_text = (correction.get("review_text") or correction.get("post_text") or "").strip()
+            if not review_text:
+                raise ValueError(f"Missing review_text/post_text in correction: {correction}")
             
             # Step 2: Classify each theme using logprobs
             if not category_themes:

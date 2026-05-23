@@ -1,12 +1,20 @@
 # LinkedIn tier1/tier2 delta-method CLI defaults (scripts/scripts_sgo/linkedin/tier1_delta_method_predictions.py)
 # Override file: LINKEDIN_SGO_PIPELINE_CONFIG
-# Per-model env overrides: LINKEDIN_MEMORY_BATCH_MODEL, LINKEDIN_REFINE_MODEL, LINKEDIN_SHRINK_MODEL, LINKEDIN_QUAL_SCHEMA_MODEL
+# Per-model env overrides:
+#   LINKEDIN_PART_A_MODEL, LINKEDIN_TOPIC_MODEL, LINKEDIN_I0_MODEL
+#   LINKEDIN_MEMORY_BATCH_MODEL, LINKEDIN_REFINE_MODEL, LINKEDIN_SHRINK_MODEL, LINKEDIN_QUAL_SCHEMA_MODEL
 
 models:
+  # prompts/part_a_individual_prompt_logprobs.txt — i1+ post rewrite (gen_model)
+  part_a: gpt-4o-mini
+  # theme probabilities after Part A rewrite (topic_model)
+  topic: gpt-4o-mini
+  # i0 initial post generation (run_linkedin_i0_only.py); defaults to part_a if omitted
+  i0: gpt-4o-mini
   # prompts/part_b_memory_analysis.txt — batch memory (gaps + outliers JSON)
-  memory_batch: o3
+  memory_batch: gpt-5.2
   # prompts/refine_characteristics.txt — window + outlier persona refine
-  refine: o3
+  refine: gpt-5.2
   # prompts/shrink_refinement.txt — group_summary + traits shrink
   shrink: o3
   # TribeSchemaEvolver fallback (defaults to refine if omitted)

@@ -1,0 +1,1201 @@
+{
+  "iteration_1_batch_1": {
+    "reviews": [
+      "1db61e77-786d-4d4c-94e0-4dcc221af20b_post_1db61e77-786d-4d4c-94e0-4dcc221af20b_2",
+      "1db61e77-786d-4d4c-94e0-4dcc221af20b_post_1db61e77-786d-4d4c-94e0-4dcc221af20b_3",
+      "1db61e77-786d-4d4c-94e0-4dcc221af20b_post_1db61e77-786d-4d4c-94e0-4dcc221af20b_4",
+      "1db61e77-786d-4d4c-94e0-4dcc221af20b_post_1db61e77-786d-4d4c-94e0-4dcc221af20b_5",
+      "1db61e77-786d-4d4c-94e0-4dcc221af20b_post_1db61e77-786d-4d4c-94e0-4dcc221af20b_6"
+    ],
+    "batch_id": "iteration_1_batch_1",
+    "gaps": [
+      {
+        "behavioral_gap": "When the stimulus is an AI-ops claim framed as “tools are the edge” or “AI is smart enough,” this community opens with a hard reframing and then scopes the real control surface (instructions/decision responsibility/judgment-before-commitment) — but the prediction assumes the right move is upbeat AI/tool adoption talk (n8n/Zapier integration, “AI is transforming,” generic reliability platitudes) plus a broad salesy CTA.",
+        "exists_in_context": true,
+        "missing_nuance": "The specific reversal move: sentence-1 rejection of the tool-centric framing (“AI tools aren’t the edge”) followed by naming the governing artifact (scenario-based instructions / “clear responsibility” boundaries / “judgment before commitment”) instead of proposing new tools or integrations.",
+        "evidence": "3/5 posts",
+        "confidence": "MEDIUM"
+      },
+      {
+        "behavioral_gap": "When the post is founder advisory at the pre-build / pre-decision stage, this community explicitly withholds public playbooks and offers a scoped 1:1 diagnostic (“structured conversation,” “DM me and we’ll break it down”) — but the prediction assumes the correct response is to publish a mini-framework (numbered steps, MVP checklists) and sprinkle in automation-tool recommendations.",
+        "exists_in_context": true,
+        "missing_nuance": "The trigger condition is specifically ‘judgment-before-commitment’ moments (build plan selection / locking engineering decisions), where the author signals value via restraint (“Nothing more”) and a DM-based breakdown rather than a public checklist.",
+        "evidence": "2/5 posts",
+        "confidence": "MEDIUM"
+      }
+    ],
+    "outliers": [
+      {
+        "post_id": "1db61e77-786d-4d4c-94e0-4dcc221af20b_4",
+        "behavioral_gap": "Uses an ultra-minimal “power of simplicity” pitch: two pain bullets, one simple action (“Connect the sheets. Let AI handle the juggling.”), and a concrete low monthly cost anchor (~$30/month), then stops.",
+        "why_outlier": "The prediction failed here because the post’s move is a deliberately tiny, price-anchored simplification offer — which is different from the main batch gaps because it’s not primarily a reframing of AI judgment or a DM-based advisory posture; it’s a micro-optimization tip whose credibility comes from brevity + explicit cost.",
+        "exists_in_context": false,
+        "missing_nuance": null
+      }
+    ],
+    "batch_verdict": "new_gaps_found",
+    "prior_gap_confirmations": [],
+    "preliminary_delta_notes": [
+      "[queued_for_batch_root_cause_memory]",
+      "[queued_for_batch_root_cause_memory]",
+      "[queued_for_batch_root_cause_memory]",
+      "[queued_for_batch_root_cause_memory]",
+      "[queued_for_batch_root_cause_memory]"
+    ],
+    "category": "AI and Technology Integration | Business Operations and Strategy"
+  },
+  "iteration_1_batch_2": {
+    "reviews": [
+      "1db61e77-786d-4d4c-94e0-4dcc221af20b_post_1db61e77-786d-4d4c-94e0-4dcc221af20b_7",
+      "1db61e77-786d-4d4c-94e0-4dcc221af20b_post_1db61e77-786d-4d4c-94e0-4dcc221af20b_8",
+      "1db61e77-786d-4d4c-94e0-4dcc221af20b_post_1db61e77-786d-4d4c-94e0-4dcc221af20b_9",
+      "1db61e77-786d-4d4c-94e0-4dcc221af20b_post_1db61e77-786d-4d4c-94e0-4dcc221af20b_10",
+      "1db61e77-786d-4d4c-94e0-4dcc221af20b_post_1db61e77-786d-4d4c-94e0-4dcc221af20b_12"
+    ],
+    "batch_id": "iteration_1_batch_2",
+    "gaps": [
+      {
+        "behavioral_gap": "When the post is a pre-build/pre-change execution warning (\"before committing\" / \"first real change\" / \"not planning for the first change\"), this community writes as a tight mechanism memo: a 1-line contrast or diagnostic question followed by a short list of concrete change-vectors/dependencies, ending with a crisp punchline (no generic best-practices list, no audience-question CTA) — but the prediction assumes the right move is to expand into a motivational mini-playbook (numbered \"recommendations\"), add broad platitudes (\"reliability/repeatability\"), and tack on an engagement question/CTA.",
+        "exists_in_context": true,
+        "missing_nuance": "The specific recurrent trigger is \"the first change after launch\" as the anchor heuristic (pricing rules/roles/edge-cases/scale) and the matching rhetorical structure (contrast-line → concrete bullets → punchline) rather than a general \"be practical / mention tradeoffs\" stance.",
+        "evidence": "4/5 posts",
+        "confidence": "HIGH"
+      }
+    ],
+    "outliers": [],
+    "batch_verdict": "new_gaps_found",
+    "prior_gap_confirmations": [
+      "When the post is founder advisory at the pre-build / pre-decision stage, this community explicitly withholds public playbooks and offers a scoped 1:1 diagnostic (“structured conversation,” “DM me and we’ll break it down”) — but the prediction assumes the correct response is to publish a mini-framework (numbered steps, MVP checklists) and sprinkle in automation-tool recommendations."
+    ],
+    "preliminary_delta_notes": [
+      "[queued_for_batch_root_cause_memory]",
+      "[queued_for_batch_root_cause_memory]",
+      "[queued_for_batch_root_cause_memory]",
+      "[queued_for_batch_root_cause_memory]",
+      "[queued_for_batch_root_cause_memory]"
+    ],
+    "category": "AI and Technology Integration | Business Operations and Strategy"
+  },
+  "iteration_1_batch_3": {
+    "reviews": [
+      "1db61e77-786d-4d4c-94e0-4dcc221af20b_post_1db61e77-786d-4d4c-94e0-4dcc221af20b_17",
+      "1db61e77-786d-4d4c-94e0-4dcc221af20b_post_1db61e77-786d-4d4c-94e0-4dcc221af20b_19",
+      "1db61e77-786d-4d4c-94e0-4dcc221af20b_post_1db61e77-786d-4d4c-94e0-4dcc221af20b_20",
+      "1db61e77-786d-4d4c-94e0-4dcc221af20b_post_1db61e77-786d-4d4c-94e0-4dcc221af20b_21",
+      "1db61e77-786d-4d4c-94e0-4dcc221af20b_post_1db61e77-786d-4d4c-94e0-4dcc221af20b_24"
+    ],
+    "batch_id": "iteration_1_batch_3",
+    "gaps": [
+      {
+        "behavioral_gap": "When the stimulus is an ops/orchestration pitch framed as “you don’t need another tool—your existing tools need to talk” (alignment-first, anti–AI-magic), this community opens with a not-X-but-Y contrast (“not AI magic / not another tool”) and then proves it with a single concrete end-to-end sync example (invoice email → verify → update accounts → Slack) or multiple specific desync symptoms (CRM vs accounting, support vs sales) — but the prediction defaults to a generic no-code tool promo (name-dropping n8n/Zapier, “game changer/drive efficiency”), adds unrelated canned examples (Gmail → Sheets), and turns it into a broad growth/innovation pitch.",
+        "exists_in_context": false,
+        "missing_nuance": null,
+        "evidence": "2/5 posts",
+        "confidence": "MEDIUM"
+      }
+    ],
+    "outliers": [
+      {
+        "post_id": "1db61e77-786d-4d4c-94e0-4dcc221af20b_19",
+        "behavioral_gap": "Uses rest as an operational proof-point: opens with a tight aphorism (“Rest isn’t escape. Rest is preparation.”) and validates “systems” by stating the work didn’t slow down while they paused (team kept execution tight), then closes with a direct founder-fit CTA (schedule a call) rather than tool talk or a discussion prompt.",
+        "why_outlier": "The prediction failed here because the post’s core move is to treat taking a break as a systems test (work continues without handholding) — which is different from the main batch gaps because it’s not an alignment/orchestration-by-connection pitch with tool-sync examples; it’s a credibility signal about autonomous execution during absence.",
+        "exists_in_context": true,
+        "missing_nuance": "The specific trigger is a “rest/pause” reflection used as evidence that systems enable execution without the founder present; the expected response avoids tool-name-dropping and avoids an audience-question CTA, staying in the aphorism → proof-of-autonomy → founder-fit CTA lane."
+      },
+      {
+        "post_id": "1db61e77-786d-4d4c-94e0-4dcc221af20b_17",
+        "behavioral_gap": "Keeps a quiet, end-of-year reflective tone (parallel lines like “Some plans worked. Some didn’t.” and “progress happened off screen… in decisions… in corrections…”) and ends with a minimal closure (“Onward.”) without turning it into a founder/automation anecdote, hashtags, or an inspiration-to-audience rally.",
+        "why_outlier": "The prediction failed here because the post’s move is restrained personal journaling with no implied ask — which is different from the main batch gaps because there is no operations/orchestration claim to mechanism-check; the correct behavior is tone-mirroring minimalism, not a branded founder case study.",
+        "exists_in_context": true,
+        "missing_nuance": "The trigger condition is a standalone introspective reflection (no request, no lesson prompt, no resource share). The expected community behavior is to mirror with sparse, non-branded affirmation and avoid emojis/hashtags/“my startup” pivots."
+      }
+    ],
+    "batch_verdict": "new_gaps_found",
+    "prior_gap_confirmations": [
+      "When the stimulus is an AI-ops claim framed as “tools are the edge” or “AI is smart enough,” this community opens with a hard reframing and then scopes the real control surface (instructions/decision responsibility/judgment-before-commitment) — but the prediction assumes the right move is upbeat AI/tool adoption talk (n8n/Zapier integration, “AI is transforming,” generic reliability platitudes) plus a broad salesy CTA."
+    ],
+    "preliminary_delta_notes": [
+      "[queued_for_batch_root_cause_memory]",
+      "[queued_for_batch_root_cause_memory]",
+      "[queued_for_batch_root_cause_memory]",
+      "[queued_for_batch_root_cause_memory]",
+      "[queued_for_batch_root_cause_memory]"
+    ],
+    "category": "AI and Technology Integration | Business Operations and Strategy | Personal Development and Well-being"
+  },
+  "iteration_1_batch_4": {
+    "reviews": [
+      "1db61e77-786d-4d4c-94e0-4dcc221af20b_post_1db61e77-786d-4d4c-94e0-4dcc221af20b_25",
+      "1db61e77-786d-4d4c-94e0-4dcc221af20b_post_1db61e77-786d-4d4c-94e0-4dcc221af20b_26",
+      "1db61e77-786d-4d4c-94e0-4dcc221af20b_post_1db61e77-786d-4d4c-94e0-4dcc221af20b_27",
+      "1db61e77-786d-4d4c-94e0-4dcc221af20b_post_1db61e77-786d-4d4c-94e0-4dcc221af20b_28",
+      "1db61e77-786d-4d4c-94e0-4dcc221af20b_post_1db61e77-786d-4d4c-94e0-4dcc221af20b_30"
+    ],
+    "batch_id": "iteration_1_batch_4",
+    "gaps": [
+      {
+        "behavioral_gap": "When making a service/implementation offer (automation, n8n workflows, scraping), this community writes direct-response copy that quantifies delivery and outcomes (e.g., “14–21 days vs 4–6 months”, “250+ websites”, “90% accuracy”, “15+ hours/week saved”) and closes with a concrete action CTA (DM a sample invoice / DM a keyword / book a short call) often with a response promise — but the prediction defaults to a generic “excited to share/let’s connect” promo with vague benefits and no actionable next-step artifact.",
+        "exists_in_context": true,
+        "missing_nuance": "Existing context captures “move to DMs for promising opportunities,” but misses the specific direct-response mechanism: quantified benchmark claims + an explicit artifact/keyword ask (\"DM a sample invoice\") and a turnaround SLA (\"I’ll tell you in 24 hours\").",
+        "evidence": "5/5 posts",
+        "confidence": "HIGH"
+      },
+      {
+        "behavioral_gap": "When introducing a pitch post, this community anchors credibility in an external trigger signal (a verbatim founder question or a scrollable list of real market asks) before explaining the offer — but the prediction opens with generic enthusiasm and generalized statements about “automation transforming X,” skipping the concrete trigger moment/pattern that the actual post uses as the hook.",
+        "exists_in_context": false,
+        "missing_nuance": null,
+        "evidence": "3/5 posts",
+        "confidence": "MEDIUM"
+      }
+    ],
+    "outliers": [],
+    "batch_verdict": "new_gaps_found",
+    "prior_gap_confirmations": [],
+    "preliminary_delta_notes": [
+      "[queued_for_batch_root_cause_memory]",
+      "[queued_for_batch_root_cause_memory]",
+      "[queued_for_batch_root_cause_memory]",
+      "[queued_for_batch_root_cause_memory]",
+      "[queued_for_batch_root_cause_memory]"
+    ],
+    "category": "AI and Technology Integration | Business Operations and Strategy | Diversity and Inclusion in Tech"
+  },
+  "iteration_1_batch_5": {
+    "reviews": [
+      "1db61e77-786d-4d4c-94e0-4dcc221af20b_post_1db61e77-786d-4d4c-94e0-4dcc221af20b_31",
+      "1db61e77-786d-4d4c-94e0-4dcc221af20b_post_1db61e77-786d-4d4c-94e0-4dcc221af20b_33",
+      "1db61e77-786d-4d4c-94e0-4dcc221af20b_post_1db61e77-786d-4d4c-94e0-4dcc221af20b_35",
+      "1db61e77-786d-4d4c-94e0-4dcc221af20b_post_1db61e77-786d-4d4c-94e0-4dcc221af20b_39",
+      "1db61e77-786d-4d4c-94e0-4dcc221af20b_post_1db61e77-786d-4d4c-94e0-4dcc221af20b_40"
+    ],
+    "batch_id": "iteration_1_batch_5",
+    "gaps": [
+      {
+        "behavioral_gap": "When the stimulus is a standalone micro-post meant to function as a hook (e.g., a patriotic holiday greeting or a “Read:” link-teaser with a punchy claim), this community compresses the post into 1–3 lines (aphorism/contrast → single scaling claim or greeting → optional link) and stops — but the prediction inflates it into a generic thought-leadership paragraph with emojis, “we’ve seen firsthand” positioning, and an engagement/connection CTA (“share your stories / let’s connect”).",
+        "exists_in_context": true,
+        "missing_nuance": "Existing context captures restraint in replies and in reflective posts, but not the specific trigger of micro-format broadcast posts (holiday greetings + link-teaser hooks) where the expected move is deliberate under-explanation: headline line(s) + optional link, no elaboration/CTA.",
+        "evidence": "2/5 posts",
+        "confidence": "MEDIUM"
+      }
+    ],
+    "outliers": [
+      {
+        "post_id": "1db61e77-786d-4d4c-94e0-4dcc221af20b_31",
+        "behavioral_gap": "Opens with verbatim founder complaints as a pattern (“went silent 3 days / no documentation / launched with a critical bug”), then lands a hard contrast (“Individual talent isn’t enough. Systems matter.”), supports it with hidden-cost arithmetic (hourly rate parity → 2–3x true cost), and sells the agency as a coverage/accountability system (team roles, always-someone-responsible, scalability, continuity) rather than as tooling/process tips.",
+        "why_outlier": "The prediction failed here because the post is a freelancer-vs-agency conversion argument built on specific failure quotes + cost-of-delay math + accountability/coverage structure — which is different from the main batch gaps because it’s not a micro-format hook post; it’s a longer sales narrative whose credibility comes from named failure modes and cost comparison (not from brevity).",
+        "exists_in_context": true,
+        "missing_nuance": "Context notes “collaboration over individual talent,” but not this specific persuasion structure: (1) quoted buyer pain → (2) ‘systems’ contrast line → (3) hidden-cost multiplier math → (4) enumerated coverage roles/accountability as the product."
+      }
+    ],
+    "batch_verdict": "new_gaps_found",
+    "prior_gap_confirmations": [
+      "When making a service/implementation offer (automation, n8n workflows, scraping), this community writes direct-response copy that quantifies delivery and outcomes (e.g., “14–21 days vs 4–6 months”, “250+ websites”, “90% accuracy”, “15+ hours/week saved”) and closes with a concrete action CTA (DM a sample invoice / DM a keyword / book a short call) often with a response promise — but the prediction defaults to a generic “excited to share/let’s connect” promo with vague benefits and no actionable next-step artifact."
+    ],
+    "preliminary_delta_notes": [
+      "[queued_for_batch_root_cause_memory]",
+      "[queued_for_batch_root_cause_memory]",
+      "[queued_for_batch_root_cause_memory]",
+      "[queued_for_batch_root_cause_memory]",
+      "[queued_for_batch_root_cause_memory]"
+    ],
+    "category": "AI and Technology Integration | Business Operations and Strategy | Diversity and Inclusion in Tech"
+  },
+  "iteration_1_batch_6": {
+    "reviews": [
+      "1db61e77-786d-4d4c-94e0-4dcc221af20b_post_1db61e77-786d-4d4c-94e0-4dcc221af20b_41",
+      "1db61e77-786d-4d4c-94e0-4dcc221af20b_post_1db61e77-786d-4d4c-94e0-4dcc221af20b_42",
+      "1db61e77-786d-4d4c-94e0-4dcc221af20b_post_1db61e77-786d-4d4c-94e0-4dcc221af20b_46",
+      "1db61e77-786d-4d4c-94e0-4dcc221af20b_post_1db61e77-786d-4d4c-94e0-4dcc221af20b_47",
+      "1db61e77-786d-4d4c-94e0-4dcc221af20b_post_1db61e77-786d-4d4c-94e0-4dcc221af20b_48"
+    ],
+    "batch_id": "iteration_1_batch_6",
+    "gaps": [
+      {
+        "behavioral_gap": "When the stimulus is a Voice AI/BPO pitch (telecalling/collections/support), this community sells via a domain-specific contrast (“the script isn’t broken; the delivery is”), anchors the why in human inconsistency (fatigue/burnout) plus multilingual/accent variability, explicitly differentiates from legacy (“this isn’t IVR”), and then invites pilot partners — but the prediction drifts into generic “automation/workflows” positioning (n8n/Zapier integration, scenario-testing platitudes, collaboration CTA) and misses the voice-ops framing and category boundary.",
+        "exists_in_context": false,
+        "missing_nuance": null,
+        "evidence": "2/5 posts",
+        "confidence": "MEDIUM"
+      }
+    ],
+    "outliers": [
+      {
+        "post_id": "1db61e77-786d-4d4c-94e0-4dcc221af20b_46",
+        "behavioral_gap": "Uses a “one major mistake” hook + stakes (“cost you millions”) then a “here’s how I’d fix it from scratch” checklist that mixes journey-mapping, simplification, and real-time testing (not tool-stack talk), ending with terse distribution directives (“Repost… follow”).",
+        "why_outlier": "The prediction failed here because the post is a from-scratch remediation checklist anchored in checkout friction (journey + form simplification + A/B changes), while the prediction substituted a generic automation-founder promo with unrelated examples (inventory/workflows, n8n/Zapier) — which is different from the main batch gap because it isn’t voice/BPO category positioning; it’s an eCom conversion triage playbook.",
+        "exists_in_context": false,
+        "missing_nuance": null
+      },
+      {
+        "post_id": "1db61e77-786d-4d4c-94e0-4dcc221af20b_48",
+        "behavioral_gap": "Proves the automation claim with a tiny client before/after story and hard deltas (e.g., “Reduced response time by 40%”, “Increased engagement by 30%”), then closes with a single diagnostic question about the reader’s current blocker.",
+        "why_outlier": "The prediction failed here because the post’s credibility mechanism is the concrete before/after plus numeric deltas, while the prediction replaced it with generalized encouragement and a generic 3-step framework — which is different from the main batch gaps because it’s not category-bound voice positioning or anti-tool-stack reframing; it’s metric-backed micro-case-study proof.",
+        "exists_in_context": false,
+        "missing_nuance": null
+      }
+    ],
+    "batch_verdict": "new_gaps_found",
+    "prior_gap_confirmations": [
+      "When making a service/implementation offer (automation, n8n workflows, scraping), this community writes direct-response copy that quantifies delivery and outcomes (e.g., “14–21 days vs 4–6 months”, “250+ websites”, “90% accuracy”, “15+ hours/week saved”) and closes with a concrete action CTA (DM a sample invoice / DM a keyword / book a short call) often with a response promise — but the prediction defaults to a generic “excited to share/let’s connect” promo with vague benefits and no actionable next-step artifact.",
+      "When the stimulus is an ops/orchestration pitch framed as “you don’t need another tool—your existing tools need to talk” (alignment-first, anti–AI-magic), this community opens with a not-X-but-Y contrast (“not AI magic / not another tool”) and then proves it with a single concrete end-to-end sync example (invoice email → verify → update accounts → Slack) or multiple specific desync symptoms (CRM vs accounting, support vs sales) — but the prediction defaults to a generic no-code tool promo (name-dropping n8n/Zapier, “game changer/drive efficiency”), adds unrelated canned examples (Gmail → Sheets), and turns it into a broad growth/innovation pitch."
+    ],
+    "preliminary_delta_notes": [
+      "[queued_for_batch_root_cause_memory]",
+      "[queued_for_batch_root_cause_memory]",
+      "[queued_for_batch_root_cause_memory]",
+      "[queued_for_batch_root_cause_memory]",
+      "[queued_for_batch_root_cause_memory]"
+    ],
+    "category": "AI and Technology Integration | Business Operations and Strategy"
+  },
+  "iteration_1_batch_7": {
+    "reviews": [
+      "1db61e77-786d-4d4c-94e0-4dcc221af20b_post_1db61e77-786d-4d4c-94e0-4dcc221af20b_50",
+      "2e4a00af-909d-4ee2-9aa6-52eee25d18e9_post_2e4a00af-909d-4ee2-9aa6-52eee25d18e9_5",
+      "2e4a00af-909d-4ee2-9aa6-52eee25d18e9_post_2e4a00af-909d-4ee2-9aa6-52eee25d18e9_9",
+      "30e90503-bef8-4da2-8ffb-f47487b0e1de_post_30e90503-bef8-4da2-8ffb-f47487b0e1de_1",
+      "313325f0-0334-45f7-93b3-e65adcc597e9_post_313325f0-0334-45f7-93b3-e65adcc597e9_15"
+    ],
+    "batch_id": "iteration_1_batch_7",
+    "gaps": [
+      {
+        "behavioral_gap": "When the stimulus is a veteran/career milestone or veteran-program endorsement, this community writes as an attribution ledger (names specific programs/employers/military orgs and what each enabled) and ends with a concrete, in-network action ask (e.g., “Microsoft colleagues: sign up to be an MSSA mentor”) — but the prediction turns it into a generalized career-transition pep talk with invented technical positioning (Azure/compliance/defense) and a broad “let’s connect/support each other” CTA.",
+        "exists_in_context": true,
+        "missing_nuance": "Existing traits cover brief relational engagement around career wins, but not the standalone-post pattern of (1) naming specific institutions + the exact benefit they provided (e.g., tuition assistance debt-free) and (2) immediately converting gratitude into a targeted internal mobilization ask (“Microsoft colleagues… mentor”).",
+        "evidence": "2/5 posts",
+        "confidence": "MEDIUM"
+      }
+    ],
+    "outliers": [
+      {
+        "post_id": "1db61e77-786d-4d4c-94e0-4dcc221af20b_50",
+        "behavioral_gap": "Opens by stopping a common misconception (“working from anywhere = you do everything yourself”), lists the wrong beliefs (“fancy tools / always online / available every minute”), then downshifts to a simplicity-first “real steps to freedom” list (clear roles, keep services simple, follow up) with a vivid pain vignette (answering emails all day) and a blunt admonition (“Stop trying to do everything.”).",
+        "why_outlier": "The prediction failed here because the post’s core move is misconception-busting + simplicity/role-clarity as the mechanism for remote-work freedom — which is different from the main batch gap because it isn’t a gratitude/attribution + targeted mentor mobilization pattern; it’s a “stop thinking X → do Y” operator-style correction.",
+        "exists_in_context": false,
+        "missing_nuance": null
+      },
+      {
+        "post_id": "30e90503-bef8-4da2-8ffb-f47487b0e1de_1",
+        "behavioral_gap": "Frames the post as a direct inbound ask (“We’re looking to connect with someone who knows digital and social media marketing”), explicitly disclaims job-ad framing (“This isn’t a job ad — it’s an invitation”), and specifies the target fit (Gen Z + parents, mission-driven/education, storytelling content) instead of prompting the crowd for generic marketing tips.",
+        "why_outlier": "The prediction failed here because the post is a partner/help request designed to route the right person into a 1:1 conversation, not a discussion thread — which is different from the main batch gap because it’s not an attribution-led gratitude/mobilization message; it’s a scoped recruitment/invitation post that avoids open-ended crowdsourcing questions.",
+        "exists_in_context": true,
+        "missing_nuance": "The existing “move to DMs for opportunities” trait doesn’t capture the specific public-copy mechanism of explicitly labeling the post as an invitation (not a job ad) and listing persona qualifiers (Gen Z + parents + storytelling) rather than asking the feed “what strategies worked?”"
+      },
+      {
+        "post_id": "313325f0-0334-45f7-93b3-e65adcc597e9_15",
+        "behavioral_gap": "Posts a long verbatim excerpt from a notable speech with precise attribution (speaker, event, photo credit) and a pointer to the full video, without adding a personal tech anecdote, motivational remix, or community-rally CTA.",
+        "why_outlier": "The prediction failed here because the post’s move is pure quotation-as-resource with formal attribution — which is different from the main batch gaps because it’s neither (a) an attribution-led personal milestone nor (b) a targeted mobilization ask; it’s a minimal ‘here’s the source text’ share where adding personal framing is the mistake.",
+        "exists_in_context": true,
+        "missing_nuance": "Context covers keeping replies minimal on resource-shares, but not the standalone-post pattern of preserving a long quote verbatim (with event + photo-credit style attribution) and resisting any self-referential lesson or “together we can” closer."
+      }
+    ],
+    "batch_verdict": "new_gaps_found",
+    "prior_gap_confirmations": [],
+    "preliminary_delta_notes": [
+      "[queued_for_batch_root_cause_memory]",
+      "[queued_for_batch_root_cause_memory]",
+      "[queued_for_batch_root_cause_memory]",
+      "[queued_for_batch_root_cause_memory]",
+      "[queued_for_batch_root_cause_memory]"
+    ],
+    "category": "Business Operations and Strategy | Career Development and Growth | Personal Development and Well-being"
+  },
+  "iteration_1_batch_8": {
+    "reviews": [
+      "313325f0-0334-45f7-93b3-e65adcc597e9_post_313325f0-0334-45f7-93b3-e65adcc597e9_17",
+      "351405ab-deb1-45b5-810c-d32798c95f40_post_351405ab-deb1-45b5-810c-d32798c95f40_3",
+      "351405ab-deb1-45b5-810c-d32798c95f40_post_351405ab-deb1-45b5-810c-d32798c95f40_6",
+      "351405ab-deb1-45b5-810c-d32798c95f40_post_351405ab-deb1-45b5-810c-d32798c95f40_46",
+      "3a0a7529-16a1-48d1-b987-c60e4260ad46_post_3a0a7529-16a1-48d1-b987-c60e4260ad46_9"
+    ],
+    "batch_id": "iteration_1_batch_8",
+    "gaps": [],
+    "outliers": [],
+    "batch_verdict": null,
+    "prior_gap_confirmations": [],
+    "preliminary_delta_notes": [
+      "[queued_for_batch_root_cause_memory]",
+      "[queued_for_batch_root_cause_memory]",
+      "[queued_for_batch_root_cause_memory]",
+      "[queued_for_batch_root_cause_memory]",
+      "[queued_for_batch_root_cause_memory]"
+    ],
+    "category": "AI and Technology Integration | Business Operations and Strategy | Career Development and Growth | Diversity and Inclusion in Tech"
+  },
+  "iteration_1_batch_9": {
+    "reviews": [
+      "3a0a7529-16a1-48d1-b987-c60e4260ad46_post_3a0a7529-16a1-48d1-b987-c60e4260ad46_30",
+      "54c19b05-7985-47be-b2f2-6a2f8360cf89_post_54c19b05-7985-47be-b2f2-6a2f8360cf89_1",
+      "54c19b05-7985-47be-b2f2-6a2f8360cf89_post_54c19b05-7985-47be-b2f2-6a2f8360cf89_9",
+      "54c19b05-7985-47be-b2f2-6a2f8360cf89_post_54c19b05-7985-47be-b2f2-6a2f8360cf89_13",
+      "583f07ae-71cc-42ed-982b-67b6c6d6a3ff_post_583f07ae-71cc-42ed-982b-67b6c6d6a3ff_8"
+    ],
+    "batch_id": "iteration_1_batch_9",
+    "gaps": [],
+    "outliers": [
+      {
+        "post_id": "3a0a7529-16a1-48d1-b987-c60e4260ad46_30",
+        "behavioral_gap": "Launch/announcement posts in the cloud-native/MS ecosystem are written as a specific product-differentiation memo plus origin-story attribution: name the artifact (“Project AppLink”), state the differentiator (“first fully-managed service mesh built on Istio Ambient / remove the sidecar”), anchor it with a timeline and personal history (experiments starting in 2021 at Google → shipped at Microsoft Azure), credit the team, then teaser a roadmap (features coming in 2026) — but the prediction rewrote it as generic ‘service mesh adoption’ commentary with unrelated tech name-drops (Cilium), a “let’s connect” CTA, and hashtagged thought-leadership.",
+        "why_outlier": "The prediction failed here because the post is an insider launch announcement with a very specific credibility structure (named product + first-to-market claim + multi-year origin story + team credit + roadmap teaser) — which is different from the main batch gaps because there was no recurring batch-level pattern (2+ posts) of a single missed move; this is a distinct ‘operator launch memo’ format failure.",
+        "exists_in_context": false,
+        "missing_nuance": null
+      },
+      {
+        "post_id": "54c19b05-7985-47be-b2f2-6a2f8360cf89_1",
+        "behavioral_gap": "When asking for help after a layoff, this community makes the post an explicit referral routing request: state the triggering event (“let go this week”), vouch from lived proximity (“instrumental in my growth”), make a direct ask (“offer a referral”), and provide concrete constraints (location: Vancouver/US; role: backend with some full-stack) — but the prediction converted it into generic ‘uplift each other’ branding (“At Microsoft, we value…”) with broad role buckets (cloud/AI/edtech), emojis/hashtags, and a vague ‘connect with me’ CTA.",
+        "why_outlier": "The prediction failed here because the post’s core move is urgent, logistics-oriented referral coordination with specific candidate constraints — which is different from the main batch gaps because no other post in this batch used the same ‘referral routing’ structure strongly enough to form a repeated, batch-level gap.",
+        "exists_in_context": false,
+        "missing_nuance": null
+      },
+      {
+        "post_id": "583f07ae-71cc-42ed-982b-67b6c6d6a3ff_8",
+        "behavioral_gap": "When critiquing a career-framework/trend term (here: “career athleticism” / portfolio-based hiring), this community doesn’t switch to ‘continuous learning’ encouragement; they interrogate the model by enumerating concrete counter-constraints (skills learned privately weren’t needed → forced job change; salary expectations; portfolio privacy/IP concerns; gig-programmer/consultancy maintainability risk) and leave it as open mechanism questions — but the prediction responded with generic motivational learning advice (“blend projects + courses,” “document your journey,” “sharing helps others”) and hashtags.",
+        "why_outlier": "The prediction failed here because the post is a boundary-condition teardown of a popular career narrative using specific failure modes (portfolio privacy, mismatch of skills-to-role, consultancy code quality) — which is different from the main batch gaps because it’s a niche ‘assumption audit’ format and occurs only once in this batch.",
+        "exists_in_context": true,
+        "missing_nuance": "Existing context captures ‘pressure-testing claims via boundary conditions,’ but not this specific trigger: career-portfolio/candidate-search frameworks being challenged via (a) portfolio privacy/IP leakage concerns and (b) team maintainability degradation from gig/consultancy staffing models."
+      }
+    ],
+    "batch_verdict": "no_new_gaps",
+    "prior_gap_confirmations": [],
+    "preliminary_delta_notes": [
+      "[queued_for_batch_root_cause_memory]",
+      "[queued_for_batch_root_cause_memory]",
+      "[queued_for_batch_root_cause_memory]",
+      "[queued_for_batch_root_cause_memory]",
+      "[queued_for_batch_root_cause_memory]"
+    ],
+    "category": "AI and Technology Integration | Business Operations and Strategy | Career Development and Growth"
+  },
+  "iteration_1_batch_10": {
+    "reviews": [
+      "583f07ae-71cc-42ed-982b-67b6c6d6a3ff_post_583f07ae-71cc-42ed-982b-67b6c6d6a3ff_12",
+      "583f07ae-71cc-42ed-982b-67b6c6d6a3ff_post_583f07ae-71cc-42ed-982b-67b6c6d6a3ff_13",
+      "583f07ae-71cc-42ed-982b-67b6c6d6a3ff_post_583f07ae-71cc-42ed-982b-67b6c6d6a3ff_14",
+      "5b792818-ac34-4256-97f8-cdce43bde7f0_post_5b792818-ac34-4256-97f8-cdce43bde7f0_6",
+      "5b792818-ac34-4256-97f8-cdce43bde7f0_post_5b792818-ac34-4256-97f8-cdce43bde7f0_13"
+    ],
+    "batch_id": "iteration_1_batch_10",
+    "gaps": [
+      {
+        "behavioral_gap": "When the stimulus is a concrete, situational career-entry prompt (\"my cousin is switching into IT—what’s the best starting point?\") or a terse TL;DR operator memo (bootcamps/skills/hiring heuristics), this community stays in execution mode (short, direct, actionable next step or bullet assertions) — but the prediction defaults to a broad mentorship/community narrative with motivational filler, rhetorical questions, and “let’s connect” style engagement bait.",
+        "exists_in_context": true,
+        "missing_nuance": "The missing trigger is utilitarian career/education posts that are already framed as either (a) a specific person’s next-step question or (b) a TL;DR bullet memo; in these cases the expected move is a concrete starting point or compact assertions, not mentorship/inclusion framing or audience-wide CTAs.",
+        "evidence": "2/5 posts",
+        "confidence": "MEDIUM"
+      }
+    ],
+    "outliers": [
+      {
+        "post_id": "583f07ae-71cc-42ed-982b-67b6c6d6a3ff_13",
+        "behavioral_gap": "Launch/promo post is written as explicit distribution mechanics: names the book title, says it’s on Amazon (link in comments), offers a free physical-copy giveaway to specific groups (students/juniors), and instructs the exact action (“comment”, “like/share”).",
+        "why_outlier": "The prediction failed here because the actual post is a concrete promo-with-giveaway workflow (title → where to get it → who the giveaway is for → exact steps to enter/amplify) — which is different from the main batch gaps because it’s not asking for career guidance or posting a TL;DR memo; it’s a specific launch distribution script that the prediction replaced with unrelated “I compiled resources” thought-leadership.",
+        "exists_in_context": false,
+        "missing_nuance": null
+      },
+      {
+        "post_id": "5b792818-ac34-4256-97f8-cdce43bde7f0_6",
+        "behavioral_gap": "Inspirational post keeps a vivid, place-specific narrative vignette (Hyderabad→Pune drive, hotel stop, kids taking photos of the car) and only then lands the ambition/pride takeaway—without pivoting into professional mentorship/community themes.",
+        "why_outlier": "The prediction failed here because it swapped the concrete story into an invented “mentoring aspiring engineers” scenario with generic inclusion/innovation language — which is different from the main batch gaps because the core move is narrative scene-keeping (storytelling fidelity), not operational advice formatting.",
+        "exists_in_context": true,
+        "missing_nuance": "Existing context covers keeping inspiration threads relational, but not the stronger constraint that the post’s credibility comes from preserving the specific scene details (places/actions) rather than replacing them with a different, resume-like professional anecdote."
+      },
+      {
+        "post_id": "5b792818-ac34-4256-97f8-cdce43bde7f0_13",
+        "behavioral_gap": "Caregiver-leave endorsement is a compact testimonial that names the exact operational condition that made it work (“not a single call/ping from business & my team”) and credits manager/LT, using internal-culture hashtags rather than industry advocacy.",
+        "why_outlier": "The prediction failed here because it expanded a specific Microsoft-culture testimonial into a generalized “inclusive workplace advocacy” mini-essay — which is different from the main batch gaps because the author isn’t asking for advice or posting a memo; they’re logging a precise support boundary as proof of policy effectiveness.",
+        "exists_in_context": true,
+        "missing_nuance": "The missing nuance is that these culture/testimonial posts often hinge on one concrete boundary-condition detail (e.g., “no calls/pings”) as the proof point; the expected move is to keep that detail central and stop, not generalize into advocacy."
+      }
+    ],
+    "batch_verdict": "new_gaps_found",
+    "prior_gap_confirmations": [],
+    "preliminary_delta_notes": [
+      "[queued_for_batch_root_cause_memory]",
+      "[queued_for_batch_root_cause_memory]",
+      "[queued_for_batch_root_cause_memory]",
+      "[queued_for_batch_root_cause_memory]",
+      "[queued_for_batch_root_cause_memory]"
+    ],
+    "category": "Career Development and Growth | Diversity and Inclusion in Tech | Personal Development and Well-being"
+  },
+  "iteration_1_batch_11": {
+    "reviews": [
+      "5b792818-ac34-4256-97f8-cdce43bde7f0_post_5b792818-ac34-4256-97f8-cdce43bde7f0_16",
+      "7333df73-63cf-4f92-b724-caefc9171b63_post_7333df73-63cf-4f92-b724-caefc9171b63_3",
+      "7333df73-63cf-4f92-b724-caefc9171b63_post_7333df73-63cf-4f92-b724-caefc9171b63_5",
+      "7333df73-63cf-4f92-b724-caefc9171b63_post_7333df73-63cf-4f92-b724-caefc9171b63_6",
+      "7333df73-63cf-4f92-b724-caefc9171b63_post_7333df73-63cf-4f92-b724-caefc9171b63_7"
+    ],
+    "batch_id": "iteration_1_batch_11",
+    "gaps": [
+      {
+        "behavioral_gap": "When the stimulus is a standalone event-presence post (conference booth / talk announcement), this community writes a logistics-first invite (“catch me at our booth”, “ask me anything”) and closes with explicit named thanks to specific organizers/companies (often also naming the exact talk topic or demo stack) — but the prediction turns it into a generic networking/community sermon with broad questions/CTAs and no concrete where/what details.",
+        "exists_in_context": true,
+        "missing_nuance": "Existing context covers terse 1:1 coordination in comment replies, but not the standalone-post format for conferences/talks where the expected move is public logistics + named-credit thanks + (optionally) the exact demo/toolchain being shown.",
+        "evidence": "2/5 posts",
+        "confidence": "MEDIUM"
+      },
+      {
+        "behavioral_gap": "When the stimulus is a Microsoft ecosystem governance/product announcement, this community stays ultra-specific and declarative (names the exact orgs/features like “React Foundation core member”, “Copilot LM platform”, “MCP support”) with minimal extra framing — but the prediction injects generalized AI/innovation positioning, cross-product name-dropping (e.g., Azure AI Foundry / M365 Copilot), and broad ‘transforming the industry’ language that isn’t anchored to the announced capability.",
+        "exists_in_context": false,
+        "missing_nuance": null,
+        "evidence": "2/5 posts",
+        "confidence": "MEDIUM"
+      }
+    ],
+    "outliers": [
+      {
+        "post_id": "5b792818-ac34-4256-97f8-cdce43bde7f0_16",
+        "behavioral_gap": "Exit/farewell posts are written as a simple gratitude ledger plus humble-origin contrast (small village/government schools/Marathi medium → Adobe/Amazon) and a brief “excited for what’s next,” without inventing a new employer, hiring pitch, or mentorship-program CTA.",
+        "why_outlier": "The prediction failed here because the actual post is a personal goodbye/closure note with background humility and relationship gratitude — which is different from the main batch gaps because it’s neither an event logistics invite nor a product/ecosystem announcement; it’s a personal transition where adding ‘now at Microsoft’ and ‘I’m hiring’ is the core violation.",
+        "exists_in_context": true,
+        "missing_nuance": "Context notes keeping career-win/gratitude engagement relational, but doesn’t explicitly cover standalone ‘last day at company’ farewells where the norm is: no forward-looking recruitment/mentor pitch and no fabricated next role; just gratitude + personal origin detail + short close."
+      }
+    ],
+    "batch_verdict": "new_gaps_found",
+    "prior_gap_confirmations": [],
+    "preliminary_delta_notes": [
+      "[queued_for_batch_root_cause_memory]",
+      "[queued_for_batch_root_cause_memory]",
+      "[queued_for_batch_root_cause_memory]",
+      "[queued_for_batch_root_cause_memory]",
+      "[queued_for_batch_root_cause_memory]"
+    ],
+    "category": "AI and Technology Integration | Career Development and Growth"
+  },
+  "iteration_1_batch_12": {
+    "reviews": [
+      "7333df73-63cf-4f92-b724-caefc9171b63_post_7333df73-63cf-4f92-b724-caefc9171b63_28",
+      "77a8e5f8-0a16-456a-a634-c30cecdf356b_post_77a8e5f8-0a16-456a-a634-c30cecdf356b_2",
+      "8774ee3b-19ab-45ca-8197-b68720c4b1b8_post_8774ee3b-19ab-45ca-8197-b68720c4b1b8_6",
+      "8774ee3b-19ab-45ca-8197-b68720c4b1b8_post_8774ee3b-19ab-45ca-8197-b68720c4b1b8_9",
+      "8774ee3b-19ab-45ca-8197-b68720c4b1b8_post_8774ee3b-19ab-45ca-8197-b68720c4b1b8_10"
+    ],
+    "batch_id": "iteration_1_batch_12",
+    "gaps": [
+      {
+        "behavioral_gap": "When the stimulus is clearly not a Microsoft-first narrative (e.g., a LinkedIn Learning completion post, a consumer complaint to HDFC Bank, or a friend’s job-search referral ask), this community stays in the author’s actual lane (named third-party, direct complaint, or referral routing) — but the prediction repeatedly injects a first-person “at Microsoft / in our ecosystem” vantage with unrelated stack name-drops and a generic community-uplift CTA.",
+        "exists_in_context": false,
+        "missing_nuance": null,
+        "evidence": "3/5 posts",
+        "confidence": "MEDIUM"
+      }
+    ],
+    "outliers": [
+      {
+        "post_id": "7333df73-63cf-4f92-b724-caefc9171b63_28",
+        "behavioral_gap": "Course-completion posts are written as consumption-proof: quantify the path (hours), name the exact module + instructor, list concrete skills touched (Docker deploy, HTML/CSS/PHP, MongoDB integration), then a simple gratitude + recommendation—without turning it into broad career/mentorship advice or adding unrelated learning platforms.",
+        "why_outlier": "The prediction failed here because the actual post’s credibility mechanism is detailed, specific learning-consumption evidence (named module/instructor + concrete skills), not a generalized career-transition/mentorship speech — which is different from the main batch gap because it’s about preserving the “I actually took this and here’s exactly what was in it” structure, not just avoiding Microsoft-first voice contamination.",
+        "exists_in_context": true,
+        "missing_nuance": "Existing context captures participant-style responses to course promos, but not the standalone “I completed this learning path” format where the proof is hours + exact module title/instructor + a tight skill inventory before recommending it."
+      },
+      {
+        "post_id": "77a8e5f8-0a16-456a-a634-c30cecdf356b_2",
+        "behavioral_gap": "Operator ML-infra updates are posted as a terse internal engineering status note with specific hardware/pipeline nouns (distilled models → NPUs on Copilot+ PCs; ONNX QDQ path; silicon heterogeneity) and no broad “democratize AI / open science” framing, CTA, or generic hashtags.",
+        "why_outlier": "The prediction failed here because the actual post is a compressed, jargon-dense ‘we just did X fast, here’s the exact technical surface area’ memo — which is different from the main batch gaps because it’s primarily a register/format mismatch (operator status note vs public thought-leadership framing), not an affiliation-hallucination problem.",
+        "exists_in_context": true,
+        "missing_nuance": "Context covers operator-style execution units in threads, but not the standalone micro-status update pattern for model deployment/inference work (named acceleration path + heterogeneity constraint) where the terseness and exact nouns are the point."
+      },
+      {
+        "post_id": "8774ee3b-19ab-45ca-8197-b68720c4b1b8_6",
+        "behavioral_gap": "Consumer/brand-complaint posts are written as direct escalation: name the company, describe repeated violation of an explicit request (“don’t call again”), state the consequence (cancel account/cards), and cite the escalation path (banking ombudsman, DOT) rather than turning it into a generic ‘CX best practices’ discussion prompt.",
+        "why_outlier": "The prediction failed here because it treated a threat-of-escalation complaint as an abstract customer-experience thought-leadership post with an engagement question — which is different from the main batch gap because the core missed move is the explicit ‘stop + I will escalate via X agencies’ enforcement posture.",
+        "exists_in_context": false,
+        "missing_nuance": null
+      },
+      {
+        "post_id": "8774ee3b-19ab-45ca-8197-b68720c4b1b8_9",
+        "behavioral_gap": "Conference-session promo posts are kept as simple coordination/credit: mention the event/session, state the narrow topic focus (upcoming Syntex capabilities; how Microsoft uses AI for content processing at scale), tag specific teammates by name, and stop—without adding extra claims, “proud of advancements” narrative padding, or generalized AI exhortations.",
+        "why_outlier": "The prediction failed here because it expanded a logistics/credit announcement into a mini-essay with generic benefits and hype — which is different from the main batch gap because the primary error is overproduction on an event-promo coordination post, not misattributing the speaker’s organizational identity.",
+        "exists_in_context": true,
+        "missing_nuance": "Context covers minimal engagement on acknowledgments/resource-shares, but not the specific standalone ‘Ignite session + teammate-tag rollcall’ format where the tags/attribution are the functional payload and additional exposition is noise."
+      },
+      {
+        "post_id": "8774ee3b-19ab-45ca-8197-b68720c4b1b8_10",
+        "behavioral_gap": "Referral-routing posts for someone else are written as a short vouch + constraints: identify the person (by name), summarize seniority and recent role titles (20+ years; app dev manager/solution architect), and make the direct ask (“contact him if you have openings that match”)—without turning it into generic job-search inspiration, mentorship talk, or broad ‘uplift each other’ CTAs.",
+        "why_outlier": "The prediction failed here because it replaced a targeted ‘please route openings to this specific candidate’ coordination ask with generalized career commentary — which is different from the main batch gaps because the key missed behavior is the explicit referral-routing structure (candidate summary + direct request), not just a tone/voice mismatch.",
+        "exists_in_context": true,
+        "missing_nuance": "Existing context captures ultra-terse amplification of trusted hiring posts, but not the variant where the poster is advocating for a specific individual (friend) and the comment/post must include that person’s experience level + exact prior titles to enable quick matching."
+      }
+    ],
+    "batch_verdict": "new_gaps_found",
+    "prior_gap_confirmations": [],
+    "preliminary_delta_notes": [
+      "[queued_for_batch_root_cause_memory]",
+      "[queued_for_batch_root_cause_memory]",
+      "[queued_for_batch_root_cause_memory]",
+      "[queued_for_batch_root_cause_memory]",
+      "[queued_for_batch_root_cause_memory]"
+    ],
+    "category": "AI and Technology Integration | Business Operations and Strategy | Career Development and Growth"
+  },
+  "iteration_1_batch_13": {
+    "reviews": [
+      "8774ee3b-19ab-45ca-8197-b68720c4b1b8_post_8774ee3b-19ab-45ca-8197-b68720c4b1b8_12",
+      "881ba53e-5c01-4ae4-bc09-59d059c315a5_post_881ba53e-5c01-4ae4-bc09-59d059c315a5_8",
+      "881ba53e-5c01-4ae4-bc09-59d059c315a5_post_881ba53e-5c01-4ae4-bc09-59d059c315a5_9",
+      "937353b2-546c-41e3-ae57-4b7507de8a1d_post_937353b2-546c-41e3-ae57-4b7507de8a1d_18",
+      "937353b2-546c-41e3-ae57-4b7507de8a1d_post_937353b2-546c-41e3-ae57-4b7507de8a1d_42"
+    ],
+    "batch_id": "iteration_1_batch_13",
+    "gaps": [
+      {
+        "behavioral_gap": "When the stimulus is a straightforward recruitment/launch announcement for a training program, this community keeps the post as a bare factual CTA (who it’s for + apply link + maybe one credibility credential like “backed by Andrew Ng”) and avoids inventing extra curriculum/tech-stack claims — but the prediction inflates it into a brandy “mentorship/community” pitch and hallucinates program details (e.g., AWS/Azure/AI training) plus a “let’s connect” closer.",
+        "exists_in_context": false,
+        "missing_nuance": null,
+        "evidence": "2/5 posts",
+        "confidence": "MEDIUM"
+      }
+    ],
+    "outliers": [
+      {
+        "post_id": "937353b2-546c-41e3-ae57-4b7507de8a1d_42",
+        "behavioral_gap": "The post is written as an event-invite logistics memo plus an attribution ledger: it specifies the exact event (first TEDxRowan University), date/time/location, a tight personal-journey frame, names the organizing team, and then points to ticket/event links—without adding a generic “join the conversation” thought-leadership wrap.",
+        "why_outlier": "The prediction failed here because it replaced a logistics-heavy invite + named-credit ledger with vague inspirational positioning and unrelated topical grafting (“responsible AI”), which is different from the main batch gaps because it’s not a minimal program-application announcement—it’s a milestone event invite where the credibility is in concrete details and explicit crediting.",
+        "exists_in_context": true,
+        "missing_nuance": "Existing context covers attribution/credit in milestones, but not the specific constraint that event invites preserve hard logistics (date/time/location/tickets) and named organizer credits as the primary content, rather than substituting broad “impact/innovation” messaging."
+      }
+    ],
+    "batch_verdict": "new_gaps_found",
+    "prior_gap_confirmations": [
+      "When the post is a pre-build/pre-change execution warning (\"before committing\" / \"first real change\" / \"not planning for the first change\"), this community writes as a tight mechanism memo: a 1-line contrast or diagnostic question followed by a short list of concrete change-vectors/dependencies, ending with a crisp punchline (no generic best-practices list, no audience-question CTA) — but the prediction assumes the right move is to expand into a motivational mini-playbook (numbered \"recommendations\"), add broad platitudes (\"reliability/repeatability\"), and tack on an engagement question/CTA."
+    ],
+    "preliminary_delta_notes": [
+      "[queued_for_batch_root_cause_memory]",
+      "[queued_for_batch_root_cause_memory]",
+      "[queued_for_batch_root_cause_memory]",
+      "[queued_for_batch_root_cause_memory]",
+      "[queued_for_batch_root_cause_memory]"
+    ],
+    "category": "Career Development and Growth | Diversity and Inclusion in Tech | Personal Development and Well-being"
+  },
+  "iteration_1_batch_14": {
+    "reviews": [
+      "937353b2-546c-41e3-ae57-4b7507de8a1d_post_937353b2-546c-41e3-ae57-4b7507de8a1d_43",
+      "9d0711b8-17ae-44cc-adbd-f2e39f25571b_post_9d0711b8-17ae-44cc-adbd-f2e39f25571b_17",
+      "9d0711b8-17ae-44cc-adbd-f2e39f25571b_post_9d0711b8-17ae-44cc-adbd-f2e39f25571b_45",
+      "a9f99660-2db6-4851-a76e-61fc5c205a53_post_a9f99660-2db6-4851-a76e-61fc5c205a53_3",
+      "ab1fb966-d14e-4639-b504-00f7b6f9084b_post_ab1fb966-d14e-4639-b504-00f7b6f9084b_4"
+    ],
+    "batch_id": "iteration_1_batch_14",
+    "gaps": [
+      {
+        "behavioral_gap": "When the stimulus is a standalone hiring post inside the Microsoft/cloud-infra ecosystem, this community writes it as a tight recruiting-routing note (name the exact team/product surface, specify candidate constraints like “new grads within 18 months,” and give precise apply/reach-out instructions) — but the prediction generalizes into broad AI/DEI/mentorship positioning with hashtags and generic “let’s connect” energy that omits the concrete role + application path.",
+        "exists_in_context": false,
+        "missing_nuance": null,
+        "evidence": "2/5 posts",
+        "confidence": "MEDIUM"
+      }
+    ],
+    "outliers": [
+      {
+        "post_id": "937353b2-546c-41e3-ae57-4b7507de8a1d_43",
+        "behavioral_gap": "Campus/community event recap is written as a simple credit-and-relationship note: name the event (“Tech Day at Rowan University”), explicitly credit that students put it on, state it was a pleasure to guide them, and close with “honored to speak again / look forward to future efforts,” without turning it into a cause/DEI discussion prompt.",
+        "why_outlier": "The prediction failed here because the post’s core move is student-credit + local event gratitude (a relationship-touchpoint recap), not a diversity/mentorship thought-leadership prompt — which is different from the main batch gaps because it isn’t hiring-routing or recruiting logistics at all.",
+        "exists_in_context": true,
+        "missing_nuance": "Existing context covers keeping acknowledgment/gratitude posts short, but doesn’t capture the specific credibility move in campus outreach recaps: explicitly attributing the event’s creation/execution to students (“put together, and run by the students”) as the centerpiece."
+      },
+      {
+        "post_id": "a9f99660-2db6-4851-a76e-61fc5c205a53_3",
+        "behavioral_gap": "Funding announcement is written as a detailed investor-and-product memo: state round size + valuation, name lead investors and participants, position the product as the core achievement, give a long-form link, thank team/customers, then push a specific product CTA with quantified benefit (“download PeopleGlass.app… free… save you at least 5 hours/week”).",
+        "why_outlier": "The prediction failed here because the post’s move is a structured funding + distribution script (investor credits + product CTA with a concrete time-saved claim), but the prediction pivoted into unrelated ‘AI/dev experience’ positioning and a generic hiring pitch — which is different from the main batch gaps because it’s not a role-specific hiring-routing post; it’s a capital milestone plus product acquisition drive.",
+        "exists_in_context": false,
+        "missing_nuance": null
+      },
+      {
+        "post_id": "ab1fb966-d14e-4639-b504-00f7b6f9084b_4",
+        "behavioral_gap": "Layoff-week support post is anchored in one personal framing device (“Resilience” as the word chosen in January), explicitly names the hard event (colleagues impacted by layoffs + survivor’s heaviness), defines the term via a contrast (“not pretending things are okay”), then offers a direct, bounded support channel (“If you need a connection… I’m here”).",
+        "why_outlier": "The prediction failed here because it replaced a specific layoff-context + definition-by-contrast + direct offer-to-listen with a generic ‘community support/mentorship’ paragraph — which is different from the main batch gaps because it’s not about recruiting-routing; it’s about grief/solidarity mechanics during layoffs.",
+        "exists_in_context": false,
+        "missing_nuance": null
+      }
+    ],
+    "batch_verdict": "new_gaps_found",
+    "prior_gap_confirmations": [],
+    "preliminary_delta_notes": [
+      "[queued_for_batch_root_cause_memory]",
+      "[queued_for_batch_root_cause_memory]",
+      "[queued_for_batch_root_cause_memory]",
+      "[queued_for_batch_root_cause_memory]",
+      "[queued_for_batch_root_cause_memory]"
+    ],
+    "category": "AI and Technology Integration | Business Operations and Strategy | Career Development and Growth | Diversity and Inclusion in Tech | Personal Development and Well-being"
+  },
+  "iteration_1_batch_15": {
+    "reviews": [
+      "ab1fb966-d14e-4639-b504-00f7b6f9084b_post_ab1fb966-d14e-4639-b504-00f7b6f9084b_9",
+      "ab1fb966-d14e-4639-b504-00f7b6f9084b_post_ab1fb966-d14e-4639-b504-00f7b6f9084b_15",
+      "ab1fb966-d14e-4639-b504-00f7b6f9084b_post_ab1fb966-d14e-4639-b504-00f7b6f9084b_17",
+      "ab1fb966-d14e-4639-b504-00f7b6f9084b_post_ab1fb966-d14e-4639-b504-00f7b6f9084b_19",
+      "ab1fb966-d14e-4639-b504-00f7b6f9084b_post_ab1fb966-d14e-4639-b504-00f7b6f9084b_21"
+    ],
+    "batch_id": "iteration_1_batch_15",
+    "gaps": [
+      {
+        "behavioral_gap": "When the stimulus is a community-run virtual event invitation (often in Portuguese) with an explicit registration CTA and logistics (date/time, “inscreva-se gratuitamente”, format, sometimes language note), this community posts a compact distribution script (invite → topic/value → exact logistics → register) — but the prediction replaces it with English thought-leadership about “career journeys/community” plus an engagement question, omitting the concrete signup/logistics mechanics.",
+        "exists_in_context": true,
+        "missing_nuance": "Existing context covers (a) conference/talk logistics posts and (b) how they reply to course promos, but not this specific “virtual community event invite” format where the post’s primary job is registration routing via date/time + free signup + language-of-event note.",
+        "evidence": "2/5 posts",
+        "confidence": "MEDIUM"
+      }
+    ],
+    "outliers": [
+      {
+        "post_id": "ab1fb966-d14e-4639-b504-00f7b6f9084b_17",
+        "behavioral_gap": "Event recap is written as (1) specific host/org attribution + (2) named panelist shout-outs with roles + (3) a long, concrete bullet list of interview tactics (hackathons, AI projects, Azure credits, resume review via ChatGPT/Copilot, collaboration examples) + (4) explicit thanks to organizers by name.",
+        "why_outlier": "The prediction failed here because the post’s core move is a detailed, credit-heavy event recap that ships actionable bullet tips — which is different from the main batch gaps because it is not a registration/logistics invite; it’s a post-event debrief that must preserve names/roles and the concrete tip list rather than general “community/innovation” vibes.",
+        "exists_in_context": true,
+        "missing_nuance": "Context captures “execution units” and resource-sharing, but not the specific standalone format: UW/SOMOS.tech-style event debriefs that hinge on (a) named credits and (b) keeping the exact bullet list intact (code-review / checklist feel) instead of summarizing into generic inspiration."
+      },
+      {
+        "post_id": "ab1fb966-d14e-4639-b504-00f7b6f9084b_19",
+        "behavioral_gap": "Uses a vivid analogy quote (“raising a kid is 90% hard work…”) to frame leadership joy, then lightly references a specific Simon Sinek talk as the inspiration—no corporate-brand positioning.",
+        "why_outlier": "The prediction failed here because the actual post is a short analogy-to-leadership reflection plus a specific external-talk pointer — which is different from the main batch gaps because it’s not an event registration script; it’s a minimal reflective link-share where inserting ‘at Microsoft / diverse teams drive innovation’ changes the intended genre.",
+        "exists_in_context": true,
+        "missing_nuance": "Existing context notes staying in-lane and not over-“adding value,” but doesn’t explicitly include this trigger: short metaphor + external-speaker link posts where the expected behavior is to preserve the simple analogy and not inject employer-centered innovation/diversity framing."
+      },
+      {
+        "post_id": "ab1fb966-d14e-4639-b504-00f7b6f9084b_21",
+        "behavioral_gap": "Starts with ‘this article crossed my path’ and performs a live pivot from “AI benefits for teachers/undergrads” to “AI as a personal growth/interview/critical-thinking buddy,” staying exploratory and open-ended rather than declarative about platforms/programs.",
+        "why_outlier": "The prediction failed here because the post’s move is an uncertainty-forward personal reflection pivoting from education to self-development use-cases — which is different from the main batch gaps because it’s not a logistics CTA; it’s a ‘thinking out loud’ reframing that the prediction overwrote with corporate AI-in-education positioning and generic inclusion claims.",
+        "exists_in_context": true,
+        "missing_nuance": "Context covers pressure-testing AI via production boundary conditions, but not this distinct reflective mode: ‘article → immediate mental pivot → list of personal growth possibilities’ where the correct tone is tentative and personal, not “we’re creating pathways” corporate framing."
+      }
+    ],
+    "batch_verdict": "new_gaps_found",
+    "prior_gap_confirmations": [
+      "When the stimulus is clearly not a Microsoft-first narrative (e.g., a LinkedIn Learning completion post, a consumer complaint to HDFC Bank, or a friend’s job-search referral ask), this community stays in the author’s actual lane (named third-party, direct complaint, or referral routing) — but the prediction repeatedly injects a first-person “at Microsoft / in our ecosystem” vantage with unrelated stack name-drops and a generic community-uplift CTA."
+    ],
+    "preliminary_delta_notes": [
+      "[queued_for_batch_root_cause_memory]",
+      "[queued_for_batch_root_cause_memory]",
+      "[queued_for_batch_root_cause_memory]",
+      "[queued_for_batch_root_cause_memory]",
+      "[queued_for_batch_root_cause_memory]"
+    ],
+    "category": "Business Operations and Strategy | Career Development and Growth | Personal Development and Well-being"
+  },
+  "iteration_1_batch_16": {
+    "reviews": [
+      "ab1fb966-d14e-4639-b504-00f7b6f9084b_post_ab1fb966-d14e-4639-b504-00f7b6f9084b_32",
+      "ab1fb966-d14e-4639-b504-00f7b6f9084b_post_ab1fb966-d14e-4639-b504-00f7b6f9084b_35",
+      "ab1fb966-d14e-4639-b504-00f7b6f9084b_post_ab1fb966-d14e-4639-b504-00f7b6f9084b_42",
+      "ab1fb966-d14e-4639-b504-00f7b6f9084b_post_ab1fb966-d14e-4639-b504-00f7b6f9084b_43",
+      "ab1fb966-d14e-4639-b504-00f7b6f9084b_post_ab1fb966-d14e-4639-b504-00f7b6f9084b_48"
+    ],
+    "batch_id": "iteration_1_batch_16",
+    "gaps": [
+      {
+        "behavioral_gap": "When the stimulus is a standalone “here’s a list/report/article” share that cites a specific publication and enumerates concrete items/examples, this community posts a compact, source-anchored summary (often just the list + a one-line endorsement, in the original language) and stops — but the prediction rewrites it as an English thought-leadership mini-essay with invented personal authority, Microsoft/stack name-drops, and an engagement-bait question/CTA.",
+        "exists_in_context": true,
+        "missing_nuance": "Existing traits cover terseness and “knowing when not to add value,” but don’t explicitly encode the standalone format where the credibility mechanism is preserving the cited outlet + the enumerated list/examples (not adding a personal backstory, tool recommendations, or a discussion prompt).",
+        "evidence": "3/5 posts",
+        "confidence": "MEDIUM"
+      }
+    ],
+    "outliers": [
+      {
+        "post_id": "ab1fb966-d14e-4639-b504-00f7b6f9084b_48",
+        "behavioral_gap": "The post anchors AI-transformation advice in a Brazil-local observation (“exactly what I have seen here in Brazil”) and gives a short, concrete barrier-busting prescription (culture change + internal training to avoid talent bottleneck + partner with serious companies), rather than global/brand framing.",
+        "why_outlier": "The prediction failed here because it replaced a locally-grounded, barrier-and-lever checklist (culture, training, skills scarcity, partner seriousness) with generic Microsoft-flavored collaboration/inclusivity rhetoric — which is different from the main batch gaps because it’s not primarily a resource/list-share format error; it’s a missed “local conditions → specific adoption levers” move.",
+        "exists_in_context": false,
+        "missing_nuance": null
+      }
+    ],
+    "batch_verdict": "new_gaps_found",
+    "prior_gap_confirmations": [
+      "When the stimulus is clearly not a Microsoft-first narrative (e.g., a LinkedIn Learning completion post, a consumer complaint to HDFC Bank, or a friend’s job-search referral ask), this community stays in the author’s actual lane (named third-party, direct complaint, or referral routing) — but the prediction repeatedly injects a first-person “at Microsoft / in our ecosystem” vantage with unrelated stack name-drops and a generic community-uplift CTA."
+    ],
+    "preliminary_delta_notes": [
+      "[queued_for_batch_root_cause_memory]",
+      "[queued_for_batch_root_cause_memory]",
+      "[queued_for_batch_root_cause_memory]",
+      "[queued_for_batch_root_cause_memory]",
+      "[queued_for_batch_root_cause_memory]"
+    ],
+    "category": "AI and Technology Integration | Business Operations and Strategy | Career Development and Growth | Personal Development and Well-being"
+  },
+  "iteration_1_batch_17": {
+    "reviews": [
+      "b897cdbe-ca1b-40fe-b087-ef4c1958425c_post_b897cdbe-ca1b-40fe-b087-ef4c1958425c_9",
+      "c802671d-8fd2-4a18-8fe8-689b72f7c268_post_c802671d-8fd2-4a18-8fe8-689b72f7c268_13",
+      "c802671d-8fd2-4a18-8fe8-689b72f7c268_post_c802671d-8fd2-4a18-8fe8-689b72f7c268_25",
+      "dc0b5d74-87d9-4fe3-8883-aef9d0924114_post_dc0b5d74-87d9-4fe3-8883-aef9d0924114_7",
+      "dc0b5d74-87d9-4fe3-8883-aef9d0924114_post_dc0b5d74-87d9-4fe3-8883-aef9d0924114_12"
+    ],
+    "batch_id": "iteration_1_batch_17",
+    "gaps": [
+      {
+        "behavioral_gap": "When the stimulus is a niche SAP explainer/resource-share (a “quick presentation” / blog-series entry) about a specific S/4HANA capability, this community anchors credibility with exact product/version/deployment nouns plus an official reference (e.g., an SAP Note number) and a modest “hope it’s useful” before linking — but the prediction inflates it into a generic tutorial/best-practices pitch, injects unrelated themes (e.g., AI integration), and hallucinates adjacent SAP components/config advice that the author never mentioned.",
+        "exists_in_context": true,
+        "missing_nuance": "Existing traits cover “situational usefulness” and avoiding unnecessary extra framing, but don’t capture the SAP-native credibility mechanism: naming the exact S/4HANA release/deployment model and citing an official SAP Note/ID as the central proof-of-work, then stopping (no invented adjacent modules like Material Ledger/MM-FI, no ‘best practices’ expansion).",
+        "evidence": "2/5 posts",
+        "confidence": "MEDIUM"
+      }
+    ],
+    "outliers": [
+      {
+        "post_id": "c802671d-8fd2-4a18-8fe8-689b72f7c268_25",
+        "behavioral_gap": "The actual post works as a press/interview recap: it opens with the media appearance (“interviewing with CNBC”), then lists 2–3 concrete Work Trend Index takeaways with specific affected groups and exact percentages, and ends with a “hear more here” link + hashtags (no product-plugging, no discussion prompt).",
+        "why_outlier": "The prediction failed here because the post is a data-dump recap with explicit stats and a link-out — which is different from the main batch gaps because it’s not a SAP reference-driven technical resource-share; it’s a research/press summary where the functional payload is the exact numbers and cohorts, not added tooling narratives or generic engagement questions.",
+        "exists_in_context": false,
+        "missing_nuance": null
+      }
+    ],
+    "batch_verdict": "new_gaps_found",
+    "prior_gap_confirmations": [
+      "When the stimulus is a standalone micro-post meant to function as a hook (e.g., a patriotic holiday greeting or a “Read:” link-teaser with a punchy claim), this community compresses the post into 1–3 lines (aphorism/contrast → single scaling claim or greeting → optional link) and stops — but the prediction inflates it into a generic thought-leadership paragraph with emojis, “we’ve seen firsthand” positioning, and an engagement/connection CTA (“share your stories / let’s connect”).",
+      "When the stimulus is clearly not a Microsoft-first narrative (e.g., a LinkedIn Learning completion post, a consumer complaint to HDFC Bank, or a friend’s job-search referral ask), this community stays in the author’s actual lane (named third-party, direct complaint, or referral routing) — but the prediction repeatedly injects a first-person “at Microsoft / in our ecosystem” vantage with unrelated stack name-drops and a generic community-uplift CTA."
+    ],
+    "preliminary_delta_notes": [
+      "[queued_for_batch_root_cause_memory]",
+      "[queued_for_batch_root_cause_memory]",
+      "[queued_for_batch_root_cause_memory]",
+      "[queued_for_batch_root_cause_memory]",
+      "[queued_for_batch_root_cause_memory]"
+    ],
+    "category": "AI and Technology Integration | Business Operations and Strategy | Career Development and Growth | Personal Development and Well-being"
+  },
+  "iteration_1_batch_18": {
+    "reviews": [
+      "e9e811b0-6759-473a-aed2-8a84e5566a8c_post_e9e811b0-6759-473a-aed2-8a84e5566a8c_10",
+      "e9e811b0-6759-473a-aed2-8a84e5566a8c_post_e9e811b0-6759-473a-aed2-8a84e5566a8c_24",
+      "e9e811b0-6759-473a-aed2-8a84e5566a8c_post_e9e811b0-6759-473a-aed2-8a84e5566a8c_30",
+      "e9e811b0-6759-473a-aed2-8a84e5566a8c_post_e9e811b0-6759-473a-aed2-8a84e5566a8c_41",
+      "e9e811b0-6759-473a-aed2-8a84e5566a8c_post_e9e811b0-6759-473a-aed2-8a84e5566a8c_51"
+    ],
+    "batch_id": "iteration_1_batch_18",
+    "gaps": [],
+    "outliers": [
+      {
+        "post_id": "e9e811b0-6759-473a-aed2-8a84e5566a8c_10",
+        "behavioral_gap": "Job-win + rejection-recovery posts here are written as a specific personal ledger (named employer “AWS”, explicit rejection volume, a concrete coping inventory like “pranayam… gyming… guitar”, a literal interview loop “prepare, execute, fail, identify MISTAKES, modify, repeat”, and a named onboarding helper) rather than generalized career advice.",
+        "why_outlier": "The prediction failed here because it erased the post’s credibility mechanism (concrete coping/actions + procedural loop + specific attribution + named employer) and replaced it with generic “adaptability/communication/leveraging your network” coaching — which is different from the main batch confirmations because those are about (a) Microsoft-lane injection and (b) rewriting list/resource shares as thought-leadership, not about preserving dense first-person specifics in a long-form career resilience narrative.",
+        "exists_in_context": false,
+        "missing_nuance": null
+      },
+      {
+        "post_id": "e9e811b0-6759-473a-aed2-8a84e5566a8c_30",
+        "behavioral_gap": "Academic-integrity callout posts here are delivered as a terse, accusatory warning with a quoted example (“I made the vid and paper in 1 week”), a direct imperative (“Do not look for the shortcuts”), and no “discussion prompt” framing.",
+        "why_outlier": "The prediction failed here because it converted a blunt enforcement-style warning into a mentorship-y culture statement plus an engagement question — which is different from the main batch confirmations because it’s not about mis-laning into Microsoft or bloating a resource/list share; it’s about mistaking a scolding/anti-shortcut micro-post for a community-discussion prompt.",
+        "exists_in_context": false,
+        "missing_nuance": null
+      }
+    ],
+    "batch_verdict": "prior_gaps_confirmed",
+    "prior_gap_confirmations": [
+      "[iteration_1_batch_12] [MEDIUM] (3/5 posts) When the stimulus is clearly not a Microsoft-first narrative (e.g., a LinkedIn Learning completion post, a consumer complaint to HDFC Bank, or a friend’s job-search referral ask), this community stays in the author’s actual lane (named third-party, direct complaint, or referral routing) — but the prediction repeatedly injects a first-person “at Microsoft / in our ecosystem” vantage with unrelated stack name-drops and a generic community-uplift CTA.",
+      "[iteration_1_batch_16] [MEDIUM] (3/5 posts) When the stimulus is a standalone “here’s a list/report/article” share that cites a specific publication and enumerates concrete items/examples, this community posts a compact, source-anchored summary (often just the list + a one-line endorsement, in the original language) and stops — but the prediction rewrites it as an English thought-leadership mini-essay with invented personal authority, Microsoft/stack name-drops, and an engagement-bait question/CTA."
+    ],
+    "preliminary_delta_notes": [
+      "[queued_for_batch_root_cause_memory]",
+      "[queued_for_batch_root_cause_memory]",
+      "[queued_for_batch_root_cause_memory]",
+      "[queued_for_batch_root_cause_memory]",
+      "[queued_for_batch_root_cause_memory]"
+    ],
+    "category": "AI and Technology Integration | Career Development and Growth | Personal Development and Well-being"
+  },
+  "iteration_1_batch_19": {
+    "reviews": [
+      "f20ab826-b48b-42cf-be34-de640b4befa1_post_f20ab826-b48b-42cf-be34-de640b4befa1_2",
+      "f20ab826-b48b-42cf-be34-de640b4befa1_post_f20ab826-b48b-42cf-be34-de640b4befa1_4",
+      "f20ab826-b48b-42cf-be34-de640b4befa1_post_f20ab826-b48b-42cf-be34-de640b4befa1_6",
+      "f20ab826-b48b-42cf-be34-de640b4befa1_post_f20ab826-b48b-42cf-be34-de640b4befa1_8",
+      "f20ab826-b48b-42cf-be34-de640b4befa1_post_f20ab826-b48b-42cf-be34-de640b4befa1_10"
+    ],
+    "batch_id": "iteration_1_batch_19",
+    "gaps": [
+      {
+        "behavioral_gap": "When the stimulus is an “artifact-triggered” career reflection (e.g., finding an old offer letter / recalling early-career work) used to make a values point, this community anchors the post in concrete autobiographical facts (exact numbers, definitions like how stock options work, named companies/people) and then states the moral plainly (humility / entitlement / hunger to learn) — but the prediction abstracts it into generic career-growth platitudes and drifts into unrelated tech-stack branding (cloud/AI) with hashtags.",
+        "exists_in_context": false,
+        "missing_nuance": null,
+        "evidence": "2/5 posts",
+        "confidence": "MEDIUM"
+      }
+    ],
+    "outliers": [
+      {
+        "post_id": "f20ab826-b48b-42cf-be34-de640b4befa1_4",
+        "behavioral_gap": "When reacting to a colleague’s demo of two Azure networking products working well together, the author makes a short, person-centered kudos + “I’ve been learning from/working with the adjacent team (vWAN)” coordination note, without enumerating features or making marketing claims.",
+        "why_outlier": "The prediction failed here because it replaced a minimal internal-collaboration compliment (name the person; mention working with vWAN counterparts) with a launch-style, feature-inventing promo (e.g., “Virtual Network Manager and routing optimization”) — which is different from the main batch gaps because it’s not a personal artifact/values reflection; it’s an in-org peer acknowledgment meant to stay lightweight and non-speculative.",
+        "exists_in_context": true,
+        "missing_nuance": "The specific trigger condition missing from the existing ‘keep acknowledgments short’ guidance: internal cross-team product-collaboration praise posts that should only name the adjacent team/surface (e.g., vWAN) and the intent (“bring capabilities to customers”) while avoiding invented feature lists or performance/security claims."
+      }
+    ],
+    "batch_verdict": "new_gaps_found",
+    "prior_gap_confirmations": [
+      "When the stimulus is a Microsoft ecosystem governance/product announcement, this community stays ultra-specific and declarative (names the exact orgs/features like “React Foundation core member”, “Copilot LM platform”, “MCP support”) with minimal extra framing — but the prediction injects generalized AI/innovation positioning, cross-product name-dropping (e.g., Azure AI Foundry / M365 Copilot), and broad ‘transforming the industry’ language that isn’t anchored to the announced capability."
+    ],
+    "preliminary_delta_notes": [
+      "[queued_for_batch_root_cause_memory]",
+      "[queued_for_batch_root_cause_memory]",
+      "[queued_for_batch_root_cause_memory]",
+      "[queued_for_batch_root_cause_memory]",
+      "[queued_for_batch_root_cause_memory]"
+    ],
+    "category": "AI and Technology Integration | Business Operations and Strategy | Career Development and Growth"
+  },
+  "iteration_2_batch_1": {
+    "reviews": [
+      "1db61e77-786d-4d4c-94e0-4dcc221af20b_post_1db61e77-786d-4d4c-94e0-4dcc221af20b_3",
+      "1db61e77-786d-4d4c-94e0-4dcc221af20b_post_1db61e77-786d-4d4c-94e0-4dcc221af20b_7",
+      "1db61e77-786d-4d4c-94e0-4dcc221af20b_post_1db61e77-786d-4d4c-94e0-4dcc221af20b_10",
+      "1db61e77-786d-4d4c-94e0-4dcc221af20b_post_1db61e77-786d-4d4c-94e0-4dcc221af20b_12",
+      "1db61e77-786d-4d4c-94e0-4dcc221af20b_post_1db61e77-786d-4d4c-94e0-4dcc221af20b_17"
+    ],
+    "batch_id": "iteration_2_batch_1",
+    "gaps": [],
+    "outliers": [],
+    "batch_verdict": null,
+    "prior_gap_confirmations": [],
+    "preliminary_delta_notes": [
+      "[queued_for_batch_root_cause_memory]",
+      "[queued_for_batch_root_cause_memory]",
+      "[queued_for_batch_root_cause_memory]",
+      "[queued_for_batch_root_cause_memory]",
+      "[queued_for_batch_root_cause_memory]"
+    ],
+    "category": "Business Operations and Strategy | Personal Development and Well-being"
+  },
+  "iteration_2_batch_2": {
+    "reviews": [
+      "1db61e77-786d-4d4c-94e0-4dcc221af20b_post_1db61e77-786d-4d4c-94e0-4dcc221af20b_20",
+      "1db61e77-786d-4d4c-94e0-4dcc221af20b_post_1db61e77-786d-4d4c-94e0-4dcc221af20b_28",
+      "1db61e77-786d-4d4c-94e0-4dcc221af20b_post_1db61e77-786d-4d4c-94e0-4dcc221af20b_30",
+      "1db61e77-786d-4d4c-94e0-4dcc221af20b_post_1db61e77-786d-4d4c-94e0-4dcc221af20b_33",
+      "1db61e77-786d-4d4c-94e0-4dcc221af20b_post_1db61e77-786d-4d4c-94e0-4dcc221af20b_35"
+    ],
+    "batch_id": "iteration_2_batch_2",
+    "gaps": [
+      {
+        "behavioral_gap": "When the stimulus is a CodingRippler-style founder/SME “automation partner” pitch, this community writes direct-response copy that (a) rejects the common framing up front (“Not agentic AI / not another SaaS stack / not automations glued across tools”), (b) lists outcome-shaped system properties in arrow bullets, and (c) closes with explicit funnel CTAs (testimonials link / “book a call” / “DM me—I personally respond/handle every partnership”) — but the prediction shifts into generic advice-thought-leadership (soft examples like “Gmail → Sheets”), adds a vague “let’s connect” close, and drops the concrete offer+CTA mechanics.",
+        "exists_in_context": false,
+        "missing_nuance": null,
+        "evidence": "4/5 posts",
+        "confidence": "HIGH"
+      },
+      {
+        "behavioral_gap": "When the stimulus is “India” framed as national pride or performance/ownership (Independence Day greeting; timezone anecdote showing fast fixes), this community keeps the move either as a ultra-short patriotic gratitude post (“Building from India, for the world… Jai Hind”) or as a concrete execution narrative anchored in a quoted founder moment and specific delivery behaviors — but the prediction reframes it into a broad DEI/inclusivity sermon (“diverse perspectives… champion inclusivity”) plus a reflective discussion prompt.",
+        "exists_in_context": false,
+        "missing_nuance": null,
+        "evidence": "2/5 posts",
+        "confidence": "MEDIUM"
+      },
+      {
+        "behavioral_gap": "When the stimulus is n8n-specific (tool explainer or n8n-driven delivery claim), this community stays tightly on n8n with a plain definition (“node-based… every step is a node”) and concrete function-by-function example bullets (marketing/finance/eCommerce/dev/data science), or n8n+LLM/agentic specifics — but the prediction broadens into an “automation tools landscape” by name-dropping adjacent platforms (Make/Zapier) and inserting generic AI-extraction examples that weren’t in the post.",
+        "exists_in_context": false,
+        "missing_nuance": null,
+        "evidence": "2/5 posts",
+        "confidence": "MEDIUM"
+      }
+    ],
+    "outliers": [],
+    "batch_verdict": "new_gaps_found",
+    "prior_gap_confirmations": [
+      "When the stimulus is a standalone micro-post meant to function as a hook (e.g., a patriotic holiday greeting or a “Read:” link-teaser with a punchy claim), this community compresses the post into 1–3 lines (aphorism/contrast → single scaling claim or greeting → optional link) and stops — but the prediction inflates it into a generic thought-leadership paragraph with emojis, “we’ve seen firsthand” positioning, and an engagement/connection CTA (“share your stories / let’s connect”)."
+    ],
+    "preliminary_delta_notes": [
+      "[queued_for_batch_root_cause_memory]",
+      "[queued_for_batch_root_cause_memory]",
+      "[queued_for_batch_root_cause_memory]",
+      "[queued_for_batch_root_cause_memory]",
+      "[queued_for_batch_root_cause_memory]"
+    ],
+    "category": "AI and Technology Integration | Diversity and Inclusion in Tech"
+  },
+  "iteration_2_batch_3": {
+    "reviews": [
+      "1db61e77-786d-4d4c-94e0-4dcc221af20b_post_1db61e77-786d-4d4c-94e0-4dcc221af20b_39",
+      "1db61e77-786d-4d4c-94e0-4dcc221af20b_post_1db61e77-786d-4d4c-94e0-4dcc221af20b_40",
+      "1db61e77-786d-4d4c-94e0-4dcc221af20b_post_1db61e77-786d-4d4c-94e0-4dcc221af20b_41",
+      "1db61e77-786d-4d4c-94e0-4dcc221af20b_post_1db61e77-786d-4d4c-94e0-4dcc221af20b_42",
+      "1db61e77-786d-4d4c-94e0-4dcc221af20b_post_1db61e77-786d-4d4c-94e0-4dcc221af20b_50"
+    ],
+    "batch_id": "iteration_2_batch_3",
+    "gaps": [
+      {
+        "behavioral_gap": "When the stimulus is a direct-response “pilot/open for partners” product pitch for Voice AI, this community writes in a conversion script (pain bullets → quantified proof like “10,000+ calls”/“60% cost reduction” → capability list → explicit next-step instructions like “DM me” or comment a keyword) — but the prediction rewrites it as a generic thought-leadership paragraph offering to ‘share insights’/‘let’s connect,’ dropping the concrete numbers, the offer mechanics, and often substituting unrelated automation-tool name drops (n8n/Zapier).",
+        "exists_in_context": false,
+        "missing_nuance": null,
+        "evidence": "3/5 posts",
+        "confidence": "MEDIUM"
+      }
+    ],
+    "outliers": [
+      {
+        "post_id": "1db61e77-786d-4d4c-94e0-4dcc221af20b_42",
+        "behavioral_gap": "Anchors the need for Voice AI in a specific India-local operating constraint (many languages + accent variation), then crystallizes the mechanism as a slogan-level contrast (“The script wasn’t broken. The delivery was.”) before offering pilots.",
+        "why_outlier": "The prediction failed here because the post’s credibility comes from a location-specific constraint-to-design justification (India multilingual/accent variability → consistency requirement) — which is different from the main batch gaps because it’s not primarily about preserving direct-response pilot mechanics/metrics, but about preserving the local-market constraint as the central reason for the product.",
+        "exists_in_context": false,
+        "missing_nuance": null
+      },
+      {
+        "post_id": "1db61e77-786d-4d4c-94e0-4dcc221af20b_50",
+        "behavioral_gap": "Uses intentionally non-technical, small-business plain speech (myth list → simple systems steps → mild callout to ‘busy business owners’) and avoids naming specific tools, framing the lever as simplicity rather than stack choices.",
+        "why_outlier": "The prediction failed here because it injected a specific tooling example (“integrating Google Sheets with our email workflows…”) and a consultative ‘reach out’ close — which is different from the main batch gaps because this post’s move is deliberate tool-agnostic simplicity coaching, not a Voice-AI pilot pitch with keyword CTAs and performance metrics.",
+        "exists_in_context": false,
+        "missing_nuance": null
+      }
+    ],
+    "batch_verdict": "new_gaps_found",
+    "prior_gap_confirmations": [
+      "When the stimulus is a standalone micro-post meant to function as a hook (e.g., a patriotic holiday greeting or a “Read:” link-teaser with a punchy claim), this community compresses the post into 1–3 lines (aphorism/contrast → single scaling claim or greeting → optional link) and stops — but the prediction inflates it into a generic thought-leadership paragraph with emojis, “we’ve seen firsthand” positioning, and an engagement/connection CTA (“share your stories / let’s connect”)."
+    ],
+    "preliminary_delta_notes": [
+      "[queued_for_batch_root_cause_memory]",
+      "[queued_for_batch_root_cause_memory]",
+      "[queued_for_batch_root_cause_memory]",
+      "[queued_for_batch_root_cause_memory]",
+      "[queued_for_batch_root_cause_memory]"
+    ],
+    "category": "AI and Technology Integration | Business Operations and Strategy"
+  },
+  "iteration_2_batch_4": {
+    "reviews": [
+      "2e4a00af-909d-4ee2-9aa6-52eee25d18e9_post_2e4a00af-909d-4ee2-9aa6-52eee25d18e9_5",
+      "2e4a00af-909d-4ee2-9aa6-52eee25d18e9_post_2e4a00af-909d-4ee2-9aa6-52eee25d18e9_9",
+      "30e90503-bef8-4da2-8ffb-f47487b0e1de_post_30e90503-bef8-4da2-8ffb-f47487b0e1de_1",
+      "313325f0-0334-45f7-93b3-e65adcc597e9_post_313325f0-0334-45f7-93b3-e65adcc597e9_17",
+      "351405ab-deb1-45b5-810c-d32798c95f40_post_351405ab-deb1-45b5-810c-d32798c95f40_3"
+    ],
+    "batch_id": "iteration_2_batch_4",
+    "gaps": [
+      {
+        "behavioral_gap": "When the stimulus is a veteran-to-tech career milestone or veteran-program endorsement, this community writes an attribution ledger (names the exact program/orgs and what they concretely enabled, e.g., “GEICO’s Veterans IT Development Program,” “Army National Guard tuition assistance,” then a specific internal action like “sign up to be an MSSA mentor”) — but the prediction abstracts it into generic “career transition/continuous learning” coaching and injects unrelated Microsoft-defense/Azure/compliance framing plus an open-ended networking CTA (“let’s connect / reach out”).",
+        "exists_in_context": true,
+        "missing_nuance": "Existing context covers “keep gratitude/career-win threads relational” but does not capture the veteran-program-specific structure: (1) crediting multiple named institutions/programs with explicit causal benefits (e.g., debt-free degree via Guard tuition assistance), and (2) closing with one concrete internal volunteer action request (MSSA mentor) rather than offering broad public help or generic career advice.",
+        "evidence": "2/5 posts",
+        "confidence": "MEDIUM"
+      }
+    ],
+    "outliers": [
+      {
+        "post_id": "30e90503-bef8-4da2-8ffb-f47487b0e1de_1",
+        "behavioral_gap": "The actual post uses direct-response founder “invitation” copy: states the mission + hard price anchor ($1/day vs $300/hr) and asks for a specific operator (digital/social growth marketer) to connect (“let’s chat”), explicitly framing it as “not a job ad.”",
+        "why_outlier": "The prediction failed here because it converted a targeted “we need a person” invitation into a broad, discussion-prompt thought-leadership post (“what strategies have you found effective?”) — which is different from the main batch gaps because it’s not about preserving veteran/program attribution; it’s about correctly staying in recruitment/partner-search mode instead of broadcasting a marketing conversation to the feed.",
+        "exists_in_context": true,
+        "missing_nuance": "The missing trigger is the explicit “not a job ad — it’s an invitation” + quantified affordability anchor, which should cue a DM/connect ask for a specific capability (growth marketer) rather than a generic audience question."
+      },
+      {
+        "post_id": "351405ab-deb1-45b5-810c-d32798c95f40_3",
+        "behavioral_gap": "The actual post is explicit LinkedIn-satire (synergy-session self-parody, “narrative you craft on LinkedIn,” “read the first comment”) and is meant to be met with riffing, not earnest leadership counsel.",
+        "why_outlier": "The prediction failed here because it treated an obvious parody script as a sincere leadership/innovation prompt and added a generic “share your strategies” question — which is different from the main batch gaps because the core miss is satire detection (riff-space vs advice-space), not attribution preservation in veteran/career gratitude posts.",
+        "exists_in_context": true,
+        "missing_nuance": "The missing trigger is the overt parody markers (intentional cliché stacking, self-referential “on LinkedIn afterward,” and “read the first comment”), which should suppress earnest coaching language and discussion questions."
+      }
+    ],
+    "batch_verdict": "new_gaps_found",
+    "prior_gap_confirmations": [
+      "When the stimulus is clearly not a Microsoft-first narrative (e.g., a LinkedIn Learning completion post, a consumer complaint to HDFC Bank, or a friend’s job-search referral ask), this community stays in the author’s actual lane (named third-party, direct complaint, or referral routing) — but the prediction repeatedly injects a first-person “at Microsoft / in our ecosystem” vantage with unrelated stack name-drops and a generic community-uplift CTA."
+    ],
+    "preliminary_delta_notes": [
+      "[queued_for_batch_root_cause_memory]",
+      "[queued_for_batch_root_cause_memory]",
+      "[queued_for_batch_root_cause_memory]",
+      "[queued_for_batch_root_cause_memory]",
+      "[queued_for_batch_root_cause_memory]"
+    ],
+    "category": "Business Operations and Strategy | Career Development and Growth"
+  },
+  "iteration_2_batch_5": {
+    "reviews": [
+      "351405ab-deb1-45b5-810c-d32798c95f40_post_351405ab-deb1-45b5-810c-d32798c95f40_46",
+      "54c19b05-7985-47be-b2f2-6a2f8360cf89_post_54c19b05-7985-47be-b2f2-6a2f8360cf89_9",
+      "583f07ae-71cc-42ed-982b-67b6c6d6a3ff_post_583f07ae-71cc-42ed-982b-67b6c6d6a3ff_12",
+      "583f07ae-71cc-42ed-982b-67b6c6d6a3ff_post_583f07ae-71cc-42ed-982b-67b6c6d6a3ff_13",
+      "583f07ae-71cc-42ed-982b-67b6c6d6a3ff_post_583f07ae-71cc-42ed-982b-67b6c6d6a3ff_14"
+    ],
+    "batch_id": "iteration_2_batch_5",
+    "gaps": [
+      {
+        "behavioral_gap": "When the stimulus is a practical career-transition/education moment (student co-op application stress encouragement; a concrete “where do they start?” career-switch question; a TL;DR hiring/bootcamp heuristic list), this community stays in the immediate lane with either (a) short reassurance + self-care, (b) a direct next-step recommendation tailored to the stated skills, or (c) compact bullets — but the prediction reframes it as a mentorship/networking drive (\"mentorship changed my journey\" / \"let’s connect\" / \"drop openings in the comments\") with hashtags and community-building copy that doesn’t answer the actual prompt.",
+        "exists_in_context": true,
+        "missing_nuance": "The missing trigger is specifically “career-transition/education content that is not asking for mentorship”—in these cases the expected move is one concrete next step (or a terse reassurance + self-care), not converting the post into a public mentor-match / job-leads collection CTA.",
+        "evidence": "3/5 posts",
+        "confidence": "MEDIUM"
+      }
+    ],
+    "outliers": [
+      {
+        "post_id": "583f07ae-71cc-42ed-982b-67b6c6d6a3ff_13",
+        "behavioral_gap": "Launches a specific artifact (named book) using explicit giveaway/distribution mechanics: states the title (“Shortcut to seniority”), where to buy (Amazon), where the link is (comments), who the free physical copies are for (students/juniors affected by Covid), how to enter (comment), and the amplification ask (like/share).",
+        "why_outlier": "The prediction failed here because the post is a concrete launch + giveaway conversion script that depends on preserving exact artifact nouns and CTA steps — which is different from the main batch gap because it’s not a career-transition discussion being turned into “mentorship/networking,” it’s a promotional funnel with specific entry mechanics that got replaced by an unrelated “I compiled tutorials” thought-leadership resource post.",
+        "exists_in_context": false,
+        "missing_nuance": null
+      }
+    ],
+    "batch_verdict": "new_gaps_found",
+    "prior_gap_confirmations": [
+      "When the stimulus is clearly not a Microsoft-first narrative (e.g., a LinkedIn Learning completion post, a consumer complaint to HDFC Bank, or a friend’s job-search referral ask), this community stays in the author’s actual lane (named third-party, direct complaint, or referral routing) — but the prediction repeatedly injects a first-person “at Microsoft / in our ecosystem” vantage with unrelated stack name-drops and a generic community-uplift CTA."
+    ],
+    "preliminary_delta_notes": [
+      "[queued_for_batch_root_cause_memory]",
+      "[queued_for_batch_root_cause_memory]",
+      "[queued_for_batch_root_cause_memory]",
+      "[queued_for_batch_root_cause_memory]",
+      "[queued_for_batch_root_cause_memory]"
+    ],
+    "category": "Career Development and Growth | Diversity and Inclusion in Tech | Personal Development and Well-being"
+  },
+  "iteration_2_batch_6": {
+    "reviews": [
+      "5b792818-ac34-4256-97f8-cdce43bde7f0_post_5b792818-ac34-4256-97f8-cdce43bde7f0_16",
+      "7333df73-63cf-4f92-b724-caefc9171b63_post_7333df73-63cf-4f92-b724-caefc9171b63_5",
+      "7333df73-63cf-4f92-b724-caefc9171b63_post_7333df73-63cf-4f92-b724-caefc9171b63_7",
+      "7333df73-63cf-4f92-b724-caefc9171b63_post_7333df73-63cf-4f92-b724-caefc9171b63_28",
+      "8774ee3b-19ab-45ca-8197-b68720c4b1b8_post_8774ee3b-19ab-45ca-8197-b68720c4b1b8_9"
+    ],
+    "batch_id": "iteration_2_batch_6",
+    "gaps": [
+      {
+        "behavioral_gap": "When the stimulus is a speaker/session announcement (conference talk, Ignite session, university/meetup presentation) that’s meant as coordination + attribution, this community posts a compact “what I’m presenting + the exact stack/features I’ll demo” and then credits/tags the specific organizers/teammates — but the prediction turns it into generic thought-leadership about open-source/AI impact, adds broad value claims or discussion prompts, and drops the concrete demo nouns and name-led attribution structure.",
+        "exists_in_context": true,
+        "missing_nuance": "Existing context covers (a) event invitations with explicit logistics/registration CTAs and (b) keeping gratitude/collab praise lightweight, but it does not explicitly cover the hybrid “session highlight” format where the core payload is: exact demo artifacts (e.g., `grafana-lgtm`, OpenTelemetry→Grafana pipeline, “upcoming Syntex capabilities”) + a tag/thanks ledger, with no extra framing or engagement CTA.",
+        "evidence": "2/5 posts",
+        "confidence": "MEDIUM"
+      }
+    ],
+    "outliers": [
+      {
+        "post_id": "5b792818-ac34-4256-97f8-cdce43bde7f0_16",
+        "behavioral_gap": "A last-day/farewell post is written as a pure gratitude-and-closure note (humble origin → appreciation for the company/people → “excited for what’s next”), without repurposing the moment into mentorship lessons or recruiting.",
+        "why_outlier": "The prediction failed here because it fabricated a new employment destination (“and now Microsoft”) and appended a specific hiring pitch (“expanding my team in Hyderabad (levels 61–65)”) — which is different from the main batch gaps because it’s not about preserving a session/talk announcement’s demo+attribution structure; it’s about inventing biographical facts and converting a goodbye post into recruitment.",
+        "exists_in_context": true,
+        "missing_nuance": "The existing “not a Microsoft-first narrative” guidance doesn’t explicitly call out the more extreme failure mode of inventing the author’s next employer and attaching a detailed hiring CTA to someone else’s departure/gratitude announcement."
+      }
+    ],
+    "batch_verdict": "new_gaps_found",
+    "prior_gap_confirmations": [
+      "When the stimulus is clearly not a Microsoft-first narrative (e.g., a LinkedIn Learning completion post, a consumer complaint to HDFC Bank, or a friend’s job-search referral ask), this community stays in the author’s actual lane (named third-party, direct complaint, or referral routing) — but the prediction repeatedly injects a first-person “at Microsoft / in our ecosystem” vantage with unrelated stack name-drops and a generic community-uplift CTA.",
+      "When the stimulus is a Microsoft ecosystem governance/product announcement, this community stays ultra-specific and declarative (names the exact orgs/features like “React Foundation core member”, “Copilot LM platform”, “MCP support”) with minimal extra framing — but the prediction injects generalized AI/innovation positioning, cross-product name-dropping (e.g., Azure AI Foundry / M365 Copilot), and broad ‘transforming the industry’ language that isn’t anchored to the announced capability."
+    ],
+    "preliminary_delta_notes": [
+      "[queued_for_batch_root_cause_memory]",
+      "[queued_for_batch_root_cause_memory]",
+      "[queued_for_batch_root_cause_memory]",
+      "[queued_for_batch_root_cause_memory]",
+      "[queued_for_batch_root_cause_memory]"
+    ],
+    "category": "AI and Technology Integration | Career Development and Growth"
+  },
+  "iteration_2_batch_7": {
+    "reviews": [
+      "8774ee3b-19ab-45ca-8197-b68720c4b1b8_post_8774ee3b-19ab-45ca-8197-b68720c4b1b8_10",
+      "8774ee3b-19ab-45ca-8197-b68720c4b1b8_post_8774ee3b-19ab-45ca-8197-b68720c4b1b8_12",
+      "881ba53e-5c01-4ae4-bc09-59d059c315a5_post_881ba53e-5c01-4ae4-bc09-59d059c315a5_8",
+      "881ba53e-5c01-4ae4-bc09-59d059c315a5_post_881ba53e-5c01-4ae4-bc09-59d059c315a5_9",
+      "937353b2-546c-41e3-ae57-4b7507de8a1d_post_937353b2-546c-41e3-ae57-4b7507de8a1d_18"
+    ],
+    "batch_id": "iteration_2_batch_7",
+    "gaps": [
+      {
+        "behavioral_gap": "When the stimulus is a short “apply to our Data Engineering Program” promo post (who it’s for → 1–2 value lines → apply link → hashtags, sometimes with an external credibility parenthetical like “backed by Andrew Ng”), this community keeps it as a terse application-drive announcement and stops — but the prediction rewrites it into a mentorship/community-thought-leadership paragraph with extra outreach mechanics (“DM me / let’s connect”), and injects stack name-drops (e.g., AWS/Azure) that weren’t in the post.",
+        "exists_in_context": true,
+        "missing_nuance": "Existing context covers how they comment on training/masterclass promos as participants (thank-you + one thing learned), but not the organizer/issuer mode where they publish a minimal conversion post (apply-now + link) and avoid adding mentorship/community narrative, DMs, or tool-stack embellishments unless the post itself includes them.",
+        "evidence": "2/5 posts",
+        "confidence": "MEDIUM"
+      }
+    ],
+    "outliers": [
+      {
+        "post_id": "8774ee3b-19ab-45ca-8197-b68720c4b1b8_12",
+        "behavioral_gap": "The actual post makes a contrarian, high-stakes advisory move: it opens with a blunt imperative (“DO NOT come to the US for your higher education”), then justifies it with a numbered, concrete two-part case (online education quality vs on-campus, and visa/hiring constraints), including a hard cost anchor (e.g., “$50000”). The prediction missed this and replaced it with generic, upbeat “considerations” (research/network/plan financially) plus supportive tone/hashtags.",
+        "why_outlier": "The prediction failed here because the post’s core behavior is an explicit negative recommendation with enumerated, economically anchored reasons — which is different from the main batch gaps because those are about preserving terse application/announcement copy for a program promo, not preserving a contrarian warning structure and its specific constraint list.",
+        "exists_in_context": false,
+        "missing_nuance": null
+      }
+    ],
+    "batch_verdict": "new_gaps_found",
+    "prior_gap_confirmations": [],
+    "preliminary_delta_notes": [
+      "[queued_for_batch_root_cause_memory]",
+      "[queued_for_batch_root_cause_memory]",
+      "[queued_for_batch_root_cause_memory]",
+      "[queued_for_batch_root_cause_memory]",
+      "[queued_for_batch_root_cause_memory]"
+    ],
+    "category": "Career Development and Growth | Diversity and Inclusion in Tech | Personal Development and Well-being"
+  },
+  "iteration_2_batch_8": {
+    "reviews": [
+      "937353b2-546c-41e3-ae57-4b7507de8a1d_post_937353b2-546c-41e3-ae57-4b7507de8a1d_43",
+      "9d0711b8-17ae-44cc-adbd-f2e39f25571b_post_9d0711b8-17ae-44cc-adbd-f2e39f25571b_17",
+      "9d0711b8-17ae-44cc-adbd-f2e39f25571b_post_9d0711b8-17ae-44cc-adbd-f2e39f25571b_45",
+      "a9f99660-2db6-4851-a76e-61fc5c205a53_post_a9f99660-2db6-4851-a76e-61fc5c205a53_3",
+      "ab1fb966-d14e-4639-b504-00f7b6f9084b_post_ab1fb966-d14e-4639-b504-00f7b6f9084b_9"
+    ],
+    "batch_id": "iteration_2_batch_8",
+    "gaps": [
+      {
+        "behavioral_gap": "When the stimulus is a standalone hiring post that includes concrete role constraints and routing (e.g., “new grads—graduated within the past 18 months,” specific team name, “apply through the link in X’s post,” “reach out to me/us directly”), this community writes an ops-forward recruiting note that preserves those exact qualifiers + where-to-apply instructions — but the prediction converts it into generic career/mentorship encouragement with broad hashtags and discussion prompts, dropping the eligibility/window, team nouns, and application routing.",
+        "exists_in_context": true,
+        "missing_nuance": "Existing context covers “coordination layer” behavior mostly in comment/reply mode and partner-fit cues, but it does not explicitly encode the standalone recruiting-post template where the core credibility is the exact hiring constraints (eligibility window) plus routing mechanics (“apply via link in Sankar’s post” / “reach out directly”).",
+        "evidence": "2/5 posts",
+        "confidence": "MEDIUM"
+      }
+    ],
+    "outliers": [
+      {
+        "post_id": "937353b2-546c-41e3-ae57-4b7507de8a1d_43",
+        "behavioral_gap": "When the stimulus is a local university/student-run event recap (e.g., Tech Day) with gratitude and light future-collab intent, the author stays in a simple appreciation register (“pleasure,” “honored,” “look forward to future efforts”) and keeps the spotlight on the students/department — without turning it into a DEI/mentorship manifesto or a networking CTA.",
+        "why_outlier": "The prediction failed here because the post’s move is a pure event-acknowledgment note (thank the student organizers + express honor + signal future collaboration) — which is different from the main batch gaps because there is no recruiting/apply-routing to preserve; the main error is injecting DEI advocacy + “I’d love to connect/share ideas” into a thread that is only meant to acknowledge and credit the students.",
+        "exists_in_context": true,
+        "missing_nuance": "The context says acknowledgment/thanks posts stay short and don’t invent frameworks, but it doesn’t call out the specific failure mode for campus-event recaps: suppressing DEI/underrepresented-group framing unless the post itself explicitly raises it."
+      },
+      {
+        "post_id": "a9f99660-2db6-4851-a76e-61fc5c205a53_3",
+        "behavioral_gap": "When the stimulus is a funding milestone announcement, the author keeps it as an attribution-and-distribution script: retains precise financial/investor specifics, thanks named stakeholder groups (team, customers, podcast guests), and ends with a concrete product trial CTA plus a quantified benefit (“download … it’s free … save you at least 5 hours per week”).",
+        "why_outlier": "The prediction failed here because the post’s credibility is carried by (a) exact deal facts + stakeholder thank-you ledger and (b) an explicit product-download CTA with a hard time-savings claim — which is different from the main batch gaps because it’s not a hiring-routing post; it’s a milestone-to-product-adoption bridge that should not pivot into “connect with fellow engineers / discuss collaboration” positioning.",
+        "exists_in_context": false,
+        "missing_nuance": null
+      }
+    ],
+    "batch_verdict": "new_gaps_found",
+    "prior_gap_confirmations": [
+      "When the stimulus is a community-run virtual event invitation (often in Portuguese) with an explicit registration CTA and logistics (date/time, “inscreva-se gratuitamente”, format, sometimes language note), this community posts a compact distribution script (invite → topic/value → exact logistics → register) — but the prediction replaces it with English thought-leadership about “career journeys/community” plus an engagement question, omitting the concrete signup/logistics mechanics."
+    ],
+    "preliminary_delta_notes": [
+      "[queued_for_batch_root_cause_memory]",
+      "[queued_for_batch_root_cause_memory]",
+      "[queued_for_batch_root_cause_memory]",
+      "[queued_for_batch_root_cause_memory]",
+      "[queued_for_batch_root_cause_memory]"
+    ],
+    "category": "AI and Technology Integration | Business Operations and Strategy | Career Development and Growth | Diversity and Inclusion in Tech"
+  },
+  "iteration_2_batch_9": {
+    "reviews": [
+      "ab1fb966-d14e-4639-b504-00f7b6f9084b_post_ab1fb966-d14e-4639-b504-00f7b6f9084b_15",
+      "ab1fb966-d14e-4639-b504-00f7b6f9084b_post_ab1fb966-d14e-4639-b504-00f7b6f9084b_17",
+      "ab1fb966-d14e-4639-b504-00f7b6f9084b_post_ab1fb966-d14e-4639-b504-00f7b6f9084b_21",
+      "ab1fb966-d14e-4639-b504-00f7b6f9084b_post_ab1fb966-d14e-4639-b504-00f7b6f9084b_32",
+      "ab1fb966-d14e-4639-b504-00f7b6f9084b_post_ab1fb966-d14e-4639-b504-00f7b6f9084b_35"
+    ],
+    "batch_id": "iteration_2_batch_9",
+    "gaps": [],
+    "outliers": [
+      {
+        "post_id": "ab1fb966-d14e-4639-b504-00f7b6f9084b_15",
+        "behavioral_gap": "The post runs an event-invitation script with (1) a credibility anchor statistic (“~70%...”) (2) explicit event logistics (date + time + timezone) and (3) bilingual duplication (Portuguese primary + English translation) plus a hard constraint note (“event will be held in Portuguese”)—not a reflection prompt.",
+        "why_outlier": "The prediction failed here because the author’s core move is a bilingual, logistics-forward invite (stats → invite → date/time BRT → language constraint) — which is different from the main batch issues because it’s not a list/resource summary or a career/education post being converted into mentorship-networking CTA; it’s specifically an event operations post where dropping the logistics + language constraint breaks the purpose of the post.",
+        "exists_in_context": true,
+        "missing_nuance": "The missing trigger is the author’s bilingual event-promo format: duplicating the same invite in PT + EN and explicitly flagging the language-of-delivery (“the event will be held in Portuguese”) alongside date/time (16 Oct, 19h BRT). Existing context covers language-mirroring in replies, but not bilingual duplication + logistics as the primary payload in a standalone event invite."
+      }
+    ],
+    "batch_verdict": "prior_gaps_confirmed",
+    "prior_gap_confirmations": [
+      "When the stimulus is a standalone “here’s a list/report/article” share that cites a specific publication and enumerates concrete items/examples, this community posts a compact, source-anchored summary (often just the list + a one-line endorsement, in the original language) and stops — but the prediction rewrites it as an English thought-leadership mini-essay with invented personal authority, Microsoft/stack name-drops, and an engagement-bait question/CTA.",
+      "When the stimulus is clearly not a Microsoft-first narrative (e.g., a LinkedIn Learning completion post, a consumer complaint to HDFC Bank, or a friend’s job-search referral ask), this community stays in the author’s actual lane (named third-party, direct complaint, or referral routing) — but the prediction repeatedly injects a first-person “at Microsoft / in our ecosystem” vantage with unrelated stack name-drops and a generic community-uplift CTA.",
+      "When the stimulus is a practical career-transition/education moment (student co-op application stress encouragement; a concrete “where do they start?” career-switch question; a TL;DR hiring/bootcamp heuristic list), this community stays in the immediate lane with either (a) short reassurance + self-care, (b) a direct next-step recommendation tailored to the stated skills, or (c) compact bullets — but the prediction reframes it as a mentorship/networking drive (\"mentorship changed my journey\" / \"let’s connect\" / \"drop openings in the comments\") with hashtags and community-building copy that doesn’t answer the actual prompt."
+    ],
+    "preliminary_delta_notes": [
+      "[queued_for_batch_root_cause_memory]",
+      "[queued_for_batch_root_cause_memory]",
+      "[queued_for_batch_root_cause_memory]",
+      "[queued_for_batch_root_cause_memory]",
+      "[queued_for_batch_root_cause_memory]"
+    ],
+    "category": "Business Operations and Strategy | Career Development and Growth | Personal Development and Well-being"
+  }
+}

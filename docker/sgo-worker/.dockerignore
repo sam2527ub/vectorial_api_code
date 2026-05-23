@@ -1,0 +1,22 @@
+# Build context is repo root (docker build -f docker/sgo-worker/Dockerfile .)
+.git
+.github
+**/__pycache__
+**/*.pyc
+**/.pytest_cache
+**/node_modules
+reddit-vercel-worflow
+vectorial-reddit-pipeline-main
+json
+tests
+docs
+scripts/scripts_sgo/outputs
+scripts/scripts_sgo/outputs_one
+scripts/scripts_sgo/outputs_okayish
+scripts/scripts_sgo/outputs_win
+app/services/linkedin_sgo_pipeline_service_async/vendored_sgo/outputs
+app/services/linkedin_sgo_pipeline_service_async/vendored_sgo/outputs_win
+app/services/linkedin_sgo_pipeline_service_async/vendored_sgo/outputs_okayish
+*.md
+.env
+.env.*

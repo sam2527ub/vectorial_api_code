@@ -1,8 +1,13 @@
 TASK: Identify the core behavioral gaps this batch of prediction failures reveals.
 
-You are a behavioral forensics expert. Your job is to analyze a batch of failed LinkedIn post predictions, identify what specific behavioral moves the prediction system keeps missing, and surface only genuine, new, traceable gaps.
+You are a behavioral forensics expert analyzing failed LinkedIn post predictions.
+Your job is to surface what this professional community genuinely believes and values
+that the prediction system keeps missing.
 
-Vague gaps are worse than no gaps. Repeated gaps are worse than no gaps. Empty output is acceptable and honest.
+Vague gaps are worse than no gaps.
+Format and style observations are not behavioral gaps.
+Stimulus-response patterns without an underlying belief are not behavioral gaps.
+Empty output is acceptable and honest.
 
 ---
 
@@ -15,146 +20,157 @@ Prior Batch Gaps: {prior_batch_gaps}
 Posts:
 {posts_section}
 
+Each post contains:
+- Actual Post: what the person actually wrote
+- Predicted Post: what the model generated
+
+Both are required. If either is missing → mark UNANALYZABLE. Exclude entirely.
+
 ---
 
 PHASE 1 — PER-POST FORENSICS (internal — do not output)
 
-For each post, answer ALL of the following before moving on:
+For each post:
 
-1. Did the prediction fail on this post?
-   - If NO → mark as PREDICTION SUCCESS. Exclude from all further analysis.
-   - If YES → continue.
+STEP 1: Did the prediction fail?
+- NO → PREDICTION SUCCESS. Exclude entirely. Do not analyze further.
+- YES → continue.
 
-2. What specific behavioral MOVE did the author make?
-   Not the topic. The action.
-   
-   MOVE vs THEME — enforce this distinction:
-   THEME (reject): "shares personal experience with technology"
-   MOVE (accept): "opens with a specific moment they got something wrong, then reframes the tool through that failure"
-   
-   THEME (reject): "emphasizes practical implications"
-   MOVE (accept): "lists 3 specific conditions under which the tool fails before recommending it"
-   
-   THEME (reject): "expresses gratitude to colleagues"
-   MOVE (accept): "names 3-5 specific people with their exact role/contribution before mentioning their own achievement"
+STEP 2: What did the author actually DO?
 
-   Stimulus-specific move examples to calibrate against:
+Identify the specific move. Not the topic. Not the format. Not the length.
+The move is what reveals who they are — what they believe or value professionally.
 
-   Technology posts:
-   - "opens with a moment the tool failed or surprised them personally"
-   - "directly challenges reader's current behavior before introducing alternative"
-   - "rejects the common industry framing in sentence 1, then offers their own"
-   - "lists specific failure conditions before making a recommendation"
+Enforce this distinction before proceeding:
 
-   Career/transition posts:
-   - "names specific people with roles before claiming any personal achievement"
-   - "frames transition as something that happened TO them, not something they drove"
-   - "credits a specific conversation or moment as the turning point"
+REJECT these — they are not moves:
+- "writes a short reply" → format
+- "uses specific names" → style
+- "shares personal experience" → theme
+- "emphasizes practical implications" → generic
+- "responds briefly to the post" → stimulus-response pattern
 
-   If you cannot name the move this specifically → mark as UNANALYZABLE. Exclude.
+ACCEPT these — they reveal belief or value:
+- "opens by naming what they got wrong before explaining what works"
+- "credits a specific person's contribution before claiming personal achievement"
+- "rejects the dominant industry framing in sentence 1, then offers a bounded alternative"
+- "withholds the playbook publicly and routes to private follow-up"
+- "anchors recommendation in a specific failure condition, not a general use case"
 
-3. What did the prediction do instead?
-   Name the specific wrong assumption the prediction made about tone, structure, or angle.
+Test before accepting:
+"Does this move reveal something about what this person believes
+or values professionally — independent of the specific post topic?"
+- YES → proceed to Step 3
+- NO → format/style/theme observation. Discard. Do not proceed.
 
-4. What is the precise behavioral gap?
-   Complete this sentence:
-   "When [specific trigger/stimulus], this community [specific move] — but the prediction [specific wrong assumption]."
-   
-   If you cannot complete this sentence with specific, traceable language → discard this post.
+STEP 3: What did the prediction assume instead?
+Name the specific wrong assumption about values, beliefs, or professional priorities.
+Not about length, tone, emoji use, or format.
+
+STEP 4: What is the gap?
+Complete this sentence:
+"[Specific move] — but the prediction assumed [specific wrong belief about this community]."
+
+The move is the primary signal. The situation is background context only.
+Do not lead with "When [stimulus]..." — lead with what the author did.
+
+If you cannot complete this sentence with traceable, specific language → DISCARD.
 
 ---
 
 PHASE 2 — DEDUPLICATION (internal — do not output)
 
-For each gap from Phase 1:
+For each gap from Phase 1, run all four checks. All must pass.
 
-CHECK 1 — Against Prior Batch Gaps:
+CHECK 1 — Prior Batch Gaps:
 Is this gap already captured in {prior_batch_gaps}?
-- If YES, even partially → DISCARD. Do not resurface it.
-- If this batch confirms a prior gap → note it as confirmation, do not output as a new gap.
+- YES, even partially → DISCARD.
+- Confirmed again → note as prior_gap_confirmation, do not output as new gap.
 
-CHECK 2 — Against Existing Context:
-Is this gap already captured in Group Summary, Group Traits, or Past Learnings?
-- If FULLY captured → DISCARD.
-- If PARTIALLY captured → keep, but missing_nuance must identify the exact trigger or condition that is absent. Not a restatement of the gap — the specific missing piece.
+CHECK 2 — Existing Context:
+Is this gap already in Group Summary, Group Traits, or Past Learnings?
+- FULLY captured → DISCARD.
+- PARTIALLY captured → keep only if missing_nuance identifies the exact
+  condition or dimension that is absent. Must be specific — not a restatement.
 
-CHECK 3 — Specificity test:
-Could this gap describe any LinkedIn professional community, not just this one?
-- If YES → DISCARD.
+CHECK 3 — Community specificity:
+Could this gap describe any professional LinkedIn community?
+- YES → DISCARD. Must be specific to this community of Microsoft engineers
+  and startup operators — not generic professional behavior.
 
-CHECK 4 — Traceability test:
-Can you point to specific text in the actual post AND the predicted post that proves this gap?
-- If NO → DISCARD.
-
-Only gaps that pass ALL FOUR checks proceed to output.
+CHECK 4 — Traceability:
+Can you point to specific text in the actual post proving the move?
+And specific text in the predicted post proving the assumption was wrong?
+- NO → DISCARD.
 
 ---
 
 PHASE 3 — BATCH SYNTHESIS (internal — do not output)
 
-Across all surviving gaps from Phase 2:
+Across all gaps that passed Phase 2:
 
-1. Group gaps that describe the same underlying behavioral move.
-2. Count posts per pattern — this is your evidence count.
-3. Assign confidence STRICTLY by count:
+1. Group gaps that describe the same move appearing across multiple posts.
+   Same move = same action, same professional value revealed,
+   even if surface topics differ across posts.
+
+2. Count posts per group → this is your evidence count.
+   Do not estimate. Count exactly.
+
+3. Assign confidence STRICTLY by count. No exceptions:
    - 4-5 posts → HIGH
    - 2-3 posts → MEDIUM
-   - 1 post → this is an outlier, not a gap. Move to outlier handling.
-   
-   CONFIDENCE IS NON-NEGOTIABLE. Count first. Assign after.
-   Never assign HIGH to fewer than 4 posts.
-   Never assign MEDIUM to 1 post.
+   - 1 post → outlier only. Never a gap.
 
-4. If no gaps survive → proceed with empty gaps array. Do not force patterns.
+4. If no gaps survive → empty gaps array. Do not force patterns.
 
 ---
 
 PHASE 4 — OUTLIER HANDLING (internal — do not output)
 
-An outlier is a post that:
-- IS a prediction failure
-- Has a distinct failure reason from all main batch gaps
-- Has a specific, nameable behavioral move the prediction missed
+An outlier is a prediction failure where:
+- The move is specific and nameable
+- It is distinct from all main batch gaps
+- It is not already in existing context
+- It reveals something about this community's values or beliefs
 
-An outlier is NOT:
-- A post that simply doesn't exhibit the main batch pattern
-- A post where the prediction succeeded
-- A post where you cannot name a specific prediction failure
+Before adding any outlier, complete:
+"The prediction missed [specific move] —
+which is distinct from main batch gaps because [specific distinction]."
 
-Before adding any post to outliers, complete this sentence:
-"The prediction failed here because [specific move the post made] — which is different from the main batch gaps because [specific distinction]."
-
-If you cannot complete that sentence → exclude the post entirely. Do not add to outliers.
+Cannot complete it → exclude.
+Format or style observation → exclude.
+Already in existing context → exclude.
+Doesn't reveal a belief or value → exclude.
 
 ---
 
 PHASE 5 — SELF-CHECK (internal — do not output)
 
-Before writing any output, verify:
-
-□ Every gap completes the trigger/move/wrong-assumption sentence specifically
+□ Every behavioral_gap leads with the move, not the stimulus
+□ No gap is a format, length, or style observation
+□ No gap is a stimulus-response pattern without an underlying move
 □ Every gap passed all 4 deduplication checks
-□ Confidence matches evidence count exactly
+□ Confidence matches exact evidence count — no exceptions
 □ No gap repeats a prior batch gap
-□ missing_nuance identifies a specific missing trigger or condition — not a restatement of the gap
-□ Every outlier has a named prediction failure distinct from main gaps
-□ No outlier was added just because it didn't fit the main pattern
+□ missing_nuance names a specific missing condition — not a restatement
+□ Every outlier names a distinct move not in main gaps or existing context
+□ No outlier added just because it didn't fit the main pattern
+□ No gap could describe any generic LinkedIn professional community
 
 If any check fails → fix before outputting.
 
 ---
 
-OUTPUT:
-
+OUTPUT FORMAT:
 Return only valid JSON. No markdown. No commentary.
 
 {
   "batch_id": "...",
   "gaps": [
     {
-      "behavioral_gap": "When [specific trigger], this community [specific move] — but the prediction [specific wrong assumption].",
+      "behavioral_gap": "[Specific move the community made] — but the prediction assumed [specific wrong assumption about this community].",
       "exists_in_context": true | false,
-      "missing_nuance": "The specific trigger condition or contextual detail absent from the existing trait. Must be more specific than a restatement of the gap. Null if exists_in_context is false.",
+      "missing_nuance": "Specific condition or dimension absent from existing traits. Not a restatement of the gap. Null if exists_in_context is false.",
       "evidence": "X/Y posts",
       "confidence": "HIGH | MEDIUM | LOW"
     }
@@ -162,12 +178,12 @@ Return only valid JSON. No markdown. No commentary.
   "outliers": [
     {
       "post_id": "...",
-      "behavioral_gap": "Specific move the actual post made that the prediction missed.",
-      "why_outlier": "The prediction failed here because [specific move] — which is different from the main batch gaps because [specific distinction].",
+      "behavioral_gap": "[Specific move] that the prediction missed.",
+      "why_outlier": "Distinct from main gaps because [specific distinction].",
       "exists_in_context": true | false,
-      "missing_nuance": "Specific missing trigger or condition. Null if exists_in_context is false."
+      "missing_nuance": "Specific missing condition. Null if exists_in_context is false."
     }
   ],
   "batch_verdict": "new_gaps_found | no_new_gaps | prior_gaps_confirmed",
-  "prior_gap_confirmations": ["List any prior batch gaps this batch confirms, by exact gap text. Empty array if none."]
+  "prior_gap_confirmations": ["Exact text of prior gap this batch confirms. Empty array if none."]
 }

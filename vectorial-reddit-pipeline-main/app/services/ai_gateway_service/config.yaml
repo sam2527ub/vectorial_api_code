@@ -1,0 +1,66 @@
+# AI Gateway Configuration
+# Environment variables will override these values if set
+
+gateway:
+  # Enable/disable the AI Gateway (can be overridden by USE_AI_GATEWAY env var)
+  enabled: true
+  
+  # Gateway provider: vercel, portkey, langfuse, or custom
+  provider: vercel
+  
+  # Base URL for the gateway (optional for Vercel, uses defaults if not set)
+  # Can be overridden by AI_GATEWAY_BASE_URL env var
+  base_url: ""
+  
+  # API key for the gateway (should be set via AI_GATEWAY_API_KEY env var for security)
+  api_key: ""
+  
+  # Vercel AI Gateway unified endpoint (handles all providers: OpenAI, Anthropic, Groq)
+  vercel:
+    openai_url: "https://ai-gateway.vercel.sh/v1"
+
+# Model fallback configuration
+# Separate fallback lists for different use cases
+model_rotation:
+  # Profile Summary fallbacks (used by call_via_gateway with return_text=False)
+  # Default: openai/gpt-5-mini, then fallbacks
+  profile_summary:
+    default: "openai/gpt-5-mini"
+    fallbacks:
+      - "anthropic/claude-sonnet-4.5"
+      - "openai/gpt-4o-mini"
+  
+  # Group Summary fallbacks (used by call_via_gateway with return_text=True)
+  # Default: anthropic/claude-sonnet-4.5, then fallbacks
+  group_summary:
+    default: "anthropic/claude-sonnet-4.5"
+    fallbacks:
+      - "openai/gpt-5-mini"
+      - "openai/gpt-4o-mini"
+  
+  # Legacy: general fallbacks (for backward compatibility)
+  models:
+    - "openai/gpt-5-mini"
+    - "anthropic/claude-sonnet-4.5"
+    - "openai/gpt-4o-mini"
+  
+  # Dimension Tagging fallbacks (OpenAI models only - logprobs support required)
+  # Default: openai/gpt-4o-mini, then fallbacks
+  dimension_tagging:
+    default: "openai/gpt-4o-mini"
+    fallbacks:
+      - "openai/gpt-5-mini"
+
+  # Subreddit Similarity (semantic similarity; Groq default)
+  subreddit_similarity:
+    default: "groq/llama-3.3-70b-versatile"
+    fallbacks:
+      - "openai/gpt-4o-mini"
+      - "openai/gpt-5-mini"
+  
+  # Comment Context Summary (Groq default for fast summarization)
+  comment_context_summary:
+    default: "groq/llama-3.3-70b-versatile"
+    fallbacks:
+      - "openai/gpt-4o-mini"
+      - "openai/gpt-5-mini"

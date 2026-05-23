@@ -11,12 +11,17 @@ from typing import Any, Dict, Optional
 import httpx
 import psycopg2
 
+from .linkedin_sgo_job_health import reconcile_stale_sgo_job
 from .linkedin_sgo_pipeline_async_checkpoint import (
-    promote_checkpoint_to_canonical_artifacts,
-    latest_completed_checkpoint_iteration,
-    restore_checkpoint_into_workdir,
-    upload_iteration_checkpoint,
+    build_partial_resume_payload,
     build_resume_payload,
+    latest_completed_checkpoint_iteration,
+    latest_partial_checkpoint,
+    promote_checkpoint_to_canonical_artifacts,
+    restore_checkpoint_into_workdir,
+    restore_partial_checkpoint_into_workdir,
+    upload_iteration_checkpoint,
+    upload_partial_iteration_checkpoint,
 )
 from .linkedin_sgo_pipeline_async_config import ensure_required_paths, get_default_namespace
 from .linkedin_sgo_pipeline_async_errors import LinkedInSGOPipelineError
@@ -27,7 +32,36 @@ from app.services.linkedin_room_pipeline_async.workflow_orchestration import (
 from .linkedin_sgo_pipeline_async_runner import run_linkedin_sgo_pipeline_async
 
 
-def _sgo_failed_result_meta(jr: Dict[str, Any], exc: BaseException) -> Dict[str, Any]:
+def _mark_sgo_job_failed(
+    *,
+    job_id: str,
+    enterprise_name: Optional[str],
+    jr: Dict[str, Any],
+    exc: BaseException,
+    failed_posts: Optional[list] = None,
+) -> None:
+    from app.config import logger
+    from app.services.linkedin_room_pipeline_async.linkedin_room_pipeline_job_repository import (
+        update_linkedin_room_pipeline_job,
+    )
+
+    fail_result = _sgo_failed_result_meta(jr, exc, failed_posts=failed_posts)
+    update_linkedin_room_pipeline_job(
+        job_id,
+        enterprise_name=enterprise_name,
+        status="FAILED",
+        error=str(exc),
+        result=fail_result,
+    )
+    logger.error("[SGO_JOB] %s failed: %s", job_id, exc, exc_info=True)
+
+
+def _sgo_failed_result_meta(
+    jr: Dict[str, Any],
+    exc: BaseException,
+    *,
+    failed_posts: Optional[list] = None,
+) -> Dict[str, Any]:
     """
     Attach failure classification for operators and resume policy.
 
@@ -45,6 +79,9 @@ def _sgo_failed_result_meta(jr: Dict[str, Any], exc: BaseException) -> Dict[str,
         base["sgo_failure_class"] = "unknown"
         base["sgo_resume_blocked"] = True
     base["sgo_failed_at"] = datetime.now(timezone.utc).isoformat()
+    if failed_posts:
+        base["failed_posts"] = list(failed_posts)
+        base["failed_posts_count"] = len(failed_posts)
     return base
 
 
@@ -189,6 +226,27 @@ async def run_linkedin_sgo_pipeline_job_chunk(
     if not isinstance(jr, dict):
         jr = {}
 
+    from app.runtime_settings import get_runtime_settings
+
+    stale_s, stale_meta = reconcile_stale_sgo_job(
+        job,
+        stale_timeout_s=float(get_runtime_settings().linkedin_sgo_async.processing_stale_timeout_s),
+    )
+    if stale_s and stale_meta is not None:
+        update_linkedin_room_pipeline_job(
+            job_id,
+            enterprise_name=enterprise_name,
+            status="FAILED",
+            error=(
+                f"Job stale in PROCESSING (no heartbeat for "
+                f"{stale_meta.get('stale_processing_age_s')}s; "
+                f"limit {stale_meta.get('stale_processing_timeout_s')}s)"
+            ),
+            result=stale_meta,
+        )
+        logger.warning("[SGO_JOB] %s marked FAILED (stale PROCESSING)", job_id)
+        return
+
     num_it = max(1, int(jr.get("num_iterations") or 5))
     next_iter = max(1, int(jr.get("outer_iteration_next") or 1))
     tier_mode = str(jr.get("tier_mode") or "tier1").strip().lower()
@@ -262,6 +320,7 @@ async def run_linkedin_sgo_pipeline_job_chunk(
                 )
 
     hb = datetime.now(timezone.utc).isoformat()
+    failed_posts_acc: list = list(jr.get("failed_posts") or [])
     update_linkedin_room_pipeline_job(
         job_id,
         enterprise_name=enterprise_name,
@@ -270,6 +329,7 @@ async def run_linkedin_sgo_pipeline_job_chunk(
         result={
             **jr,
             "heartbeat_at": hb,
+            "sgo_last_progress_at": hb,
             "phase": "finalize" if next_iter > num_it else "running_outer_iteration",
             "outer_iteration_running": None if next_iter > num_it else next_iter,
         },
@@ -363,6 +423,7 @@ async def run_linkedin_sgo_pipeline_job_chunk(
             resume_qual: Optional[list] = None
             resume_pred: Optional[Dict[str, Any]] = None
             seed_json = ""
+            merged_resume = False
 
             if next_iter > 1:
                 resume_doc, seed_path = restore_checkpoint_into_workdir(
@@ -376,6 +437,35 @@ async def run_linkedin_sgo_pipeline_job_chunk(
                 if not isinstance(resume_pred, dict):
                     resume_pred = {}
                 seed_json = str(seed_path)
+
+            partial_hit = latest_partial_checkpoint(
+                base_tiered=base_tiered,
+                job_id=job_id,
+                outer_iteration=next_iter,
+            )
+            if partial_hit is not None:
+                partial_prefix, partial_doc = partial_hit
+                _partial_resume, partial_seed = restore_partial_checkpoint_into_workdir(
+                    base_tiered=base_tiered,
+                    job_id=job_id,
+                    s3_prefix=partial_prefix,
+                    work_dir=work_dir,
+                )
+                seed_json = str(partial_seed)
+                merged_resume = True
+                if isinstance(partial_doc.get("pred_snapshot"), dict):
+                    resume_pred = partial_doc["pred_snapshot"]
+                for fp in partial_doc.get("failed_posts") or []:
+                    if isinstance(fp, dict):
+                        failed_posts_acc.append(fp)
+                logger.info(
+                    "[SGO_JOB] %s resumed mid–outer-iteration %s from partial %s",
+                    job_id,
+                    next_iter,
+                    partial_doc.get("progress_reason"),
+                )
+            else:
+                merged_resume = False
 
             mdl = model or job.get("model") or None
 
@@ -397,6 +487,8 @@ async def run_linkedin_sgo_pipeline_job_chunk(
             if next_iter > 1:
                 merged["sgo_resume_qualifying_keys"] = resume_qual or []
                 merged["sgo_resume_pred_snapshot"] = resume_pred or {}
+            if partial_hit is not None or merged_resume:
+                merged["resume"] = True
             if tier_int == 2 and next_iter > 1:
                 merged["sgo_skip_tier1_evolution_requirement"] = True
             if mdl:
@@ -405,6 +497,7 @@ async def run_linkedin_sgo_pipeline_job_chunk(
 
             ns = get_default_namespace(merged)
             ensure_required_paths(ns)
+            setattr(ns, "sgo_failed_posts", failed_posts_acc)
 
             state_path = work_dir / "evolution" / "evolution_state.json"
             memory_path = work_dir / "memory" / "batch_analyses.json"
@@ -412,7 +505,50 @@ async def run_linkedin_sgo_pipeline_job_chunk(
             iteration_stats_path = work_dir / "iteration_stats.jsonl"
             out_path = work_dir / "delta_method_predictions.json"
 
+            async def _on_progress(**payload: Any) -> None:
+                fp = list(payload.get("failed_posts") or [])
+                partial_doc = build_partial_resume_payload(
+                    outer_iteration=int(payload["outer_iteration"]),
+                    num_iterations_planned=num_it,
+                    tier_mode=tier_mode,
+                    progress_reason=str(payload.get("progress_reason") or ""),
+                    processed_post_ids=list(payload.get("processed_post_ids") or []),
+                    pred_snapshot_jsonable=dict(payload.get("user_pred_jsonable") or {}),
+                    failed_posts=fp,
+                )
+                upload_partial_iteration_checkpoint(
+                    base_tiered=base_tiered,
+                    job_id=job_id,
+                    outer_iteration=int(payload["outer_iteration"]),
+                    progress_reason=str(payload.get("progress_reason") or ""),
+                    partial_doc=partial_doc,
+                    user_pred_jsonable=dict(payload["user_pred_jsonable"]),
+                    work_dir=work_dir,
+                    state_path=Path(payload["state_path"]),
+                    memory_path=Path(payload["memory_path"]),
+                    trace_path=Path(payload["trace_path"]),
+                    iteration_stats_path=Path(payload["iteration_stats_path"]),
+                    out_path=Path(payload["out_path"]),
+                )
+                job_now = get_linkedin_room_pipeline_job(job_id, enterprise_name=enterprise_name) or {}
+                jrx = job_now.get("result") if isinstance(job_now.get("result"), dict) else {}
+                update_linkedin_room_pipeline_job(
+                    job_id,
+                    enterprise_name=enterprise_name,
+                    result={
+                        **jrx,
+                        "heartbeat_at": datetime.now(timezone.utc).isoformat(),
+                        "sgo_last_progress_at": datetime.now(timezone.utc).isoformat(),
+                        "sgo_last_progress_reason": str(payload.get("progress_reason") or ""),
+                        "failed_posts": fp,
+                        "failed_posts_count": len(fp),
+                        "outer_iteration_running": int(payload["outer_iteration"]),
+                    },
+                    error=None,
+                )
+
             async def _on_complete(**payload: Any) -> None:
+                fp = list(payload.get("failed_posts") or [])
                 resume_doc = build_resume_payload(
                     iteration_completed=int(payload["iteration_completed"]),
                     num_iterations_planned=num_it,
@@ -461,6 +597,8 @@ async def run_linkedin_sgo_pipeline_job_chunk(
                                 "tier_int": tier_int,
                                 "heartbeat_at": datetime.now(timezone.utc).isoformat(),
                                 "last_checkpoint_iteration": done_iter,
+                                "failed_posts": fp,
+                                "failed_posts_count": len(fp),
                             },
                             error=None,
                         )
@@ -472,7 +610,9 @@ async def run_linkedin_sgo_pipeline_job_chunk(
                                 job_id,
                                 db_err,
                             )
-                            raise
+                            raise LinkedInSGOPipelineError(
+                                f"DB update failed after S3 checkpoint: {db_err}"
+                            ) from db_err
                         logger.warning(
                             "[SGO_OBS] event=db_transient_after_checkpoint job_id=%s attempt=%s/4 error=%s",
                             job_id,
@@ -488,27 +628,51 @@ async def run_linkedin_sgo_pipeline_job_chunk(
                         base_url, audience_room_id, job_id, enterprise_name, model
                     )
 
+            setattr(ns, "sgo_on_outer_iteration_progress", _on_progress)
             setattr(ns, "sgo_on_outer_iteration_complete", _on_complete)
 
-            await run_linkedin_sgo_pipeline_async(ns)
+            try:
+                await run_linkedin_sgo_pipeline_async(ns)
+            finally:
+                fp_final = list(getattr(ns, "sgo_failed_posts", None) or [])
+                if fp_final:
+                    job_now = (
+                        get_linkedin_room_pipeline_job(job_id, enterprise_name=enterprise_name) or {}
+                    )
+                    jrx = job_now.get("result") if isinstance(job_now.get("result"), dict) else {}
+                    update_linkedin_room_pipeline_job(
+                        job_id,
+                        enterprise_name=enterprise_name,
+                        result={
+                            **jrx,
+                            "failed_posts": fp_final,
+                            "failed_posts_count": len(fp_final),
+                        },
+                    )
 
     except LinkedInSGOPipelineError as e:
-        logger.error("[SGO_JOB] %s failed: %s", job_id, e, exc_info=True)
-        fail_result = _sgo_failed_result_meta(jr, e)
-        update_linkedin_room_pipeline_job(
-            job_id,
+        _mark_sgo_job_failed(
+            job_id=job_id,
             enterprise_name=enterprise_name,
-            status="FAILED",
-            error=str(e),
-            result=fail_result,
+            jr=jr,
+            exc=e,
+            failed_posts=list(locals().get("failed_posts_acc", []) or jr.get("failed_posts") or []),
         )
+    except SystemExit as e:
+        code = e.code if e.code is not None else 1
+        if code not in (0, None):
+            _mark_sgo_job_failed(
+                job_id=job_id,
+                enterprise_name=enterprise_name,
+                jr=jr,
+                exc=LinkedInSGOPipelineError(f"SGO pipeline exited with status {code}"),
+                failed_posts=list(locals().get("failed_posts_acc", []) or jr.get("failed_posts") or []),
+            )
     except Exception as e:
-        logger.error("[SGO_JOB] %s failed: %s", job_id, e, exc_info=True)
-        fail_result = _sgo_failed_result_meta(jr, e)
-        update_linkedin_room_pipeline_job(
-            job_id,
+        _mark_sgo_job_failed(
+            job_id=job_id,
             enterprise_name=enterprise_name,
-            status="FAILED",
-            error=str(e),
-            result=fail_result,
+            jr=jr,
+            exc=e,
+            failed_posts=list(locals().get("failed_posts_acc", []) or jr.get("failed_posts") or []),
         )

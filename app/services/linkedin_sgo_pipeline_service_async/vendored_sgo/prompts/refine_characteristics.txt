@@ -1,118 +1,263 @@
-TASK: Evolve a Group Persona from Descriptive to Predictive using LinkedIn post prediction error logs.
+TASK: Evolve a Group Persona from Descriptive to Predictive.
 
-You are a behavioral anthropologist and persona architect. Your job is to refine a group persona so it predicts future LinkedIn posts more accurately. You do this by extracting behavioral patterns from prediction failures and integrating them into the persona's traits and summary.
-
-You must BOTH refine existing traits AND add new trait list items when error logs reveal genuinely distinct moves. Updating-only passes that never grow the trait lists are incorrect.
-
-Vague traits make predictions worse. Generic rationalizations are hallucinations.
+You are a behavioral anthropologist and persona architect.
+Your job: extract the underlying professional norms this community operates on,
+integrate them into group traits, and rewrite the group summary so it predicts
+how this community posts on LinkedIn — not just describes what they post about.
 
 ---
 
 INPUTS:
 Current Group Persona: {current_group_persona_json}
-Prediction Error Logs: {batch_analyses_text}
-
-Error logs contain ``behavioral_gap``, ``evidence``, ``confidence``, and (for outliers) ``why_outlier`` only.
-Decide whether a behavior is already covered by reading the actual trait ``text`` fields in the Current Group Persona.
+Batch Error Logs: {batch_error_logs}
 
 ---
 
-PHASE 0 — READ AND CLUSTER (internal — do not output)
+HOW TO READ BATCH ERROR LOGS
 
-Read ALL error logs before touching the persona. Do not start editing until this phase is complete.
+Each gap block contains:
+- behavioral_gap: the move the prediction missed
+- missing_nuance: specific trigger/condition absent from traits (or null)
+- evidence: "X/Y posts"
+- confidence: HIGH | MEDIUM | LOW
+- exists_in_context: true | false
 
-For each gap (and promoted outlier themes) in the error logs:
-1. What specific behavioral MOVE does it describe?
-   Test: Can I observe this move in a post without interpretation?
-   YES → proceed
-   NO → this is a theme, not a behavior. Restate as a move or discard.
+Processing rules:
+- Read ALL gaps before making any changes
+- exists_in_context: true → refine existing trait only, never add new
+- exists_in_context: false → evaluate for new trait
+- LOW confidence single batch → discard unless move is highly distinct
+  and absent from all existing traits
+- Cluster gaps describing the same underlying move into one update
+- Do not create separate traits for the same behavior across different batches
 
-2. Which trait category does it belong to?
-   - Skills & Expertise → what they KNOW and can DO
-   - Working Style → HOW they work and what methods they use
-   - Motivations & Values → what DRIVES them and what they stand for
-   - Pain Points & Needs → what STRUGGLES they face
-   - Organizational Leadership & Psychographic Profile → how they LEAD and connect
-
-3. Is this move ALREADY covered by an existing trait in that category?
-   Read each existing trait ``text`` in that category. Compare the TRIGGER and MOVE, not vague themes.
-   - SAME underlying move (same trigger + same action) → REFINEMENT (edit that row in place).
-   - DIFFERENT trigger OR different action → NEW TRAIT (add a new object to that category's list).
-
-4. Cluster logs that describe the same underlying move into one trait update.
-   Do not create separate traits for the same behavior seen in different posts.
-
-Output of this phase (internal only):
-- Cluster list: [behavior move] → [trait category] → [REFINEMENT or NEW] → [confidence]
-- Count NEW traits planned: N (must be ≤ 10 across all categories)
-- If N > 10: rank by evidence strength, keep top 10 NEW traits, discard rest
-- If the window has 2+ distinct HIGH/MEDIUM gaps, plan at least 1 NEW trait unless every gap truly matches an existing trait's trigger+move
+BEFORE PROCESSING — filter these out immediately:
+Any gap that describes format, length, tone, or style
+(short replies, specific nouns, emoji use, post structure)
+is not a behavioral gap. Discard before Phase 0.
+Only gaps that reveal what this community believes or values proceed.
 
 ---
 
-PHASE 1 — REFINE EXISTING TRAITS (internal — do not output)
+PHASE 0: NORM EXTRACTION (internal — do not output)
 
-For each REFINEMENT identified in Phase 0 only:
+This is the most important phase. Everything else depends on it.
+Do not start editing traits until this phase is complete.
 
-1. Locate the exact trait object in the persona JSON for that category.
-2. Edit that row's ``text`` in place. Do not add a duplicate list item for a refinement.
-3. The edited ``text`` MUST follow TRIGGER → BEHAVIOR → CONTEXT format:
+Read all surviving gap blocks. For each cluster of related gaps:
 
-   "When [specific stimulus or situation], they [specific observable move] — [why this matters or what it replaces]."
+STEP 1: What is the underlying professional norm?
 
-   WEAK (reject): "Values mentorship and community building."
-   STRONG (accept): "When a post stimulus involves a junior professional entering the field, they open with a specific personal setback from their own career arc — naming the moment, the person who helped, and what they got wrong."
+A norm is what this community believes about professional communication,
+credibility, or work — not what they do in one specific situation.
 
-4. Update rationalization only if the error log provides new evidence. Ground in error logs; do not invent.
-5. Update confidence_score upward if new evidence strengthens the trait.
+Test: Complete this sentence:
+"This community believes [professional belief] —
+which is why they consistently [move] rather than [what predictions assumed]."
 
-Refining existing traits does NOT count toward the 10 NEW-trait limit.
+The belief must:
+- Hold across multiple situations, not just the one in the gap
+- Be specific to this community, not generic to all tech professionals
+- Explain the move without referencing the specific post topic
+
+If you cannot complete the sentence → the gap is a surface observation.
+Discard. Do not write a trait from it.
+
+STEP 2: Is this norm already captured in existing traits?
+
+Read every trait text AND rationalization in the relevant category.
+Compare the norm, not the surface behavior.
+- Same norm already rationalized → REFINE that trait's text and rationalization
+- Same surface behavior, different norm → NEW trait
+- Vague overlap → REFINE, never add
+
+STEP 3: Which category?
+- Skills & Expertise: what they demonstrably KNOW or CAN DO
+- Working Style: HOW they approach work, methods, processes
+- Motivations & Values: what DRIVES posting choices, what they stand for
+- Pain Points & Needs: specific frustrations that surface in posts
+- Org Leadership & Psychographic Profile: how they LEAD, connect, position themselves
+
+STEP 4: Build your edit plan before touching anything.
+- List every trait that needs refinement → edit in place
+- List every genuinely new norm → new trait in correct category
+- Maximum 10 new traits total across all categories
+- Refinements are unlimited
+
+STEP 5: Build the behavioral profile.
+Synthesize all confirmed norms — from gap clusters AND existing trait rationalizations:
+
+Which norms appear across multiple traits and multiple gap clusters?
+→ Core beliefs. These define how this tribe communicates on LinkedIn.
+
+Which norms appear in only one category or one gap cluster?
+→ Situational. They activate in specific contexts only.
+
+Write the profile:
+"This community operates on [core norm 1] and [core norm 2].
+Situationally, when [context], they also [norm 3]."
+
+This profile is your test for every trait and every sentence in the summary.
+If a trait or summary sentence cannot connect to a norm in this profile → cut it.
 
 ---
 
-PHASE 2 — ADD NEW TRAITS (required when Phase 0 marks NEW)
+PHASE 1: REFINE EXISTING TRAITS (internal — do not output)
 
-For each NEW TRAIT (maximum 10 total across all categories):
+For each refinement from Phase 0 edit plan:
 
-1. APPEND a new object to the correct category list in the output JSON. Do not only lengthen an unrelated existing row.
-2. The new ``text`` MUST use TRIGGER → BEHAVIOR → CONTEXT format (see Phase 1).
-3. Set ``rationalization`` to one sentence citing error-log evidence.
-4. Set ``confidence_score`` from evidence (0.85+ for repeated HIGH gaps, 0.65–0.84 for MEDIUM).
-5. Set ``trait_section_title`` to match an existing subsection in that category OR a clearly distinct new one.
+1. Find the exact trait object in the persona JSON.
+2. Edit text in place — never add a duplicate row for a refinement.
+3. Every trait text must follow TRIGGER → BEHAVIOR → CONTEXT:
 
-Category abstraction checks (same as before):
-- Skills & Expertise → demonstrated capability
-- Working Style → method / collaboration pattern
-- Motivations & Values → drive behind posting choices
-- Pain Points & Needs → specific frustration or unmet need
-- Organizational Leadership & Psychographic Profile → influence / identity expression
+   WEAK: "Values mentorship and community building."
+   STRONG: "When a post involves a career milestone — own or a peer's —
+   they name the specific individuals who contributed, describing their
+   concrete impact rather than giving generic thanks, because public
+   attribution of specific contributors is how credibility is built
+   and maintained in this community."
 
-Before finishing Phase 2, confirm each NEW trait's trigger+move is not already present in any existing trait ``text`` in that category.
+4. Rewrite rationalization — required for every refinement, no exceptions.
+
+   The rationalization extracts the underlying norm the trait encodes.
+   It is NOT a summary of the trait text.
+   It answers: what does this community believe that makes this behavior consistent?
+
+   Must be grounded in gap block evidence (behavioral_gap, missing_nuance, evidence count).
+
+   WEAK: "Updated based on prediction errors."
+   WEAK: Restating the trait text in different words.
+   STRONG: "This community treats specific public attribution as credibility
+   currency — gaps showed predictions assumed generic gratitude was sufficient,
+   missing that naming who helped and what they did is how trust is earned
+   here (HIGH, 4/5 posts across batches 3 and 7)."
+
+   If text changed but rationalization is unchanged → invalid. Fix before continuing.
+
+5. Raise confidence_score if gap evidence strengthens the trait.
 
 ---
 
-PHASE 3 — GROUP SUMMARY (internal — do not output)
+PHASE 2: ADD NEW TRAITS (internal — do not output)
 
-Read all trait rationalizations first. Synthesize norms, then integrate error-log themes.
+Only for norms confirmed as NEW in Phase 0 edit plan.
+Maximum 10 new traits total across all categories.
+
+For each new trait:
+
+STEP A: Write text in TRIGGER → BEHAVIOR → CONTEXT format.
+The behavior must be observable in a post without interpretation.
+Test: "Could I recognize this behavior if I saw it in a post?"
+If no → too abstract. Rewrite or discard.
+
+STEP B: Write rationalization.
+One sentence. The professional norm driving this behavior.
+Must trace directly to gap block evidence.
+If not traceable → null. Do not invent.
+
+STEP C: Set confidence_score.
+- Repeated HIGH across multiple batches → 0.85–1.0
+- MEDIUM or single HIGH batch → 0.65–0.84
+- LOW → do not add. Discard.
+
+STEP D: Set trait_section_title.
+Match existing subsection title in that category if one fits.
+New title only if behavior is categorically distinct.
+
+STEP E: Set keywordTags.
+Only tags genuinely new to this category. No duplicates.
+
+STEP F: Integration check before finalizing.
+□ Duplicates any existing trait in any category? → merge or discard
+□ Right category — most actionable for prediction?
+□ Passes TRIGGER → BEHAVIOR → CONTEXT?
+□ Rationalization traces to gap evidence?
+□ Norm connects to behavioral profile from Phase 0?
+If any fail → fix or discard.
+
+---
+
+PHASE 3: REWRITE GROUP SUMMARY (internal — do not output)
+
+The group summary must answer:
+Who is this tribe and what do they believe about professional communication
+on LinkedIn — such that someone could predict their next post?
+
+STEP 1: List what stays.
+Read current summary. Identify what is still valid:
+organizations, ecosystems, technical domains, sub-cohorts, posting modes.
+These are preserved unless gap evidence clearly supersedes them.
+
+STEP 2: Test current summary against behavioral profile.
+Take the behavioral profile from Phase 0 Step 5.
+Read every sentence in the current summary.
+Ask: does this sentence connect to a norm in the profile?
+- YES → candidate to keep, sharpen, or reframe around the norm
+- NO → candidate to cut unless it preserves essential specifics
+
+STEP 3: Identify what's new.
+What norms from the error logs are absent from the current summary?
+Only add what traces to at least one trait rationalization.
+If you cannot trace a behavioral claim to a rationalization → cut it.
+
+STEP 4: Write the summary.
 
 Rules:
-- Full rewrite of ``group_summary`` (~200–300 words), not append-only.
-- Keep valid specifics: orgs, platforms, sub-cohorts, tools.
-- Every summary claim must trace to at least one trait rationalization.
-- Opening sentence must change from the current summary.
+- Full rewrite — not current summary with additions appended
+- Opening sentence must differ from current summary
+- Keep all still-valid specifics: named tools, platforms, sub-cohorts
+- Every behavioral sentence must connect to a norm in the Phase 0 profile
+- Behavioral norms expressed as tribe-level patterns — not post-level examples
+- Length: 250–350 words
+- Cut anything that could describe any tech professional community
+- Cut vague themes: "values community", "emphasizes practical implications"
+- Every sentence must pass: "Does this help predict how this tribe posts?"
+- If named individual behavior is confirmed by traits → include once, not twice
+The summary captures PERSONALITY and PROFESSIONAL IDENTITY —
+not writing patterns or response formats.
 
+Ask for every sentence:
+"Does this tell me who these people are — what they care about,
+what they believe, what drives them professionally?"
+- YES → keep
+- NO → cut, even if it's technically accurate
+
+What belongs:
+- What they value in their work and community
+- What they believe about technology, leadership, careers
+- What motivates how they show up professionally
+- How they think about their own credibility and others'
+- What they celebrate, critique, and stand for
+
+What does not belong:
+- How long their posts are
+- What format they use
+- How they structure replies
+- Writing style, tone, emoji use
+- Response patterns to specific stimulus types
+
+A reader should finish the summary knowing who these people ARE —
+not knowing how to imitate their LinkedIn formatting.
 ---
 
-PHASE 4 — SELF-CHECK (internal — do not output)
+PHASE 4: SELF-CHECK (internal — do not output)
 
-Before outputting, verify:
-
-□ At least one NEW trait list item was added if error logs contained distinct HIGH/MEDIUM moves not already in trait texts
-□ Every NEW trait is a separate list object — not a duplicate row for a refinement
-□ Every trait (new + refined) uses TRIGGER → BEHAVIOR → CONTEXT format
-□ NEW traits ≤ 10 total across all categories
-□ Rationalizations grounded in error logs
-□ Group summary is a genuine rewrite
+□ All format/style gaps discarded before Phase 0
+□ Every norm in Phase 0 completes "This community believes [belief] —
+  which is why they [move] rather than [prediction assumption]"
+□ Every new and refined trait follows TRIGGER → BEHAVIOR → CONTEXT
+□ Every refined trait has a rewritten rationalization grounded in gap evidence
+□ No rationalization restates the trait text or says "updated based on errors"
+□ New traits ≤ 10 total
+□ No refinement added as duplicate row — edited in place
+□ No trait duplicated across categories
+□ Confidence scores match gap evidence strength
+□ Group summary is a full rewrite — opening sentence differs
+□ Every behavioral sentence in summary connects to a norm in Phase 0 profile
+□ No vague behavioral themes in summary
+□ Named individual behavior appears once if present
+□ Baseline specifics preserved: tools, platforms, sub-cohorts
+□ No behavioral claim in summary without a supporting trait rationalization
 
 If any check fails → fix before outputting.
 
@@ -122,9 +267,9 @@ OUTPUT FORMAT:
 Return ONLY valid JSON. No markdown. No commentary.
 Maintain exact schema of input persona with content updated.
 
-Required in output:
-- group_summary: Complete rewritten narrative
-- All five trait category keys with list values (same keys as input)
+Required:
+- group_summary: complete rewritten narrative
+- All five trait category keys with full list values
 - Every trait: text, rationalization, confidence_score, trait_section_title
-- NEW behaviors → new list items in the correct category
-- SAME behaviors → edited in place on the existing list item (no duplicate row)
+- Refined traits: edited in place, rewritten rationalization required
+- New traits: new list item in correct category
