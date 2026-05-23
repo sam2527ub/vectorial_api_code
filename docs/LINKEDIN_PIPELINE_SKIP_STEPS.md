@@ -64,6 +64,12 @@ The workflow `linkedinRoomPipelineWorkflow` calls `stepFetchPipelinePlan` first,
 
 Step 7 (SGO) uses **Fargate + poll-only** by default: `fargate/start` → `fargate/pipeline-status`.
 
+**SGO-only workflow** (steps 1–6 already on S3): `POST https://vectorial-sgo-linkedin-testing.vercel.app/api/workflows/sgo-fargate`
+
+**Resume failed Fargate SGO** (same tier job ids + S3 checkpoints): set `"sgoFargateMode": "resume"` with `sgoTier1JobId` / `sgoTier2JobId` on either workflow route. Optional `"sgoAutoResumeOnFailure": true` retries once after a failed poll.
+
+See `apps/vectorial_sgo_linkedin_testing/RUNBOOK.md` for curl examples.
+
 ### Trigger body (recommended)
 
 ```json
@@ -103,4 +109,4 @@ To **force** re-run step 5 even if a partial artifact exists:
 - **`requirePrerequisites`** (default `true`): `startFromStep: 5` requires steps 1–4 complete on S3.
 - Completion is based on **canonical** artifact files (not `.partial` checkpoints).
 - Tier **1** artifacts are used for steps 2–7 checks (matches default Phase 1).
-- This does **not** replace SGO **checkpoint resume** (same `jobId`); use that for retry within one SGO job.
+- This does **not** replace SGO **checkpoint resume** (same `jobId`); use `sgoFargateMode: "resume"` on the Vercel workflow for that (see `RUNBOOK.md` in the workflow app).

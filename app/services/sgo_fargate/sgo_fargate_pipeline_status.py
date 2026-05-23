@@ -30,6 +30,11 @@ def _tier_entry_from_job(job: Dict[str, Any], *, tier_mode: str) -> Dict[str, An
         "outer_iteration_next": jr.get("outer_iteration_next"),
         "num_iterations": jr.get("num_iterations"),
         "failed_posts_count": jr.get("failed_posts_count"),
+        "sgo_early_stop": jr.get("sgo_early_stop"),
+        "sgo_early_stop_reason": jr.get("sgo_early_stop_reason"),
+        "last_checkpoint_iteration": jr.get("last_checkpoint_iteration"),
+        "sgo_resume_blocked": jr.get("sgo_resume_blocked"),
+        "compute_backend": jr.get("compute_backend"),
     }
 
 
@@ -89,6 +94,19 @@ def aggregate_fargate_pipeline_status(
         if st == "FAILED":
             terminal_failure = True
             failed_tier = failed_tier or tm
+
+    if len(tier_results) >= 2:
+        t1_st = str(tier_results[0].get("status") or "").upper()
+        t2 = dict(tier_results[1])
+        t2_st = str(t2.get("status") or "").upper()
+        if t1_st != "COMPLETED" and t2_st in ("PROCESSING", "PENDING"):
+            t2["status"] = "PENDING"
+            t2["waiting_for_tier1"] = True
+            if t1_st == "FAILED":
+                t2["message"] = "Waiting for tier1 to complete before tier2 starts."
+            else:
+                t2["message"] = "Tier2 starts automatically after tier1 completes."
+            tier_results[1] = t2
 
     statuses = {str(e.get("status") or "").upper() for e in tier_results}
     if terminal_failure:
