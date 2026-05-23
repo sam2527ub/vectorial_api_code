@@ -52,11 +52,30 @@ def _config_path() -> Path:
 
 def _dict_to_namespace(d: Dict[str, Any]) -> argparse.Namespace:
     ns = argparse.Namespace()
-    for k, v in d.items():
+    merged = {**_NAMESPACE_OPTIONAL_DEFAULTS, **d}
+    for k, v in merged.items():
         if k.startswith("_"):
             continue
         setattr(ns, str(k), v)
     return ns
+
+
+# Keys the vendored CLI sets via argparse but async/Fargate builds from YAML only.
+# Filling these here avoids AttributeError when YAML predates a new flag.
+_NAMESPACE_OPTIONAL_DEFAULTS: Dict[str, Any] = {
+    "group_summary_max_words": 300,
+    "max_traits_per_category": 20,
+    "shrink_floor_words": 200,
+    "shrink_hard_max_words": 300,
+    "shrink_baseline_ratio": 1.22,
+    "shrink_baseline_floor_ratio": 0.90,
+    "refine_memory_batches": 12,
+    "qual_shrink_every_n_refinements": 5,
+    "no_shrink": False,
+    "no_outlier_refine": False,
+    "resume": False,
+    "resume_user_pred_seed": "",
+}
 
 
 def load_linkedin_sgo_pipeline_async_config(
@@ -84,8 +103,16 @@ def load_linkedin_sgo_pipeline_async_config(
         return _CFG_CACHE
 
 
+def ensure_sgo_namespace_defaults(ns: argparse.Namespace) -> argparse.Namespace:
+    for k, v in _NAMESPACE_OPTIONAL_DEFAULTS.items():
+        if not hasattr(ns, k):
+            setattr(ns, k, v)
+    return ns
+
+
 def get_default_namespace(overrides: Optional[Dict[str, Any]] = None) -> argparse.Namespace:
-    return load_linkedin_sgo_pipeline_async_config().build_namespace(overrides)
+    ns = load_linkedin_sgo_pipeline_async_config().build_namespace(overrides)
+    return ensure_sgo_namespace_defaults(ns)
 
 
 def ensure_required_paths(
@@ -134,6 +161,7 @@ load_linkedin_sgo_pipeline_config = load_linkedin_sgo_pipeline_async_config
 __all__ = (
     "LinkedInSGOPipelineConfigBundle",
     "ensure_required_paths",
+    "ensure_sgo_namespace_defaults",
     "get_default_namespace",
     "load_linkedin_sgo_pipeline_async_config",
     "load_linkedin_sgo_pipeline_config",

@@ -63,5 +63,9 @@ def try_fetch_text_from_s3(key: str) -> Optional[str]:
         body = resp["Body"].read()
         return body.decode("utf-8")
     except Exception as e:
-        log.info("[SGO_S3] try_fetch_text miss %s: %s", key, e)
+        err = str(e)
+        if "NoSuchKey" in err or "404" in err or "Not Found" in err:
+            log.debug("[SGO_S3] try_fetch_text miss %s: %s", key, e)
+        else:
+            log.info("[SGO_S3] try_fetch_text miss %s: %s", key, e)
         return None

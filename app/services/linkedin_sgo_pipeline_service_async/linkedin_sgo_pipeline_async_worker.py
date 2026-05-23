@@ -363,16 +363,25 @@ async def run_linkedin_sgo_pipeline_job_chunk(
 
     try:
         if next_iter > num_it:
+            promote_iter = int(jr.get("last_checkpoint_iteration") or 0)
+            if promote_iter <= 0:
+                promote_iter = latest_completed_checkpoint_iteration(
+                    base_tiered=base_tiered, job_id=job_id, scan_max=num_it
+                )
+            if promote_iter <= 0:
+                promote_iter = num_it
             urls = promote_checkpoint_to_canonical_artifacts(
                 base_tiered=base_tiered,
                 job_id=job_id,
                 tier_int=tier_int,
-                last_iteration_completed=num_it,
+                last_iteration_completed=promote_iter,
                 art=art,
                 manifest_key=art.manifest,
             )
             posts_done = int(jr.get("num_posts") or 0)
-            total_items, completed_items = _sgo_job_progress_counts(posts_done, num_it, num_it)
+            total_items, completed_items = _sgo_job_progress_counts(
+                posts_done, num_it, promote_iter
+            )
             update_linkedin_room_pipeline_job(
                 job_id,
                 enterprise_name=enterprise_name,
@@ -388,10 +397,16 @@ async def run_linkedin_sgo_pipeline_job_chunk(
                     "heartbeat_at": datetime.now(timezone.utc).isoformat(),
                     "s3_urls": urls,
                     "checkpoint_promoted": True,
+                    "sgo_early_stop": bool(jr.get("sgo_early_stop")),
                 },
                 error=None,
             )
-            logger.info("[SGO_JOB] %s COMPLETED (promoted checkpoint iter=%s)", job_id, num_it)
+            logger.info(
+                "[SGO_JOB] %s COMPLETED (promoted checkpoint iter=%s early_stop=%s)",
+                job_id,
+                promote_iter,
+                bool(jr.get("sgo_early_stop")),
+            )
             return
 
         with tempfile.TemporaryDirectory(prefix=f"linkedin_sgo_job_{job_id}_") as td:
@@ -513,7 +528,7 @@ async def run_linkedin_sgo_pipeline_job_chunk(
             if next_iter > 1:
                 merged["sgo_resume_qualifying_keys"] = resume_qual or []
                 merged["sgo_resume_pred_snapshot"] = resume_pred or {}
-            if partial_hit is not None or merged_resume:
+            if next_iter > 1 or partial_hit is not None or merged_resume:
                 merged["resume"] = True
             if tier_int == 2 and next_iter > 1:
                 merged["sgo_skip_tier1_evolution_requirement"] = True
@@ -659,6 +674,44 @@ async def run_linkedin_sgo_pipeline_job_chunk(
 
             try:
                 await run_linkedin_sgo_pipeline_async(ns)
+                if getattr(ns, "sgo_stop_outer_iterations", False):
+                    s3_latest = latest_completed_checkpoint_iteration(
+                        base_tiered=base_tiered, job_id=job_id, scan_max=num_it
+                    )
+                    job_now = (
+                        get_linkedin_room_pipeline_job(job_id, enterprise_name=enterprise_name)
+                        or {}
+                    )
+                    jrx = (
+                        job_now.get("result") if isinstance(job_now.get("result"), dict) else {}
+                    )
+                    done_ckpt = max(int(s3_latest), int(jrx.get("last_checkpoint_iteration") or 0))
+                    posts_i = int(jrx.get("num_posts") or num_posts)
+                    total_items_es, completed_items_es = _sgo_job_progress_counts(
+                        posts_i, num_it, done_ckpt
+                    )
+                    update_linkedin_room_pipeline_job(
+                        job_id,
+                        enterprise_name=enterprise_name,
+                        completed_items=completed_items_es,
+                        total_items=total_items_es,
+                        result={
+                            **jrx,
+                            "outer_iteration_next": num_it + 1,
+                            "num_iterations": num_it,
+                            "last_checkpoint_iteration": done_ckpt or None,
+                            "sgo_early_stop": True,
+                            "sgo_early_stop_reason": "no posts above next_sweep_min_delta",
+                            "heartbeat_at": datetime.now(timezone.utc).isoformat(),
+                        },
+                        error=None,
+                    )
+                    logger.info(
+                        "[SGO_JOB] %s early stop — no qualifying posts for next sweep "
+                        "(checkpoint iter=%s, skipping remaining outer iterations)",
+                        job_id,
+                        done_ckpt,
+                    )
             finally:
                 fp_final = list(getattr(ns, "sgo_failed_posts", None) or [])
                 if fp_final:

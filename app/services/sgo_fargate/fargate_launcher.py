@@ -91,17 +91,28 @@ def start_linkedin_sgo_on_fargate(
             result={**existing, **jr_extra},
         )
     else:
-        existing = {}
-        for tid in (tier1_job_id, tier2_job_id):
+        for idx, tid in enumerate((tier1_job_id, tier2_job_id)):
             if not tid:
                 continue
             job = get_linkedin_room_pipeline_job(tid, enterprise_name=enterprise_name) or {}
             jrx = job.get("result") if isinstance(job.get("result"), dict) else {}
+            tier_status = "PROCESSING" if idx == 0 else "PENDING"
+            tier_result = {
+                **jrx,
+                **jr_extra,
+            }
+            if idx == 1:
+                tier_result.update(
+                    {
+                        "phase": "waiting_for_tier1",
+                        "waiting_for_tier1": True,
+                    }
+                )
             update_linkedin_room_pipeline_job(
                 tid,
                 enterprise_name=enterprise_name,
-                status="PROCESSING",
-                result={**jrx, **jr_extra},
+                status=tier_status,
+                result=tier_result,
             )
 
     try:

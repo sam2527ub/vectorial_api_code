@@ -15,7 +15,11 @@ from contextlib import contextmanager
 from pathlib import Path
 from typing import Any, Iterator, Optional
 
-from .linkedin_sgo_pipeline_async_config import ensure_required_paths, get_default_namespace
+from .linkedin_sgo_pipeline_async_config import (
+    ensure_required_paths,
+    ensure_sgo_namespace_defaults,
+    get_default_namespace,
+)
 from .linkedin_sgo_pipeline_async_errors import LinkedInSGOPipelineError
 
 logger = logging.getLogger(__name__)
@@ -58,6 +62,7 @@ async def run_linkedin_sgo_pipeline_async(args: Any) -> None:
     ``args`` must match the vendored CLI namespace for ``linkedin/tier1_delta_method_predictions.py``.
     """
     ensure_required_paths(args)
+    ensure_sgo_namespace_defaults(args)
     _maybe_set_repo_root_env()
     logger.info("[linkedin_sgo_pipeline_async] starting vendored delta-method run")
     try:

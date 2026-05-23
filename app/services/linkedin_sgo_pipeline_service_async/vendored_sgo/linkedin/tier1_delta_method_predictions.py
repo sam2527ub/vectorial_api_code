@@ -1691,13 +1691,14 @@ async def run_all(args: argparse.Namespace) -> None:
             flush=True,
         )
         if qualifying_keys_from_prev is not None and n_posts == 0:
-            logger.warning(
-                "[ITER %s] no posts qualified from previous sweep (best_deltas %s <= %s for all); "
-                "skipping batch work this iteration.",
+            logger.info(
+                "[ITER] stopping outer loop at iteration %s — no posts with %s delta > %s remain",
                 iteration,
                 args.feedback_on,
                 next_sweep_thr,
             )
+            setattr(args, "sgo_stop_outer_iterations", True)
+            break
 
         min_mem_posts = int(args.min_posts_for_memory_batch)
         # (linkedin memory review id, delta-bridge analysis, post category) — flush when >= min_mem_posts
@@ -2270,7 +2271,7 @@ async def run_all(args: argparse.Namespace) -> None:
                 if new_summary:
                     state["refinement_call_count"] = int(state.get("refinement_call_count") or 0) + 1
                     rc = int(state["refinement_call_count"])
-                    max_wc = int(args.group_summary_max_words)
+                    max_wc = int(getattr(args, "group_summary_max_words", DEFAULT_GROUP_SUMMARY_MAX_WORDS))
                     min_wc = int(args.shrink_floor_words)
                     baseline_min_wc = baseline_summary_min_words(
                         baseline_group,
@@ -2312,7 +2313,7 @@ async def run_all(args: argparse.Namespace) -> None:
                         persist_state(f"after_qual_refine_{qrc_u}", user_pred_by_idx, all_delta_rows)
                     if getattr(args, "no_shrink", False):
                         sw = word_count_t1(state.get("group_summary") or "")
-                        mt = int(args.max_traits_per_category)
+                        mt = int(getattr(args, "max_traits_per_category", DEFAULT_MAX_TRAITS_PER_CATEGORY))
                         traits_over_ns = qualitative_summary_over_trait_limit(
                             state.get("qualitative_summary") or empty_qualitative_summary(),
                             max_traits_per_category=mt,
@@ -2329,7 +2330,7 @@ async def run_all(args: argparse.Namespace) -> None:
                         qual_for_shrink = copy.deepcopy(
                             state.get("qualitative_summary") or empty_qualitative_summary()
                         )
-                        max_traits = int(args.max_traits_per_category)
+                        max_traits = int(getattr(args, "max_traits_per_category", DEFAULT_MAX_TRAITS_PER_CATEGORY))
                         traits_over = qualitative_summary_over_trait_limit(
                             qual_for_shrink,
                             max_traits_per_category=max_traits,
@@ -2449,7 +2450,9 @@ async def run_all(args: argparse.Namespace) -> None:
                             and qrc > 0
                             and qualitative_summary_over_trait_limit(
                                 state.get("qualitative_summary") or empty_qualitative_summary(),
-                                max_traits_per_category=int(args.max_traits_per_category),
+                                max_traits_per_category=int(
+                                    getattr(args, "max_traits_per_category", DEFAULT_MAX_TRAITS_PER_CATEGORY)
+                                ),
                             )
                         ):
 
@@ -2485,8 +2488,19 @@ async def run_all(args: argparse.Namespace) -> None:
                                     "[QUAL_SHRINK] rejected regression; keeping pre-shrink qualitative_summary."
                                 )
 
+        if n_high == 0 and refine_accumulator:
+            logger.info(
+                "[REFINE] skipping persona refine — no posts with %s delta > %s this iteration "
+                "(%s memory batch(es) left unrefined)",
+                args.feedback_on,
+                delta_thr,
+                len(refine_accumulator),
+            )
+            refine_accumulator.clear()
+
         if (
-            not getattr(args, "no_outlier_refine", False)
+            n_high > 0
+            and not getattr(args, "no_outlier_refine", False)
             and int(state.get("last_outlier_refine_iteration") or 0) != int(iteration)
             and count_outliers_for_iteration(memory, iteration) > 0
         ):
@@ -2514,7 +2528,7 @@ async def run_all(args: argparse.Namespace) -> None:
                 state["last_outlier_refine_iteration"] = int(iteration)
             if outlier_llm_ok and (new_summary_out or new_qual_out is not None):
                 if new_summary_out:
-                    max_wc_out = int(args.group_summary_max_words)
+                    max_wc_out = int(getattr(args, "group_summary_max_words", DEFAULT_GROUP_SUMMARY_MAX_WORDS))
                     min_wc_out = int(args.shrink_floor_words)
                     baseline_min_wc_out = baseline_summary_min_words(
                         baseline_group,
@@ -2662,6 +2676,17 @@ async def run_all(args: argparse.Namespace) -> None:
         qualifying_keys_from_prev = next_qualifying
         pred_snapshot_prev_outer = build_prediction_snapshot_for_memory(user_pred_by_idx)
 
+        if not next_qualifying:
+            logger.info(
+                "[ITER] stopping outer loop after iteration %s — no posts with %s delta > %s "
+                "for the next sweep (planned %s)",
+                iteration,
+                args.feedback_on,
+                next_sweep_thr,
+                num_it,
+            )
+            setattr(args, "sgo_stop_outer_iterations", True)
+
         _out_seed = str(getattr(args, "sgo_user_pred_seed_json_out", "") or "").strip()
         if _out_seed:
             outp = Path(_out_seed)
@@ -2692,6 +2717,9 @@ async def run_all(args: argparse.Namespace) -> None:
             )
             if asyncio.iscoroutine(_maybe):
                 await _maybe
+
+        if getattr(args, "sgo_stop_outer_iterations", False):
+            break
 
     if failed_posts:
         logger.warning("[SGO] run finished with %s failed post(s)", len(failed_posts))

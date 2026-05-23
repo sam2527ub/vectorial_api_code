@@ -93,7 +93,16 @@ def download_sgo_inputs_to_workdir(
         enterprise_name=enterprise_name,
         source=source,
     )
-    logger.info("[SGO_S3] downloaded %s inputs → %s (%s profiles)", tier, work_dir, n)
+    logger.info(
+        "[SGO_S3] tier=%s inputs → %s | i0_s3=%s/%s (local %s) | profile_ids=%s profiles_on_disk=%s",
+        tier,
+        work_dir,
+        base,
+        i0_name,
+        i0_path.name,
+        num_profiles,
+        n,
+    )
 
     return contextual_path, mapping_path, description_path, i0_path, profiles_root, num_profiles
 

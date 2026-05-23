@@ -384,8 +384,29 @@ def _restore_prefix_into_workdir(
 
     pred = try_fetch_json_from_s3(f"{prefix}/delta_method_predictions.json")
     if isinstance(pred, dict):
-        (work_dir / "delta_method_predictions.json").write_text(
-            json.dumps(pred, ensure_ascii=False, indent=2) + "\n", encoding="utf-8"
+        pred_text = json.dumps(pred, ensure_ascii=False, indent=2) + "\n"
+        (work_dir / "delta_method_predictions.json").write_text(pred_text, encoding="utf-8")
+        iter_completed = int(
+            resume.get("iteration_completed")
+            or resume.get("outer_iteration")
+            or 0
+        )
+        if iter_completed > 0:
+            iter_snapshot = work_dir / f"delta_method_predictions_iteration_{iter_completed}.json"
+            iter_snapshot.write_text(pred_text, encoding="utf-8")
+
+    tier_mode = str(resume.get("tier_mode") or "tier1").strip().lower()
+    if tier_mode not in ("tier1", "tier2"):
+        tier_mode = "tier1"
+    agg = try_fetch_json_from_s3(f"{prefix}/aggregate_deltas.json")
+    if isinstance(agg, dict):
+        agg_name = (
+            "linkedin_tier2_all_reviews_deltas.json"
+            if tier_mode == "tier2"
+            else "linkedin_tier1_all_reviews_deltas.json"
+        )
+        (work_dir / agg_name).write_text(
+            json.dumps(agg, ensure_ascii=False, indent=2) + "\n", encoding="utf-8"
         )
 
     traces = try_fetch_text_from_s3(f"{prefix}/post_traces.jsonl")

@@ -86,6 +86,7 @@ def assess_fargate_pipeline_resume(
 
     tier_results: List[Dict[str, Any]] = []
     can_resume_any = False
+    tier1_status: Optional[str] = None
     for tm, jid in tier_specs:
         job = _load_tier_job(
             job_id=jid,
@@ -94,6 +95,8 @@ def assess_fargate_pipeline_resume(
             tier_mode=tm,
         )
         status = str(job.get("status") or "").upper()
+        if tm == "tier1":
+            tier1_status = status
         if status == "COMPLETED":
             tier_results.append(
                 {
@@ -104,6 +107,40 @@ def assess_fargate_pipeline_resume(
                     "reason": "already_completed",
                 }
             )
+            continue
+        if tm == "tier2" and tier1_status == "COMPLETED":
+            ok, reason, ckpt = assess_sgo_job_resume(
+                job, base_tiered=base_tiered, force=force
+            )
+            if ok:
+                tier_results.append(
+                    {
+                        "tier_mode": tm,
+                        "job_id": jid,
+                        "status": status,
+                        "can_resume": True,
+                        "reason": reason,
+                        "checkpoint": ckpt,
+                    }
+                )
+                can_resume_any = True
+                continue
+            tier_results.append(
+                {
+                    "tier_mode": tm,
+                    "job_id": jid,
+                    "status": status,
+                    "can_resume": True,
+                    "reason": "start_after_tier1",
+                    "checkpoint": {
+                        "completed_outer_iterations": 0,
+                        "outer_iteration_next": 1,
+                        "partial_checkpoint": None,
+                        "has_resume_checkpoint": False,
+                    },
+                }
+            )
+            can_resume_any = True
             continue
         ok, reason, ckpt = assess_sgo_job_resume(
             job, base_tiered=base_tiered, force=force
@@ -167,6 +204,15 @@ def _reset_jobs_for_resume(
         )
 
     pipeline_run_id: Optional[str] = None
+    assessment_tiers = {
+        str(tr.get("tier_mode") or ""): tr
+        for tr in assessment.get("tier_results") or []
+        if isinstance(tr, dict)
+    }
+    tier1_completed = (
+        str((assessment_tiers.get("tier1") or {}).get("status") or "").upper() == "COMPLETED"
+    )
+
     for tm, jid in (("tier1", tier1_job_id), ("tier2", tier2_job_id or "")):
         if not jid:
             continue
@@ -179,30 +225,59 @@ def _reset_jobs_for_resume(
         status = str(job.get("status") or "").upper()
         if status == "COMPLETED":
             continue
-        _ok, _reason, ckpt = assess_sgo_job_resume(
-            job, base_tiered=base_tiered, force=force
-        )
-        if not _ok:
+        tr = assessment_tiers.get(tm) or {}
+        if not tr.get("can_resume"):
             continue
+
+        reason = str(tr.get("reason") or "")
+        ckpt = tr.get("checkpoint") if isinstance(tr.get("checkpoint"), dict) else {}
         jr = job.get("result") if isinstance(job.get("result"), dict) else {}
         pipeline_run_id = pipeline_run_id or str(jr.get("fargate_pipeline_run_id") or "") or None
-        prepared = prepare_job_for_resume(
-            job,
-            checkpoint_state=ckpt,
-            extra_result={**jr_extra, "fargate_pipeline_tier": tm},
-        )
+
+        if reason == "start_after_tier1":
+            now = datetime.now(timezone.utc).isoformat()
+            prepared = {
+                **jr,
+                **jr_extra,
+                "fargate_pipeline_tier": tm,
+                "outer_iteration_next": 1,
+                "phase": "waiting_for_tier1" if not tier1_completed else "running_outer_iteration",
+                "waiting_for_tier1": not tier1_completed,
+                "sgo_resume_blocked": False,
+                "heartbeat_at": now,
+                "sgo_last_progress_at": now,
+            }
+            job_status = "PENDING" if not tier1_completed else "PROCESSING"
+        else:
+            prepared = prepare_job_for_resume(
+                job,
+                checkpoint_state=ckpt,
+                extra_result={**jr_extra, "fargate_pipeline_tier": tm},
+            )
+            if tm == "tier2" and not tier1_completed:
+                prepared = {
+                    **prepared,
+                    "phase": "waiting_for_tier1",
+                    "waiting_for_tier1": True,
+                }
+                job_status = "PENDING"
+            else:
+                job_status = "PROCESSING"
+
         update_linkedin_room_pipeline_job(
             jid,
             enterprise_name=enterprise_name,
-            status="PROCESSING",
+            status=job_status,
             error=None,
             result=prepared,
         )
         logger.info(
-            "[SGO_FARGATE_RESUME] reset job %s tier=%s outer_iteration_next=%s",
+            "[SGO_FARGATE_RESUME] reset job %s tier=%s status=%s outer_iteration_next=%s reason=%s",
             jid,
             tm,
+            job_status,
             prepared.get("outer_iteration_next"),
+            reason or "checkpoint",
         )
 
     poll_pipeline = (

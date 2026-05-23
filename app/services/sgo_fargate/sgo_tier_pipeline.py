@@ -3,8 +3,13 @@
 from __future__ import annotations
 
 import logging
+from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional
 
+from app.services.linkedin_room_pipeline_async.linkedin_room_pipeline_job_repository import (
+    get_linkedin_room_pipeline_job,
+    update_linkedin_room_pipeline_job,
+)
 from app.services.linkedin_room_pipeline_async.linkedin_room_pipeline_async_handler import (
     LinkedInRoomPipelineAsyncHandler,
 )
@@ -15,6 +20,47 @@ logger = logging.getLogger(__name__)
 
 _handler = LinkedInRoomPipelineAsyncHandler()
 _DEFAULT_TIER_ORDER: List[str] = ["tier1", "tier2"]
+
+
+def _mark_tier_job_status(
+    *,
+    job_id: str,
+    enterprise_name: Optional[str],
+    status: str,
+    result_extra: Optional[Dict[str, Any]] = None,
+    error: Optional[str] = None,
+) -> None:
+    job = get_linkedin_room_pipeline_job(job_id, enterprise_name=enterprise_name) or {}
+    jr = job.get("result") if isinstance(job.get("result"), dict) else {}
+    payload = {**jr, **(result_extra or {})}
+    update_linkedin_room_pipeline_job(
+        job_id,
+        enterprise_name=enterprise_name,
+        status=status,
+        error=error,
+        result=payload,
+    )
+
+
+def _mark_tier2_waiting_for_tier1(
+    *,
+    tier2_job_id: str,
+    enterprise_name: Optional[str],
+    tier1_error: Optional[str] = None,
+) -> None:
+    _mark_tier_job_status(
+        job_id=tier2_job_id,
+        enterprise_name=enterprise_name,
+        status="PENDING",
+        error=None,
+        result_extra={
+            "phase": "waiting_for_tier1",
+            "waiting_for_tier1": True,
+            "blocked_by_tier1_failure": bool(tier1_error),
+            "tier1_error": tier1_error,
+            "heartbeat_at": datetime.now(timezone.utc).isoformat(),
+        },
+    )
 
 
 def normalize_tier_modes(tier_mode: Optional[str]) -> List[str]:
@@ -50,6 +96,7 @@ async def run_sgo_tier_pipeline(
     modes = normalize_tier_modes(tier_mode)
     tier_results: List[Dict[str, Any]] = []
     pre = dict(tier_job_ids or {})
+    tier2_job_id = str(pre.get("tier2") or "").strip()
 
     for tm in modes:
         logger.info(
@@ -75,6 +122,26 @@ async def run_sgo_tier_pipeline(
                 num_iterations=num_iterations,
             )
             job_id = str(trigger["job_id"])
+            if tm == "tier2":
+                tier2_job_id = job_id
+
+        if tm == "tier2":
+            _mark_tier_job_status(
+                job_id=job_id,
+                enterprise_name=enterprise_name,
+                status="PROCESSING",
+                result_extra={
+                    "phase": "running_outer_iteration",
+                    "waiting_for_tier1": False,
+                    "outer_iteration_running": 1,
+                    "heartbeat_at": datetime.now(timezone.utc).isoformat(),
+                },
+            )
+            logger.info(
+                "[SGO_TIER_PIPELINE] tier1 complete — auto-starting tier2 job=%s",
+                job_id,
+            )
+
         outcome = await run_sgo_training_loop(
             job_id=job_id,
             audience_room_id=audience_room_id,
@@ -93,6 +160,12 @@ async def run_sgo_tier_pipeline(
             }
         )
         if status != "COMPLETED":
+            if tm == "tier1" and tier2_job_id:
+                _mark_tier2_waiting_for_tier1(
+                    tier2_job_id=tier2_job_id,
+                    enterprise_name=enterprise_name,
+                    tier1_error=str(outcome.get("error") or ""),
+                )
             return {
                 "status": "FAILED",
                 "failed_tier": tm,
