@@ -1,2 +1,0 @@
-"""Reddit Audience Pipeline Application."""
-
