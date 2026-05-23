@@ -23,6 +23,7 @@ async def run_sgo_training_loop(
     audience_room_id: str,
     enterprise_name: Optional[str] = None,
     model: Optional[str] = None,
+    force_resume: bool = False,
 ) -> Dict[str, Any]:
     """
     Process SGO chunks until the job reaches COMPLETED or FAILED.
@@ -36,7 +37,20 @@ async def run_sgo_training_loop(
     for iteration in range(max_iters):
         job = get_linkedin_room_pipeline_job(job_id, enterprise_name=enterprise_name) or {}
         status = str(job.get("status") or "UNKNOWN")
-        if status in ("COMPLETED", "FAILED"):
+        if status == "COMPLETED":
+            logger.info(
+                "[SGO_FARGATE_WORKER] job %s finished with status=%s after %s chunk(s)",
+                job_id,
+                status,
+                iteration,
+            )
+            return {
+                "job_id": job_id,
+                "status": status,
+                "error": job.get("error"),
+                "result": job.get("result"),
+            }
+        if status == "FAILED" and not force_resume:
             logger.info(
                 "[SGO_FARGATE_WORKER] job %s finished with status=%s after %s chunk(s)",
                 job_id,
@@ -69,6 +83,7 @@ async def run_sgo_training_loop(
             model=model,
             base_url=base_url,
             workflow_orchestrated=True,
+            force_resume=force_resume,
         )
 
     job = get_linkedin_room_pipeline_job(job_id, enterprise_name=enterprise_name) or {}

@@ -75,6 +75,9 @@ def _sgo_failed_result_meta(
     elif isinstance(exc, LinkedInSGOPipelineError):
         base["sgo_failure_class"] = "pipeline"
         base["sgo_resume_blocked"] = True
+    elif isinstance(exc, AttributeError):
+        base["sgo_failure_class"] = "config"
+        base["sgo_resume_blocked"] = False
     else:
         base["sgo_failure_class"] = "unknown"
         base["sgo_resume_blocked"] = True
@@ -151,6 +154,7 @@ async def run_linkedin_sgo_pipeline_job_chunk(
     model: Optional[str],
     base_url: str,
     workflow_orchestrated: bool = False,
+    force_resume: bool = False,
 ) -> None:
     from app.config import logger, s3_bucket, s3_client
 
@@ -159,6 +163,8 @@ async def run_linkedin_sgo_pipeline_job_chunk(
         get_linkedin_room_pipeline_job,
         update_linkedin_room_pipeline_job,
     )
+
+    from .sgo_job_resume import sgo_checkpoint_resume_state
 
     if not s3_client or not s3_bucket:
         update_linkedin_room_pipeline_job(
@@ -262,27 +268,47 @@ async def run_linkedin_sgo_pipeline_job_chunk(
     s3_latest = latest_completed_checkpoint_iteration(
         base_tiered=base_tiered, job_id=job_id, scan_max=num_it
     )
+    ckpt_state = sgo_checkpoint_resume_state(
+        base_tiered=base_tiered,
+        job_id=job_id,
+        num_iterations=num_it,
+        outer_iteration_next=next_iter,
+    )
+    has_checkpoint = bool(ckpt_state.get("has_resume_checkpoint"))
     if failed_resume_candidate:
-        if jr.get("sgo_resume_blocked") is True:
+        if jr.get("sgo_resume_blocked") is True and not force_resume:
             logger.warning(
                 "[SGO_OBS] event=resume_skipped_blocked job_id=%s failure_class=%s",
                 job_id,
                 jr.get("sgo_failure_class"),
             )
             return
-        if s3_latest <= 0:
+        if not has_checkpoint:
             logger.warning(
                 "[SGO_JOB] job %s is FAILED with no S3 checkpoint; cannot auto-resume",
                 job_id,
             )
             return
+        resume_from_partial = s3_latest <= 0 and ckpt_state.get("partial_checkpoint")
+        if s3_latest > 0:
+            next_iter = max(next_iter, s3_latest + 1)
+        else:
+            next_iter = max(1, int(ckpt_state.get("outer_iteration_next") or next_iter))
         logger.info(
-            "[SGO_OBS] event=failed_job_resumed_from_checkpoint job_id=%s s3_latest_iter=%s",
+            "[SGO_OBS] event=failed_job_resumed_from_checkpoint job_id=%s s3_latest_iter=%s "
+            "partial=%s next_iter=%s force=%s",
             job_id,
             s3_latest,
+            bool(resume_from_partial),
+            next_iter,
+            force_resume,
         )
-        next_iter = max(next_iter, s3_latest + 1)
-        jr = {**jr, "outer_iteration_next": next_iter}
+        jr = {
+            **jr,
+            "outer_iteration_next": next_iter,
+            "sgo_resume_blocked": False,
+            "sgo_force_resume": bool(force_resume),
+        }
         update_linkedin_room_pipeline_job(
             job_id,
             enterprise_name=enterprise_name,

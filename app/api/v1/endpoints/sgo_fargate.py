@@ -12,10 +12,13 @@ from app.services.linkedin_room_pipeline_async import request_handler
 from app.services.sgo_fargate import (
     SgoFargateLaunchError,
     aggregate_fargate_pipeline_status,
+    assess_fargate_pipeline_resume,
     fargate_is_configured,
     handle_sgo_fargate_webhook,
+    resume_linkedin_sgo_on_fargate,
     start_linkedin_sgo_on_fargate,
 )
+from app.services.sgo_fargate.fargate_resume import SgoFargateResumeError
 from app.services.sgo_fargate.fargate_launcher import build_fargate_trigger_result
 from app.services.user_profile_summarization_service.utils import get_base_url
 
@@ -122,6 +125,91 @@ async def linkedin_sgo_fargate_start(
         raise
     except Exception as e:
         logger.error("linkedin-sgo fargate start: %s", e, exc_info=True)
+        raise HTTPException(status_code=500, detail=str(e)) from e
+
+
+@router.get(
+    "/api/v1/audience-rooms/{audience_room_id}/linkedin-sgo-pipeline/fargate/resume-status"
+)
+async def linkedin_sgo_fargate_resume_status(
+    audience_room_id: str = Path(..., description="Audience room ID"),
+    tier1JobId: str = Query(..., description="Tier1 job id from the failed run"),
+    tier2JobId: Optional[str] = Query(None, description="Tier2 job id (tierMode=both)"),
+    enterpriseName: Optional[str] = Query(None),
+) -> dict:
+    """Inspect whether existing tier jobs can resume from S3 checkpoints."""
+    try:
+        return assess_fargate_pipeline_resume(
+            audience_room_id=audience_room_id,
+            tier1_job_id=tier1JobId,
+            tier2_job_id=tier2JobId,
+            enterprise_name=enterpriseName,
+            force=True,
+        )
+    except SgoFargateResumeError as e:
+        raise HTTPException(status_code=400, detail=str(e)) from e
+    except Exception as e:
+        logger.error("linkedin-sgo fargate resume-status: %s", e, exc_info=True)
+        raise HTTPException(status_code=500, detail=str(e)) from e
+
+
+@router.post("/api/v1/audience-rooms/{audience_room_id}/linkedin-sgo-pipeline/fargate/resume")
+async def linkedin_sgo_fargate_resume(
+    audience_room_id: str = Path(..., description="Audience room ID"),
+    tier1JobId: str = Query(..., description="Tier1 job id from the failed run"),
+    tier2JobId: Optional[str] = Query(None, description="Tier2 job id (tierMode=both)"),
+    enterpriseName: Optional[str] = Query(None),
+    model: Optional[str] = Query(None),
+    numIterations: Optional[int] = Query(None, ge=1, le=50),
+    notifyWebhook: bool = Query(
+        False,
+        description="When true, POST completion to /api/v1/sgo/fargate/webhook. Default false (poll-only).",
+    ),
+    request: Request = None,
+) -> dict:
+    """
+    Re-launch Fargate for existing tier job ids, restoring from S3 checkpoints.
+
+    Use the same ``tier1JobId`` / ``tier2JobId`` from the original ``fargate/start`` response.
+    Poll ``GET .../fargate/pipeline-status`` as usual.
+    """
+    if not fargate_is_configured():
+        raise HTTPException(
+            status_code=503,
+            detail=(
+                "SGO Fargate is not enabled. Set sgo_fargate.enabled and ECS settings in "
+                "config/runtime.yaml or SGO_FARGATE_* environment variables."
+            ),
+        )
+
+    base_url = get_base_url()
+    if request:
+        try:
+            base_url = str(request.base_url).rstrip("/")
+        except Exception:
+            pass
+
+    try:
+        return resume_linkedin_sgo_on_fargate(
+            audience_room_id=audience_room_id,
+            tier1_job_id=tier1JobId,
+            tier2_job_id=tier2JobId,
+            enterprise_name=enterpriseName,
+            model=model,
+            base_url=base_url,
+            num_iterations=numIterations,
+            notify_webhook=notifyWebhook,
+            force=True,
+        )
+    except SgoFargateResumeError as e:
+        raise HTTPException(status_code=400, detail=str(e)) from e
+    except SgoFargateLaunchError as e:
+        logger.error("Fargate resume launch failed for room %s: %s", audience_room_id, e, exc_info=True)
+        raise HTTPException(status_code=500, detail=str(e)) from e
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error("linkedin-sgo fargate resume: %s", e, exc_info=True)
         raise HTTPException(status_code=500, detail=str(e)) from e
 
 

@@ -1438,7 +1438,7 @@ async def run_all(args: argparse.Namespace) -> None:
         timeout=openai_timeout,
     )
 
-    trace_pipeline_name = f"linkedin_{tier_mode}_delta_method"
+    trace_pipeline_name = pipeline_name
 
     sem = asyncio.Semaphore(max(1, args.concurrent))
     emb_cache: Dict[str, Any] = {}

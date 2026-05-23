@@ -9,7 +9,7 @@ from app.services.linkedin_room_pipeline_async.linkedin_room_pipeline_job_reposi
     get_linkedin_room_pipeline_job,
     update_linkedin_room_pipeline_job,
 )
-from app.services.user_profile_summarization_service.utils import get_base_url
+from app.services.user_profile_summarization_service.utils.base_url import get_base_url
 
 from .ecs_client import SgoFargateLaunchError, build_webhook_url, launch_sgo_fargate_task
 from .fargate_both_tier_jobs import build_fargate_both_tier_trigger
@@ -47,6 +47,7 @@ def start_linkedin_sgo_on_fargate(
     tier_mode: Optional[str] = None,
     num_iterations: Optional[int] = None,
     notify_webhook: bool = False,
+    force_resume: bool = False,
 ) -> Dict[str, Any]:
     """
     Launch Fargate after jobs exist (single-tier) or tier1+tier2 jobs were pre-created.
@@ -72,6 +73,8 @@ def start_linkedin_sgo_on_fargate(
         jr_extra["fargate_num_iterations"] = int(n_it)
     if workflow_resume_url:
         jr_extra["workflow_resume_url"] = workflow_resume_url.strip()
+    if force_resume:
+        jr_extra["fargate_force_resume"] = True
 
     pipeline_mode = str(trigger_result.get("pipeline_mode") or "")
     tier1_job_id = str(trigger_result.get("tier1_job_id") or "") or None
@@ -114,6 +117,7 @@ def start_linkedin_sgo_on_fargate(
             tier1_job_id=tier1_job_id,
             tier2_job_id=tier2_job_id,
             pipeline_run_id=pipeline_run_id,
+            force_resume=force_resume,
         )
     except SgoFargateLaunchError as e:
         if pipeline_mode == "tier1_then_tier2":

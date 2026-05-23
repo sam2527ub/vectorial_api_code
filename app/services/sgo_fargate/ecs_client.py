@@ -64,6 +64,7 @@ def launch_sgo_fargate_task(
     tier1_job_id: Optional[str] = None,
     tier2_job_id: Optional[str] = None,
     pipeline_run_id: Optional[str] = None,
+    force_resume: bool = False,
 ) -> Dict[str, Any]:
     """
     Start a one-shot Fargate task. Environment variables are passed to the worker container.
@@ -99,6 +100,8 @@ def launch_sgo_fargate_task(
         env_vars.append({"name": "TIER2_JOB_ID", "value": tier2_job_id})
     if pipeline_run_id:
         env_vars.append({"name": "PIPELINE_RUN_ID", "value": pipeline_run_id})
+    if force_resume:
+        env_vars.append({"name": "SGO_FORCE_RESUME", "value": "true"})
 
     awsvpc: Dict[str, Any] = {
         "subnets": list(cfg.subnet_ids),

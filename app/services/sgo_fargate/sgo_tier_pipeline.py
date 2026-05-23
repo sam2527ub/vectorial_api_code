@@ -39,6 +39,7 @@ async def run_sgo_tier_pipeline(
     num_iterations: int = 5,
     tier_mode: Optional[str] = "both",
     tier_job_ids: Optional[Dict[str, str]] = None,
+    force_resume: bool = False,
 ) -> Dict[str, Any]:
     """
     Create one DB job per tier and run all outer-iteration chunks in-process.
@@ -79,6 +80,7 @@ async def run_sgo_tier_pipeline(
             audience_room_id=audience_room_id,
             enterprise_name=enterprise_name,
             model=model,
+            force_resume=force_resume,
         )
         status = str(outcome.get("status") or "FAILED").upper()
         tier_results.append(

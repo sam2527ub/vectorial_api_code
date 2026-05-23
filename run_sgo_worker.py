@@ -40,6 +40,7 @@ async def _run() -> dict:
     job_id = _env("JOB_ID")
     webhook_url = _env("WEBHOOK_URL")
     notify_webhook = _env_bool("NOTIFY_WEBHOOK", default=bool(webhook_url))
+    force_resume = _env_bool("SGO_FORCE_RESUME", default=False)
     audience_room_id = _env("AUDIENCE_ROOM_ID")
     enterprise_name = _env("ENTERPRISE_NAME") or None
     model = _env("MODEL") or None
@@ -68,12 +69,12 @@ async def _run() -> dict:
     if use_tier_pipeline:
         print(
             f"Starting SGO tier pipeline mode={tier_mode!r} room={audience_room_id} "
-            f"num_iterations={num_iterations} notify_webhook={notify_webhook}"
+            f"num_iterations={num_iterations} notify_webhook={notify_webhook} force_resume={force_resume}"
         )
     else:
         print(
             f"Starting SGO single job={job_id} room={audience_room_id} "
-            f"tier_mode={tier_mode} notify_webhook={notify_webhook}"
+            f"tier_mode={tier_mode} notify_webhook={notify_webhook} force_resume={force_resume}"
         )
 
     try:
@@ -85,6 +86,7 @@ async def _run() -> dict:
                 num_iterations=num_iterations,
                 tier_mode=tier_mode,
                 tier_job_ids=tier_job_ids or None,
+                force_resume=force_resume,
             )
         else:
             outcome = await run_sgo_training_loop(
@@ -92,6 +94,7 @@ async def _run() -> dict:
                 audience_room_id=audience_room_id,
                 enterprise_name=enterprise_name,
                 model=model,
+                force_resume=force_resume,
             )
         status = str(outcome.get("status") or "FAILED").upper()
         tier_results = outcome.get("tier_results")

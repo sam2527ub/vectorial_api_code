@@ -25,6 +25,8 @@ Vercel FastAPI                    AWS Fargate                      Vercel FastAP
 | `POST` | `/api/v1/audience-rooms/{id}/linkedin-sgo-pipeline/fargate/start` | Create job + launch Fargate |
 | `POST` | `/api/v1/audience-rooms/{id}/linkedin-sgo-pipeline/async?externalWorker=fargate` | Same (workflow-friendly alias) |
 | `GET` | `/api/v1/audience-rooms/{id}/linkedin-sgo-pipeline/fargate/pipeline-status` | Poll tier1+tier2 rollup |
+| `GET` | `/api/v1/audience-rooms/{id}/linkedin-sgo-pipeline/fargate/resume-status` | Check if failed jobs can resume from S3 |
+| `POST` | `/api/v1/audience-rooms/{id}/linkedin-sgo-pipeline/fargate/resume` | Re-launch Fargate on existing job ids (checkpoint resume) |
 | `POST` | `/api/v1/sgo/fargate/webhook` | Optional worker callback (`notifyWebhook=true`) |
 | `GET` | `/api/v1/audience-rooms/{id}/linkedin-sgo-pipeline/async/status/{job_id}` | Poll single job |
 
@@ -44,6 +46,27 @@ curl -sS "https://vectorial-api-code.vercel.app/api/v1/audience-rooms/{ROOM_ID}/
 ```
 
 Stop when `pipeline_status` is `COMPLETED` or `FAILED`. Webhook is **off** unless `notifyWebhook=true`.
+
+### Resume from checkpoint (after failure)
+
+If a run failed mid-tier but wrote S3 checkpoints (partial or completed outer iteration), reuse the **same** `tier1JobId` / `tier2JobId` from the original start response:
+
+Check eligibility:
+
+```bash
+curl -sS ".../fargate/resume-status?tier1JobId={T1}&tier2JobId={T2}&enterpriseName=beta"
+```
+
+Resume (re-launch Fargate; no new DB jobs):
+
+```bash
+curl -sS -X POST ".../fargate/resume?tier1JobId={T1}&tier2JobId={T2}&enterpriseName=beta"
+```
+
+Poll `pipeline-status` as usual. Checkpoints live under
+`{enterprise}/linkedin-audience/{roomId}/tiered_posts/linkedin_sgo/checkpoints/{job_id}/`.
+
+Rebuild/push the Docker image after fixing pipeline bugs before resuming.
 
 ### Start with webhook (optional)
 
