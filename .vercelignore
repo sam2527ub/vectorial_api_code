@@ -26,7 +26,6 @@ app/services/linkedin_sgo_pipeline_service_async/vendored_sgo/**/Untitled
 tests/
 docs/
 migrations/
-extra_endpoints/
 deploy-aws.sh
 Dockerfile
 VERCEL_SETUP.md

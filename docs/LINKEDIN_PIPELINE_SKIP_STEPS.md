@@ -15,7 +15,7 @@ This API provides **run planning** based on canonical S3 outputs under
 | 4 | `stimulus` | `POST .../contextual-stimulus-categorization/async` (+ `/async/process` chunks) |
 | 5 | `ground_truth` | `POST .../ground-truth-extraction/async` (+ chunks) |
 | 6 | `initial_prediction` | `POST .../linkedin-initial-prediction/async` (+ chunks) |
-| 7 | `sgo` | `POST .../linkedin-sgo-pipeline/async` (+ chunks), or `?externalWorker=fargate` / `POST .../fargate/start` (AWS ECS, webhook) |
+| 7 | `sgo` | `POST .../fargate/start` + poll `GET .../fargate/pipeline-status` (default), or legacy `POST .../async` + chunks |
 
 ## Endpoints (Audience-workflow / vectorial-api-code)
 
@@ -60,7 +60,9 @@ curl -sS -X POST ".../plan/query?enterpriseName=beta&startFromStep=5&skipComplet
 
 **App:** `apps/vectorial_sgo_linkedin_testing` → deploys to `vectorial-sgo-linkedin-testing.vercel.app`.
 
-The workflow `linkedinRoomPipelineWorkflow` calls `stepFetchPipelinePlan` first, then runs only steps in `plan.stepsToRun` (see `workflows/linkedin-room-pipeline.ts`).
+The workflow `linkedinRoomPipelineWorkflow` calls `stepFetchPipelinePlan` first, then runs only steps in `plan.stepsToRun` (see `apps/vectorial_sgo_linkedin_testing/workflows/linkedin-room-pipeline.ts`).
+
+Step 7 (SGO) uses **Fargate + poll-only** by default: `fargate/start` → `fargate/pipeline-status`.
 
 ### Trigger body (recommended)
 
