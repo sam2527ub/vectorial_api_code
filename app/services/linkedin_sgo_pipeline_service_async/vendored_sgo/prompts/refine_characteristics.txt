@@ -208,7 +208,7 @@ Rules:
 - Keep all still-valid specifics: named tools, platforms, sub-cohorts
 - Every behavioral sentence must connect to a norm in the Phase 0 profile
 - Behavioral norms expressed as tribe-level patterns — not post-level examples
-- Length: 250–350 words
+- Length: **500–700 words** (soft target — complete sentences; never cut mid-sentence)
 - Cut anything that could describe any tech professional community
 - Cut vague themes: "values community", "emphasizes practical implications"
 - Every sentence must pass: "Does this help predict how this tribe posts?"

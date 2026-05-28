@@ -109,8 +109,11 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
-# Persona evolution ceilings — shrink runs only when summary or traits exceed these.
-DEFAULT_GROUP_SUMMARY_MAX_WORDS = 300
+# Persona evolution — target word band for group_summary (soft; no mid-sentence chops).
+DEFAULT_GROUP_SUMMARY_MIN_WORDS = 500
+DEFAULT_GROUP_SUMMARY_MAX_WORDS = 700
+# Allow the model a little over max before sentence-boundary trim.
+GROUP_SUMMARY_SOFT_MAX_SLACK_WORDS = 50
 DEFAULT_MAX_TRAITS_PER_CATEGORY = 20
 
 def _log_banner(msg: str, char: str = "=") -> None:
@@ -999,6 +1002,54 @@ def enforce_hard_limit_preserve_seeded(
     return summary_block
 
 
+def group_summary_word_bounds(args: Any) -> Tuple[int, int]:
+    """Resolve min/max word targets from namespace (500–700 by default)."""
+    mn = int(
+        getattr(args, "group_summary_min_words", None)
+        or getattr(args, "shrink_floor_words", None)
+        or DEFAULT_GROUP_SUMMARY_MIN_WORDS
+    )
+    mx = int(
+        getattr(args, "group_summary_max_words", None)
+        or getattr(args, "shrink_hard_max_words", None)
+        or DEFAULT_GROUP_SUMMARY_MAX_WORDS
+    )
+    mn = max(1, mn)
+    return mn, max(mn, mx)
+
+
+def truncate_group_summary_at_sentence_boundary(text: str, max_words: int) -> str:
+    """
+    Trim only at sentence boundaries when clearly over the target max.
+
+    Never chops mid-sentence. Within ``max_words + GROUP_SUMMARY_SOFT_MAX_SLACK_WORDS``
+    the text is returned unchanged.
+    """
+    import re
+
+    text = (text or "").strip()
+    if not text:
+        return text
+    limit = max(1, int(max_words))
+    words = text.split()
+    if len(words) <= limit + GROUP_SUMMARY_SOFT_MAX_SLACK_WORDS:
+        return text
+    sentences = [s.strip() for s in re.split(r"(?<=[.!?])\s+", text) if s.strip()]
+    if not sentences:
+        return text
+    kept: List[str] = []
+    count = 0
+    for sent in sentences:
+        sw = len(sent.split())
+        if count + sw > limit + GROUP_SUMMARY_SOFT_MAX_SLACK_WORDS:
+            break
+        kept.append(sent)
+        count += sw
+    if kept:
+        return " ".join(kept).strip()
+    return sentences[0]
+
+
 def guard_group_summary_text(
     *,
     candidate: Optional[str],
@@ -1007,7 +1058,7 @@ def guard_group_summary_text(
     max_words: int,
     min_words: int = 0,
 ) -> str:
-    """Cap group_summary at ``max_words``; optional soft ``min_words`` only when > 0."""
+    """Soft band for group_summary: prefer full sentences; trim only when far over max."""
     prior_s = (prior or "").strip()
     base_s = (baseline or "").strip()
     cand_s = (candidate or "").strip()
@@ -1018,16 +1069,25 @@ def guard_group_summary_text(
     mn = int(min_words)
     if mn > 0:
         pw = _word_count(prior_s)
-        if cw < mn - 5 and (pw >= mn - 5 or cw < int(pw * 0.82)):
+        soft_under = max(1, mn - 120)
+        if cw < soft_under and (pw >= soft_under or cw < int(pw * 0.70)):
             logger.warning(
-                "[REFINE] rejecting group_summary (%s words < floor %s); keeping prior (%s words).",
+                "[REFINE] rejecting group_summary (%s words << target min %s); keeping prior (%s words).",
                 cw,
                 mn,
                 pw,
             )
             return prior_s or base_s
-    if cw > mx:
-        return hard_truncate_words(cand_s, mx)
+    if cw > mx + GROUP_SUMMARY_SOFT_MAX_SLACK_WORDS:
+        trimmed = truncate_group_summary_at_sentence_boundary(cand_s, mx)
+        logger.info(
+            "[REFINE] group_summary %s words > target max %s (+slack %s); trimmed at sentence boundary → %s words.",
+            cw,
+            mx,
+            GROUP_SUMMARY_SOFT_MAX_SLACK_WORDS,
+            _word_count(trimmed),
+        )
+        return trimmed
     return cand_s
 
 
@@ -2067,6 +2127,9 @@ async def refine_group_summary(
     history_batches: int,
     qualitative_summary: Dict[str, Any],
     baseline_qualitative_summary: Optional[Dict[str, Any]] = None,
+    *,
+    max_words: int = DEFAULT_GROUP_SUMMARY_MAX_WORDS,
+    min_words: int = DEFAULT_GROUP_SUMMARY_MIN_WORDS,
 ) -> Tuple[Optional[str], Optional[Dict[str, Any]]]:
     """
     Unified persona refine via ``refine_characteristics.txt``: same contract as qualitative refine.
@@ -2097,8 +2160,12 @@ async def refine_group_summary(
     )
     cw = _word_count(current_summary)
     nw_batches = len(window_logs)
+    mn = max(1, int(min_words))
+    mx = max(mn, int(max_words))
     full_prompt += (
         "\n\n### RUNTIME — REFINE CONTRACT (pipeline)\n"
+        f"- **Target `group_summary` length:** **{mn}–{mx} words** (soft band — complete sentences only; "
+        f"never cut mid-sentence)\n"
         f"- **Current `group_summary` word count:** {int(cw)} — your output must be a **full rewrite** "
         f"integrating this text + traits + the **{int(nw_batches)} memory batch(es)** in CURRENT REFINEMENT WINDOW.\n"
         "- **Do NOT** return the input summary unchanged or with only an appended closing sentence.\n"
@@ -2145,7 +2212,8 @@ async def refine_group_summary(
                 candidate=new_s,
                 prior=current_summary,
                 baseline=baseline_summary,
-                max_words=DEFAULT_GROUP_SUMMARY_MAX_WORDS,
+                max_words=mx,
+                min_words=mn,
             )
         return (new_s if new_s else None, new_qual)
     except Exception as e:
@@ -2162,6 +2230,9 @@ async def refine_outliers_at_iteration_end(
     iteration: int,
     qualitative_summary: Dict[str, Any],
     baseline_qualitative_summary: Optional[Dict[str, Any]] = None,
+    *,
+    max_words: int = DEFAULT_GROUP_SUMMARY_MAX_WORDS,
+    min_words: int = DEFAULT_GROUP_SUMMARY_MIN_WORDS,
 ) -> Tuple[Optional[str], Optional[Dict[str, Any]], bool]:
     """
     End-of-outer-iteration pass: consolidate Part B ``outliers[]`` for this iteration only.
@@ -2196,9 +2267,12 @@ async def refine_outliers_at_iteration_end(
         what="baseline_group_summary_anchor",
     )
     cw = _word_count(current_summary)
+    mn = max(1, int(min_words))
+    mx = max(mn, int(max_words))
     full_prompt += (
         "\n\n### RUNTIME — OUTLIER REFINE CONTRACT (pipeline)\n"
         f"- **Outer iteration:** {int(iteration)} | **Outlier rows in memory:** {int(n_out)}\n"
+        f"- **Target `group_summary` length:** **{mn}–{mx} words** (soft band; complete sentences only)\n"
         f"- **Current `group_summary` word count:** {int(cw)} — integrate only **repeated or "
         f"high-confidence outlier themes**; do not overfit single-post noise.\n"
         "- **Max 5 new trait list items** across all categories (refining existing rows does not count).\n"
@@ -2237,7 +2311,8 @@ async def refine_outliers_at_iteration_end(
                 candidate=new_s,
                 prior=current_summary,
                 baseline=baseline_summary,
-                max_words=DEFAULT_GROUP_SUMMARY_MAX_WORDS,
+                max_words=mx,
+                min_words=mn,
             )
         return (new_s if new_s else None, new_qual, True)
     except Exception as e:
@@ -2270,11 +2345,13 @@ async def shrink_group_summary(
     mx = max(mn, int(max_summary_words))
     prompt += (
         "\n\n### RUNTIME CONSTRAINTS (pipeline)\n"
-        f"- **`group_summary` word-count band (strict):** **{mn}** words minimum, **{mx}** words maximum\n"
+        f"- **`group_summary` word-count band (soft target):** about **{mn}–{mx}** words — a little flexibility "
+        f"is fine; **never** end mid-sentence\n"
         f"- **Current `group_summary` word count:** {int(cw)}\n"
         f"- **Baseline `group_summary` word count (anchor length):** {int(bw)}\n"
-        "- If current is **below** the minimum, **enrich** using trait lists + baseline anchor — "
+        "- If current is **well below** the minimum, **enrich** using trait lists + baseline anchor — "
         "do not invent new organizations or behaviors.\n"
+        "- If above the maximum, **dedupe and tighten** at **sentence boundaries** — do not chop mid-sentence.\n"
         "- **Baseline group summary (anchor for scope, named entities, and cohort contrasts):**\n"
         f"{baseline.strip()}\n"
     )
@@ -2293,16 +2370,16 @@ async def shrink_group_summary(
             if not new_s:
                 continue
             nw = _word_count(new_s)
-            if nw > mx + 15:
+            if nw > mx + GROUP_SUMMARY_SOFT_MAX_SLACK_WORDS:
                 logger.warning(
-                    "[SHRINK] model returned %s words > ceiling %s; hard-truncating.",
+                    "[SHRINK] model returned %s words > target max %s (+slack); trimming at sentence boundary.",
                     nw,
                     mx,
                 )
-                new_s = hard_truncate_words(new_s, mx)
-            elif nw < mn - 5:
+                new_s = truncate_group_summary_at_sentence_boundary(new_s, mx)
+            elif nw < mn - 80:
                 logger.warning(
-                    "[SHRINK] model returned %s words < floor %s — rejecting shrink summary.",
+                    "[SHRINK] model returned %s words << target min %s — rejecting shrink summary.",
                     nw,
                     mn,
                 )

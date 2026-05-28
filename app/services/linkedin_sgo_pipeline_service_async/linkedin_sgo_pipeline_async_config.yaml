@@ -49,12 +49,14 @@ memory_jsd_threshold: null
 next_sweep_min_delta: 0.2
 
 refine_memory_batches: 12
-group_summary_max_words: 300
+group_summary_min_words: 500
+group_summary_max_words: 700
 max_traits_per_category: 20
 shrink_baseline_ratio: 1.22
 shrink_baseline_floor_ratio: 0.90
-shrink_floor_words: 200
-shrink_hard_max_words: 1600
+# Deprecated aliases (same as min/max above)
+shrink_floor_words: 500
+shrink_hard_max_words: 700
 qual_shrink_every_n_refinements: 5
 
 linkedin_root_cause_memory: true

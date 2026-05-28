@@ -63,10 +63,11 @@ def _dict_to_namespace(d: Dict[str, Any]) -> argparse.Namespace:
 # Keys the vendored CLI sets via argparse but async/Fargate builds from YAML only.
 # Filling these here avoids AttributeError when YAML predates a new flag.
 _NAMESPACE_OPTIONAL_DEFAULTS: Dict[str, Any] = {
-    "group_summary_max_words": 300,
+    "group_summary_min_words": 500,
+    "group_summary_max_words": 700,
     "max_traits_per_category": 20,
-    "shrink_floor_words": 200,
-    "shrink_hard_max_words": 300,
+    "shrink_floor_words": 500,
+    "shrink_hard_max_words": 700,
     "shrink_baseline_ratio": 1.22,
     "shrink_baseline_floor_ratio": 0.90,
     "refine_memory_batches": 12,

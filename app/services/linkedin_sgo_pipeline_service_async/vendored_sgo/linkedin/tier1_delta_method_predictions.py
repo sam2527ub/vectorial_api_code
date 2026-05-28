@@ -404,7 +404,8 @@ memory_batches_outliers_only_for_iteration = t1.memory_batches_outliers_only_for
 shrink_group_summary = t1.shrink_group_summary
 compute_shrink_target_words = t1.compute_shrink_target_words
 compute_group_summary_shrink_band = t1.compute_group_summary_shrink_band
-hard_truncate_words = t1.hard_truncate_words
+truncate_group_summary_at_sentence_boundary = t1.truncate_group_summary_at_sentence_boundary
+group_summary_word_bounds = t1.group_summary_word_bounds
 build_refine_error_logs_text = t1.build_refine_error_logs_text
 build_refine_analyses_text = t1.build_refine_analyses_text
 build_outlier_refine_error_logs_text = t1.build_outlier_refine_error_logs_text
@@ -418,7 +419,9 @@ guard_shrink_group_summary = t1.guard_shrink_group_summary
 guard_group_summary_text = t1.guard_group_summary_text
 merge_qualitative_refinement = t1.merge_qualitative_refinement
 qualitative_summary_regression = t1.qualitative_summary_regression
+DEFAULT_GROUP_SUMMARY_MIN_WORDS = t1.DEFAULT_GROUP_SUMMARY_MIN_WORDS
 DEFAULT_GROUP_SUMMARY_MAX_WORDS = t1.DEFAULT_GROUP_SUMMARY_MAX_WORDS
+GROUP_SUMMARY_SOFT_MAX_SLACK_WORDS = t1.GROUP_SUMMARY_SOFT_MAX_SLACK_WORDS
 DEFAULT_MAX_TRAITS_PER_CATEGORY = t1.DEFAULT_MAX_TRAITS_PER_CATEGORY
 TribeSchemaEvolver = t1.TribeSchemaEvolver
 load_group_summary_refine_template = t1.load_group_summary_refine_template
@@ -1691,14 +1694,13 @@ async def run_all(args: argparse.Namespace) -> None:
             flush=True,
         )
         if qualifying_keys_from_prev is not None and n_posts == 0:
-            logger.info(
-                "[ITER] stopping outer loop at iteration %s — no posts with %s delta > %s remain",
+            logger.warning(
+                "[ITER %s] no posts qualified from previous sweep (best_deltas %s <= %s for all); "
+                "skipping batch work this iteration.",
                 iteration,
                 args.feedback_on,
                 next_sweep_thr,
             )
-            setattr(args, "sgo_stop_outer_iterations", True)
-            break
 
         min_mem_posts = int(args.min_posts_for_memory_batch)
         # (linkedin memory review id, delta-bridge analysis, post category) — flush when >= min_mem_posts
@@ -2253,6 +2255,7 @@ async def run_all(args: argparse.Namespace) -> None:
                     len(window_logs),
                     word_count_t1(before),
                 )
+                min_wc, max_wc = group_summary_word_bounds(args)
                 new_summary, new_qual_unified = await refine_group_summary(
                     client,
                     args.refine_model,
@@ -2263,6 +2266,8 @@ async def run_all(args: argparse.Namespace) -> None:
                     0,
                     qual_before_refine,
                     baseline_qualitative_summary=q_baseline,
+                    max_words=max_wc,
+                    min_words=min_wc,
                 )
                 if window_logs:
                     rk = sort_memory_batch_keys(list(window_logs.keys()))
@@ -2271,8 +2276,7 @@ async def run_all(args: argparse.Namespace) -> None:
                 if new_summary:
                     state["refinement_call_count"] = int(state.get("refinement_call_count") or 0) + 1
                     rc = int(state["refinement_call_count"])
-                    max_wc = int(getattr(args, "group_summary_max_words", DEFAULT_GROUP_SUMMARY_MAX_WORDS))
-                    min_wc = int(args.shrink_floor_words)
+                    min_wc, max_wc = group_summary_word_bounds(args)
                     baseline_min_wc = baseline_summary_min_words(
                         baseline_group,
                         floor_words=min_wc,
@@ -2290,14 +2294,6 @@ async def run_all(args: argparse.Namespace) -> None:
                         max_words=max_wc,
                         min_words=baseline_min_wc,
                     )
-                    if word_count_t1(state["group_summary"]) > max_wc:
-                        state["group_summary"] = hard_truncate_words(
-                            state["group_summary"], max_wc
-                        )
-                        logger.info(
-                            "[REFINE] capped group_summary to ≤%s words (hard truncate).",
-                            max_wc,
-                        )
                     logger.info(
                         "[REFINE] group_summary words %s → %s",
                         word_count_t1(before),
@@ -2313,7 +2309,7 @@ async def run_all(args: argparse.Namespace) -> None:
                         persist_state(f"after_qual_refine_{qrc_u}", user_pred_by_idx, all_delta_rows)
                     if getattr(args, "no_shrink", False):
                         sw = word_count_t1(state.get("group_summary") or "")
-                        mt = int(getattr(args, "max_traits_per_category", DEFAULT_MAX_TRAITS_PER_CATEGORY))
+                        mt = int(args.max_traits_per_category)
                         traits_over_ns = qualitative_summary_over_trait_limit(
                             state.get("qualitative_summary") or empty_qualitative_summary(),
                             max_traits_per_category=mt,
@@ -2330,7 +2326,7 @@ async def run_all(args: argparse.Namespace) -> None:
                         qual_for_shrink = copy.deepcopy(
                             state.get("qualitative_summary") or empty_qualitative_summary()
                         )
-                        max_traits = int(getattr(args, "max_traits_per_category", DEFAULT_MAX_TRAITS_PER_CATEGORY))
+                        max_traits = int(args.max_traits_per_category)
                         traits_over = qualitative_summary_over_trait_limit(
                             qual_for_shrink,
                             max_traits_per_category=max_traits,
@@ -2341,15 +2337,24 @@ async def run_all(args: argparse.Namespace) -> None:
 
                         if summary_over and not traits_over:
                             prior_sum = state["group_summary"]
-                            state["group_summary"] = hard_truncate_words(prior_sum, max_wc)
-                            logger.info(
-                                "[SHRINK] skipped LLM — summary %s words > %s but traits within "
-                                "≤%s/category; hard-truncated to %s words.",
-                                summary_words,
-                                max_wc,
-                                max_traits,
-                                word_count_t1(state["group_summary"]),
-                            )
+                            if summary_words > max_wc + GROUP_SUMMARY_SOFT_MAX_SLACK_WORDS:
+                                state["group_summary"] = truncate_group_summary_at_sentence_boundary(
+                                    prior_sum, max_wc
+                                )
+                                logger.info(
+                                    "[SHRINK] skipped LLM — summary trimmed at sentence boundary "
+                                    "(%s → %s words; target max %s).",
+                                    summary_words,
+                                    word_count_t1(state["group_summary"]),
+                                    max_wc,
+                                )
+                            else:
+                                logger.info(
+                                    "[SHRINK] skipped LLM — summary %s words (target max %s); "
+                                    "within slack, kept full sentences.",
+                                    summary_words,
+                                    max_wc,
+                                )
                         elif traits_over:
                             qual_before_shrink = copy.deepcopy(qual_for_shrink)
                             shrunk_sum, shrunk_qual = await shrink_group_summary(
@@ -2370,13 +2375,22 @@ async def run_all(args: argparse.Namespace) -> None:
                                     min_words=shrink_min_wc,
                                 )
                             elif summary_over:
-                                state["group_summary"] = hard_truncate_words(
-                                    state["group_summary"], max_wc
-                                )
-                                logger.warning(
-                                    "[SHRINK] LLM failed — hard-truncated summary to ≤%s words.",
-                                    max_wc,
-                                )
+                                sw_fail = word_count_t1(state["group_summary"])
+                                if sw_fail > max_wc + GROUP_SUMMARY_SOFT_MAX_SLACK_WORDS:
+                                    state["group_summary"] = truncate_group_summary_at_sentence_boundary(
+                                        state["group_summary"], max_wc
+                                    )
+                                    logger.warning(
+                                        "[SHRINK] LLM failed — trimmed summary at sentence boundary "
+                                        "(%s → %s words).",
+                                        sw_fail,
+                                        word_count_t1(state["group_summary"]),
+                                    )
+                                else:
+                                    logger.warning(
+                                        "[SHRINK] LLM failed — keeping summary at %s words (within slack).",
+                                        sw_fail,
+                                    )
                             if shrunk_qual is not None and not qualitative_summary_regression(
                                 qual_before_shrink, shrunk_qual
                             ):
@@ -2450,9 +2464,7 @@ async def run_all(args: argparse.Namespace) -> None:
                             and qrc > 0
                             and qualitative_summary_over_trait_limit(
                                 state.get("qualitative_summary") or empty_qualitative_summary(),
-                                max_traits_per_category=int(
-                                    getattr(args, "max_traits_per_category", DEFAULT_MAX_TRAITS_PER_CATEGORY)
-                                ),
+                                max_traits_per_category=int(args.max_traits_per_category),
                             )
                         ):
 
@@ -2488,19 +2500,8 @@ async def run_all(args: argparse.Namespace) -> None:
                                     "[QUAL_SHRINK] rejected regression; keeping pre-shrink qualitative_summary."
                                 )
 
-        if n_high == 0 and refine_accumulator:
-            logger.info(
-                "[REFINE] skipping persona refine — no posts with %s delta > %s this iteration "
-                "(%s memory batch(es) left unrefined)",
-                args.feedback_on,
-                delta_thr,
-                len(refine_accumulator),
-            )
-            refine_accumulator.clear()
-
         if (
-            n_high > 0
-            and not getattr(args, "no_outlier_refine", False)
+            not getattr(args, "no_outlier_refine", False)
             and int(state.get("last_outlier_refine_iteration") or 0) != int(iteration)
             and count_outliers_for_iteration(memory, iteration) > 0
         ):
@@ -2514,6 +2515,7 @@ async def run_all(args: argparse.Namespace) -> None:
                 state.get("qualitative_summary") or empty_qualitative_summary()
             )
             q_base_out = state.get("baseline_qualitative_summary") or empty_qualitative_summary()
+            min_wc_out, max_wc_out = group_summary_word_bounds(args)
             new_summary_out, new_qual_out, outlier_llm_ok = await refine_outliers_at_iteration_end(
                 client,
                 args.refine_model,
@@ -2523,13 +2525,14 @@ async def run_all(args: argparse.Namespace) -> None:
                 iteration,
                 qual_before_out,
                 baseline_qualitative_summary=q_base_out,
+                max_words=max_wc_out,
+                min_words=min_wc_out,
             )
             if outlier_llm_ok:
                 state["last_outlier_refine_iteration"] = int(iteration)
             if outlier_llm_ok and (new_summary_out or new_qual_out is not None):
                 if new_summary_out:
-                    max_wc_out = int(getattr(args, "group_summary_max_words", DEFAULT_GROUP_SUMMARY_MAX_WORDS))
-                    min_wc_out = int(args.shrink_floor_words)
+                    min_wc_out, max_wc_out = group_summary_word_bounds(args)
                     baseline_min_wc_out = baseline_summary_min_words(
                         baseline_group,
                         floor_words=min_wc_out,
@@ -2676,17 +2679,6 @@ async def run_all(args: argparse.Namespace) -> None:
         qualifying_keys_from_prev = next_qualifying
         pred_snapshot_prev_outer = build_prediction_snapshot_for_memory(user_pred_by_idx)
 
-        if not next_qualifying:
-            logger.info(
-                "[ITER] stopping outer loop after iteration %s — no posts with %s delta > %s "
-                "for the next sweep (planned %s)",
-                iteration,
-                args.feedback_on,
-                next_sweep_thr,
-                num_it,
-            )
-            setattr(args, "sgo_stop_outer_iterations", True)
-
         _out_seed = str(getattr(args, "sgo_user_pred_seed_json_out", "") or "").strip()
         if _out_seed:
             outp = Path(_out_seed)
@@ -2717,9 +2709,6 @@ async def run_all(args: argparse.Namespace) -> None:
             )
             if asyncio.iscoroutine(_maybe):
                 await _maybe
-
-        if getattr(args, "sgo_stop_outer_iterations", False):
-            break
 
     if failed_posts:
         logger.warning("[SGO] run finished with %s failed post(s)", len(failed_posts))
@@ -3020,11 +3009,18 @@ def main() -> None:
         help="Model for shrink_refinement.txt (default: config/linkedin_sgo_pipeline.yaml → models.shrink)",
     )
     p.add_argument(
+        "--group-summary-min-words",
+        type=int,
+        default=DEFAULT_GROUP_SUMMARY_MIN_WORDS,
+        dest="group_summary_min_words",
+        help="Soft lower target for group_summary length (default: 500)",
+    )
+    p.add_argument(
         "--group-summary-max-words",
         type=int,
         default=DEFAULT_GROUP_SUMMARY_MAX_WORDS,
         dest="group_summary_max_words",
-        help="Shrink group_summary when word count exceeds this (default: 300)",
+        help="Soft upper target for group_summary length (default: 700)",
     )
     p.add_argument(
         "--max-traits-per-category",
@@ -3050,16 +3046,16 @@ def main() -> None:
     p.add_argument(
         "--shrink-floor-words",
         type=int,
-        default=200,
+        default=DEFAULT_GROUP_SUMMARY_MIN_WORDS,
         dest="shrink_floor_words",
-        help="Soft minimum word target passed into shrink prompt when shrink runs",
+        help="Deprecated alias for --group-summary-min-words (default: 500)",
     )
     p.add_argument(
         "--shrink-hard-max-words",
         type=int,
         default=DEFAULT_GROUP_SUMMARY_MAX_WORDS,
         dest="shrink_hard_max_words",
-        help="Alias cap for shrink prompt (default: same as --group-summary-max-words)",
+        help="Deprecated alias for --group-summary-max-words (default: 700)",
     )
     p.add_argument(
         "--qual-schema-model",
