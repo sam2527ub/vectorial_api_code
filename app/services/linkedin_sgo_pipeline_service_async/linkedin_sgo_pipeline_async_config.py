@@ -65,7 +65,7 @@ def _dict_to_namespace(d: Dict[str, Any]) -> argparse.Namespace:
 _NAMESPACE_OPTIONAL_DEFAULTS: Dict[str, Any] = {
     "group_summary_min_words": 500,
     "group_summary_max_words": 700,
-    "max_traits_per_category": 20,
+    "max_traits_per_category": 15,
     "shrink_floor_words": 500,
     "shrink_hard_max_words": 700,
     "shrink_baseline_ratio": 1.22,

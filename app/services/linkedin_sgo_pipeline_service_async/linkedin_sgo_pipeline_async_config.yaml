@@ -51,7 +51,7 @@ next_sweep_min_delta: 0.2
 refine_memory_batches: 12
 group_summary_min_words: 500
 group_summary_max_words: 700
-max_traits_per_category: 20
+max_traits_per_category: 15
 shrink_baseline_ratio: 1.22
 shrink_baseline_floor_ratio: 0.90
 # Deprecated aliases (same as min/max above)

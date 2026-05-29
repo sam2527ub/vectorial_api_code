@@ -1,6 +1,10 @@
-TASK: Consolidate per-post outlier signals from LinkedIn prediction memory.
+TASK: Consolidate per-post outlier signals from LinkedIn prediction memory
+into genuine trait additions to the Group Persona.
 
-Batch-level gaps were already applied in earlier window refines. This pass absorbs **repeated or high-confidence outlier themes** only.
+Outlier signals are weak individual signals. Your job is to determine
+whether repeated outliers, taken together, reveal a real professional
+behavior this community exhibits that batch-level gaps missed.
+If they don't → add nothing. Empty output is honest and correct.
 
 ---
 
@@ -8,47 +12,220 @@ INPUTS:
 Current Group Persona: {current_group_persona_json}
 Outlier Consolidation Log: {batch_error_logs}
 
-The log contains one section per memory batch (``--- batch_key ---``). Use only ``outliers:`` lines.
+The log contains one section per memory batch (--- batch_key ---).
+Use only outliers: lines.
 Each row: post_id, behavioral_gap, why_outlier.
 
-Ignore any in_context or missing_nuance labels — decide coverage by reading trait ``text`` fields only.
+Ignore in_context and missing_nuance labels.
+Decide coverage by reading existing trait text fields directly.
 
 ---
 
-STEP 0 — REASONING (internal — do not output)
+PHASE 0 — EXTRACT AND CLUSTER (internal — do not output)
 
-1. List every distinct outlier behavioral_gap theme.
-2. Cluster similar themes (ignore post_id; focus on underlying move).
-3. For each cluster, count how many different batch_ids mention it.
-4. Promote if the same move appears in outliers from at least 2 different batch_ids, OR is tribe-level and strongly evidenced.
-5. For each promoted cluster: if the move is NOT already in any trait text (same trigger+action), plan a NEW trait; else refine in place.
+STEP 1: Read ALL outlier rows across ALL batches before doing anything.
+Do not process batch by batch. Read the full set first.
+
+STEP 2: Discard immediately:
+- Any outlier describing post format, length, tone, structure, or style
+- Any outlier that is truly post-specific (one author's personal situation,
+  one unique event, one company-specific context)
+- Any outlier where you cannot identify a professional behavior beyond
+  "this post was different from the batch pattern"
+
+STEP 3: Extract underlying behavior from each surviving outlier.
+
+For each outlier, extract three layers:
+
+LAYER 1 — SURFACE: What did this post do that the prediction missed?
+
+LAYER 2 — PROFESSIONAL BEHAVIOR: What does this reveal about how
+this community operates professionally — their judgment, standards,
+or instincts — beyond the specific post context?
+Extract from outlier evidence ONLY. Do not infer from existing traits.
+
+LAYER 3 — PROFESSIONAL NORM: What consistent character or value
+makes this behavior repeatable across different people and situations
+in this community?
+
+GATE: If you cannot extract Layer 2 AND Layer 3 → discard.
+Do not cluster or promote surface-only observations.
+
+STEP 4: Cluster by Layer 2 and Layer 3 — not by surface topic.
+
+Two outliers belong in the same cluster if they reveal the same
+underlying professional behavior or norm — even if surface topics
+look completely different.
+
+Example:
+- Outlier A: "post critiqued a military policy change without endorsing it"
+- Outlier B: "post pushed back on a remote work stat by questioning the metric"
+Same Layer 2: they refuse to accept institutional or consensus framing
+when they believe the underlying logic is wrong
+Same cluster → one trait, not two
+
+STEP 5: DEEP SIMILARITY ANALYSIS
+
+Before counting batch_ids, analyze what makes outliers genuinely similar
+at the professional character level.
+
+For each cluster, answer:
+
+1. SURFACE SIMILARITY CHECK — are these actually the same behavior?
+   List the surface moves from each outlier in the cluster.
+   Are they similar because the topic is the same → NOT the same behavior.
+   Are they similar because the underlying professional judgment is the same
+   → genuinely the same cluster.
+
+   Example of FALSE cluster (topic similarity only):
+   - Outlier A: "post about AI tools without personal narrative"
+   - Outlier B: "post about AI adoption without critical reflection"
+   These look similar but may reveal different professional norms.
+   Separate them.
+
+   Example of TRUE cluster (same professional judgment):
+   - Outlier A: "critiqued military fitness policy without endorsing change"
+   - Outlier B: "challenged remote work stat by questioning what it measures"
+   - Outlier C: "rejected AI hype framing before engaging with the capability"
+   All three: refuses to accept the dominant framing before stress-testing
+   the underlying logic — regardless of topic.
+   Same cluster.
+
+2. WHAT MAKES THEM THE SAME — write one sentence:
+   "These outliers cluster because this community consistently
+   [professional character description] — regardless of topic or stimulus."
+
+   If you cannot write this sentence without referencing the topic
+   → they are not truly the same cluster. Separate them.
+
+3. WHAT MAKES THEM DIFFERENT — for each outlier in the cluster:
+   "This outlier is distinct because [specific professional move]
+   — but it shares [core norm] with the others."
+
+   If the distinction is large enough to change the trait meaning
+   → split into two clusters.
+
+4. MINIMUM VIABLE CLUSTER:
+   A cluster needs at least 2 outliers that are genuinely similar
+   at Layer 2 and Layer 3 level — not just surface topic.
+   Single outliers that don't cluster → discard entirely.
+   Do not promote lone outliers as new traits regardless of
+   how interesting the behavior seems.
+
+STEP 6: PROMOTION CHECK
+
+After deep similarity analysis, promote a cluster only if:
+- Minimum 2 outliers genuinely similar at Layer 2 and Layer 3
+- Appears across 2+ different batch_ids
+- OR single batch but 3+ outliers all passing deep similarity check
+- AND the professional character it reveals is completely absent
+  from all existing traits across all five categories
+
+If a cluster passes promotion but is partially covered by an
+existing trait → REFINE that trait. Never add a new trait
+for a behavior already partially captured.
+
+Maximum 5 new traits total across all categories in this pass.
+Refinements are unlimited.
 
 ---
 
-CONFIDENCE (outlier-specific)
+PHASE 1 — REFINE OR ADD TRAITS (internal — do not output)
 
-- 0.85+: Same theme in outliers from at least 2 batches
-- 0.65–0.84: Strong evidence but single-batch
-- Below 0.65: Do not add new traits
+For each promoted cluster:
 
-Max 5 new trait list items across all categories in this pass. Refining existing traits does not count.
+TRAIT FORMAT RULE:
+Write every trait as a sharp, natural observation about who this
+community is as professionals — their character, judgment, values,
+and instincts.
+
+Write like a perceptive analyst describing a person in a briefing.
+Not a conditional rule. Not a checklist. Not a decision tree.
+
+Test — ask three questions:
+1. Does this tell me who these people ARE professionally?
+2. Does this tell me how they THINK about their work?
+3. Does this tell me what they STAND FOR or push back against?
+
+Answers at least 2 of 3 → correct format
+Only answers "what they DO in a post" → rewrite as the professional
+character that drives that action
+Only answers "what they BELIEVE abstractly" → rewrite as observable
+professional character and behavior
+
+WEAK (posting action):
+"When they see a weak institutional argument, they publicly
+challenge the underlying logic rather than accepting the framing."
+
+WEAK (abstract belief):
+"They believe institutional consensus should be questioned."
+
+STRONG (professional character):
+"They are instinctively skeptical of consensus that hasn't been
+stress-tested — whether it's a policy change, a survey stat, or
+an industry best practice, they push on the underlying logic
+before accepting the conclusion."
+
+STRONG (professional character):
+"They distinguish between what an institution decided and whether
+the decision was right — and they are comfortable saying so publicly,
+even when the target is a respected employer, professional norm,
+or widely shared belief."
+
+Length: 1–3 sentences maximum.
+If it needs more → it is two traits, not one.
+
+FOR REFINEMENTS:
+- Find the exact trait object in the persona JSON
+- Edit text in place — never add a duplicate row
+- Rewrite rationalization to incorporate outlier evidence
+- Raise confidence_score if outlier evidence strengthens the trait
+
+FOR NEW TRAITS:
+- Write trait text following the format above
+- Rationalization: one sentence grounded in Layer 2 and Layer 3 evidence
+  If not traceable to outlier evidence → null. Never invent.
+- Confidence score:
+  0.85+: Same behavior in outliers from 2+ batches
+  0.65–0.84: Strong single-batch outlier evidence
+  Below 0.65: Discard. Do not add.
+- trait_section_title: match existing category subsection if one fits
+- Integration check before finalizing:
+  □ Answers at least 2 of 3 character questions?
+  □ Not already captured in any existing trait across all categories?
+  □ Rationalization traces to Layer 2 and Layer 3 outlier evidence?
+  □ Correct category for prediction?
+  If any fail → fix or discard
 
 ---
 
-WHAT TO CHANGE
+PHASE 2 — SELF-CHECK (internal — do not output)
 
-- group_summary: Light integration only from promoted clusters.
-- Traits: ADD new list items for promoted moves not already in trait texts. Refine in place only when the same trigger+move already exists.
+□ All format/style outliers discarded before Phase 0
+□ All surface-only outliers discarded — Layer 2 and Layer 3 both present
+□ Clusters built on Layer 2 and Layer 3 — not surface topic similarity
+□ Only clusters from 2+ batch_ids promoted unless exceptionally strong
+□ Every new and refined trait answers at least 2 of 3 character questions
+□ No trait reads like a conditional rule, checklist, or decision tree
+□ No trait exceeds 3 sentences
+□ Every rationalization grounded in outlier evidence — not invented
+□ No rationalization restates the trait text
+□ New traits ≤ 5 total
+□ No refinement added as duplicate row — edited in place only
+□ No trait duplicated across categories
+□ Confidence scores match evidence strength
+□ Group summary returned UNCHANGED — do not touch it
 
-ANTI-OVERFITTING
-
-- Do not create a trait per outlier row or per post_id.
-- Generalize to community posting norms on LinkedIn.
+If any check fails → fix before outputting.
 
 ---
 
-OUTPUT FORMAT
+OUTPUT FORMAT:
+Return ONLY valid JSON. No markdown. No commentary.
+Maintain exact schema of input persona with content updated.
 
-Return ONLY valid JSON with the same schema as the input persona.
+group_summary: return UNCHANGED. Do not edit.
+All five trait category keys with full list values.
 Every trait: text, rationalization, confidence_score, trait_section_title.
-NEW moves → new list items. SAME moves → edit existing row only.
+Refined traits: edited in place, rationalization updated.
+New traits: new list item in correct category, maximum 5 total.

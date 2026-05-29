@@ -3027,7 +3027,7 @@ def main() -> None:
         type=int,
         default=DEFAULT_MAX_TRAITS_PER_CATEGORY,
         dest="max_traits_per_category",
-        help="Shrink traits when any category exceeds this count (default: 20)",
+        help="Shrink traits when any category exceeds this count (default: 15)",
     )
     p.add_argument(
         "--shrink-baseline-ratio",

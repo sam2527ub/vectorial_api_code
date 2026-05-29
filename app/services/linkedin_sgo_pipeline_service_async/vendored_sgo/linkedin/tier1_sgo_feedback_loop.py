@@ -114,7 +114,7 @@ DEFAULT_GROUP_SUMMARY_MIN_WORDS = 500
 DEFAULT_GROUP_SUMMARY_MAX_WORDS = 700
 # Allow the model a little over max before sentence-boundary trim.
 GROUP_SUMMARY_SOFT_MAX_SLACK_WORDS = 50
-DEFAULT_MAX_TRAITS_PER_CATEGORY = 20
+DEFAULT_MAX_TRAITS_PER_CATEGORY = 15
 
 def _log_banner(msg: str, char: str = "=") -> None:
     """Same visual style as micro-cluster SGO: big ``====`` blocks on stdout + log."""

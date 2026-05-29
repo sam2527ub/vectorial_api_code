@@ -108,15 +108,29 @@ For each refinement from Phase 0 edit plan:
 
 1. Find the exact trait object in the persona JSON.
 2. Edit text in place — never add a duplicate row for a refinement.
-3. Every trait text must follow TRIGGER → BEHAVIOR → CONTEXT:
+3. Every trait text must read as a sharp, natural observation about 
+   who this community is and how they think — not a conditional rule 
+   or decision tree.
+
+   Write like a perceptive analyst describing a person, not like a 
+   system prompt describing a behavior pattern.
 
    WEAK: "Values mentorship and community building."
-   STRONG: "When a post involves a career milestone — own or a peer's —
-   they name the specific individuals who contributed, describing their
-   concrete impact rather than giving generic thanks, because public
-   attribution of specific contributors is how credibility is built
-   and maintained in this community."
+   STRONG:"They are deeply skeptical of borrowed authority — titles, employer 
+prestige, and trend participation carry no weight here unless the 
+underlying mechanism stands on its own."
 
+
+   Test: read the trait aloud. 
+   1. Does this tell me who these people ARE professionally?
+   2. Does this tell me how they THINK about their work?
+   3. Does this tell me what they STAND FOR or push back against?
+
+Does it sound like something a sharp analyst would say about this community in a briefing?
+   YES → keep
+   NO → rewrite in plain descriptive language
+
+   Length: 1-3 sentences maximum. If it needs more → it's two traits.
 4. Rewrite rationalization — required for every refinement, no exceptions.
 
    The rationalization extracts the underlying norm the trait encodes.
@@ -145,11 +159,17 @@ Maximum 10 new traits total across all categories.
 
 For each new trait:
 
-STEP A: Write text in TRIGGER → BEHAVIOR → CONTEXT format.
-The behavior must be observable in a post without interpretation.
-Test: "Could I recognize this behavior if I saw it in a post?"
-If no → too abstract. Rewrite or discard.
+STEP A: Write text as a natural, descriptive observation about this 
+community's professional beliefs or behavior.
 
+Same format rules as Phase 1 Step 3 — reads like an analyst briefing, 
+not a conditional rule.
+
+The behavior or belief must be real and specific to this community.
+Test: "Could this describe any tech professional community on LinkedIn?"
+If YES → too generic. Rewrite or discard.
+
+Length: 1-3 sentences maximum.
 STEP B: Write rationalization.
 One sentence. The professional norm driving this behavior.
 Must trace directly to gap block evidence.
@@ -245,7 +265,10 @@ PHASE 4: SELF-CHECK (internal — do not output)
 □ All format/style gaps discarded before Phase 0
 □ Every norm in Phase 0 completes "This community believes [belief] —
   which is why they [move] rather than [prediction assumption]"
-□ Every new and refined trait follows TRIGGER → BEHAVIOR → CONTEXT
+□ Every new and refin□ Every new and refined trait reads as a natural analyst observation —
+  not a conditional rule, checklist, or decision tree
+□ No trait exceeds 3 sentences
+□ No trait reads like a system prompt or behavioral templateed trait follows TRIGGER → BEHAVIOR → CONTEXT
 □ Every refined trait has a rewritten rationalization grounded in gap evidence
 □ No rationalization restates the trait text or says "updated based on errors"
 □ New traits ≤ 10 total
