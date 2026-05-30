@@ -72,6 +72,7 @@ _NAMESPACE_OPTIONAL_DEFAULTS: Dict[str, Any] = {
     "shrink_baseline_floor_ratio": 0.90,
     "refine_memory_batches": 12,
     "qual_shrink_every_n_refinements": 5,
+    "shrink_target_traits_per_category": 12,
     "no_shrink": False,
     "no_outlier_refine": False,
     "resume": False,

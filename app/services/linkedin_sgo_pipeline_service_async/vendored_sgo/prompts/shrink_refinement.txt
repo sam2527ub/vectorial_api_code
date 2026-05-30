@@ -79,7 +79,34 @@ STEP A5 — REMOVE
 PART B — CONSOLIDATE TRAIT CATEGORIES
 
 HARD LIMIT: Maximum 15 traits per category. Non-negotiable.
-TARGET: 10-15 traits per category. Do not pad below 10.
+TARGET: 8–12 traits per category. If you finish with more than 12 in any category,
+you missed duplicates — run STEP B0 again before outputting.
+
+---
+
+STEP B0 — STRIP-AND-COMPARE (mandatory before any merge decision)
+
+For EVERY pair of traits in the same category, before comparing or merging:
+
+1. Strip each trait to one core sentence using ONLY words from that trait:
+   "This community [verb] [core belief or norm] [boundary if any]."
+2. Remove from the strip step (do not carry into comparison):
+   - Leading conditional triggers ("When they…", "If they…", etc.)
+   - Elaboration clauses after em-dashes or commas
+   - Proper nouns, product names, and concrete examples from the trait text
+   - Evidence citations and gap references from rationalizations
+3. Compare ONLY the stripped sentences — never full trait text or trigger wording.
+4. If stripped sentences express the same underlying belief or norm → same trait. Merge.
+5. Repeat for every pair in the category before deciding what to merge.
+
+Equivalence test (apply to stripped sentences only):
+- Same professional belief, value, or credibility standard → merge
+- Same behavior norm with different surface trigger or scenario → merge
+- Different beliefs even if vocabulary overlaps → keep separate
+
+Do this strip-and-compare for ALL pairs in each category before proceeding to B1.
+If the pipeline supplied a RUNTIME MERGE HINTS block, treat every listed pair as
+mandatory merge candidates unless stripped sentences are clearly different beliefs.
 
 ---
 
@@ -87,13 +114,15 @@ STEP B1 — COUNT AND PLAN (internal — do not output)
 
 For each category:
 1. Count current traits
-2. Extract the CORE BELIEF or BEHAVIORAL NORM from every trait
+2. Run STEP B0 strip-and-compare on all pairs — record merge groups
+3. Extract the CORE BELIEF or BEHAVIORAL NORM from every trait
    - What does this trait reveal about who this community is?
    - What professional belief or value does it encode?
-3. Group traits by same underlying belief or norm — not by surface text similarity
-4. Plan merges: same underlying belief expressed differently = merge candidates
-5. Plan deletions: after merging, if still >15 → delete lowest confidence first
-6. Cross-category check: does any trait express the same underlying belief
+4. Group traits by same underlying belief or norm — use stripped-sentence equivalence,
+   not surface text similarity
+5. Plan merges: same underlying belief expressed differently = merge candidates
+6. Plan deletions: after merging, if still >15 → delete lowest confidence first
+7. Cross-category check: does any trait express the same underlying belief
    as a trait in another category?
    - If yes → keep where most PREDICTIVE for LinkedIn posts
    - Delete from the other category
@@ -122,10 +151,8 @@ MERGE EXECUTION:
    Write like a perceptive analyst describing this community in a briefing —
    not like a system prompt describing a behavior pattern.
 
-   WEAK: "They value mentorship and community building."
-   STRONG: "They are deeply skeptical of borrowed authority — titles, employer 
-   prestige, and trend participation carry no weight unless the underlying 
-   mechanism stands on its own."
+   Avoid vague platitudes any professional community could share.
+   Prefer a specific belief, credibility standard, or norm drawn from the inputs.
 
    Test — read the merged trait aloud:
    1. Does this tell me who these people ARE professionally?
@@ -205,16 +232,17 @@ the trait text itself. Do not invent community norms not implied by the text.
 STEP B6 — FINAL COUNT VERIFICATION
 
 Before outputting:
-□ Skills & Expertise: ≤ 15 traits
-□ Working Style: ≤ 15 traits
-□ Motivations & Values: ≤ 15 traits
-□ Pain Points & Needs: ≤ 15 traits
-□ Org Leadership & Psychographic Profile: ≤ 15 traits
-□ No category has duplicate beliefs or norms
+□ Skills & Expertise: ≤ 15 traits (target 8–12)
+□ Working Style: ≤ 15 traits (target 8–12)
+□ Motivations & Values: ≤ 15 traits (target 8–12)
+□ Pain Points & Needs: ≤ 15 traits (target 8–12)
+□ Org Leadership & Psychographic Profile: ≤ 15 traits (target 8–12)
+□ No category has duplicate beliefs or norms (verified via STEP B0 strip-and-compare)
 □ No trait appears in two categories encoding the same underlying belief
 □ Group summary: no sentences describing formatting, style, or post structure
 □ Group summary: every sentence traceable to a trait rationalization or baseline fact
 □ Group summary captures personality and professional identity — not interaction patterns
+□ If any category still has >12 traits → re-run STEP B0 on that category before outputting
 
 If any check fails → fix before outputting.
 

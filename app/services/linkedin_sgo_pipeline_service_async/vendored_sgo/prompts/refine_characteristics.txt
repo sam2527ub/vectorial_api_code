@@ -188,9 +188,11 @@ STEP E: Set keywordTags.
 Only tags genuinely new to this category. No duplicates.
 
 STEP F: Integration check before finalizing.
-□ Duplicates any existing trait in any category? → merge or discard
+Strip each candidate trait and each existing trait in the category to a one-sentence
+core belief (remove conditional triggers, examples, and proper nouns). Compare cores only.
+□ Core belief duplicates any existing trait in any category? → merge in place or discard
 □ Right category — most actionable for prediction?
-□ Passes TRIGGER → BEHAVIOR → CONTEXT?
+□ Trait text is analyst observation prose — NOT a "When they…" / "If they…" conditional rule?
 □ Rationalization traces to gap evidence?
 □ Norm connects to behavioral profile from Phase 0?
 If any fail → fix or discard.
@@ -265,10 +267,11 @@ PHASE 4: SELF-CHECK (internal — do not output)
 □ All format/style gaps discarded before Phase 0
 □ Every norm in Phase 0 completes "This community believes [belief] —
   which is why they [move] rather than [prediction assumption]"
-□ Every new and refin□ Every new and refined trait reads as a natural analyst observation —
+□ Every new and refined trait reads as a natural analyst observation —
   not a conditional rule, checklist, or decision tree
+□ No trait ``text`` begins with "When they", "When the", "If they", or similar trigger phrasing
 □ No trait exceeds 3 sentences
-□ No trait reads like a system prompt or behavioral templateed trait follows TRIGGER → BEHAVIOR → CONTEXT
+□ No trait reads like a system prompt or behavioral template
 □ Every refined trait has a rewritten rationalization grounded in gap evidence
 □ No rationalization restates the trait text or says "updated based on errors"
 □ New traits ≤ 10 total

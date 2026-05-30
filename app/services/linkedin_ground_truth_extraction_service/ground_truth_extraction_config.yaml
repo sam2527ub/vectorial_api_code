@@ -1,15 +1,15 @@
 # Ground-truth topic labels (per-topic Yes/No + logprobs) for contextual stimulus JSON.
 # Override path: GROUND_TRUTH_EXTRACTION_CONFIG
 #
-# Per post: one topic at a time (in order). Across posts: up to max_concurrent_posts in flight.
-# Set max_concurrent_llm >= max_concurrent_posts so P parallel posts are not all blocked on the LLM semaphore.
+# Per post: all topics in parallel (asyncio.gather). Across posts: up to max_concurrent_posts.
+# Set max_concurrent_llm >> max_concurrent_posts (e.g. posts × ~12 topics) so topic calls are not starved.
 
 default_model: gpt-4o-mini
 
 # Max in-flight OpenAI API calls (shared across all posts' topic calls)
-max_concurrent_llm: 6
-# How many posts to classify in parallel (each only issues one LLM call at a time)
-max_concurrent_posts: 6
+max_concurrent_llm: 16
+# How many posts to classify in parallel
+max_concurrent_posts: 8
 
 llm:
   prob_threshold: 0.5
@@ -20,7 +20,7 @@ llm:
 
 # Async chunked job (S3 partial checkpoints; self-triggering process endpoint)
 batch:
-  posts_per_process_invocation: 2
+  posts_per_process_invocation: 8
   save_partial_after_each_chunk: true
 
 # Retries per topic call (transient 429/5xx/timeout only)

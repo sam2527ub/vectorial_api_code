@@ -207,27 +207,28 @@ def measure_deltas(
     last_err: Optional[str] = None
     for retry in range(3):
         try:
-            with emb_lock:
-                pred_emb = get_or_compute_embedding(
-                    pred_text,
-                    review_key,
-                    f"pred_{iter_suffix}",
-                    sync_client,
-                    emb_cache,
-                    embedding_model=embedding_model,
-                    min_interval_sec=embedding_min_interval_sec,
-                    lock=None,
-                )
-                act_emb = get_or_compute_embedding(
-                    act_text,
-                    review_key,
-                    "actual",
-                    sync_client,
-                    emb_cache,
-                    embedding_model=embedding_model,
-                    min_interval_sec=embedding_min_interval_sec,
-                    lock=None,
-                )
+            # emb_lock is cache-only inside get_or_compute_embedding — API calls run concurrently
+            # across posts (measure_deltas is invoked via asyncio.to_thread per post).
+            pred_emb = get_or_compute_embedding(
+                pred_text,
+                review_key,
+                f"pred_{iter_suffix}",
+                sync_client,
+                emb_cache,
+                embedding_model=embedding_model,
+                min_interval_sec=embedding_min_interval_sec,
+                lock=emb_lock,
+            )
+            act_emb = get_or_compute_embedding(
+                act_text,
+                review_key,
+                "actual",
+                sync_client,
+                emb_cache,
+                embedding_model=embedding_model,
+                min_interval_sec=embedding_min_interval_sec,
+                lock=emb_lock,
+            )
             if pred_emb and act_emb:
                 text_delta = float(calculate_text_delta(pred_emb, act_emb))
                 break

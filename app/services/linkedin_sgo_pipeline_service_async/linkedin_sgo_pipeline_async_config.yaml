@@ -58,6 +58,7 @@ shrink_baseline_floor_ratio: 0.90
 shrink_floor_words: 500
 shrink_hard_max_words: 700
 qual_shrink_every_n_refinements: 5
+shrink_target_traits_per_category: 12
 
 linkedin_root_cause_memory: true
 disable_qual_schema: false

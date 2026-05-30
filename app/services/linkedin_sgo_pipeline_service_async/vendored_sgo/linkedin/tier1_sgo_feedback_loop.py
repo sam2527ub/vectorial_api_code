@@ -721,17 +721,205 @@ def _avg_trait_text_len(q: Any) -> float:
     return (sum(lens) / len(lens)) if lens else 0.0
 
 
-def qualitative_summary_regression(prior: Dict[str, Any], candidate: Dict[str, Any]) -> bool:
+def qualitative_summary_regression(
+    prior: Dict[str, Any],
+    candidate: Dict[str, Any],
+    *,
+    for_shrink: bool = False,
+) -> bool:
     """True when ``candidate`` is clearly worse than ``prior`` (shrink/refine guard)."""
     if not isinstance(candidate, dict) or _trait_item_count_persona(candidate) == 0:
         return True
-    if _trait_item_count_persona(candidate) < _trait_item_count_persona(prior):
+    if not for_shrink and _trait_item_count_persona(candidate) < _trait_item_count_persona(prior):
         return True
     prior_avg = _avg_trait_text_len(prior)
     cand_avg = _avg_trait_text_len(candidate)
-    if prior_avg > 80 and cand_avg < prior_avg * 0.72:
+    min_ratio = 0.55 if for_shrink else 0.72
+    if prior_avg > 80 and cand_avg < prior_avg * min_ratio:
+        return True
+    if for_shrink and _trait_item_count_persona(candidate) > _trait_item_count_persona(prior):
         return True
     return False
+
+
+def _trait_core_belief_tokens(text: str) -> Set[str]:
+    """Semantic core for duplicate detection — strips conditional trigger clause only."""
+    t = " ".join(str(text or "").strip().lower().split())
+    body = t
+    if t.startswith("when ") or t.startswith("if "):
+        for sep in (" — ", " - ", ", they ", "; they ", ", he ", ", she ", ", it "):
+            if sep in t:
+                body = t.split(sep, 1)[1]
+                break
+        else:
+            body = t.split(" ", 1)[1] if " " in t else t
+    return _trait_tokens(body)
+
+
+def _trait_core_belief_overlap(text_a: str, text_b: str) -> float:
+    a = _trait_core_belief_tokens(text_a)
+    b = _trait_core_belief_tokens(text_b)
+    if not a or not b:
+        return 0.0
+    return len(a & b) / max(len(a | b), 1)
+
+
+def build_near_duplicate_merge_hints(
+    qualitative_summary: Dict[str, Any],
+    *,
+    core_overlap_threshold: float = 0.52,
+    max_hints: int = 40,
+) -> str:
+    """Audience-agnostic merge candidates computed from the current persona JSON."""
+    if not isinstance(qualitative_summary, dict):
+        return ""
+    lines: List[str] = []
+    for key in CANONICAL_QUALITATIVE_SUMMARY_KEYS:
+        rows = [r for r in (qualitative_summary.get(key) or []) if isinstance(r, dict)]
+        if len(rows) < 2:
+            continue
+        for i in range(len(rows)):
+            for j in range(i + 1, len(rows)):
+                ta = str(rows[i].get("text") or "").strip()
+                tb = str(rows[j].get("text") or "").strip()
+                if not ta or not tb:
+                    continue
+                overlap = _trait_core_belief_overlap(ta, tb)
+                if overlap >= core_overlap_threshold:
+                    lines.append(
+                        f"- `{key}` indices {i + 1} & {j + 1} "
+                        f"(core-belief overlap {overlap:.0%}): merge into one trait"
+                    )
+                    if len(lines) >= max_hints:
+                        break
+            if len(lines) >= max_hints:
+                break
+        if len(lines) >= max_hints:
+            break
+    if not lines:
+        return ""
+    return (
+        "\n\n### RUNTIME MERGE HINTS (computed from input — mandatory review)\n"
+        "These pairs encode the same core belief under different surface wording. "
+        "Apply STEP B0 strip-and-compare and merge each pair unless beliefs clearly differ.\n"
+        + "\n".join(lines)
+    )
+
+
+def max_traits_per_category_count(
+    qualitative_summary: Dict[str, Any],
+) -> int:
+    if not isinstance(qualitative_summary, dict):
+        return 0
+    return max(
+        (
+            len(qualitative_summary.get(k) or [])
+            for k in CANONICAL_QUALITATIVE_SUMMARY_KEYS
+            if isinstance(qualitative_summary.get(k), list)
+        ),
+        default=0,
+    )
+
+
+def should_run_traits_consolidation(
+    qualitative_summary: Dict[str, Any],
+    *,
+    refinement_call_count: int,
+    max_traits_per_category: int = DEFAULT_MAX_TRAITS_PER_CATEGORY,
+    shrink_every_n_refinements: int = 5,
+    shrink_target_traits_per_category: int = 12,
+) -> Tuple[bool, str]:
+    """
+    True when a shrink/consolidation pass should run.
+
+    Triggers: hard limit exceeded, scheduled every N refinements, or any category above target.
+    """
+    if qualitative_summary_over_trait_limit(
+        qualitative_summary,
+        max_traits_per_category=max_traits_per_category,
+    ):
+        return True, "traits_over_hard_limit"
+    rc = max(0, int(refinement_call_count or 0))
+    every = max(1, int(shrink_every_n_refinements or 5))
+    if rc > 0 and rc % every == 0:
+        return True, f"scheduled_every_{every}_refinements"
+    target = max(1, int(shrink_target_traits_per_category or 12))
+    if max_traits_per_category_count(qualitative_summary) > target:
+        return True, f"category_above_target_{target}"
+    return False, ""
+
+
+def dedupe_qualitative_summary_near_duplicates(
+    qualitative_summary: Dict[str, Any],
+    *,
+    core_overlap_threshold: float = 0.52,
+) -> Dict[str, Any]:
+    """Drop near-duplicate traits in-place using core-belief token overlap."""
+    out = copy.deepcopy(qualitative_summary if isinstance(qualitative_summary, dict) else empty_qualitative_summary())
+    for key in CANONICAL_QUALITATIVE_SUMMARY_KEYS:
+        rows = [r for r in (out.get(key) or []) if isinstance(r, dict)]
+        if len(rows) < 2:
+            out[key] = rows
+            continue
+        kept: List[Dict[str, Any]] = []
+        for row in rows:
+            text = str(row.get("text") or "").strip()
+            if not text:
+                continue
+            core = _trait_core_belief_tokens(text)
+            dup_i: Optional[int] = None
+            best_overlap = 0.0
+            for i, existing in enumerate(kept):
+                ex_core = _trait_core_belief_tokens(str(existing.get("text") or ""))
+                if not core or not ex_core:
+                    continue
+                overlap = len(core & ex_core) / max(len(core | ex_core), 1)
+                if overlap >= core_overlap_threshold and overlap >= best_overlap:
+                    dup_i = i
+                    best_overlap = overlap
+            if dup_i is not None:
+                existing = kept[dup_i]
+                try:
+                    new_score = float(row.get("confidence_score") or 0.0)
+                    old_score = float(existing.get("confidence_score") or 0.0)
+                except (TypeError, ValueError):
+                    new_score, old_score = 0.0, 0.0
+                if new_score > old_score or len(text) > len(str(existing.get("text") or "")):
+                    kept[dup_i] = copy.deepcopy(row)
+                logger.info(
+                    "[DEDUPE] dropped near-duplicate trait in %s (core overlap=%.2f)",
+                    key,
+                    best_overlap,
+                )
+            else:
+                kept.append(copy.deepcopy(row))
+        out[key] = kept
+    return out
+
+
+def _trait_uses_conditional_opener(text: str) -> bool:
+    """True when trait text opens with stimulus/trigger template phrasing."""
+    t = " ".join(str(text or "").strip().lower().split())
+    return bool(
+        t.startswith("when they ")
+        or t.startswith("when the ")
+        or t.startswith("if they ")
+        or t.startswith("when a ")
+        or t.startswith("in situations where ")
+        or t.startswith("when posting ")
+        or t.startswith("when discussing ")
+    )
+
+
+def _count_conditional_trait_openers(qualitative_summary: Dict[str, Any]) -> int:
+    if not isinstance(qualitative_summary, dict):
+        return 0
+    n = 0
+    for key in CANONICAL_QUALITATIVE_SUMMARY_KEYS:
+        for row in qualitative_summary.get(key) or []:
+            if isinstance(row, dict) and _trait_uses_conditional_opener(str(row.get("text") or "")):
+                n += 1
+    return n
 
 
 def _trait_trigger_signature(text: str) -> Set[str]:
@@ -773,18 +961,23 @@ def _best_trait_match_index(
 
 def _should_merge_into_existing_trait(existing_text: str, candidate_text: str) -> bool:
     """
-    True only when candidate is substantively the same move as an existing trait.
-    Different ``When [trigger]`` clauses → append as NEW trait, not in-place merge.
+    True when candidate encodes the same core belief/norm as an existing trait.
+
+    Core-belief overlap (post trigger-strip) is authoritative — different
+    ``When [trigger]`` surface wording must not force a duplicate row.
     """
     ex = str(existing_text or "").strip()
     cand = str(candidate_text or "").strip()
     if not ex or not cand:
         return False
-    match_i_overlap = 0.0
+    core_overlap = _trait_core_belief_overlap(ex, cand)
+    if core_overlap >= 0.52:
+        return True
     ex_tok = _trait_tokens(ex)
     cand_tok = _trait_tokens(cand)
-    if ex_tok and cand_tok:
-        match_i_overlap = len(ex_tok & cand_tok) / max(len(ex_tok | cand_tok), 1)
+    if not ex_tok or not cand_tok:
+        return False
+    match_i_overlap = len(ex_tok & cand_tok) / max(len(ex_tok | cand_tok), 1)
     if match_i_overlap < 0.38:
         return False
     sig_e = _trait_trigger_signature(ex)
@@ -906,8 +1099,12 @@ def merge_qualitative_refinement(
             if _is_seeded_trait(r) and str(r.get("text") or "").strip()
         }
         added_new = 0
+        category_size = len(merged)
         merge_min_overlap = 0.42 if prefer_new_traits else 0.28
         near_dup_threshold = 0.78 if prefer_new_traits else 0.55
+        if category_size >= 12:
+            near_dup_threshold = min(near_dup_threshold, 0.62)
+            merge_min_overlap = min(merge_min_overlap, 0.34)
 
         for row in cand.get(key) or []:
             if not isinstance(row, dict):
@@ -954,9 +1151,12 @@ def merge_qualitative_refinement(
             if _looks_like_error_log_paraphrase(text):
                 continue
             if any(
-                len(_trait_tokens(text) & _trait_tokens(str(r.get("text") or "")))
-                / max(len(_trait_tokens(text) | _trait_tokens(str(r.get("text") or ""))), 1)
-                > near_dup_threshold
+                _trait_core_belief_overlap(text, str(r.get("text") or "")) >= min(near_dup_threshold, 0.52)
+                or (
+                    len(_trait_tokens(text) & _trait_tokens(str(r.get("text") or "")))
+                    / max(len(_trait_tokens(text) | _trait_tokens(str(r.get("text") or ""))), 1)
+                    > near_dup_threshold
+                )
                 for r in merged
                 if isinstance(r, dict)
             ):
@@ -972,6 +1172,7 @@ def merge_qualitative_refinement(
 
         out[key] = merged
 
+    out = dedupe_qualitative_summary_near_duplicates(out)
     enforce_hard_limit_preserve_seeded(out, max_items=DEFAULT_MAX_TRAITS_PER_CATEGORY)
     return out
 
@@ -2171,9 +2372,13 @@ async def refine_group_summary(
         "- **Do NOT** return the input summary unchanged or with only an appended closing sentence.\n"
         "- **Preserve** named orgs, platforms, cohort contrasts, and technical domains from the current "
         "summary and baseline anchor unless error logs supersede them.\n"
-        "- **Traits:** You MUST add new list items for distinct moves (different ``When [trigger]`` + action) "
-        "not already in trait texts — not only edit existing rows. Max 10 new traits total across categories. "
-        "Judge coverage only from persona trait ``text`` fields, not from log metadata.\n\n"
+        "- **Traits:** Add new list items only for genuinely new professional norms (max 10 total). "
+        "Edit existing rows in place for refinements — never duplicate. "
+        "Every trait ``text`` must read as a natural analyst observation "
+        "(e.g. \"They are…\", \"This community treats…\") — **never** start with "
+        "\"When they…\", \"When the…\", \"If they…\", or other conditional trigger templates. "
+        "Gap ``missing_nuance`` / trigger context belongs in ``rationalization`` only, not trait ``text``. "
+        "Judge coverage from persona trait ``text`` fields only.\n\n"
         "### RUNTIME — ORIGINAL AUDIENCE-ROOM BASELINE SUMMARY (anchor for specificity)\n"
         f"{baseline_anchor}\n"
     )
@@ -2202,6 +2407,13 @@ async def refine_group_summary(
             added = _trait_item_count_persona(new_qual) - prior_count
             if added > 0:
                 logger.info("[REFINE] merged traits: +%s new list items (total=%s)", added, _trait_item_count_persona(new_qual))
+            cond_n = _count_conditional_trait_openers(new_qual)
+            if cond_n:
+                logger.warning(
+                    "[REFINE] %s trait(s) still use conditional openers (When they/If they…) — "
+                    "prompt/runtime ban may be ignored by model; run shrink or rewrite.",
+                    cond_n,
+                )
         if new_s:
             new_s = normalize_group_summary_refinement(
                 baseline=baseline_summary,
@@ -2276,6 +2488,8 @@ async def refine_outliers_at_iteration_end(
         f"- **Current `group_summary` word count:** {int(cw)} — integrate only **repeated or "
         f"high-confidence outlier themes**; do not overfit single-post noise.\n"
         "- **Max 5 new trait list items** across all categories (refining existing rows does not count).\n"
+        "- **Trait text format:** analyst observation prose only — never open with "
+        "\"When they…\", \"If they…\", or other conditional trigger templates.\n"
         "- Judge coverage from persona trait text only — ignore any context flags in the outlier log.\n\n"
         "### RUNTIME — ORIGINAL AUDIENCE-ROOM BASELINE SUMMARY (anchor for specificity)\n"
         f"{baseline_anchor}\n"
@@ -2343,18 +2557,29 @@ async def shrink_group_summary(
     bw = _word_count(baseline)
     mn = max(1, int(min_summary_words))
     mx = max(mn, int(max_summary_words))
+    category_counts = {
+        k: len(qualitative_summary.get(k) or [])
+        for k in CANONICAL_QUALITATIVE_SUMMARY_KEYS
+        if isinstance(qualitative_summary.get(k), list)
+    }
     prompt += (
         "\n\n### RUNTIME CONSTRAINTS (pipeline)\n"
         f"- **`group_summary` word-count band (soft target):** about **{mn}–{mx}** words — a little flexibility "
         f"is fine; **never** end mid-sentence\n"
         f"- **Current `group_summary` word count:** {int(cw)}\n"
         f"- **Baseline `group_summary` word count (anchor length):** {int(bw)}\n"
+        f"- **Trait counts per category (input):** {json.dumps(category_counts, ensure_ascii=False)}\n"
+        "- Target **8–12 traits per category** after consolidation; hard max **15**.\n"
+        "- **Trait text format:** rewrite any \"When they…\" / \"If they…\" conditional openers to "
+        "analyst observation prose (\"They are…\", \"This community treats…\"); triggers belong in "
+        "``rationalization`` only.\n"
         "- If current is **well below** the minimum, **enrich** using trait lists + baseline anchor — "
         "do not invent new organizations or behaviors.\n"
         "- If above the maximum, **dedupe and tighten** at **sentence boundaries** — do not chop mid-sentence.\n"
         "- **Baseline group summary (anchor for scope, named entities, and cohort contrasts):**\n"
         f"{baseline.strip()}\n"
     )
+    prompt += build_near_duplicate_merge_hints(qualitative_summary)
     prev_trait_n = _trait_item_count_persona(qualitative_summary)
     for attempt in range(2):
         try:

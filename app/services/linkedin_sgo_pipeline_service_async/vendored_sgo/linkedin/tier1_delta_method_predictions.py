@@ -414,6 +414,8 @@ normalize_group_summary_refinement = t1.normalize_group_summary_refinement
 sort_memory_batch_keys = t1.sort_memory_batch_keys
 word_count_t1 = t1._word_count
 qualitative_summary_over_trait_limit = t1.qualitative_summary_over_trait_limit
+should_run_traits_consolidation = t1.should_run_traits_consolidation
+dedupe_qualitative_summary_near_duplicates = t1.dedupe_qualitative_summary_near_duplicates
 baseline_summary_min_words = t1.baseline_summary_min_words
 guard_shrink_group_summary = t1.guard_shrink_group_summary
 guard_group_summary_text = t1.guard_group_summary_text
@@ -2301,12 +2303,19 @@ async def run_all(args: argparse.Namespace) -> None:
                     )
                     persist_state(f"after_group_refine_{rc}", user_pred_by_idx, all_delta_rows)
                     if new_qual_unified is not None:
-                        state["qualitative_summary"] = new_qual_unified
+                        state["qualitative_summary"] = dedupe_qualitative_summary_near_duplicates(
+                            new_qual_unified
+                        )
                         state["qual_refinement_call_count"] = int(
                             state.get("qual_refinement_call_count") or 0
                         ) + 1
                         qrc_u = int(state["qual_refinement_call_count"])
                         persist_state(f"after_qual_refine_{qrc_u}", user_pred_by_idx, all_delta_rows)
+                    group_shrink_ran = False
+                    max_traits = int(args.max_traits_per_category)
+                    shrink_every = int(getattr(args, "qual_shrink_every_n_refinements", 5) or 5)
+                    shrink_target = int(getattr(args, "shrink_target_traits_per_category", 12) or 12)
+                    rc = int(state.get("refinement_call_count") or 0)
                     if getattr(args, "no_shrink", False):
                         sw = word_count_t1(state.get("group_summary") or "")
                         mt = int(args.max_traits_per_category)
@@ -2326,16 +2335,20 @@ async def run_all(args: argparse.Namespace) -> None:
                         qual_for_shrink = copy.deepcopy(
                             state.get("qualitative_summary") or empty_qualitative_summary()
                         )
-                        max_traits = int(args.max_traits_per_category)
-                        traits_over = qualitative_summary_over_trait_limit(
+                        qual_for_shrink = dedupe_qualitative_summary_near_duplicates(qual_for_shrink)
+                        state["qualitative_summary"] = qual_for_shrink
+                        should_consolidate, shrink_reason = should_run_traits_consolidation(
                             qual_for_shrink,
+                            refinement_call_count=rc,
                             max_traits_per_category=max_traits,
+                            shrink_every_n_refinements=shrink_every,
+                            shrink_target_traits_per_category=shrink_target,
                         )
                         summary_words = word_count_t1(state["group_summary"])
                         summary_over = summary_words > max_wc
                         shrink_min_wc = max(min_wc, baseline_min_wc)
 
-                        if summary_over and not traits_over:
+                        if summary_over and not should_consolidate:
                             prior_sum = state["group_summary"]
                             if summary_words > max_wc + GROUP_SUMMARY_SOFT_MAX_SLACK_WORDS:
                                 state["group_summary"] = truncate_group_summary_at_sentence_boundary(
@@ -2355,7 +2368,20 @@ async def run_all(args: argparse.Namespace) -> None:
                                     summary_words,
                                     max_wc,
                                 )
-                        elif traits_over:
+                        elif should_consolidate:
+                            logger.info(
+                                "[SHRINK] starting consolidation | reason=%s | refinement_call=%s | "
+                                "max_category_traits=%s",
+                                shrink_reason,
+                                rc,
+                                max(
+                                    len(qual_for_shrink.get(k) or [])
+                                    for k in qual_for_shrink
+                                    if isinstance(qual_for_shrink.get(k), list)
+                                )
+                                if isinstance(qual_for_shrink, dict)
+                                else 0,
+                            )
                             qual_before_shrink = copy.deepcopy(qual_for_shrink)
                             shrunk_sum, shrunk_qual = await shrink_group_summary(
                                 client,
@@ -2392,14 +2418,19 @@ async def run_all(args: argparse.Namespace) -> None:
                                         sw_fail,
                                     )
                             if shrunk_qual is not None and not qualitative_summary_regression(
-                                qual_before_shrink, shrunk_qual
+                                qual_before_shrink, shrunk_qual, for_shrink=True
                             ):
                                 state["qualitative_summary"] = merge_qualitative_refinement(
                                     baseline=q_baseline,
                                     prior=qual_before_shrink,
                                     candidate=shrunk_qual,
                                     max_new_per_category=0,
+                                    prefer_new_traits=False,
                                 )
+                                state["qualitative_summary"] = dedupe_qualitative_summary_near_duplicates(
+                                    state["qualitative_summary"]
+                                )
+                                group_shrink_ran = True
                             elif shrunk_qual is not None:
                                 logger.warning(
                                     "[SHRINK] rejected qualitative_summary regression; keeping pre-shrink traits."
@@ -2412,9 +2443,11 @@ async def run_all(args: argparse.Namespace) -> None:
                             )
                         else:
                             logger.info(
-                                "[SHRINK] skipped — within limits (≤%s words, ≤%s traits/category).",
+                                "[SHRINK] skipped — within limits (≤%s words, ≤%s traits/category, "
+                                "next scheduled at refinement %s).",
                                 max_wc,
                                 max_traits,
+                                ((rc // shrink_every) + 1) * shrink_every,
                             )
 
                     if persona_evolver is not None:
@@ -2458,15 +2491,28 @@ async def run_all(args: argparse.Namespace) -> None:
                                     "[QUAL_REFINE] sync persona refine failed; keeping previous qualitative_summary."
                                 )
 
+                        q_cur_after_refine = copy.deepcopy(
+                            state.get("qualitative_summary") or empty_qualitative_summary()
+                        )
                         qrc = int(state.get("qual_refinement_call_count") or 0)
+                        qual_needs_shrink, qual_shrink_reason = should_run_traits_consolidation(
+                            q_cur_after_refine,
+                            refinement_call_count=rc,
+                            max_traits_per_category=int(args.max_traits_per_category),
+                            shrink_every_n_refinements=shrink_every,
+                            shrink_target_traits_per_category=shrink_target,
+                        )
                         if (
                             not getattr(args, "no_shrink", False)
+                            and not group_shrink_ran
                             and qrc > 0
-                            and qualitative_summary_over_trait_limit(
-                                state.get("qualitative_summary") or empty_qualitative_summary(),
-                                max_traits_per_category=int(args.max_traits_per_category),
-                            )
+                            and qual_needs_shrink
                         ):
+                            logger.info(
+                                "[QUAL_SHRINK] starting | reason=%s | qual_refinement_call=%s",
+                                qual_shrink_reason,
+                                qrc,
+                            )
 
                             def _qual_shrink() -> Optional[Dict[str, Any]]:
                                 return persona_evolver.shrink_step(
@@ -2474,18 +2520,20 @@ async def run_all(args: argparse.Namespace) -> None:
                                     group_summary=(state.get("group_summary") or ""),
                                 )
 
-                            q_before_qual_shrink = copy.deepcopy(
-                                state.get("qualitative_summary") or empty_qualitative_summary()
-                            )
+                            q_before_qual_shrink = copy.deepcopy(q_cur_after_refine)
                             shrunk_q = await asyncio.to_thread(_qual_shrink)
                             if shrunk_q and not qualitative_summary_regression(
-                                q_before_qual_shrink, shrunk_q
+                                q_before_qual_shrink, shrunk_q, for_shrink=True
                             ):
                                 state["qualitative_summary"] = merge_qualitative_refinement(
                                     baseline=q_base,
                                     prior=q_before_qual_shrink,
                                     candidate=shrunk_q,
                                     max_new_per_category=0,
+                                    prefer_new_traits=False,
+                                )
+                                state["qualitative_summary"] = dedupe_qualitative_summary_near_duplicates(
+                                    state["qualitative_summary"]
                                 )
                                 state["qual_shrink_call_count"] = int(
                                     state.get("qual_shrink_call_count") or 0
@@ -3069,7 +3117,15 @@ def main() -> None:
         type=int,
         default=5,
         dest="qual_shrink_every_n_refinements",
-        help="(Deprecated) qual shrink now runs only when a category exceeds --max-traits-per-category",
+        help="Run trait consolidation (shrink) every N refinement windows (default: 5). "
+        "Also runs when any category exceeds --shrink-target-traits-per-category or --max-traits-per-category.",
+    )
+    p.add_argument(
+        "--shrink-target-traits-per-category",
+        type=int,
+        default=12,
+        dest="shrink_target_traits_per_category",
+        help="Soft target per category; triggers consolidation when exceeded (default: 12)",
     )
     p.add_argument(
         "--disable-qual-schema",

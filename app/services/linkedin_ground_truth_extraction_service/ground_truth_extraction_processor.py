@@ -78,13 +78,10 @@ async def process_single_post(
             include_post_body=include_post_body,
         )
 
-    # One topic at a time per post (order preserved). Posts run in parallel in run_ground_truth_extraction_on_payload.
-    topic_results: List[Any] = []
-    for t in topics:
-        try:
-            topic_results.append(await _one(t))
-        except Exception as e:  # noqa: BLE001 — mirror gather(..., return_exceptions=True)
-            topic_results.append(e)
+    # All topics for this post in parallel; shared llm_semaphore caps in-flight API calls globally.
+    topic_results: List[Any] = list(
+        await asyncio.gather(*(_one(t) for t in topics), return_exceptions=True)
+    )
 
     before_norm: Dict[str, float] = {}
     topic_logprobs: Dict[str, Dict[str, float]] = {}
@@ -198,10 +195,10 @@ async def run_ground_truth_extraction_on_payload(
 ) -> Dict[str, Any]:
     """
     In-place: fill per-topic ground-truth fields on posts that are not already classified.
-    Within each post, topic calls run **sequentially** (in category topic order), bounded by the
-    shared ``llm`` semaphore. Multiple posts are classified **in parallel** (``asyncio.gather``),
-    bounded by ``max_concurrent_posts``; set ``max_concurrent_llm`` to at least that (often equal)
-    so one in-flight call per post is not throttled.
+    Within each post, topic calls run **in parallel** (``asyncio.gather``), bounded by the shared
+    ``llm`` semaphore. Multiple posts are classified **in parallel** as well, bounded by
+    ``max_concurrent_posts``. Set ``max_concurrent_llm`` well above ``max_concurrent_posts``
+    (e.g. posts × avg topics per category) so topic parallelism is not starved.
     """
     raw = config or load_ground_truth_extraction_config()
     cfg = _config_with_overrides(raw, max_concurrent_llm, max_concurrent_posts)
@@ -261,7 +258,7 @@ async def run_ground_truth_extraction_on_payload(
         "tier": "tier2" if is_tier2 else "tier1",
         "prob_threshold": cfg.prob_threshold,
         "classification_method": "per_topic_yes_no_logprobs",
-        "topic_llm_scheduling": "sequential_topics_parallel_posts",
+        "topic_llm_scheduling": "parallel_topics_parallel_posts",
         "concurrency": {
             "max_concurrent_llm": cfg.max_concurrent_llm,
             "max_concurrent_posts": cfg.max_concurrent_posts,
